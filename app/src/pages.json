@@ -1,0 +1,48 @@
+{
+	"pages": [
+		{
+			"path": "pages/splash/index",
+			"style": {
+				"navigationStyle": "custom",
+				"navigationBarTitleText": ""
+			}
+		},
+		{
+			"path": "pages/chat/index",
+			"style": {
+				"navigationStyle": "custom",
+				"navigationBarTitleText": ""
+			}
+		},
+		{
+			"path": "pages/gallery/index",
+			"style": {
+				"navigationStyle": "custom",
+				"navigationBarTitleText": "塔罗图鉴"
+			}
+		},
+		{
+			"path": "pages/themes/index",
+			"style": {
+				"navigationStyle": "custom",
+				"navigationBarTitleText": "塔罗主题"
+			}
+		},
+		{
+			"path": "pages/settings/index",
+			"style": {
+				"navigationStyle": "custom",
+				"navigationBarTitleText": "设置"
+			}
+		}
+	],
+	"globalStyle": {
+		"navigationBarTextStyle": "black",
+		"navigationBarTitleText": "AI Tarot",
+		"navigationBarBackgroundColor": "#F5E6C8",
+		"backgroundColor": "#F5E6C8",
+		"app-plus": {
+			"bounce": "none"
+		}
+	}
+}

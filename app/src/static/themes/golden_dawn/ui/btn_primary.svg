@@ -1,0 +1,17 @@
+<svg viewBox="0 0 400 100" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="brass-btn" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#4a3b1c" />
+      <stop offset="20%" stop-color="#d4b872" />
+      <stop offset="50%" stop-color="#9c7b2a" />
+      <stop offset="80%" stop-color="#cca957" />
+      <stop offset="100%" stop-color="#3d2f10" />
+    </linearGradient>
+    <linearGradient id="inner-bg" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#2b302a" />
+      <stop offset="100%" stop-color="#1a1e19" />
+    </linearGradient>
+  </defs>
+  <!-- Background body -->
+  <rect x="4" y="4" width="392" height="92" rx="46" ry="46" fill="url(#inner-bg)" stroke="url(#brass-btn)" stroke-width="4"/>
+</svg>

@@ -1,0 +1,271 @@
+/* ========================================
+   AI Tarot Yes or No — 全局样式
+   所有颜色通过 CSS 变量引用，零硬编码
+   主题切换仅替换变量值
+   ======================================== */
+
+/* Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Noto+Serif+SC:wght@400;600;700&display=swap');
+
+/* CSS 变量默认值（会被主题系统覆盖） */
+:root {
+  --color-bg-primary: #F5E6C8;
+  --color-bg-secondary: #EDD9B5;
+  --color-text-primary: #5C3D2E;
+  --color-text-secondary: #8B6F5E;
+  --color-accent: #B8943E;
+  --color-accent-hover: #A07C2E;
+  --color-border: #C4A97D;
+  --color-bubble-user: #5C3D2E;
+  --color-bubble-user-text: #F5E6C8;
+  --color-bubble-ai: #EDD9B5;
+  --color-bubble-ai-text: #5C3D2E;
+  --color-card-bg: #FEFAF3;
+  --color-overlay: rgba(92, 61, 46, 0.6);
+  --color-sidebar-bg: #FAF3E7;
+  --color-input-bg: #FEFAF3;
+  --color-divider: #D4C4A8;
+  --font-heading: 'Cinzel', 'Noto Serif SC', serif;
+  --font-body: 'Cormorant Garamond', 'Noto Serif SC', serif;
+}
+
+/* 全局重置 */
+html, body, page {
+  margin: 0 !important;
+  padding: 0 !important;
+  background-color: var(--color-bg-primary);
+  color: var(--color-text-primary);
+  font-family: var(--font-body);
+  font-size: 16px;
+  line-height: 1.6;
+  min-height: 100vh;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* 做旧纸张纹理背景 */
+.parchment-bg {
+  background-color: var(--color-bg-primary);
+  background-image:
+    radial-gradient(ellipse at 20% 50%, rgba(181, 155, 110, 0.15) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 20%, rgba(139, 111, 94, 0.1) 0%, transparent 50%),
+    radial-gradient(ellipse at 50% 80%, rgba(196, 169, 125, 0.12) 0%, transparent 50%);
+}
+
+/* 标题字体 */
+.font-heading {
+  font-family: var(--font-heading);
+  font-weight: 600;
+  letter-spacing: 0.05em;
+}
+
+/* 通用卡片样式 */
+.card {
+  background-color: var(--color-card-bg);
+  border: 1px solid var(--color-border);
+  border-radius: 12rpx;
+  padding: 24rpx;
+}
+
+/* 毛玻璃效果 */
+.glass {
+  background: rgba(245, 230, 200, 0.85);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+
+/* 分割线 */
+.divider {
+  height: 1px;
+  background-color: var(--color-divider);
+  margin: 16rpx 0;
+}
+
+/* 过渡动画 */
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.3s ease;
+}
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+
+.slide-left-enter-active,
+.slide-left-leave-active {
+  transition: transform 0.3s ease;
+}
+.slide-left-enter-from {
+  transform: translateX(-100%);
+}
+.slide-left-leave-to {
+  transform: translateX(-100%);
+}
+
+.slide-right-enter-active,
+.slide-right-leave-active {
+  transition: transform 0.3s ease;
+}
+.slide-right-enter-from {
+  transform: translateX(100%);
+}
+.slide-right-leave-to {
+  transform: translateX(100%);
+}
+
+/* 按钮基础样式 */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16rpx 48rpx;
+  border-radius: 8rpx;
+  font-family: var(--font-heading);
+  font-size: 28rpx;
+  letter-spacing: 0.05em;
+  transition: all 0.2s ease;
+  border: 1px solid var(--color-border);
+  background-color: var(--color-card-bg);
+  color: var(--color-text-primary);
+}
+
+.btn:active {
+  transform: scale(0.97);
+  opacity: 0.9;
+}
+
+.btn-primary {
+  background-color: var(--color-accent);
+  color: var(--color-bg-primary);
+  border-color: var(--color-accent);
+}
+
+/* 滚动条 */
+::-webkit-scrollbar {
+  width: 4px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+  border-radius: 2px;
+}
+
+/* ========================================
+   响应式宽屏布局 (PC & iPad)
+   ======================================== */
+@media (min-width: 768px) {
+  /* 滚动条稍微加宽以便于桌面端操作 */
+  ::-webkit-scrollbar {
+    width: 6px;
+  }
+  
+  /* 头像及卡牌通用容器响应控制 */
+  .avatar-fill {
+    object-position: center;
+  }
+}
+
+/* 强制圆形裁剪通用工具 */
+.rounded-full-crop {
+  border-radius: 50%;
+  overflow: hidden;
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.rounded-full-crop > image,
+.rounded-full-crop > img,
+.avatar-img {
+  width: 85% !important;
+  height: 85% !important;
+  border-radius: 50%;
+  object-fit: cover !important;
+  object-position: center !important;
+}
+
+/* =========== 响应式宽屏三栏布局 =========== */
+.layout-wrapper {
+  display: flex;
+  flex-direction: row;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  background-color: var(--color-bg-primary);
+}
+
+.left-col, .right-col {
+  display: none; /* 移动端隐藏侧边栏与历史栏 */
+  width: 25vw;
+  max-width: 320px;
+  flex-shrink: 0;
+  height: 100%;
+  background: var(--color-sidebar-bg);
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+.left-col { border-right: 1px solid var(--color-divider); }
+.right-col { border-left: 1px solid var(--color-divider); }
+
+.middle-col {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+@media (min-width: 768px) {
+  .left-col, .right-col {
+    display: flex; /* 宽屏显示三栏 */
+    flex-direction: column;
+  }
+}
+
+/* =========== 拟物质感 (Skeuomorphic) =========== */
+.kraft-noise {
+  position: relative;
+}
+.kraft-noise::before {
+  content: "";
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-image: url('data:image/svg+xml;utf8,%3Csvg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"%3E%3Cfilter id="noiseFilter"%3E%3CfeTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="3" stitchTiles="stitch"/%3E%3C/filter%3E%3Crect width="100%25" height="100%25" filter="url(%23noiseFilter)" opacity="0.12"/%3E%3C/svg%3E');
+  pointer-events: none;
+  z-index: 1;
+}
+
+.wax-gloss {
+  position: relative;
+}
+.wax-gloss::after {
+  content: "";
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 30%, rgba(255,255,255,0) 100%);
+  pointer-events: none;
+  border-radius: inherit;
+  z-index: 2;
+}
+
+.border-brass {
+  border: 2px solid transparent !important;
+  background-image: linear-gradient(var(--color-bg-primary), var(--color-bg-primary)), linear-gradient(145deg, #d4b872 0%, #9c7b2a 40%, #cca957 80%, #544013 100%);
+  background-origin: border-box;
+  background-clip: padding-box, border-box;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.15), inset 0 1px 2px rgba(255,255,255,0.1);
+}
+
+.brass-text {
+  background: linear-gradient(145deg, #d4b872 0%, #9c7b2a 40%, #cca957 80%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-shadow: 0px 1px 2px rgba(0,0,0,0.6);
+}
