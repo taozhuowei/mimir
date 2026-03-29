@@ -1,0 +1,277 @@
+{
+  "wands": {
+    "suit": "权杖",
+    "suitEn": "Wands",
+    "element": "火",
+    "elementEn": "Fire",
+    "meaning": "行动力、热情、创造力、事业",
+    "cards": [
+      {
+        "id": "wands_ace",
+        "name": "权杖一",
+        "nameEn": "Ace of Wands",
+        "number": 1,
+        "type": "minor",
+        "suit": "wands",
+        "image": "/static/themes/golden_dawn/tarot/wands/wands_01.jpeg",
+        "upright": {
+          "keywords": ["新机会", "灵感", "创造力", "潜能"],
+          "meaning": "新机会，灵感，创造力，潜能",
+          "sentiment": "positive"
+        },
+        "reversed": {
+          "keywords": ["延迟", "错失机会", "缺乏方向", "错误开始"],
+          "meaning": "延迟，错失机会，缺乏方向，错误开始",
+          "sentiment": "negative"
+        }
+      },
+      {
+        "id": "wands_2",
+        "name": "权杖二",
+        "nameEn": "Two of Wands",
+        "number": 2,
+        "type": "minor",
+        "suit": "wands",
+        "image": "/static/themes/golden_dawn/tarot/wands/wands_02.jpeg",
+        "upright": {
+          "keywords": ["计划", "决定", "选择", "未来规划"],
+          "meaning": "计划，决定，选择，未来规划",
+          "sentiment": "positive"
+        },
+        "reversed": {
+          "keywords": ["恐惧改变", "犹豫不决", "计划受阻", "信息不足"],
+          "meaning": "恐惧改变，犹豫不决，计划受阻，信息不足",
+          "sentiment": "negative"
+        }
+      },
+      {
+        "id": "wands_3",
+        "name": "权杖三",
+        "nameEn": "Three of Wands",
+        "number": 3,
+        "type": "minor",
+        "suit": "wands",
+        "image": "/static/themes/golden_dawn/tarot/wands/wands_03.jpeg",
+        "upright": {
+          "keywords": ["远见", "领导", "贸易", "合作", "扩展"],
+          "meaning": "远见，领导，贸易，合作，扩展",
+          "sentiment": "positive"
+        },
+        "reversed": {
+          "keywords": ["障碍", "延迟", "缺乏远见", "合作问题"],
+          "meaning": "障碍，延迟，缺乏远见，合作问题",
+          "sentiment": "negative"
+        }
+      },
+      {
+        "id": "wands_4",
+        "name": "权杖四",
+        "nameEn": "Four of Wands",
+        "number": 4,
+        "type": "minor",
+        "suit": "wands",
+        "image": "/static/themes/golden_dawn/tarot/wands/wands_04.jpeg",
+        "upright": {
+          "keywords": ["庆祝", "稳定", "家庭", "和谐", "成就"],
+          "meaning": "庆祝，稳定，家庭，和谐，成就",
+          "sentiment": "positive"
+        },
+        "reversed": {
+          "keywords": ["不稳定", "家庭冲突", "缺乏支持", "过渡阶段"],
+          "meaning": "不稳定，家庭冲突，缺乏支持，过渡阶段",
+          "sentiment": "negative"
+        }
+      },
+      {
+        "id": "wands_5",
+        "name": "权杖五",
+        "nameEn": "Five of Wands",
+        "number": 5,
+        "type": "minor",
+        "suit": "wands",
+        "image": "/static/themes/golden_dawn/tarot/wands/wands_05.jpeg",
+        "upright": {
+          "keywords": ["冲突", "竞争", "斗争", "挑战", "多样性"],
+          "meaning": "冲突，竞争，斗争，挑战",
+          "sentiment": "negative"
+        },
+        "reversed": {
+          "keywords": ["避免冲突", "和解", "内心冲突", "不公平竞争"],
+          "meaning": "避免冲突，和解，内心冲突",
+          "sentiment": "positive"
+        }
+      },
+      {
+        "id": "wands_6",
+        "name": "权杖六",
+        "nameEn": "Six of Wands",
+        "number": 6,
+        "type": "minor",
+        "suit": "wands",
+        "image": "/static/themes/golden_dawn/tarot/wands/wands_06.jpeg",
+        "upright": {
+          "keywords": ["胜利", "自信", "荣誉", "好消息", "公众认可"],
+          "meaning": "胜利，自信，荣誉，好消息，公众认可",
+          "sentiment": "positive"
+        },
+        "reversed": {
+          "keywords": ["骄傲", "延迟胜利", "自负", "公众羞辱"],
+          "meaning": "骄傲，延迟胜利，自负，公众羞辱",
+          "sentiment": "negative"
+        }
+      },
+      {
+        "id": "wands_7",
+        "name": "权杖七",
+        "nameEn": "Seven of Wands",
+        "number": 7,
+        "type": "minor",
+        "suit": "wands",
+        "image": "/static/themes/golden_dawn/tarot/wands/wands_07.jpeg",
+        "upright": {
+          "keywords": ["防御", "坚持", "勇气", "立场", "优势"],
+          "meaning": "防御，坚持，勇气，立场，优势",
+          "sentiment": "positive"
+        },
+        "reversed": {
+          "keywords": ["放弃", "不知所措", "无法应对", "疲惫"],
+          "meaning": "放弃，不知所措，无法应对，疲惫",
+          "sentiment": "negative"
+        }
+      },
+      {
+        "id": "wands_8",
+        "name": "权杖八",
+        "nameEn": "Eight of Wands",
+        "number": 8,
+        "type": "minor",
+        "suit": "wands",
+        "image": "/static/themes/golden_dawn/tarot/wands/wands_08.jpeg",
+        "upright": {
+          "keywords": ["快速行动", "消息", "进展", "旅行", "动力"],
+          "meaning": "快速行动，消息，进展，旅行，动力",
+          "sentiment": "positive"
+        },
+        "reversed": {
+          "keywords": ["延迟", "阻碍", "混乱", "方向错误", "急躁"],
+          "meaning": "延迟，阻碍，混乱，方向错误，急躁",
+          "sentiment": "negative"
+        }
+      },
+      {
+        "id": "wands_9",
+        "name": "权杖九",
+        "nameEn": "Nine of Wands",
+        "number": 9,
+        "type": "minor",
+        "suit": "wands",
+        "image": "/static/themes/golden_dawn/tarot/wands/wands_09.jpeg",
+        "upright": {
+          "keywords": ["韧性", "准备", "防御", "警惕", "经验"],
+          "meaning": "韧性，准备，防御，警惕，经验",
+          "sentiment": "positive"
+        },
+        "reversed": {
+          "keywords": ["疲惫", "放弃", "无法应对", "固执", "偏执"],
+          "meaning": "疲惫，放弃，无法应对，固执，偏执",
+          "sentiment": "negative"
+        }
+      },
+      {
+        "id": "wands_10",
+        "name": "权杖十",
+        "nameEn": "Ten of Wands",
+        "number": 10,
+        "type": "minor",
+        "suit": "wands",
+        "image": "/static/themes/golden_dawn/tarot/wands/wands_10.jpeg",
+        "upright": {
+          "keywords": ["负担", "责任", "压力", "努力工作", "完成"],
+          "meaning": "负担，责任，压力，努力工作，完成",
+          "sentiment": "negative"
+        },
+        "reversed": {
+          "keywords": ["不堪重负", "崩溃", "无法放下", "委派失败"],
+          "meaning": "不堪重负，崩溃，无法放下，委派失败",
+          "sentiment": "negative"
+        }
+      },
+      {
+        "id": "wands_page",
+        "name": "权杖随从",
+        "nameEn": "Page of Wands",
+        "number": 11,
+        "type": "minor",
+        "suit": "wands",
+        "image": "/static/themes/golden_dawn/tarot/wands/wands_11_page.jpeg",
+        "upright": {
+          "keywords": ["探索", "热情", "新想法", "自由精神", "消息"],
+          "meaning": "探索，热情，新想法，自由精神",
+          "sentiment": "positive"
+        },
+        "reversed": {
+          "keywords": ["坏消息", "缺乏方向", "冲动", "拖延", "不稳定"],
+          "meaning": "坏消息，缺乏方向，冲动，拖延，不稳定",
+          "sentiment": "negative"
+        }
+      },
+      {
+        "id": "wands_knight",
+        "name": "权杖骑士",
+        "nameEn": "Knight of Wands",
+        "number": 12,
+        "type": "minor",
+        "suit": "wands",
+        "image": "/static/themes/golden_dawn/tarot/wands/wands_12_knight.jpeg",
+        "upright": {
+          "keywords": ["行动", "冒险", "冲动", "热情", "旅行"],
+          "meaning": "行动，冒险，冲动，热情，旅行",
+          "sentiment": "positive"
+        },
+        "reversed": {
+          "keywords": ["冲动", "鲁莽", "延迟", "愤怒", "失控"],
+          "meaning": "冲动，鲁莽，延迟，愤怒，失控",
+          "sentiment": "negative"
+        }
+      },
+      {
+        "id": "wands_queen",
+        "name": "权杖王后",
+        "nameEn": "Queen of Wands",
+        "number": 13,
+        "type": "minor",
+        "suit": "wands",
+        "image": "/static/themes/golden_dawn/tarot/wands/wands_13_queen.jpeg",
+        "upright": {
+          "keywords": ["自信", "热情", "独立", "社交", "魅力"],
+          "meaning": "自信，热情，独立，社交，魅力",
+          "sentiment": "positive"
+        },
+        "reversed": {
+          "keywords": ["专横", "嫉妒", "攻击性", "自我怀疑", "不稳定"],
+          "meaning": "专横，嫉妒，攻击性，自我怀疑，不稳定",
+          "sentiment": "negative"
+        }
+      },
+      {
+        "id": "wands_king",
+        "name": "权杖国王",
+        "nameEn": "King of Wands",
+        "number": 14,
+        "type": "minor",
+        "suit": "wands",
+        "image": "/static/themes/golden_dawn/tarot/wands/wands_14_king.jpeg",
+        "upright": {
+          "keywords": ["领导力", "远见", "创业精神", "荣誉", "成熟"],
+          "meaning": "领导力，远见，创业精神，荣誉，成熟",
+          "sentiment": "positive"
+        },
+        "reversed": {
+          "keywords": ["暴政", "冲动", "专横", "缺乏方向", "暴怒"],
+          "meaning": "暴政，冲动，专横，缺乏方向，暴怒",
+          "sentiment": "negative"
+        }
+      }
+    ]
+  }
+}

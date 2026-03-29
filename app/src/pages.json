@@ -1,38 +1,10 @@
 {
 	"pages": [
 		{
-			"path": "pages/splash/index",
+			"path": "pages/index/index",
 			"style": {
 				"navigationStyle": "custom",
-				"navigationBarTitleText": ""
-			}
-		},
-		{
-			"path": "pages/chat/index",
-			"style": {
-				"navigationStyle": "custom",
-				"navigationBarTitleText": ""
-			}
-		},
-		{
-			"path": "pages/gallery/index",
-			"style": {
-				"navigationStyle": "custom",
-				"navigationBarTitleText": "塔罗图鉴"
-			}
-		},
-		{
-			"path": "pages/themes/index",
-			"style": {
-				"navigationStyle": "custom",
-				"navigationBarTitleText": "塔罗主题"
-			}
-		},
-		{
-			"path": "pages/settings/index",
-			"style": {
-				"navigationStyle": "custom",
-				"navigationBarTitleText": "设置"
+				"navigationBarTitleText": "AI Tarot"
 			}
 		}
 	],

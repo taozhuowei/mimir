@@ -1,0 +1,97 @@
+# AI Tarot Yes or No
+
+## 项目简介
+AI Tarot Yes or No 是一款聚焦 Yes / No 决策场景的塔罗占卜工具。当前版本保留最核心的体验：打开应用后直接进入首页，通过洗牌、切牌、抽牌和结果揭示完成一次完整占卜。
+
+当前实现特征：
+- 即开即用，无登录、无主题切换、无多余分支
+- 本地解读，基于 78 张塔罗牌情感极性计算结果
+- 单页流程，整个占卜过程都在同一个页面中通过状态与动画切换完成
+- 保留现有复古羊皮纸、黄铜金色与 GSAP 仪式感动效语言
+
+## 目录结构
+
+```text
+/
+├── app/
+│   ├── src/
+│   │   ├── components/
+│   │   │   ├── DivinationOverlay.vue
+│   │   │   └── ResultPanel.vue
+│   │   ├── data/
+│   │   ├── pages/
+│   │   │   └── index/
+│   │   ├── stores/
+│   │   ├── styles/
+│   │   └── utils/
+│   ├── test/
+│   └── package.json
+├── docs/
+│   ├── PRD.md
+│   ├── Prompt.md
+│   └── README.md
+├── tools/
+│   ├── run_browser_tests.mjs
+│   └── run_unit_tests.mjs
+└── .impeccable.md
+```
+
+## 启动方式
+
+### 安装依赖
+```bash
+cd app
+npm install
+```
+
+### H5 开发
+```bash
+npm run dev:h5
+```
+
+### 类型检查
+```bash
+npm run type-check
+```
+
+### 单元测试
+```bash
+npm run test:unit
+```
+
+### 结果页集成测试
+```bash
+npm run test:integration
+```
+
+### 全流程 E2E
+```bash
+npm run test:e2e
+```
+
+### 全量测试
+```bash
+npm run test:all
+```
+
+## 使用流程
+1. 打开首页，看到标题和中心神秘圆环。
+2. 点击圆环，进入洗牌、切牌、抽牌动画流程。
+3. 抽牌结束后无需额外点击，结果在同一页自动揭示。
+4. 首屏查看 Yes / No / 未定结论、置信度和三张牌阵。
+5. 向下继续阅读每张牌的详细启示。
+6. 点击“再占一次”后同页重置，重新回到起始状态。
+
+## 解读逻辑
+- 正位 positive 计为 `+1`
+- 正位 negative 计为 `-1`
+- 逆位会使用逆位含义对应的情感极性
+- 总分大于 0 倾向 Yes，小于 0 倾向 No，等于 0 为 Uncertain
+- 置信度按 `|总分| / 3 * 100` 计算
+
+## 验证说明
+- `npm run type-check` 用于校验 Vue + TypeScript 代码结构
+- `npm run test:unit` 会编译 `tarot.ts`、`tarotReading.ts` 与结果页文案工具的测试副本，并运行 Node 单元测试
+- `npm run test:integration` 会启动 H5 环境，验证结果页答案去重、牌阵比例与桌面布局
+- `npm run test:e2e` 会启动 H5 环境，自动执行首页到结果页再到重置的完整流程
+- `npm run test:all` 顺序执行类型检查、单元测试、集成测试与 E2E

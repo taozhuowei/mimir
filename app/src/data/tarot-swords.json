@@ -1,0 +1,25 @@
+{
+  "swords": {
+    "suit": "宝剑",
+    "suitEn": "Swords",
+    "element": "风",
+    "elementEn": "Air",
+    "meaning": "思维、沟通、冲突、真理、决策",
+    "cards": [
+      {"id": "swords_ace", "name": "宝剑一", "nameEn": "Ace of Swords", "number": 1, "type": "minor", "suit": "swords", "upright": {"keywords": ["新想法", "清晰", "突破", "专注", "真理"], "meaning": "新想法，清晰，突破，专注，真理", "sentiment": "positive"}, "reversed": {"keywords": ["混乱", "缺乏清晰", "错误想法", "沟通问题"], "meaning": "混乱，缺乏清晰，错误想法，沟通问题", "sentiment": "negative"}},
+      {"id": "swords_2", "name": "宝剑二", "nameEn": "Two of Swords", "number": 2, "type": "minor", "suit": "swords", "upright": {"keywords": ["僵局", "困难选择", "回避", "平衡", "僵局"], "meaning": "僵局，困难选择，回避，平衡", "sentiment": "negative"}, "reversed": {"keywords": ["信息泄露", "决策", "真相大白", "结束僵局"], "meaning": "信息泄露，决策，真相大白，结束僵局", "sentiment": "positive"}},
+      {"id": "swords_3", "name": "宝剑三", "nameEn": "Three of Swords", "number": 3, "type": "minor", "suit": "swords", "upright": {"keywords": ["心碎", "情感痛苦", "背叛", "悲伤", "痛苦真相"], "meaning": "心碎，情感痛苦，背叛，悲伤", "sentiment": "negative"}, "reversed": {"keywords": ["恢复", "宽恕", "情感恢复", "继续前进"], "meaning": "恢复，宽恕，情感恢复，继续前进", "sentiment": "positive"}},
+      {"id": "swords_4", "name": "宝剑四", "nameEn": "Four of Swords", "number": 4, "type": "minor", "suit": "swords", "upright": {"keywords": ["休息", "恢复", "冥想", "沉思", "准备"], "meaning": "休息，恢复，冥想，沉思，准备", "sentiment": "neutral"}, "reversed": {"keywords": ["不安", "缺乏进步", "倦怠", "回避问题"], "meaning": "不安，缺乏进步，倦怠，回避问题", "sentiment": "negative"}},
+      {"id": "swords_5", "name": "宝剑五", "nameEn": "Five of Swords", "number": 5, "type": "minor", "suit": "swords", "upright": {"keywords": ["冲突", "失败", "胜利", "自私", "空洞的胜利"], "meaning": "冲突，失败，自私，空洞的胜利", "sentiment": "negative"}, "reversed": {"keywords": ["和解", "弥补", "过去冲突", "妥协"], "meaning": "和解，弥补，过去冲突，妥协", "sentiment": "positive"}},
+      {"id": "swords_6", "name": "宝剑六", "nameEn": "Six of Swords", "number": 6, "type": "minor", "suit": "swords", "upright": {"keywords": ["过渡", "离开", "疗愈", "前进", "旅行"], "meaning": "过渡，离开，疗愈，前进，旅行", "sentiment": "positive"}, "reversed": {"keywords": ["困难过渡", "未解决的冲突", "拖延", "抗拒改变"], "meaning": "困难过渡，未解决的冲突，拖延，抗拒改变", "sentiment": "negative"}},
+      {"id": "swords_7", "name": "宝剑七", "nameEn": "Seven of Swords", "number": 7, "type": "minor", "suit": "swords", "upright": {"keywords": ["欺骗", "策略", "偷窃", "逃避", "不诚实"], "meaning": "欺骗，策略，偷窃，逃避，不诚实", "sentiment": "negative"}, "reversed": {"keywords": ["良心发现", "重新策略", "诚实", "揭露欺骗"], "meaning": "良心发现，重新策略，诚实，揭露欺骗", "sentiment": "positive"}},
+      {"id": "swords_8", "name": "宝剑八", "nameEn": "Eight of Swords", "number": 8, "type": "minor", "suit": "swords", "upright": {"keywords": ["限制", "束缚", "恐惧", "无力感", "受害心态"], "meaning": "限制，束缚，恐惧，无力感，受害心态", "sentiment": "negative"}, "reversed": {"keywords": ["自由", "释放", "新视角", "面对恐惧", "赋权"], "meaning": "自由，释放，新视角，面对恐惧，赋权", "sentiment": "positive"}},
+      {"id": "swords_9", "name": "宝剑九", "nameEn": "Nine of Swords", "number": 9, "type": "minor", "suit": "swords", "upright": {"keywords": ["焦虑", "担忧", "恐惧", "噩梦", "内疚"], "meaning": "焦虑，担忧，恐惧，噩梦，内疚", "sentiment": "negative"}, "reversed": {"keywords": ["希望", "释放", "面对恐惧", "结束痛苦", "疗愈"], "meaning": "希望，释放，面对恐惧，结束痛苦，疗愈", "sentiment": "positive"}},
+      {"id": "swords_10", "name": "宝剑十", "nameEn": "Ten of Swords", "number": 10, "type": "minor", "suit": "swords", "upright": {"keywords": ["痛苦结束", "低谷", "危机", "结束", "新开始"], "meaning": "痛苦结束，低谷，危机，结束，新开始", "sentiment": "negative"}, "reversed": {"keywords": ["生存", "恢复", "抵抗", "无法结束", "拖延"], "meaning": "生存，恢复，抵抗，无法结束，拖延", "sentiment": "neutral"}},
+      {"id": "swords_page", "name": "宝剑随从", "nameEn": "Page of Swords", "number": 11, "type": "minor", "suit": "swords", "upright": {"keywords": ["好奇心", "新想法", "警觉", "沟通", "机警"], "meaning": "好奇心，新想法，警觉，沟通，机警", "sentiment": "positive"}, "reversed": {"keywords": ["欺骗", "操纵", "八卦", "缺乏准备", "沟通不良"], "meaning": "欺骗，操纵，八卦，缺乏准备，沟通不良", "sentiment": "negative"}},
+      {"id": "swords_knight", "name": "宝剑骑士", "nameEn": "Knight of Swords", "number": 12, "type": "minor", "suit": "swords", "upright": {"keywords": ["行动", "冲动", "防御", "迅速", "激进"], "meaning": "行动，冲动，防御，迅速，激进", "sentiment": "neutral"}, "reversed": {"keywords": ["冲动", "鲁莽", "愤怒", "延迟", "缺乏方向"], "meaning": "冲动，鲁莽，愤怒，延迟，缺乏方向", "sentiment": "negative"}},
+      {"id": "swords_queen", "name": "宝剑王后", "nameEn": "Queen of Swords", "number": 13, "type": "minor", "suit": "swords", "upright": {"keywords": ["独立", "公正", "清晰", "诚实", "标准高"], "meaning": "独立，公正，清晰，诚实，标准高", "sentiment": "positive"}, "reversed": {"keywords": ["冷酷", "计算", "苛刻", "不诚实", "操纵"], "meaning": "冷酷，计算，苛刻，不诚实，操纵", "sentiment": "negative"}},
+      {"id": "swords_king", "name": "宝剑国王", "nameEn": "King of Swords", "number": 14, "type": "minor", "suit": "swords", "upright": {"keywords": ["智力", "权威", "真理", "清晰", "伦理"], "meaning": "智力，权威，真理，清晰，伦理", "sentiment": "positive"}, "reversed": {"keywords": ["独裁", "残忍", "不道德", "混乱", "滥用权力"], "meaning": "独裁，残忍，不道德，混乱，滥用权力", "sentiment": "negative"}}
+    ]
+  }
+}
