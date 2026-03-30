@@ -39,7 +39,6 @@ function runGenerateReadingTests() {
   ])
 
   assert.equal(yes_result.result, 'yes')
-  assert.equal(yes_result.confidence, 100)
   assert.equal(yes_result.cardDetails.length, 3)
 
   const uncertain_result = generateReading([
@@ -49,7 +48,6 @@ function runGenerateReadingTests() {
   ])
 
   assert.equal(uncertain_result.result, 'uncertain')
-  assert.equal(uncertain_result.confidence, 0)
 }
 
 function runTarotStoreTests() {

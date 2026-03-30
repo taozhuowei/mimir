@@ -9,7 +9,6 @@ if (!base_url) {
 
 const mocked_result = {
   result: 'yes',
-  confidence: 67,
   cardDetails: [
     {
       card: {
@@ -98,15 +97,16 @@ try {
     })
   }, mocked_result)
 
-  await page.waitForSelector('[data-testid="result-answer"]')
+  await page.waitForSelector('[data-testid="result-statement"]')
 
-  const answer_text = await page.locator('[data-testid="result-answer"]').textContent()
-  const headline_text = await page.locator('[data-testid="result-headline"]').textContent()
+  const result_statement = await page.locator('[data-testid="result-statement"]').textContent()
   const card_count = await page.locator('[data-testid="result-card-item"]').count()
 
-  assert.equal(answer_text, '是')
-  assert.notEqual(headline_text, answer_text)
+  assert.equal(result_statement, '塔罗牌根据您的问题呈现出积极的指示。')
   assert.equal(card_count, 3)
+  assert.equal(await page.locator('[data-testid="result-answer"]').count(), 0)
+  assert.equal(await page.locator('[data-testid="result-badge"]').count(), 0)
+  assert.equal(await page.locator('[data-testid="result-confidence"]').count(), 0)
 
   const card_boxes = await page.locator('[data-testid="result-card-visual"]').evaluateAll((elements) =>
     elements.map((element) => {
@@ -131,6 +131,13 @@ try {
   const min_top = Math.min(...top_offsets)
 
   assert.ok(max_top - min_top < 24, `expected matrix cards to align on one row, delta was ${max_top - min_top}`)
+
+  await page.waitForTimeout(900)
+  const first_flip_transform = await page.locator('.card-image-flip').first().evaluate((element) =>
+    window.getComputedStyle(element).transform
+  )
+
+  assert.notEqual(first_flip_transform, 'none')
 } finally {
   await browser.close()
 }

@@ -29,7 +29,6 @@ export interface DrawnResult {
 
 export interface ReadingResult {
   result: 'yes' | 'no' | 'uncertain'
-  confidence: number
   cardDetails: Array<{
     card: TarotCardInfo
     position: 'upright' | 'reversed'
@@ -103,8 +102,6 @@ export function generateReading(drawn_cards: DrawnResult[]): ReadingResult {
     .map(getCardScore)
     .reduce((sum, score) => sum + score, 0)
 
-  const confidence = Math.round((Math.abs(total_score) / 3) * 100)
-
   let result: ReadingResult['result']
 
   if (total_score > 0) {
@@ -117,7 +114,6 @@ export function generateReading(drawn_cards: DrawnResult[]): ReadingResult {
 
   return {
     result,
-    confidence,
     cardDetails: drawn_cards.map((drawn_card) => ({
       card: drawn_card.card,
       position: drawn_card.position,

@@ -5,30 +5,20 @@
 
 import type { ReadingResult } from './tarotReading'
 
-const ANSWER_TEXT_MAP: Record<ReadingResult['result'], string> = {
-  yes: '是',
-  no: '否',
-  uncertain: '未定'
-}
-
-const HEADLINE_TEXT_MAP: Record<ReadingResult['result'], string> = {
-  yes: '牌面倾向肯定',
-  no: '牌面倾向否定',
-  uncertain: '牌面仍待观察'
+const RESULT_INDICATION_MAP: Record<ReadingResult['result'], string> = {
+  yes: '积极',
+  no: '消极',
+  uncertain: '尚不明朗'
 }
 
 const SUMMARY_LEAD_MAP: Record<ReadingResult['result'], string> = {
-  yes: '牌面偏向推进',
-  no: '牌面偏向收缩',
-  uncertain: '牌面仍在摇摆'
+  yes: '当前牌面传递出积极信号',
+  no: '当前牌面传递出谨慎信号',
+  uncertain: '当前牌面信息仍不明朗'
 }
 
-export function getAnswerText(result: ReadingResult['result']): string {
-  return ANSWER_TEXT_MAP[result]
-}
-
-export function getHeadlineText(result: ReadingResult['result']): string {
-  return HEADLINE_TEXT_MAP[result]
+export function getResultStatement(result: ReadingResult['result']): string {
+  return `塔罗牌根据您的问题呈现出${RESULT_INDICATION_MAP[result]}的指示。`
 }
 
 export function getSummaryText(reading_result: ReadingResult): string {

@@ -4,28 +4,9 @@
       <view class="result-hero card border-brass" data-testid="result-hero">
         <view class="hero-copy">
           <text class="eyebrow font-display text-sm">占卜结果</text>
-          <view class="hero-title-row">
-            <view class="hero-main">
-              <text class="hero-title font-display text-3xl" data-testid="result-headline">
-                {{ headlineText }}
-              </text>
-              <text class="hero-answer text-base">
-                答案：
-                <text class="hero-answer-value font-display" data-testid="result-answer">{{ answerText }}</text>
-              </text>
-            </view>
-
-            <view class="result-badge" :class="readingResult.result" data-testid="result-badge">
-              <text class="badge-text font-display">{{ answerText }}</text>
-            </view>
-          </view>
-
-          <view class="hero-meta">
-            <text class="confidence-label text-sm">置信度</text>
-            <text class="confidence-value font-display" data-testid="result-confidence">
-              {{ readingResult.confidence }}%
-            </text>
-          </view>
+          <text class="hero-title font-display text-3xl" data-testid="result-statement">
+            {{ resultStatement }}
+          </text>
 
           <text class="hero-subtitle text-base" data-testid="result-summary">
             {{ typedSummary }}<text class="typing-caret" :class="{ hidden: !isTyping }">|</text>
@@ -122,7 +103,7 @@
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useUserStore } from '../stores/user'
 import type { ReadingResult } from '../utils/tarotReading'
-import { getAnswerText, getHeadlineText, getSummaryText } from '../utils/result_panel'
+import { getResultStatement, getSummaryText } from '../utils/result_panel'
 
 const props = defineProps<{
   readingResult: ReadingResult
@@ -136,8 +117,7 @@ defineEmits<{
 const userStore = useUserStore()
 const cardBack = computed(() => userStore.cardBackImage || '/static/themes/golden_dawn/tarot/card_back.jpeg')
 
-const answerText = computed(() => getAnswerText(props.readingResult.result))
-const headlineText = computed(() => getHeadlineText(props.readingResult.result))
+const resultStatement = computed(() => getResultStatement(props.readingResult.result))
 const summaryText = computed(() => getSummaryText(props.readingResult))
 
 const typedSummary = ref('')
@@ -221,54 +201,10 @@ onBeforeUnmount(() => {
   text-transform: uppercase;
 }
 
-.hero-title-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-5);
-  flex-wrap: wrap;
-}
-
-.hero-main {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
-}
-
 .hero-title {
   color: var(--color-text-primary);
   line-height: 1.05;
-}
-
-.hero-answer {
-  color: var(--color-text-secondary);
-}
-
-.hero-answer-value {
-  color: var(--color-accent-dark);
-  letter-spacing: 0.12em;
-  margin-left: 8rpx;
-}
-
-.hero-meta {
-  display: inline-flex;
-  align-items: baseline;
-  gap: var(--space-3);
-  width: fit-content;
-  padding: 16rpx 24rpx;
-  border-radius: var(--radius-full);
-  background: rgba(245, 230, 200, 0.4);
-  border: 1rpx solid rgba(184, 148, 62, 0.2);
-}
-
-.confidence-label {
-  color: var(--color-text-tertiary);
-  letter-spacing: 0.12em;
-}
-
-.confidence-value {
-  color: var(--color-accent-dark);
-  font-size: 34rpx;
+  max-width: 100%;
 }
 
 .hero-subtitle,
@@ -289,70 +225,6 @@ onBeforeUnmount(() => {
 
 .typing-caret.hidden {
   opacity: 0;
-}
-
-.result-badge {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 180rpx;
-  height: 180rpx;
-  border-radius: 50%;
-  border: 4rpx solid;
-  position: relative;
-  box-shadow: var(--shadow-lg);
-  animation: badge-emphasis 900ms cubic-bezier(0.22, 1, 0.36, 1) both;
-  flex-shrink: 0;
-}
-
-.result-badge::before {
-  content: '';
-  position: absolute;
-  inset: -12rpx;
-  border-radius: 50%;
-  border: 2rpx solid rgba(184, 148, 62, 0.22);
-}
-
-.result-badge.yes {
-  background: linear-gradient(145deg, rgba(76, 175, 80, 0.15), rgba(76, 175, 80, 0.05));
-  border-color: var(--color-success);
-  box-shadow:
-    0 12rpx 48rpx rgba(76, 175, 80, 0.22),
-    inset 0 2rpx 8rpx rgba(255, 255, 255, 0.3);
-}
-
-.result-badge.no {
-  background: linear-gradient(145deg, rgba(244, 67, 54, 0.15), rgba(244, 67, 54, 0.05));
-  border-color: var(--color-error);
-  box-shadow:
-    0 12rpx 48rpx rgba(244, 67, 54, 0.22),
-    inset 0 2rpx 8rpx rgba(255, 255, 255, 0.3);
-}
-
-.result-badge.uncertain {
-  background: linear-gradient(145deg, rgba(255, 152, 0, 0.15), rgba(255, 152, 0, 0.05));
-  border-color: var(--color-warning);
-  box-shadow:
-    0 12rpx 48rpx rgba(255, 152, 0, 0.2),
-    inset 0 2rpx 8rpx rgba(255, 255, 255, 0.3);
-}
-
-.badge-text {
-  font-size: 54rpx;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-}
-
-.result-badge.yes .badge-text {
-  color: #2e7d32;
-}
-
-.result-badge.no .badge-text {
-  color: #c62828;
-}
-
-.result-badge.uncertain .badge-text {
-  color: #e65100;
 }
 
 .result-grid {
@@ -575,19 +447,6 @@ onBeforeUnmount(() => {
 }
 
 @media (max-width: 767px) {
-  .hero-title-row {
-    align-items: flex-start;
-  }
-
-  .result-badge {
-    width: 148rpx;
-    height: 148rpx;
-  }
-
-  .badge-text {
-    font-size: 44rpx;
-  }
-
   .cards-row {
     grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: var(--space-3);
@@ -634,28 +493,11 @@ onBeforeUnmount(() => {
 
 @keyframes result-card-flip {
   from {
-    transform: rotateY(180deg);
+    transform: rotateY(0deg);
   }
 
   to {
-    transform: rotateY(0deg);
-  }
-}
-
-@keyframes badge-emphasis {
-  0% {
-    transform: scale(0.72);
-    opacity: 0;
-  }
-
-  55% {
-    transform: scale(1.08);
-    opacity: 1;
-  }
-
-  100% {
-    transform: scale(1);
-    opacity: 1;
+    transform: rotateY(180deg);
   }
 }
 </style>

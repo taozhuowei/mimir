@@ -28,7 +28,7 @@ try {
   await page.waitForFunction(() => document.body.innerText.includes('抽取牌阵'), null, { timeout: 10000 })
 
   await page.locator('.btn-primary').click({ force: true })
-  await page.waitForSelector('[data-testid="result-answer"]', { timeout: 20000 })
+  await page.waitForSelector('[data-testid="result-statement"]', { timeout: 20000 })
 
   assert.equal(await page.locator('[data-testid="result-card-item"]').count(), 3)
   assert.ok(await page.locator('[data-testid="restart-button"]').isVisible())

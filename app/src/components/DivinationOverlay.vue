@@ -176,6 +176,42 @@ function getCardHeight() {
   return card ? card.offsetHeight : 160
 }
 
+function clamp(value: number, min: number, max: number) {
+  return Math.min(Math.max(value, min), max)
+}
+
+function getDrawLayout(stage_width: number, stage_height: number, card_width: number, card_height: number, is_wide: boolean) {
+  const horizontal_margin = Math.max(card_width * 0.2, 24)
+  const vertical_margin = Math.max(card_height * 0.12, 24)
+  const max_center_x = Math.max(0, stage_width / 2 - card_width / 2 - horizontal_margin)
+  const side_offset = Math.min(card_width * 1.28, max_center_x)
+  const min_center_y = -stage_height / 2 + card_height / 2 + vertical_margin
+  const max_center_y = stage_height / 2 - card_height / 2 - vertical_margin
+  const lift_y = is_wide
+    ? Math.min(stage_height * 0.32, card_height * 1.26)
+    : Math.min(stage_height * 0.16, card_height * 0.56)
+
+  if (is_wide) {
+    const centered_row_y = clamp(lift_y, min_center_y, max_center_y)
+
+    return {
+      liftY: lift_y,
+      targetX: [-side_offset, 0, side_offset],
+      targetY: [centered_row_y, centered_row_y, centered_row_y]
+    }
+  }
+
+  const available_mobile_span = Math.max(0, max_center_y - min_center_y)
+  const mobile_spread = Math.min(card_height * 1.12, available_mobile_span / 2)
+  const mobile_center_y = clamp(lift_y, min_center_y + mobile_spread, max_center_y - mobile_spread)
+
+  return {
+    liftY: lift_y,
+    targetX: [0, 0, 0],
+    targetY: [mobile_center_y + mobile_spread, mobile_center_y, mobile_center_y - mobile_spread]
+  }
+}
+
 onMounted(() => {
   checkWidth()
   window.addEventListener('resize', checkWidth)
@@ -314,19 +350,12 @@ function playDraw() {
   const deckContainer = initialCards[0]?.parentElement
 
   const stageRect = stage.getBoundingClientRect()
-  const stageWidth = stageRect.width
-  const stageHeight = stageRect.height
-  const cardWidth = getCardWidth()
-  const cardHeight = getCardHeight()
-  const gap = cardWidth * 0.28
-
-  const mobileSpread = Math.min(cardHeight * 1.28, stageHeight * 0.3)
-  const mobileCenterY = cardHeight * 0.3
-
-  const targetX = isWide.value ? [-(cardWidth + gap), 0, cardWidth + gap] : [0, 0, 0]
-  const targetY = isWide.value
-    ? [stageHeight * 0.1, stageHeight * 0.1, stageHeight * 0.1]
-    : [mobileCenterY + mobileSpread, mobileCenterY, mobileCenterY - mobileSpread]
+  const stage_width = stageRect.width
+  const stage_height = stageRect.height
+  const card_width = getCardWidth()
+  const card_height = getCardHeight()
+  const draw_layout = getDrawLayout(stage_width, stage_height, card_width, card_height, isWide.value)
+  const { targetX, targetY, liftY } = draw_layout
 
   const timeline = gsap.timeline()
 
@@ -334,11 +363,9 @@ function playDraw() {
     .to(deckContainer, { x: '+=4', yoyo: true, repeat: 10, duration: 0.05 })
     .to(deckContainer, { x: 0, duration: 0.1 })
 
-  const liftY = isWide.value ? stageHeight * 0.34 : stageHeight * 0.1
-
   timeline
     .to(stage, { y: -liftY, duration: 1.8, ease: 'power2.inOut' }, '+=0.2')
-    .to(initialCards, { autoAlpha: 0, y: -cardHeight * 0.4, scale: 0.8, duration: 0.6, ease: 'power1.in' }, '<0.2')
+    .to(initialCards, { autoAlpha: 0, y: -card_height * 0.4, scale: 0.8, duration: 0.6, ease: 'power1.in' }, '<0.2')
 
   wrappers.forEach((card, index) => {
     const cardTimeline = gsap.timeline()
@@ -347,13 +374,13 @@ function playDraw() {
         display: 'block',
         autoAlpha: 1,
         x: 0,
-        y: index === 0 ? -cardHeight * 0.3 : -stageHeight,
+        y: index === 0 ? -card_height * 0.3 : -stage_height,
         rotation: (Math.random() - 0.5) * 15,
         scale: 1,
         zIndex: 10 + index
       })
-      .to(card, { x: targetX[index], y: targetY[index] + cardHeight * 0.4, duration: 0.7, ease: 'power2.in' })
-      .to(card, { y: targetY[index] + cardHeight * 0.56, duration: 0.4, ease: 'power1.out' })
+      .to(card, { x: targetX[index], y: targetY[index] + card_height * 0.4, duration: 0.7, ease: 'power2.in' })
+      .to(card, { y: targetY[index] + card_height * 0.56, duration: 0.4, ease: 'power1.out' })
       .to(card, { y: targetY[index], duration: 1.5, ease: 'power3.out' })
       .to(card, { y: targetY[index] - 5, duration: 1.2, ease: 'sine.inOut', yoyo: true, repeat: -1 }, '-=0.5')
 
@@ -369,7 +396,7 @@ function playDraw() {
   timeline
     .to(wrappers, {
       x: (index: number) => targetX[index],
-      y: (index: number) => targetY[index] - cardHeight * 0.3,
+      y: (index: number) => targetY[index],
       rotation: 0,
       duration: 0.8,
       ease: 'power3.inOut'
