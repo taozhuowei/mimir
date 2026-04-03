@@ -6,71 +6,94 @@
     <view class="stage-container">
       <view class="progress-header" ref="headerRef">
         <view class="stars">
-          <!-- 洗牌阶段图标：权杖（Wands） -->
+          <!-- 洗牌：权杖 Wands — 带枝芽的火焰权杖 -->
           <svg class="star" :class="{ active: isS1Active, blink: isS1Blink }" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
             <defs>
-              <linearGradient id="grad-wands" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stop-color="#E8B84A"/>
+              <linearGradient id="gw" x1="30%" y1="0%" x2="70%" y2="100%">
+                <stop offset="0%" stop-color="#EEC95A"/>
                 <stop offset="50%" stop-color="#C9973A"/>
-                <stop offset="100%" stop-color="#8B6F2E"/>
+                <stop offset="100%" stop-color="#7A5820"/>
               </linearGradient>
             </defs>
-            <line x1="12" y1="21" x2="12" y2="7" stroke="url(#grad-wands)" stroke-width="1.5" stroke-linecap="round"/>
-            <path d="M12 7 C12 7 9 4.5 9 3 C9 1.8 10.5 1.5 12 3.5 C13.5 1.5 15 1.8 15 3 C15 4.5 12 7 12 7 Z" stroke="url(#grad-wands)" stroke-width="1.5" fill="none" stroke-linejoin="round"/>
-            <path d="M9 12 C7 11 6 9 7 8" stroke="url(#grad-wands)" stroke-width="1.5" fill="none" stroke-linecap="round"/>
-            <path d="M15 12 C17 11 18 9 17 8" stroke="url(#grad-wands)" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+            <!-- 杖身 -->
+            <line x1="12" y1="21.5" x2="12" y2="9.5" stroke="url(#gw)" stroke-width="1.8" stroke-linecap="round"/>
+            <!-- 顶端菱形火焰叶 -->
+            <path d="M12 9.5 L9.2 6 L12 2.5 L14.8 6 Z" stroke="url(#gw)" stroke-width="1.4" stroke-linejoin="round"/>
+            <!-- 上枝 -->
+            <path d="M12 12.5 C10 12 8 11 7.5 9.5" stroke="url(#gw)" stroke-width="1.3" stroke-linecap="round"/>
+            <path d="M12 12.5 C14 12 16 11 16.5 9.5" stroke="url(#gw)" stroke-width="1.3" stroke-linecap="round"/>
+            <!-- 下枝 -->
+            <path d="M12 16 C10.2 15.5 8.5 14.5 8 13" stroke="url(#gw)" stroke-width="1.1" stroke-linecap="round"/>
+            <path d="M12 16 C13.8 15.5 15.5 14.5 16 13" stroke="url(#gw)" stroke-width="1.1" stroke-linecap="round"/>
           </svg>
 
           <view class="star-line" />
 
-          <!-- 切牌阶段图标：宝剑（Swords） -->
+          <!-- 切牌：宝剑 Swords — 指天长剑 -->
           <svg class="star" :class="{ active: isS2Active, blink: isS2Blink }" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
             <defs>
-              <linearGradient id="grad-swords" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stop-color="#E8B84A"/>
-                <stop offset="50%" stop-color="#C9973A"/>
-                <stop offset="100%" stop-color="#8B6F2E"/>
+              <linearGradient id="gs" x1="20%" y1="0%" x2="80%" y2="100%">
+                <stop offset="0%" stop-color="#F0DC90"/>
+                <stop offset="35%" stop-color="#C9973A"/>
+                <stop offset="100%" stop-color="#7A5820"/>
               </linearGradient>
             </defs>
-            <path d="M10 15 L12 2 L14 15" stroke="url(#grad-swords)" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
-            <line x1="8" y1="15" x2="16" y2="15" stroke="url(#grad-swords)" stroke-width="1.5" stroke-linecap="round"/>
-            <line x1="12" y1="15" x2="12" y2="20" stroke="url(#grad-swords)" stroke-width="1.5" stroke-linecap="round"/>
-            <circle cx="12" cy="21.5" r="1.5" stroke="url(#grad-swords)" stroke-width="1.5" fill="none"/>
+            <!-- 剑刃（菱形截面，两侧弧线形成刃边） -->
+            <path d="M11.2 16 L12 2 L12.8 16" stroke="url(#gs)" stroke-width="1.3" stroke-linejoin="round"/>
+            <!-- 剑刃中脊 -->
+            <line x1="12" y1="3" x2="12" y2="16" stroke="url(#gs)" stroke-width="0.8" stroke-linecap="round" stroke-dasharray="1.5 2.5"/>
+            <!-- 护手（两侧弧翼） -->
+            <path d="M7 16.5 Q9.5 15.2 12 16 Q14.5 15.2 17 16.5" stroke="url(#gs)" stroke-width="1.7" stroke-linecap="round"/>
+            <!-- 剑柄 -->
+            <line x1="12" y1="16.5" x2="12" y2="20.5" stroke="url(#gs)" stroke-width="1.7" stroke-linecap="round"/>
+            <!-- 柄缠线 -->
+            <line x1="10.8" y1="18.2" x2="13.2" y2="18.2" stroke="url(#gs)" stroke-width="1.2" stroke-linecap="round"/>
+            <!-- 剑首圆 -->
+            <circle cx="12" cy="21.8" r="1.3" stroke="url(#gs)" stroke-width="1.4"/>
           </svg>
 
           <view class="star-line" />
 
-          <!-- 抽牌阶段图标：圣杯（Cups） -->
+          <!-- 抽牌：圣杯 Cups — 高脚圣杯 -->
           <svg class="star" :class="{ active: isS3Active, blink: isS3Blink }" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
             <defs>
-              <linearGradient id="grad-cups" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stop-color="#E8B84A"/>
+              <linearGradient id="gc" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#EEC95A"/>
                 <stop offset="50%" stop-color="#C9973A"/>
-                <stop offset="100%" stop-color="#8B6F2E"/>
+                <stop offset="100%" stop-color="#7A5820"/>
               </linearGradient>
             </defs>
-            <line x1="7" y1="8" x2="17" y2="8" stroke="url(#grad-cups)" stroke-width="1.5" stroke-linecap="round"/>
-            <path d="M7 8 C7 14 9.5 17 12 17 C14.5 17 17 14 17 8" stroke="url(#grad-cups)" stroke-width="1.5" fill="none" stroke-linecap="round"/>
-            <line x1="12" y1="17" x2="12" y2="21" stroke="url(#grad-cups)" stroke-width="1.5" stroke-linecap="round"/>
-            <line x1="9" y1="21" x2="15" y2="21" stroke="url(#grad-cups)" stroke-width="1.5" stroke-linecap="round"/>
+            <!-- 杯口 -->
+            <line x1="6.5" y1="5.5" x2="17.5" y2="5.5" stroke="url(#gc)" stroke-width="1.7" stroke-linecap="round"/>
+            <!-- 杯身 -->
+            <path d="M6.5 5.5 C6.5 11.5 9 15 12 15.5 C15 15 17.5 11.5 17.5 5.5" stroke="url(#gc)" stroke-width="1.5" stroke-linecap="round"/>
+            <!-- 茎 -->
+            <path d="M12 15.5 L11 19 L13 19" stroke="url(#gc)" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
+            <!-- 底座 -->
+            <path d="M8.5 21.5 Q12 20 15.5 21.5" stroke="url(#gc)" stroke-width="1.7" stroke-linecap="round"/>
+            <!-- 杯内水滴装饰 -->
+            <path d="M12 8 C11 9 10.5 10 11.5 11 C12.5 10 12 9 12 8 Z" stroke="url(#gc)" stroke-width="1.1" stroke-linejoin="round"/>
           </svg>
 
           <view class="star-line" />
 
-          <!-- 解读阶段图标：星币（Pentacles） -->
+          <!-- 解读：星币 Pentacles — 古币内嵌五芒星 -->
           <svg class="star" :class="{ active: isS4Active, blink: isS4Blink }" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
             <defs>
-              <linearGradient id="grad-pentacles" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stop-color="#E8B84A"/>
+              <linearGradient id="gp" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#EEC95A"/>
                 <stop offset="50%" stop-color="#C9973A"/>
-                <stop offset="100%" stop-color="#8B6F2E"/>
+                <stop offset="100%" stop-color="#7A5820"/>
               </linearGradient>
             </defs>
-            <circle cx="12" cy="12" r="9.5" stroke="url(#grad-pentacles)" stroke-width="1.5" fill="none"/>
-            <path d="M12 4.5 L13.5 9.5 L18.5 9.5 L14.5 12.5 L16 17.5 L12 14.5 L8 17.5 L9.5 12.5 L5.5 9.5 L10.5 9.5 Z" stroke="url(#grad-pentacles)" stroke-width="1.2" fill="none" stroke-linejoin="round"/>
+            <!-- 外圆 -->
+            <circle cx="12" cy="12" r="9.2" stroke="url(#gp)" stroke-width="1.6"/>
+            <!-- 内圆（做旧边框感） -->
+            <circle cx="12" cy="12" r="7.2" stroke="url(#gp)" stroke-width="0.7" stroke-dasharray="2 1.5"/>
+            <!-- 五芒星 — 精确5角星 -->
+            <path d="M12 5.2 L13.4 9.6 L18 9.6 L14.3 12.3 L15.7 16.8 L12 14.1 L8.3 16.8 L9.7 12.3 L6 9.6 L10.6 9.6 Z" stroke="url(#gp)" stroke-width="1.3" stroke-linejoin="round"/>
           </svg>
         </view>
-        <text class="phase-prompt font-display">{{ phasePrompt }}</text>
       </view>
 
       <view class="stage" ref="stageRef">
@@ -516,20 +539,10 @@ function playCut() {
     .to([cutTop, cutMid, cutBot], { scale: 1.1, duration: 0.4, ease: 'power1.out' })
     .to([cutTop, cutMid, cutBot], { boxShadow: '0 24px 40px rgba(0,0,0,0.5)', duration: 0.4, ease: 'power1.out' }, '<')
 
-    // 第一波打乱：逆时针轮换
-    .to(cutTop, { x: 0, y: 0, zIndex: 12, duration: 0.6, ease: 'power2.inOut' }, '+=0.1')
-    .to(cutMid, { x: rightX, y: rightY, zIndex: 11, duration: 0.6, ease: 'power2.inOut' }, '<')
-    .to(cutBot, { x: leftX, y: leftY, zIndex: 13, duration: 0.6, ease: 'power2.inOut' }, '<')
-
-    // 第二波打乱：交叉对换
-    .to(cutTop, { x: rightX, y: rightY, zIndex: 11, duration: 0.6, ease: 'power2.inOut' })
-    .to(cutMid, { x: leftX, y: leftY, zIndex: 13, duration: 0.6, ease: 'power2.inOut' }, '<')
-    .to(cutBot, { x: 0, y: 0, zIndex: 12, duration: 0.6, ease: 'power2.inOut' }, '<')
-
-    // 第三波打乱：再次错位
-    .to(cutTop, { x: leftX, y: leftY, zIndex: 10, duration: 0.6, ease: 'power2.inOut' })
-    .to(cutMid, { x: rightX, y: rightY, zIndex: 12, duration: 0.6, ease: 'power2.inOut' }, '<')
-    .to(cutBot, { x: 0, y: 0, zIndex: 14, duration: 0.6, ease: 'power2.inOut' }, '<')
+    // 一次互换：左右牌堆对调，中牌保持
+    .to(cutTop, { x: rightX, y: rightY, zIndex: 11, duration: 0.7, ease: 'power2.inOut' }, '+=0.15')
+    .to(cutMid, { x: 0, y: 0, zIndex: 12, duration: 0.7, ease: 'power2.inOut' }, '<')
+    .to(cutBot, { x: leftX, y: leftY, zIndex: 13, duration: 0.7, ease: 'power2.inOut' }, '<')
 
     // 最终合并还原
     .to([cutTop, cutMid, cutBot], {
@@ -962,22 +975,11 @@ function handleRestart() {
 }
 
 .btn-primary {
-  position: relative;
   background: linear-gradient(to bottom, #2b302a, #1a1e19);
   border-radius: 40rpx;
   border: none;
   color: #cca957;
   font-weight: bold;
-  isolation: isolate;
-}
-
-.btn-primary::before {
-  content: '';
-  position: absolute;
-  inset: -2px;
-  border-radius: 42rpx;
-  background: linear-gradient(135deg, #d4b872 0%, #9c7b2a 30%, #cca957 60%, #4a3b1c 100%);
-  z-index: -1;
 }
 
 .revealing-hint {
