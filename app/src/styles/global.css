@@ -3,8 +3,10 @@
    基于 Impeccable 设计原则构建
    ======================================== */
 
-/* Google Fonts — 精选字体组合 */
+/* Google Fonts — 精选字体组合（仅 H5 加载，小程序不支持外部字体） */
+/* #ifdef H5 */
 @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Noto+Serif+SC:wght@400;500;600;700&display=swap');
+/* #endif */
 
 /* ========================================
    设计令牌 (Design Tokens)
@@ -101,6 +103,8 @@
 /* ========================================
    基础重置
    ======================================== */
+
+/* #ifdef H5 */
 *,
 *::before,
 *::after {
@@ -126,6 +130,20 @@ html, body, page {
   font-size: var(--text-base);
   line-height: 1.6;
 }
+/* #endif */
+
+/* #ifdef MP-WEIXIN */
+page {
+  min-height: 100vh;
+  height: 100vh;
+  overflow: hidden;
+  background-color: var(--color-bg-primary);
+  color: var(--color-text-primary);
+  font-family: var(--font-body);
+  font-size: var(--text-base);
+  line-height: 1.6;
+}
+/* #endif */
 
 /* ========================================
    背景系统
