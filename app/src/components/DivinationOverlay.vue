@@ -821,7 +821,8 @@ function handleRestart() {
   pointer-events: none;
 }
 
-.stage > * {
+.stage > view,
+.stage > image {
   pointer-events: auto;
 }
 
