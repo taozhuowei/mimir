@@ -4,6 +4,8 @@
   "scripts": {
     "dev:h5": "uni",
     "build:h5": "uni build",
+    "dev:mp-weixin": "node node_modules/@dcloudio/vite-plugin-uni/bin/uni.js -p mp-weixin",
+    "build:mp-weixin": "node node_modules/@dcloudio/vite-plugin-uni/bin/uni.js build -p mp-weixin",
     "test:unit": "vitest run",
     "type-check": "vue-tsc --noEmit"
   },
@@ -20,11 +22,13 @@
     "@dcloudio/types": "^3.4.8",
     "@dcloudio/uni-automator": "3.0.0-4080420251103001",
     "@dcloudio/uni-cli-shared": "3.0.0-4080420251103001",
+    "@dcloudio/uni-mp-weixin": "^3.0.0-4080420251103001",
     "@dcloudio/uni-stacktracey": "3.0.0-4080420251103001",
     "@dcloudio/vite-plugin-uni": "3.0.0-4080420251103001",
     "@vue/runtime-core": "^3.4.21",
     "@vue/test-utils": "^2.4.6",
     "@vue/tsconfig": "^0.1.3",
+    "cross-env": "^10.1.0",
     "jsdom": "^29.0.1",
     "typescript": "^4.9.4",
     "vite": "5.2.8",
