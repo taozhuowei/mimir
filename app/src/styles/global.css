@@ -3,10 +3,7 @@
    基于 Impeccable 设计原则构建
    ======================================== */
 
-/* Google Fonts — 精选字体组合（仅 H5 加载，小程序不支持外部字体） */
-/* #ifdef H5 */
-@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Noto+Serif+SC:wght@400;500;600;700&display=swap');
-/* #endif */
+/* 字体说明：使用系统内置衬线字体，兼容国内环境和小程序 */
 
 /* ========================================
    设计令牌 (Design Tokens)
@@ -42,9 +39,9 @@
   --color-card-bg: rgba(45, 27, 20, 0.85);
   --color-overlay: rgba(10, 5, 3, 0.75);
 
-  /* 字体系统 */
-  --font-display: 'Cinzel', 'Noto Serif SC', serif;
-  --font-body: 'Cormorant Garamond', 'Noto Serif SC', serif;
+  /* 字体系统 — 系统衬线字体，兼容 iOS/Android/小程序，无需外部加载 */
+  --font-display: 'STKaiti', 'KaiTi', 'Kaiti SC', 'Noto Serif SC', 'STSong', serif;
+  --font-body: 'STSong', 'SimSun', 'Songti SC', 'Noto Serif SC', 'STKaiti', serif;
 
   /* 字体大小 — 模块化比例 (1.25) */
   --text-xs: clamp(0.75rem, 0.7rem + 0.25vw, 0.875rem);
