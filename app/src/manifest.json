@@ -1,7 +1,7 @@
 {
-    "name" : "",
+    "name" : "Scales Tarot",
     "appid" : "",
-    "description" : "",
+    "description" : "以塔罗牌权衡利弊，帮助用户做出二选一抉择",
     "versionName" : "1.0.0",
     "versionCode" : "100",
     "transformPx" : false,

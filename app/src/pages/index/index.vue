@@ -8,8 +8,8 @@
     <!-- 空闲状态：显示入口UI（标题 + 神秘圆环），点击后进入占卜流程 -->
     <view v-if="isIdle" class="idle-view">
       <view class="header">
-        <text class="title font-display text-4xl">AI Tarot</text>
-        <text class="subtitle font-display text-xl">Yes or No</text>
+        <text class="title font-display text-4xl">Scales Tarot</text>
+        <text class="subtitle font-display text-xl">以牌权衡，让塔罗来定夺</text>
         <text class="hint text-base">轻触圆环开始占卜</text>
       </view>
 
