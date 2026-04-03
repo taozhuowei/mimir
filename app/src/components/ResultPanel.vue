@@ -166,9 +166,9 @@ onBeforeUnmount(() => {
   backdrop-filter: blur(20rpx);
   -webkit-backdrop-filter: blur(20rpx);
   background:
-    radial-gradient(ellipse at top right, rgba(212, 184, 114, 0.15), transparent 60%),
-    rgba(254, 250, 243, 0.7);
-  border: 1rpx solid rgba(184, 148, 62, 0.3);
+    radial-gradient(ellipse at top right, rgba(201, 151, 58, 0.1), transparent 60%),
+    rgba(45, 27, 20, 0.85);
+  border: 1rpx solid rgba(201, 151, 58, 0.3);
   animation: rise-in 600ms cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
@@ -218,9 +218,9 @@ onBeforeUnmount(() => {
 .interpretation-section {
   padding: var(--space-6) var(--space-5);
   border-radius: var(--radius-xl);
-  background: rgba(254, 250, 243, 0.6);
+  background: rgba(45, 27, 20, 0.75);
   box-shadow: var(--shadow-md);
-  border: 1rpx solid rgba(184, 148, 62, 0.2);
+  border: 1rpx solid rgba(201, 151, 58, 0.2);
   backdrop-filter: blur(12rpx);
   -webkit-backdrop-filter: blur(12rpx);
   animation: rise-in 600ms cubic-bezier(0.34, 1.56, 0.64, 1) 150ms both;

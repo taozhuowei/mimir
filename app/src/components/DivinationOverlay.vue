@@ -6,23 +6,60 @@
     <view class="stage-container">
       <view class="progress-header" ref="headerRef">
         <view class="stars">
-          <image
+          <!-- 洗牌阶段图标：月牙形，象征初始神秘召唤 -->
+          <svg
             class="star"
             :class="{ active: isS1Active, blink: isS1Blink }"
-            :src="isS1Active ? '/static/themes/golden_dawn/ui/star_active.svg' : '/static/themes/golden_dawn/ui/star_inactive.svg'"
-          />
+            viewBox="0 0 24 24"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <defs>
+              <linearGradient id="grad-moon" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#E8B84A"/>
+                <stop offset="50%" stop-color="#C9973A"/>
+                <stop offset="100%" stop-color="#8B6F2E"/>
+              </linearGradient>
+            </defs>
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" fill="url(#grad-moon)"/>
+          </svg>
+
           <view class="star-line" />
-          <image
+
+          <!-- 切牌阶段图标：五芒星，象征力量聚合 -->
+          <svg
             class="star"
             :class="{ active: isS2Active, blink: isS2Blink }"
-            :src="isS2Active ? '/static/themes/golden_dawn/ui/star_active.svg' : '/static/themes/golden_dawn/ui/star_inactive.svg'"
-          />
+            viewBox="0 0 24 24"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <defs>
+              <linearGradient id="grad-penta" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#E8B84A"/>
+                <stop offset="50%" stop-color="#C9973A"/>
+                <stop offset="100%" stop-color="#8B6F2E"/>
+              </linearGradient>
+            </defs>
+            <path d="M12 2l2.35 6.76 7.15.15-5.71 4.33 2.08 6.85L12 16l-5.87 4.09 2.08-6.85L2.5 8.91l7.15-.15z" fill="url(#grad-penta)"/>
+          </svg>
+
           <view class="star-line" />
-          <image
+
+          <!-- 抽牌阶段图标：八芒星/太阳，象征神谕显现 -->
+          <svg
             class="star"
             :class="{ active: isS3Active, blink: isS3Blink }"
-            :src="isS3Active ? '/static/themes/golden_dawn/ui/star_active.svg' : '/static/themes/golden_dawn/ui/star_inactive.svg'"
-          />
+            viewBox="0 0 24 24"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <defs>
+              <linearGradient id="grad-sun" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#E8B84A"/>
+                <stop offset="50%" stop-color="#C9973A"/>
+                <stop offset="100%" stop-color="#8B6F2E"/>
+              </linearGradient>
+            </defs>
+            <path d="M12 2l1.53 6.3L19.07 4.93 15.7 10.47 22 12l-6.3 1.53 3.37 5.54-5.54-3.37L12 22l-1.53-6.3-5.54 3.37 3.37-5.54L2 12l6.3-1.53L4.93 4.93l5.54 3.37z" fill="url(#grad-sun)"/>
+          </svg>
         </view>
         <text class="phase-prompt font-display">{{ phasePrompt }}</text>
       </view>
@@ -363,8 +400,8 @@ onMounted(() => {
 
     gsap.fromTo(
       getElement(overlayBgRef.value),
-      { backgroundColor: 'rgba(245, 230, 200, 0)', opacity: 0 },
-      { backgroundColor: 'rgba(245, 230, 200, 0.65)', opacity: 1, duration: 1 }
+      { backgroundColor: 'rgba(26, 15, 10, 0)', opacity: 0 },
+      { backgroundColor: 'rgba(26, 15, 10, 0.95)', opacity: 1, duration: 1 }
     )
 
     gsap.fromTo(
@@ -659,8 +696,8 @@ function handleRestart() {
   flex: 1;
   overflow-y: auto;
   animation: result-slide-in 0.5s cubic-bezier(0.4, 0, 0.2, 1) both;
-  background: rgba(254, 250, 243, 0.6);
-  border-top: 1px solid rgba(184, 148, 62, 0.2);
+  background: rgba(26, 15, 10, 0.8);
+  border-top: 1px solid rgba(201, 151, 58, 0.2);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -668,7 +705,7 @@ function handleRestart() {
 
 .is-wide .result-zone {
   border-top: none;
-  border-left: 1px solid rgba(184, 148, 62, 0.2);
+  border-left: 1px solid rgba(201, 151, 58, 0.2);
 }
 
 @keyframes result-slide-in {
@@ -722,11 +759,14 @@ function handleRestart() {
   width: 48rpx;
   height: 48rpx;
   transition: all 0.5s ease;
+  /* 未激活状态：铜锈暗色 */
+  filter: brightness(0.3) saturate(0.2);
 }
 
 .star.active {
   transform: scale(1.2);
-  filter: drop-shadow(0 0 4px rgba(212, 184, 114, 0.4));
+  /* 激活状态：恢复金色 + 发光 */
+  filter: brightness(1) saturate(1) drop-shadow(0 0 6px rgba(201, 151, 58, 0.7));
 }
 
 .star.blink {
@@ -946,15 +986,15 @@ function handleRestart() {
 
 @keyframes star-blink {
   0% {
-    opacity: 0.6;
-    filter: drop-shadow(0 0 2px rgba(212, 184, 114, 0.2));
-    transform: scale(1.1);
+    opacity: 0.7;
+    filter: brightness(0.8) saturate(0.8) drop-shadow(0 0 4px rgba(201, 151, 58, 0.4));
+    transform: scale(1.15);
   }
 
   100% {
     opacity: 1;
-    filter: drop-shadow(0 0 12px rgba(212, 184, 114, 1));
-    transform: scale(1.3);
+    filter: brightness(1.15) saturate(1.2) drop-shadow(0 0 14px rgba(232, 184, 74, 0.9));
+    transform: scale(1.35);
   }
 }
 
