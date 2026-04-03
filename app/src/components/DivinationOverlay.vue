@@ -86,9 +86,14 @@
         </view>
       </view>
 
-      <view class="action-footer" ref="footerRef" v-show="!showResults">
+      <view class="action-footer" ref="footerRef">
         <view class="actions">
-          <template v-if="phase === 'shuffling'">
+          <!-- 结果展示后显示再占一次，与洗牌/切牌的"再来一次"按钮逻辑一致 -->
+          <template v-if="showResults">
+            <view class="btn btn-primary" @click="handleRestart">再占一次</view>
+          </template>
+
+          <template v-else-if="phase === 'shuffling'">
             <view v-if="!actionDone" class="btn btn-primary" @click="playShuffle">开始洗牌</view>
             <template v-else>
               <view class="btn" @click="playShuffle">再洗一次</view>
@@ -104,7 +109,10 @@
           </template>
 
           <template v-else-if="phase === 'revealing'">
-            <view class="reveal-status font-display">神谕显现中</view>
+            <!-- 纯文字提示 + 点点点进度动画，替代原来的按钮样式 -->
+            <view class="revealing-hint font-display">
+              神谕显现中<span class="thinking-dots"><span>.</span><span>.</span><span>.</span></span>
+            </view>
           </template>
         </view>
       </view>
@@ -653,6 +661,9 @@ function handleRestart() {
   animation: result-slide-in 0.5s cubic-bezier(0.4, 0, 0.2, 1) both;
   background: rgba(254, 250, 243, 0.6);
   border-top: 1px solid rgba(184, 148, 62, 0.2);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .is-wide .result-zone {
@@ -907,14 +918,24 @@ function handleRestart() {
   font-weight: bold;
 }
 
-.reveal-status {
-  padding: 18rpx 46rpx;
-  border-radius: 40rpx;
+.revealing-hint {
   color: var(--color-accent);
-  background: rgba(254, 250, 243, 0.86);
-  border: 1px solid rgba(184, 148, 62, 0.35);
-  letter-spacing: 0.08em;
-  animation: oracle-breathe 1.8s ease-in-out infinite;
+  letter-spacing: 0.1em;
+  font-size: 28rpx;
+  opacity: 0.9;
+}
+
+.thinking-dots span {
+  display: inline-block;
+  animation: dot-pulse 1.4s infinite;
+}
+
+.thinking-dots span:nth-child(2) { animation-delay: 0.2s; }
+.thinking-dots span:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes dot-pulse {
+  0%, 80%, 100% { opacity: 0.2; transform: translateY(0); }
+  40% { opacity: 1; transform: translateY(-4rpx); }
 }
 
 @media (min-width: 768px) {

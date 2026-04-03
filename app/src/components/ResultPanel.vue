@@ -38,12 +38,29 @@
             <!-- 位置序号徽章 -->
             <view class="meaning-number font-display">{{ index + 1 }}</view>
             <view class="meaning-title">
-              <!-- 牌名 + 正逆位标识 -->
-              <text class="meaning-card-name font-body text-base">{{ detail.card.name }}</text>
-              <text class="meaning-position text-sm">
-                {{ detail.position === 'upright' ? '正位启示' : '逆位启示' }}
-              </text>
+              <!-- 中英文牌名 -->
+              <view class="card-name-row">
+                <text class="meaning-card-name font-body">{{ detail.card.name }}</text>
+                <text class="meaning-card-name-en font-display">{{ detail.card.nameEn }}</text>
+              </view>
+              <!-- 正逆位 + 大/小阿卡纳 -->
+              <view class="meaning-meta-row">
+                <text class="meaning-position text-sm">
+                  {{ detail.position === 'upright' ? '正位' : '逆位' }}
+                </text>
+                <text class="meaning-arcana text-sm">
+                  {{ detail.card.type === 'major' ? '大阿卡纳' : '小阿卡纳' }}
+                </text>
+              </view>
             </view>
+          </view>
+          <!-- 关键词标签 -->
+          <view class="keywords-row">
+            <text
+              v-for="kw in (detail.position === 'upright' ? detail.card.upright.keywords : detail.card.reversed.keywords)"
+              :key="kw"
+              class="keyword-chip text-sm"
+            >{{ kw }}</text>
           </view>
           <!-- 牌义解读文本 -->
           <text class="meaning-text text-base">{{ detail.meaning }}</text>
@@ -51,12 +68,6 @@
       </view>
     </view>
 
-    <view class="action-section">
-      <!-- 触发 restart 事件，通知父组件重置占卜流程 -->
-      <view class="restart-btn btn btn-primary" data-testid="restart-button" @click="$emit('restart')">
-        <text class="btn-text">再占一次</text>
-      </view>
-    </view>
   </view>
 </template>
 
@@ -141,8 +152,8 @@ onBeforeUnmount(() => {
   flex-direction: column;
   gap: var(--space-8);
   max-width: 720px;
-  margin: 0 auto;
-  width: 100%;
+  width: min(100%, 720px);
+  box-sizing: border-box;
 }
 
 .result-hero {
@@ -278,6 +289,14 @@ onBeforeUnmount(() => {
   display: flex;
   flex-direction: column;
   gap: 6rpx;
+  flex: 1;
+}
+
+.card-name-row {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2);
+  flex-wrap: wrap;
 }
 
 .meaning-card-name {
@@ -286,29 +305,57 @@ onBeforeUnmount(() => {
   font-size: var(--text-lg);
 }
 
-.meaning-position {
+.meaning-card-name-en {
   color: var(--color-text-tertiary);
   font-size: var(--text-sm);
+  letter-spacing: 0.06em;
+}
+
+.meaning-meta-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.meaning-position {
+  color: var(--color-accent);
+  font-size: var(--text-sm);
   letter-spacing: 0.05em;
+}
+
+.meaning-arcana {
+  color: var(--color-text-tertiary);
+  font-size: var(--text-sm);
+}
+
+.meaning-arcana::before {
+  content: '·';
+  margin-right: var(--space-2);
+  opacity: 0.4;
+}
+
+.keywords-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-top: var(--space-1);
+}
+
+.keyword-chip {
+  display: inline-block;
+  padding: 4rpx 16rpx;
+  border-radius: 20rpx;
+  background: rgba(184, 148, 62, 0.08);
+  border: 1rpx solid rgba(184, 148, 62, 0.25);
+  color: var(--color-text-secondary);
+  font-size: var(--text-xs);
+  letter-spacing: 0.03em;
 }
 
 .meaning-text {
   color: var(--color-text-secondary);
   line-height: 1.8;
-  margin-top: var(--space-1);
-}
-
-.action-section {
-  display: flex;
-  justify-content: center;
-  padding: var(--space-4) 0 var(--space-8);
-  animation: rise-in 600ms cubic-bezier(0.34, 1.56, 0.64, 1) 300ms both;
-}
-
-.restart-btn {
-  min-width: 320rpx;
-  height: 104rpx;
-  font-size: var(--text-base);
+  margin-top: var(--space-2);
 }
 
 @keyframes rise-in {
