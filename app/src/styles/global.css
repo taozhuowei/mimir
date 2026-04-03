@@ -3,7 +3,50 @@
    基于 Impeccable 设计原则构建
    ======================================== */
 
-/* 字体说明：使用系统内置衬线字体，兼容国内环境和小程序 */
+/* ========================================
+   字体声明 (Font Faces)
+   Cinzel (SIL OFL) — Latin 展示字体
+   霞鹜文楷 LXGW WenKai (SIL OFL) — 中文正文字体
+   H5 加载本地 WOFF2；小程序使用系统楷体兜底
+   ======================================== */
+
+/* #ifdef H5 */
+@font-face {
+  font-family: 'Cinzel';
+  src: url('/static/fonts/cinzel-400.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Cinzel';
+  src: url('/static/fonts/cinzel-600.woff2') format('woff2');
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Cinzel';
+  src: url('/static/fonts/cinzel-700.woff2') format('woff2');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'LXGW WenKai';
+  src: url('/static/fonts/lxgw-wenkai-light.woff2') format('woff2');
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'LXGW WenKai';
+  src: url('/static/fonts/lxgw-wenkai-regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+/* #endif */
 
 /* ========================================
    设计令牌 (Design Tokens)
@@ -39,9 +82,11 @@
   --color-card-bg: rgba(45, 27, 20, 0.85);
   --color-overlay: rgba(10, 5, 3, 0.75);
 
-  /* 字体系统 — 系统衬线字体，兼容 iOS/Android/小程序，无需外部加载 */
-  --font-display: 'STKaiti', 'KaiTi', 'Kaiti SC', 'Noto Serif SC', 'STSong', serif;
-  --font-body: 'STSong', 'SimSun', 'Songti SC', 'Noto Serif SC', 'STKaiti', serif;
+  /* 字体系统
+     H5: Cinzel(Latin展示) + LXGW WenKai(中文)，本地 WOFF2
+     小程序: 系统楷体兜底，无需加载外部字体 */
+  --font-display: 'Cinzel', 'LXGW WenKai', 'STKaiti', 'KaiTi', 'Kaiti SC', serif;
+  --font-body: 'LXGW WenKai', 'STKaiti', 'KaiTi', 'Kaiti SC', 'STSong', serif;
 
   /* 字体大小 — 模块化比例 (1.25) */
   --text-xs: clamp(0.75rem, 0.7rem + 0.25vw, 0.875rem);
