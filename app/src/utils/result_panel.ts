@@ -5,22 +5,27 @@
 
 import type { ReadingResult } from './tarotReading'
 
+// 结果类型的中文标签映射：yes/no/uncertain → 积极/消极/尚不明朗
 const RESULT_INDICATION_MAP: Record<ReadingResult['result'], string> = {
   yes: '积极',
   no: '消极',
   uncertain: '尚不明朗'
 }
 
+// 摘要首句映射：根据结果类型生成引导语
 const SUMMARY_LEAD_MAP: Record<ReadingResult['result'], string> = {
   yes: '当前牌面传递出积极信号',
   no: '当前牌面传递出谨慎信号',
   uncertain: '当前牌面信息仍不明朗'
 }
 
+// 生成结果陈述句："塔罗牌根据您的问题呈现出{积极/消极/尚不明朗}的指示。"
 export function getResultStatement(result: ReadingResult['result']): string {
   return `塔罗牌根据您的问题呈现出${RESULT_INDICATION_MAP[result]}的指示。`
 }
 
+// 生成摘要文本：取前两张牌含义的第一句话，拼接在引导语后
+// 切分逻辑：按中文标点（。?!）分割，取首句
 export function getSummaryText(reading_result: ReadingResult): string {
   const fragments = reading_result.cardDetails
     .map((detail) => detail.meaning)

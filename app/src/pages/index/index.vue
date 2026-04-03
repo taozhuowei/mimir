@@ -1,6 +1,11 @@
 <template>
+  <!-- 
+    首页/唯一页
+    负责问题输入和触发占卜流程
+    占卜动画和结果展示由 DivinationOverlay 组件接管
+  -->
   <view class="index-page parchment-bg">
-    <!-- 空白占位页面，占卜流程完整由 DivinationOverlay 接管 -->
+    <!-- 空闲状态：显示入口UI（标题 + 神秘圆环），点击后进入占卜流程 -->
     <view v-if="isIdle" class="idle-view">
       <view class="header">
         <text class="title font-display text-4xl">AI Tarot</text>
@@ -8,17 +13,25 @@
         <text class="hint text-base">轻触圆环开始占卜</text>
       </view>
 
+      <!-- 点击区域：触发 startDivination 进入占卜流程 -->
       <view class="start-area" @click="startDivination">
         <view class="start-stage">
+          <!-- 
+            神秘圆环：idle状态下的入口UI
+            由多层轨道+核心+粒子组成，纯CSS动画无需JS
+          -->
           <view class="mystic-circle">
+            <!-- 三层轨道：外层/中层/内层，不同速度反向旋转营造立体感 -->
             <view class="orbit orbit-outer"></view>
             <view class="orbit orbit-middle"></view>
             <view class="orbit orbit-inner"></view>
 
+            <!-- 中心核心：点击反馈区域 -->
             <view class="circle-core">
               <text class="core-symbol">✦</text>
             </view>
 
+            <!-- 轨道粒子：沿轨道运行的装饰光点 -->
             <view class="orbital-particle particle-1"></view>
             <view class="orbital-particle particle-2"></view>
             <view class="orbital-particle particle-3"></view>
@@ -27,6 +40,7 @@
       </view>
     </view>
 
+    <!-- 四角装饰和神秘光球：背景装饰元素 -->
     <view class="corner-decoration corner-tl"></view>
     <view class="corner-decoration corner-tr"></view>
     <view class="corner-decoration corner-bl"></view>
@@ -34,7 +48,11 @@
     <view class="mystic-orb orb-tl"></view>
     <view class="mystic-orb orb-br"></view>
 
-    <!-- DivinationOverlay 全程接管：洗牌 -> 切牌 -> 抽牌 -> 翻转 -> 结果展示 -->
+    <!-- 
+      DivinationOverlay 全程接管占卜流程
+      v-if条件：动画进行中或结果展示时显示
+      @restart：用户点击"再占一次"时触发，调用 restartDivination 重置状态
+    -->
     <DivinationOverlay
       v-if="tarotStore.isAnimating || tarotStore.isResultVisible"
       @restart="restartDivination"
@@ -47,14 +65,25 @@ import { computed, nextTick } from 'vue'
 import DivinationOverlay from '../../components/DivinationOverlay.vue'
 import { useTarotStore } from '../../stores/tarot'
 
+// 塔罗状态管理：控制占卜流程（idle -> animating -> result）
 const tarotStore = useTarotStore()
 
+// 是否处于空闲状态（未开始占卜）
 const isIdle = computed(() => tarotStore.isIdle)
 
+/**
+ * 开始占卜
+ * 触发条件：用户点击神秘圆环，问题为空字符串（当前版本简化流程）
+ * 进入后 DivinationOverlay 接管：洗牌 -> 切牌 -> 抽牌 -> 翻转 -> 结果
+ */
 function startDivination() {
   tarotStore.startDivination('')
 }
 
+/**
+ * 重启占卜
+ * 处理 @restart 事件：重置store状态，滚动回顶部
+ */
 function restartDivination() {
   tarotStore.reset()
 
@@ -151,6 +180,11 @@ function restartDivination() {
   border: 1rpx solid var(--color-border);
 }
 
+/* 
+  轨道动画：纯CSS旋转，不同速度和方向
+  外层20s顺时针，中层15s逆时针（虚线），内层10s顺时针
+  形成层次感和神秘氛围
+*/
 .orbit-outer {
   width: 100%;
   height: 100%;
@@ -216,6 +250,10 @@ function restartDivination() {
   box-shadow: 0 0 12rpx var(--color-accent-glow);
 }
 
+/* 
+  轨道粒子动画：沿各自轨道运行
+  使用CSS transform配合rotate和translateY实现圆周运动
+*/
 .particle-1 {
   width: 12rpx;
   height: 12rpx;

@@ -126,38 +126,53 @@
   </view>
 </template>
 
+<!--
+  文件用途：全屏占卜遮罩组件
+  - 包含洗牌 / 切牌 / 抽牌三阶段动画
+  - 三阶段完成后展示塔罗解读结果（ResultPanel）
+  - 支持宽屏（≥768px）与窄屏自适应布局
+-->
 <script setup lang="ts">
-import { computed, nextTick, onMounted, onUnmounted, ref } from 'vue'
+import { computed, nextTick, onMounted, onUnmounted, ref, type ComponentPublicInstance } from 'vue'
 import gsap from 'gsap'
 import { useTarotStore } from '../stores/tarot'
-import { useUserStore } from '../stores/user'
 import ResultPanel from './ResultPanel.vue'
+import { CARD_BACK_IMAGE as cardBack } from '../constants'
 
+// Emits 定义
+// complete - 占卜流程完成时触发（抽牌动画结束、结果即将展示）
+// restart  - 用户点击重新开始时触发
 const emit = defineEmits<{
   (event: 'complete'): void
   (event: 'restart'): void
 }>()
 
 const tarotStore = useTarotStore()
-const userStore = useUserStore()
 
-const cardBack = computed(() => userStore.cardBackImage || '/static/themes/golden_dawn/tarot/card_back.jpeg')
+// 响应式状态
+let resizeTimer: ReturnType<typeof setTimeout> | null = null   // 窗口 resize 防抖定时器 ID
+const phase = ref<'shuffling' | 'cutting' | 'drawing' | 'revealing'>('shuffling') // 组件内部阶段（与 store 同步，但单独维护便于驱动动画）
+const actionDone = ref(false)            // 控制当前阶段是否已结束，用于显示「下一步」按钮
+const phasePrompt = ref('流程：请洗牌')   // 顶部提示文案，随阶段变化而更新
+const showResults = ref(false)           // 控制结果区（ResultPanel）是否显示
 
-const phase = ref<'shuffling' | 'cutting' | 'drawing' | 'revealing'>('shuffling')
-const actionDone = ref(false)
-const phasePrompt = ref('流程：请洗牌')
-const showResults = ref(false)
+// 进度星星的点亮范围
+const PHASES_S1 = ['shuffling', 'cutting', 'drawing', 'revealing']
+const PHASES_S2 = ['cutting', 'drawing', 'revealing']
+const PHASES_S3 = ['drawing', 'revealing']
 
-const isS1Active = computed(() => ['shuffling', 'cutting', 'drawing', 'revealing'].includes(phase.value))
-const isS2Active = computed(() => ['cutting', 'drawing', 'revealing'].includes(phase.value))
-const isS3Active = computed(() => ['drawing', 'revealing'].includes(phase.value))
+// 进度星星的显示状态：active 表示是否点亮，blink 表示当前阶段是否闪烁
+const isS1Active = computed(() => PHASES_S1.includes(phase.value))
+const isS2Active = computed(() => PHASES_S2.includes(phase.value))
+const isS3Active = computed(() => PHASES_S3.includes(phase.value))
 
 const isS1Blink = computed(() => phase.value === 'shuffling')
 const isS2Blink = computed(() => phase.value === 'cutting')
 const isS3Blink = computed(() => phase.value === 'drawing')
 
-const isWide = ref(false)
+const isWide = ref(false)                // 宽屏/窄屏布局切换阈值：768px
 
+// 检测视口宽度并触发布局重算（结果展示后 resize 需要重新定位牌阵）
 function checkWidth() {
   isWide.value = window.innerWidth >= 768
   if (showResults.value) {
@@ -167,39 +182,40 @@ function checkWidth() {
   }
 }
 
-const overlayRef = ref<any>(null)
-const overlayBgRef = ref<any>(null)
-const stageRef = ref<any>(null)
-const headerRef = ref<any>(null)
-const footerRef = ref<any>(null)
+// DOM ref 定义
+const overlayRef = ref<ComponentPublicInstance | HTMLElement | null>(null)   // 根容器
+const overlayBgRef = ref<ComponentPublicInstance | HTMLElement | null>(null) // 背景层
+const stageRef = ref<ComponentPublicInstance | HTMLElement | null>(null)       // 动画舞台
+const headerRef = ref<ComponentPublicInstance | HTMLElement | null>(null)      // 顶部进度区
+const footerRef = ref<ComponentPublicInstance | HTMLElement | null>(null)      // 底部按钮区
 
-const initialDeckRefs = ref<any[]>([])
-const leftDeckRefs = ref<any[]>([])
-const rightDeckRefs = ref<any[]>([])
-const cutTopRef = ref<any>(null)
-const cutMidRef = ref<any>(null)
-const cutBotRef = ref<any>(null)
+const initialDeckRefs = ref<(ComponentPublicInstance | Element)[]>([]) // 初始牌组（12张叠放）
+const leftDeckRefs = ref<(ComponentPublicInstance | Element)[]>([])    // 洗牌动画：左半牌组
+const rightDeckRefs = ref<(ComponentPublicInstance | Element)[]>([])   // 洗牌动画：右半牌组
+const cutTopRef = ref<ComponentPublicInstance | HTMLElement | null>(null)    // 切牌动画：顶部牌
+const cutMidRef = ref<ComponentPublicInstance | HTMLElement | null>(null)    // 切牌动画：中部牌
+const cutBotRef = ref<ComponentPublicInstance | HTMLElement | null>(null)    // 切牌动画：底部牌
 
-const drawStageRef = ref<any>(null)
-const drawRefs = ref<any[]>([])
-const innerRefs = ref<any[]>([])
+const drawStageRef = ref<ComponentPublicInstance | HTMLElement | null>(null) // 抽牌舞台容器
+const drawRefs = ref<(ComponentPublicInstance | Element)[]>([])          // 抽出的3张牌（外层 wrapper）
+const innerRefs = ref<(ComponentPublicInstance | Element)[]>([])         // 抽出的3张牌（3D翻转内层）
 
-function setRef(el: any, arr: any[], index: number) {
+function setRef(el: Element | ComponentPublicInstance | null, arr: (ComponentPublicInstance | Element)[], index: number) {
   if (el) {
     arr[index] = el
   }
 }
 
-function getElement(target: any) {
-  return target?.$el ?? target
+function getElement(target: ComponentPublicInstance | Element | null): HTMLElement | null {
+  return ((target as ComponentPublicInstance)?.$el ?? target) as HTMLElement | null
 }
 
-function getElementArray(targets: any[]) {
+function getElementArray(targets: (ComponentPublicInstance | Element | null)[]): (HTMLElement | null)[] {
   return targets.map((item) => getElement(item))
 }
 
 function getCardImg(index: number) {
-  return tarotStore.drawnCards[index]?.card.image || cardBack.value
+  return tarotStore.drawnCards[index]?.card.image || cardBack
 }
 
 function getCardWidth() {
@@ -216,6 +232,7 @@ function clamp(value: number, min: number, max: number) {
   return Math.min(Math.max(value, min), max)
 }
 
+// 根据宽屏/窄屏计算3张抽牌的目标坐标（扇形/竖列布局）
 function getDrawLayout(stage_width: number, stage_height: number, card_width: number, card_height: number, is_wide: boolean) {
   const horizontal_margin = Math.max(card_width * 0.2, 24)
   const vertical_margin = Math.max(card_height * 0.12, 24)
@@ -248,6 +265,7 @@ function getDrawLayout(stage_width: number, stage_height: number, card_width: nu
   }
 }
 
+// 在 reveal/drawing 阶段以及结果显示后调用，重新计算3张牌的最终位置（网格/扇形）
 function updateLayout() {
   if (phase.value !== 'revealing' && phase.value !== 'drawing') return
 
@@ -320,9 +338,14 @@ function updateLayout() {
   })
 }
 
+// 组件挂载：触发入场动画序列
+// 1. 背景淡入 → 2. 牌组从上方坠落并回弹 → 3. header/footer 上移入场
 onMounted(() => {
   checkWidth()
-  window.addEventListener('resize', checkWidth)
+  window.addEventListener('resize', () => {
+    if (resizeTimer !== null) clearTimeout(resizeTimer)
+    resizeTimer = setTimeout(checkWidth, 200)
+  })
 
   nextTick(() => {
     const firstCard = getElementArray(initialDeckRefs.value)[0]
@@ -359,8 +382,10 @@ onMounted(() => {
 
 onUnmounted(() => {
   window.removeEventListener('resize', checkWidth)
+  if (resizeTimer !== null) clearTimeout(resizeTimer)
 })
 
+// 洗牌动画：牌组拆分左右 → 交叉合并 → 弹性归位；完成后自动切换到切牌阶段
 function playShuffle() {
   actionDone.value = false
   phasePrompt.value = '流程：洗牌中'
@@ -395,6 +420,8 @@ function playShuffle() {
     .fromTo(initialCards, { scaleY: 0.9 }, { scaleY: 1, duration: 0.4, ease: 'elastic.out(1, 0.4)' })
 }
 
+// 切牌动画：用固定3张牌模拟切牌
+// 阶段：三张牌展开 → 多轮轮换打乱 → 归位合并；完成后自动切换到抽牌阶段
 function playCut() {
   phase.value = 'cutting'
   tarotStore.setPhase('cutting')
@@ -462,6 +489,9 @@ function playCut() {
     .to(initialCards, { autoAlpha: 1, duration: 0.1 })
 }
 
+// 抽牌动画：
+// 1. 牌组颤动 → 2. 舞台上移 → 3. 三张牌错落落下到达目标位 → 4. 翻牌
+// 完成后触发结果显示
 function playDraw() {
   phase.value = 'drawing'
   tarotStore.setPhase('drawing')
@@ -475,6 +505,7 @@ function playDraw() {
   const wrappers = getElementArray(drawRefs.value)
   const deckContainer = initialCards[0]?.parentElement
 
+  if (!stage) return
   const stageRect = stage.getBoundingClientRect()
   const stage_width = stageRect.width
   const stage_height = stageRect.height
@@ -486,8 +517,8 @@ function playDraw() {
   const timeline = gsap.timeline()
 
   timeline
-    .to(deckContainer, { x: '+=4', yoyo: true, repeat: 10, duration: 0.05 })
-    .to(deckContainer, { x: 0, duration: 0.1 })
+    .to(deckContainer ?? null, { x: '+=4', yoyo: true, repeat: 10, duration: 0.05 })
+    .to(deckContainer ?? null, { x: 0, duration: 0.1 })
 
   timeline
     .to(stage, { y: -liftY, duration: 1.8, ease: 'power2.inOut' }, '+=0.2')
@@ -557,6 +588,8 @@ function finish() {
   })
 }
 
+// 重置逻辑：关闭结果区并通知父组件重新开始
+// 父组件负责 GSAP killAll、store reset、状态恢复与重新入场动画
 function handleRestart() {
   showResults.value = false
   emit('restart')
