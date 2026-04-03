@@ -12,11 +12,6 @@
           {{ resultStatement }}
         </text>
 
-        <!-- 打字机效果展示摘要，带闪烁光标 -->
-        <text class="hero-subtitle text-base" data-testid="result-summary">
-          {{ typedSummary }}<text class="typing-caret" :class="{ hidden: !isTyping }">|</text>
-        </text>
-
         <text v-if="question" class="question text-base" data-testid="result-question">"{{ question }}"</text>
       </view>
     </view>
@@ -72,9 +67,9 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onBeforeUnmount, ref, watch } from 'vue'
+import { computed } from 'vue'
 import type { ReadingResult } from '../utils/tarotReading'
-import { getResultStatement, getSummaryText } from '../utils/result_panel'
+import { getResultStatement } from '../utils/result_panel'
 
 /**
  * Props 定义
@@ -96,53 +91,6 @@ defineEmits<{
 
 // 从结果数据计算结论句（Yes/No/Mixed 对应的文案）
 const resultStatement = computed(() => getResultStatement(props.readingResult.result))
-
-// 从结果数据计算摘要文本（3张牌整体解读）
-const summaryText = computed(() => getSummaryText(props.readingResult))
-
-// 打字机效果状态字段
-const typedSummary = ref('')      // 当前已打出的文本
-const isTyping = ref(false)       // 是否正在打字（控制光标闪烁）
-let typingTimer: ReturnType<typeof setInterval> | null = null
-
-function stopTyping() {
-  if (typingTimer) {
-    clearInterval(typingTimer)
-    typingTimer = null
-  }
-}
-
-/**
- * 启动打字机效果
- * 每30ms打出一个字符，模拟真实打字节奏
- * 摘要较长时（约100-150字），总耗时3-5秒，给用户阅读节奏感
- */
-function startTyping(text: string) {
-  stopTyping()
-  typedSummary.value = ''
-  isTyping.value = true
-
-  let index = 0
-  typingTimer = setInterval(() => {
-    index += 1
-    typedSummary.value = text.slice(0, index)
-
-    if (index >= text.length) {
-      stopTyping()
-      isTyping.value = false
-    }
-  }, 30)
-}
-
-// 摘要文本变化时立即启动打字机（immediate确保首次数据到达即启动）
-watch(summaryText, (text) => {
-  startTyping(text)
-}, { immediate: true })
-
-// 组件销毁前必须清理定时器，防止内存泄漏和后台继续执行
-onBeforeUnmount(() => {
-  stopTyping()
-})
 </script>
 
 <style scoped>
@@ -193,26 +141,10 @@ onBeforeUnmount(() => {
   margin: var(--space-2) 0;
 }
 
-.hero-subtitle {
-  color: var(--color-text-secondary);
-  line-height: 1.8;
-  max-width: 600px;
-}
-
 .question {
   padding-top: var(--space-2);
   font-style: italic;
   color: var(--color-text-tertiary);
-}
-
-.typing-caret {
-  display: inline-block;
-  margin-left: 4rpx;
-  animation: caret-blink 0.9s steps(1) infinite;
-}
-
-.typing-caret.hidden {
-  opacity: 0;
 }
 
 .interpretation-section {
@@ -370,15 +302,5 @@ onBeforeUnmount(() => {
   }
 }
 
-@keyframes caret-blink {
-  0%,
-  49% {
-    opacity: 1;
-  }
 
-  50%,
-  100% {
-    opacity: 0;
-  }
-}
 </style>
