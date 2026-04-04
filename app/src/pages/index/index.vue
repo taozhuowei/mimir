@@ -5,6 +5,7 @@
       <view class="header" :style="{ paddingTop: headerPaddingTop + 'px' }">
         <text class="title font-display">Scales Tarot</text>
         <text class="subtitle">以牌权衡，让塔罗来定夺</text>
+        <text class="guidance-text">在心中默念你的问题，轻触法阵，连接灵性的指引</text>
       </view>
 
       <!-- 神秘圆环 - 强化仪式感和视觉分量 -->
@@ -242,6 +243,18 @@ function restartDivination() {
   color: var(--color-text-secondary);
   letter-spacing: 0.2em;
   font-family: var(--font-body);
+}
+
+.guidance-text {
+  max-width: 620rpx;
+  font-size: 26rpx;
+  line-height: 1.7;
+  color: var(--color-text-tertiary);
+  letter-spacing: 0.08em;
+  font-family: var(--font-body);
+  text-align: center;
+  text-wrap: balance;
+  opacity: 0.92;
 }
 
 /* 圆环区域 - 占据主要视觉空间 */
@@ -487,6 +500,11 @@ function restartDivination() {
   
   .subtitle {
     font-size: 32rpx;
+  }
+
+  .guidance-text {
+    max-width: 680rpx;
+    font-size: 28rpx;
   }
   
   .circle-core {
