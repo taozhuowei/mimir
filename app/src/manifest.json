@@ -1,5 +1,5 @@
 {
-    "name" : "Scales Tarot",
+    "name" : "SCALES TAROT",
     "appid" : "",
     "description" : "以塔罗牌权衡利弊，帮助用户做出二选一抉择",
     "versionName" : "1.0.0",
@@ -64,6 +64,11 @@
     },
     "mp-toutiao" : {
         "usingComponents" : true
+    },
+    "h5" : {
+        "router" : {
+            "base" : "./"
+        }
     },
     "uniStatistics": {  
         "enable": false

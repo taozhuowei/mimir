@@ -13,35 +13,35 @@
 /* #ifdef H5 */
 @font-face {
   font-family: 'Cinzel';
-  src: url('/static/fonts/cinzel-400.woff2') format('woff2');
+  src: url('../static/fonts/cinzel-400.woff2') format('woff2');
   font-weight: 400;
   font-style: normal;
   font-display: swap;
 }
 @font-face {
   font-family: 'Cinzel';
-  src: url('/static/fonts/cinzel-600.woff2') format('woff2');
+  src: url('../static/fonts/cinzel-600.woff2') format('woff2');
   font-weight: 600;
   font-style: normal;
   font-display: swap;
 }
 @font-face {
   font-family: 'Cinzel';
-  src: url('/static/fonts/cinzel-700.woff2') format('woff2');
+  src: url('../static/fonts/cinzel-700.woff2') format('woff2');
   font-weight: 700;
   font-style: normal;
   font-display: swap;
 }
 @font-face {
   font-family: 'LXGW WenKai';
-  src: url('/static/fonts/lxgw-wenkai-light.woff2') format('woff2');
+  src: url('../static/fonts/lxgw-wenkai-light.woff2') format('woff2');
   font-weight: 300;
   font-style: normal;
   font-display: swap;
 }
 @font-face {
   font-family: 'LXGW WenKai';
-  src: url('/static/fonts/lxgw-wenkai-regular.woff2') format('woff2');
+  src: url('../static/fonts/lxgw-wenkai-regular.woff2') format('woff2');
   font-weight: 400;
   font-style: normal;
   font-display: swap;
