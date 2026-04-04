@@ -6,52 +6,14 @@
     <view class="stage-container">
       <view class="progress-header" :style="headerStyle">
         <view class="stars">
-          <!-- 
-            进度图标 - 四元素对应四阶段
-            使用简化 SVG，确保小程序兼容性
-          -->
-          <!-- 权杖 Wands - 洗牌阶段 -->
-          <svg class="star" :class="{ active: isS1Active, blink: isS1Blink }" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <!-- 权杖主体 - 简化设计 -->
-            <rect x="11" y="3" width="2" height="14" fill="#C9973A"/>
-            <!-- 火焰形状 - 用简单线条代替复杂 path -->
-            <polygon points="12,2 9,6 12,5 15,6" fill="#C9973A"/>
-            <!-- 两侧装饰 -->
-            <line x1="7" y1="10" x2="10" y2="11" stroke="#C9973A" stroke-width="1.5"/>
-            <line x1="17" y1="10" x2="14" y2="11" stroke="#C9973A" stroke-width="1.5"/>
-          </svg>
+          <!-- Stage icons use platform-safe local paths for H5 and WeChat Mini Program. -->
+          <image class="star" :class="{ active: isS1Active, blink: isS1Blink }" :src="stageIcons.wands" mode="aspectFit" />
           <view class="star-line" />
-          <!-- 宝剑 Swords - 切牌阶段 -->
-          <svg class="star" :class="{ active: isS2Active, blink: isS2Blink }" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <!-- 剑身 -->
-            <rect x="11.5" y="2" width="1" height="16" fill="#C9973A"/>
-            <!-- 剑柄横条 -->
-            <rect x="8" y="16" width="8" height="2" fill="#C9973A"/>
-            <!-- 剑柄底部 -->
-            <circle cx="12" cy="20" r="1.5" fill="#C9973A"/>
-          </svg>
+          <image class="star" :class="{ active: isS2Active, blink: isS2Blink }" :src="stageIcons.swords" mode="aspectFit" />
           <view class="star-line" />
-          <!-- 圣杯 Cups - 抽牌阶段 -->
-          <svg class="star" :class="{ active: isS3Active, blink: isS3Blink }" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <!-- 杯口 -->
-            <ellipse cx="12" cy="6" rx="5" ry="2" stroke="#C9973A" stroke-width="1.5" fill="none"/>
-            <!-- 杯身 - 简化为梯形 -->
-            <polygon points="7,6 9,15 15,15 17,6" fill="#C9973A"/>
-            <!-- 杯底柱子 -->
-            <rect x="11" y="15" width="2" height="3" fill="#C9973A"/>
-            <!-- 底座 -->
-            <ellipse cx="12" cy="19" rx="3" ry="1" fill="#C9973A"/>
-          </svg>
+          <image class="star" :class="{ active: isS3Active, blink: isS3Blink }" :src="stageIcons.cups" mode="aspectFit" />
           <view class="star-line" />
-          <!-- 星币 Pentacles - 解读阶段 -->
-          <svg class="star" :class="{ active: isS4Active, blink: isS4Blink }" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <!-- 外圆 -->
-            <circle cx="12" cy="12" r="9" stroke="#C9973A" stroke-width="1.5" fill="none"/>
-            <!-- 内圆 -->
-            <circle cx="12" cy="12" r="6" stroke="#C9973A" stroke-width="1" fill="none"/>
-            <!-- 五角星 - 简化为小圆点 -->
-            <circle cx="12" cy="12" r="2.5" fill="#C9973A"/>
-          </svg>
+          <image class="star" :class="{ active: isS4Active, blink: isS4Blink }" :src="stageIcons.pentacles" mode="aspectFit" />
         </view>
       </view>
 
@@ -205,6 +167,19 @@ const emit = defineEmits<{
 }>()
 
 const tarotStore = useTarotStore()
+
+let stage_icon_base = '/static/icons'
+/* #ifdef H5 */
+stage_icon_base = './static/icons'
+/* #endif */
+
+// Progress header consumes one icon set so H5 and MP paths stay in sync.
+const stageIcons = {
+  wands: `${stage_icon_base}/icon-wands.png`,
+  swords: `${stage_icon_base}/icon-swords.png`,
+  cups: `${stage_icon_base}/icon-cups.png`,
+  pentacles: `${stage_icon_base}/icon-pentacles.png`,
+}
 
 // ---- 响应式状态 ----
 const phase = ref<'shuffling' | 'cutting' | 'drawing' | 'revealing'>('shuffling')
