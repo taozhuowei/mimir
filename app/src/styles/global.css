@@ -177,7 +177,6 @@ page {
    基础重置
    ======================================== */
 
-/* #ifdef H5 */
 *,
 *::before,
 *::after {
@@ -187,11 +186,16 @@ page {
 }
 
 html {
-  font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
 }
+
+/* #ifdef H5 */
+html {
+  font-size: 16px;
+}
+/* #endif */
 
 html, body, page {
   min-height: 100vh;
@@ -203,20 +207,6 @@ html, body, page {
   font-size: var(--text-base);
   line-height: 1.6;
 }
-/* #endif */
-
-/* #ifdef MP-WEIXIN */
-page {
-  min-height: 100vh;
-  height: 100vh;
-  overflow: hidden;
-  background-color: var(--color-bg-primary);
-  color: var(--color-text-primary);
-  font-family: var(--font-body);
-  font-size: var(--text-base);
-  line-height: 1.6;
-}
-/* #endif */
 
 /* ========================================
    背景系统

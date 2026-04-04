@@ -6,7 +6,7 @@
       "nameEn": "The Fool",
       "number": 0,
       "type": "major",
-      "image": "/static/themes/golden_dawn/tarot/major/major_arcana_00_the_fool.jpeg",
+      "image": "./static/themes/golden_dawn/tarot/major/major_arcana_00_the_fool.jpeg",
       "upright": {
         "keywords": ["新开始", "冒险", "自由", "无限可能", "纯真"],
         "meaning": "一段崭新旅程即将展开，以开放之心迎接未知，能量指向积极的开始与无限可能。",
@@ -24,7 +24,7 @@
       "nameEn": "The Magician",
       "number": 1,
       "type": "major",
-      "image": "/static/themes/golden_dawn/tarot/major/major_arcana_01_the_magician.jpeg",
+      "image": "./static/themes/golden_dawn/tarot/major/major_arcana_01_the_magician.jpeg",
       "upright": {
         "keywords": ["创造力", "意志力", "资源整合", "行动力", "显化"],
         "meaning": "你已具备实现目标的所有资源与能力，专注意志便能将想法化为现实。",
@@ -42,7 +42,7 @@
       "nameEn": "The High Priestess",
       "number": 2,
       "type": "major",
-      "image": "/static/themes/golden_dawn/tarot/major/major_arcana_02_the_high_priestess.jpeg",
+      "image": "./static/themes/golden_dawn/tarot/major/major_arcana_02_the_high_priestess.jpeg",
       "upright": {
         "keywords": ["直觉", "内在智慧", "神秘", "潜意识"],
         "meaning": "倾听内心深处的声音，直觉将为你揭示隐藏的真相与灵性指引。",
@@ -60,7 +60,7 @@
       "nameEn": "The Empress",
       "number": 3,
       "type": "major",
-      "image": "/static/themes/golden_dawn/tarot/major/major_arcana_03_the_empress.jpeg",
+      "image": "./static/themes/golden_dawn/tarot/major/major_arcana_03_the_empress.jpeg",
       "upright": {
         "keywords": ["丰饶", "母性", "创造力", "自然", "享受"],
         "meaning": "丰盛的创造力正在流动，顺应自然的节奏，让生命如花朵般绽放。",
@@ -78,7 +78,7 @@
       "nameEn": "The Emperor",
       "number": 4,
       "type": "major",
-      "image": "/static/themes/golden_dawn/tarot/major/major_arcana_04_the_emperor.jpeg",
+      "image": "./static/themes/golden_dawn/tarot/major/major_arcana_04_the_emperor.jpeg",
       "upright": {
         "keywords": ["权威", "秩序", "稳定", "领导力"],
         "meaning": "以坚定的意志建立稳固基础，理性规划将带来长久的安全与掌控。",
@@ -96,7 +96,7 @@
       "nameEn": "The Hierophant",
       "number": 5,
       "type": "major",
-      "image": "/static/themes/golden_dawn/tarot/major/major_arcana_05_the_hierophant.jpeg",
+      "image": "./static/themes/golden_dawn/tarot/major/major_arcana_05_the_hierophant.jpeg",
       "upright": {
         "keywords": ["传统", "信仰", "教育", "精神指引"],
         "meaning": "遵循传统的智慧寻求指引，遵循既定规则将带来内心的安定与成长。",
@@ -114,7 +114,7 @@
       "nameEn": "The Lovers",
       "number": 6,
       "type": "major",
-      "image": "/static/themes/golden_dawn/tarot/major/major_arcana_06_the_lovers.jpeg",
+      "image": "./static/themes/golden_dawn/tarot/major/major_arcana_06_the_lovers.jpeg",
       "upright": {
         "keywords": ["爱情", "选择", "和谐", "结合", "价值观"],
         "meaning": "心灵的契合与真诚的选择带来和谐，遵循内心的价值做出决定。",
@@ -132,7 +132,7 @@
       "nameEn": "The Chariot",
       "number": 7,
       "type": "major",
-      "image": "/static/themes/golden_dawn/tarot/major/major_arcana_07_the_chariot.jpeg",
+      "image": "./static/themes/golden_dawn/tarot/major/major_arcana_07_the_chariot.jpeg",
       "upright": {
         "keywords": ["胜利", "意志力", "控制", "前进", "成功"],
         "meaning": "以坚定的意志驾驭对立的力量，勇往直前必将抵达胜利的彼岸。",
@@ -150,7 +150,7 @@
       "nameEn": "Strength",
       "number": 8,
       "type": "major",
-      "image": "/static/themes/golden_dawn/tarot/major/major_arcana_08_strength.jpeg",
+      "image": "./static/themes/golden_dawn/tarot/major/major_arcana_08_strength.jpeg",
       "upright": {
         "keywords": ["内在力量", "勇气", "耐心", "以柔克刚"],
         "meaning": "以温柔的勇气驯服内心的野兽，真正的力量来自于耐心与自我掌控。",
@@ -168,7 +168,7 @@
       "nameEn": "The Hermit",
       "number": 9,
       "type": "major",
-      "image": "/static/themes/golden_dawn/tarot/major/major_arcana_09_the_hermit.jpeg",
+      "image": "./static/themes/golden_dawn/tarot/major/major_arcana_09_the_hermit.jpeg",
       "upright": {
         "keywords": ["内省", "寻求真理", "独处", "智慧"],
         "meaning": "在静默的独处中寻求内在真理，智慧之光将照亮你前行的道路。",
@@ -186,7 +186,7 @@
       "nameEn": "Wheel of Fortune",
       "number": 10,
       "type": "major",
-      "image": "/static/themes/golden_dawn/tarot/major/major_arcana_10_wheel_of_fortune.jpeg",
+      "image": "./static/themes/golden_dawn/tarot/major/major_arcana_10_wheel_of_fortune.jpeg",
       "upright": {
         "keywords": ["转变", "机遇", "命运", "周期", "好运"],
         "meaning": "命运的齿轮开始转动，新的机遇正在降临，顺应变化将迎来好运。",
@@ -204,7 +204,7 @@
       "nameEn": "Justice",
       "number": 11,
       "type": "major",
-      "image": "/static/themes/golden_dawn/tarot/major/major_arcana_11_justice.jpeg",
+      "image": "./static/themes/golden_dawn/tarot/major/major_arcana_11_justice.jpeg",
       "upright": {
         "keywords": ["公正", "平衡", "因果", "诚实", "法律"],
         "meaning": "因果法则正在运作，诚实面对自己与他人，公正的决定将带来平衡。",
@@ -222,7 +222,7 @@
       "nameEn": "The Hanged Man",
       "number": 12,
       "type": "major",
-      "image": "/static/themes/golden_dawn/tarot/major/major_arcana_12_the_hanged_man.jpeg",
+      "image": "./static/themes/golden_dawn/tarot/major/major_arcana_12_the_hanged_man.jpeg",
       "upright": {
         "keywords": ["牺牲", "等待", "新视角", "放手", "耐心"],
         "meaning": "在悬置的状态中获得新的洞见，有时候放手与等待是最深的智慧。",
@@ -240,7 +240,7 @@
       "nameEn": "Death",
       "number": 13,
       "type": "major",
-      "image": "/static/themes/golden_dawn/tarot/major/major_arcana_13_death.jpeg",
+      "image": "./static/themes/golden_dawn/tarot/major/major_arcana_13_death.jpeg",
       "upright": {
         "keywords": ["结束", "转变", "重生", "放下", "必要改变"],
         "meaning": "旧有的篇章必须结束，勇敢放手才能让新的生命从灰烬中重生。",
@@ -258,7 +258,7 @@
       "nameEn": "Temperance",
       "number": 14,
       "type": "major",
-      "image": "/static/themes/golden_dawn/tarot/major/major_arcana_14_temperance.jpeg",
+      "image": "./static/themes/golden_dawn/tarot/major/major_arcana_14_temperance.jpeg",
       "upright": {
         "keywords": ["平衡", "调和", "耐心", "适度", "合作"],
         "meaning": "在对立中寻找黄金中道，以耐心与调和创造和谐流动的生命状态。",
@@ -276,7 +276,7 @@
       "nameEn": "The Devil",
       "number": 15,
       "type": "major",
-      "image": "/static/themes/golden_dawn/tarot/major/major_arcana_15_the_devil.jpeg",
+      "image": "./static/themes/golden_dawn/tarot/major/major_arcana_15_the_devil.jpeg",
       "upright": {
         "keywords": ["束缚", "欲望", "物质主义", "诱惑", "成瘾"],
         "meaning": "欲望的锁链看似牢固实则可解，觉知到束缚本身便是解脱的开始。",
@@ -294,7 +294,7 @@
       "nameEn": "The Tower",
       "number": 16,
       "type": "major",
-      "image": "/static/themes/golden_dawn/tarot/major/major_arcana_16_the_tower.jpeg",
+      "image": "./static/themes/golden_dawn/tarot/major/major_arcana_16_the_tower.jpeg",
       "upright": {
         "keywords": ["突然改变", "崩溃", "觉醒", "破坏", "真相"],
         "meaning": "旧有结构的崩塌带来剧烈改变，在废墟中将看清真相并获得重生。",
@@ -312,7 +312,7 @@
       "nameEn": "The Star",
       "number": 17,
       "type": "major",
-      "image": "/static/themes/golden_dawn/tarot/major/major_arcana_17_the_star.jpeg",
+      "image": "./static/themes/golden_dawn/tarot/major/major_arcana_17_the_star.jpeg",
       "upright": {
         "keywords": ["希望", "灵感", "宁静", "信心", "灵性指引"],
         "meaning": "夜空中的星辰带来希望与指引，保持信心，梦想将在宁静中实现。",
@@ -330,7 +330,7 @@
       "nameEn": "The Moon",
       "number": 18,
       "type": "major",
-      "image": "/static/themes/golden_dawn/tarot/major/major_arcana_18_the_moon.jpeg",
+      "image": "./static/themes/golden_dawn/tarot/major/major_arcana_18_the_moon.jpeg",
       "upright": {
         "keywords": ["幻觉", "恐惧", "潜意识", "直觉", "不确定"],
         "meaning": "月光下的迷雾带来不确定与幻象，倾听直觉穿越恐惧，真相终将显现。",
@@ -348,7 +348,7 @@
       "nameEn": "The Sun",
       "number": 19,
       "type": "major",
-      "image": "/static/themes/golden_dawn/tarot/major/major_arcana_19_the_sun.jpeg",
+      "image": "./static/themes/golden_dawn/tarot/major/major_arcana_19_the_sun.jpeg",
       "upright": {
         "keywords": ["成功", "喜悦", "活力", "真相", "自信"],
         "meaning": "阳光普照带来丰盛与喜悦，成功的能量正照耀着你，答案清晰可见。",
@@ -366,7 +366,7 @@
       "nameEn": "Judgement",
       "number": 20,
       "type": "major",
-      "image": "/static/themes/golden_dawn/tarot/major/major_arcana_20_judgement.jpeg",
+      "image": "./static/themes/golden_dawn/tarot/major/major_arcana_20_judgement.jpeg",
       "upright": {
         "keywords": ["重生", "觉醒", "评价", "宽恕", "召唤"],
         "meaning": "生命的召唤唤醒沉睡的灵魂，宽恕过去，全新的自我即将重生。",
@@ -384,7 +384,7 @@
       "nameEn": "The World",
       "number": 21,
       "type": "major",
-      "image": "/static/themes/golden_dawn/tarot/major/major_arcana_21_the_world.jpeg",
+      "image": "./static/themes/golden_dawn/tarot/major/major_arcana_21_the_world.jpeg",
       "upright": {
         "keywords": ["完成", "成就", "整合", "圆满", "旅行"],
         "meaning": "一个完整的循环即将圆满达成，所有的努力汇聚成完美的成就与和谐。",

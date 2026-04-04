@@ -34,7 +34,7 @@
           "meaning": "情感之门紧闭，内心干涸无光，答案暂为「否」。",
           "sentiment": "negative"
         },
-        "image": "/static/themes/golden_dawn/tarot/minor/cups/minor_arcana_cups_01_ace_of_cups.jpeg"
+        "image": "./static/themes/golden_dawn/tarot/minor/cups/minor_arcana_cups_01_ace_of_cups.jpeg"
       },
       {
         "id": "cups_2",
@@ -65,7 +65,7 @@
           "meaning": "关系天秤倾斜，误解如雾笼罩，答案倾向「否」。",
           "sentiment": "negative"
         },
-        "image": "/static/themes/golden_dawn/tarot/minor/cups/minor_arcana_cups_02_two_of_cups.jpeg"
+        "image": "./static/themes/golden_dawn/tarot/minor/cups/minor_arcana_cups_02_two_of_cups.jpeg"
       },
       {
         "id": "cups_3",
@@ -96,7 +96,7 @@
           "meaning": "狂欢后空余孤寂，流言暗藏纷争，答案暂为「否」。",
           "sentiment": "negative"
         },
-        "image": "/static/themes/golden_dawn/tarot/minor/cups/minor_arcana_cups_03_three_of_cups.jpeg"
+        "image": "./static/themes/golden_dawn/tarot/minor/cups/minor_arcana_cups_03_three_of_cups.jpeg"
       },
       {
         "id": "cups_4",
@@ -127,7 +127,7 @@
           "meaning": "沉睡之心渐醒，欣然接纳新馈赠，答案转为「是」。",
           "sentiment": "positive"
         },
-        "image": "/static/themes/golden_dawn/tarot/minor/cups/minor_arcana_cups_04_four_of_cups.jpeg"
+        "image": "./static/themes/golden_dawn/tarot/minor/cups/minor_arcana_cups_04_four_of_cups.jpeg"
       },
       {
         "id": "cups_5",
@@ -158,7 +158,7 @@
           "meaning": "伤口愈合在即，宽恕带来重生，答案渐显为「是」。",
           "sentiment": "positive"
         },
-        "image": "/static/themes/golden_dawn/tarot/minor/cups/minor_arcana_cups_05_five_of_cups.jpeg"
+        "image": "./static/themes/golden_dawn/tarot/minor/cups/minor_arcana_cups_05_five_of_cups.jpeg"
       },
       {
         "id": "cups_6",
@@ -188,7 +188,7 @@
           "meaning": "困于过往囚笼，逃避当下真实，答案倾向「否」。",
           "sentiment": "negative"
         },
-        "image": "/static/themes/golden_dawn/tarot/minor/cups/minor_arcana_cups_06_six_of_cups.jpeg"
+        "image": "./static/themes/golden_dawn/tarot/minor/cups/minor_arcana_cups_06_six_of_cups.jpeg"
       },
       {
         "id": "cups_7",
@@ -219,7 +219,7 @@
           "meaning": "幻象破灭烟消，决心落地生根，答案转为清晰的「是」。",
           "sentiment": "positive"
         },
-        "image": "/static/themes/golden_dawn/tarot/minor/cups/minor_arcana_cups_07_seven_of_cups.jpeg"
+        "image": "./static/themes/golden_dawn/tarot/minor/cups/minor_arcana_cups_07_seven_of_cups.jpeg"
       },
       {
         "id": "cups_8",
@@ -249,7 +249,7 @@
           "meaning": "畏惧未知风浪，困守死水一潭，答案滞留于「否」。",
           "sentiment": "negative"
         },
-        "image": "/static/themes/golden_dawn/tarot/minor/cups/minor_arcana_cups_08_eight_of_cups.jpeg"
+        "image": "./static/themes/golden_dawn/tarot/minor/cups/minor_arcana_cups_08_eight_of_cups.jpeg"
       },
       {
         "id": "cups_9",
@@ -279,7 +279,7 @@
           "meaning": "欲望深渊难填，满足如镜花水月，答案倾向「否」。",
           "sentiment": "negative"
         },
-        "image": "/static/themes/golden_dawn/tarot/minor/cups/minor_arcana_cups_09_nine_of_cups.jpeg"
+        "image": "./static/themes/golden_dawn/tarot/minor/cups/minor_arcana_cups_09_nine_of_cups.jpeg"
       },
       {
         "id": "cups_10",
@@ -308,7 +308,7 @@
           "meaning": "彩虹支离破碎，家园失序动荡，答案暂为「否」。",
           "sentiment": "negative"
         },
-        "image": "/static/themes/golden_dawn/tarot/minor/cups/minor_arcana_cups_10_ten_of_cups.jpeg"
+        "image": "./static/themes/golden_dawn/tarot/minor/cups/minor_arcana_cups_10_ten_of_cups.jpeg"
       },
       {
         "id": "cups_page",
@@ -338,7 +338,7 @@
           "meaning": "情感潮汐紊乱，逃避真实自我，答案倾向「否」。",
           "sentiment": "negative"
         },
-        "image": "/static/themes/golden_dawn/tarot/minor/cups/minor_arcana_cups_11_page_of_cups.jpeg"
+        "image": "./static/themes/golden_dawn/tarot/minor/cups/minor_arcana_cups_11_page_of_cups.jpeg"
       },
       {
         "id": "cups_knight",
@@ -368,7 +368,7 @@
           "meaning": "承诺如风易逝，情绪起伏不定，答案笼罩于「否」。",
           "sentiment": "negative"
         },
-        "image": "/static/themes/golden_dawn/tarot/minor/cups/minor_arcana_cups_12_knight_of_cups.jpeg"
+        "image": "./static/themes/golden_dawn/tarot/minor/cups/minor_arcana_cups_12_knight_of_cups.jpeg"
       },
       {
         "id": "cups_queen",
@@ -398,7 +398,7 @@
           "meaning": "情绪漩涡暗涌，边界消融失控，答案倾向「否」。",
           "sentiment": "negative"
         },
-        "image": "/static/themes/golden_dawn/tarot/minor/cups/minor_arcana_cups_13_queen_of_cups.jpeg"
+        "image": "./static/themes/golden_dawn/tarot/minor/cups/minor_arcana_cups_13_queen_of_cups.jpeg"
       },
       {
         "id": "cups_king",
@@ -428,7 +428,7 @@
           "meaning": "暗潮操纵人心，冷漠面具下藏着不安，答案暂为「否」。",
           "sentiment": "negative"
         },
-        "image": "/static/themes/golden_dawn/tarot/minor/cups/minor_arcana_cups_14_king_of_cups.jpeg"
+        "image": "./static/themes/golden_dawn/tarot/minor/cups/minor_arcana_cups_14_king_of_cups.jpeg"
       }
     ]
   }

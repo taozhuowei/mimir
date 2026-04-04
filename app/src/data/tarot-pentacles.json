@@ -35,7 +35,7 @@
           "meaning": "良机从指缝溜走，财富尚未成熟，此刻不宜急进，答案倾向「否」。",
           "sentiment": "negative"
         },
-        "image": "/static/themes/golden_dawn/tarot/minor/pentacles/minor_arcana_pentacles_01_ace_of_pentacles.jpeg"
+        "image": "./static/themes/golden_dawn/tarot/minor/pentacles/minor_arcana_pentacles_01_ace_of_pentacles.jpeg"
       },
       {
         "id": "pentacles_2",
@@ -66,7 +66,7 @@
           "meaning": "天平倾斜，纷乱压垮心神，优先次序已然失控，此事恐难如愿，答案倾向「否」。",
           "sentiment": "negative"
         },
-        "image": "/static/themes/golden_dawn/tarot/minor/pentacles/minor_arcana_pentacles_02_two_of_pentacles.jpeg"
+        "image": "./static/themes/golden_dawn/tarot/minor/pentacles/minor_arcana_pentacles_02_two_of_pentacles.jpeg"
       },
       {
         "id": "pentacles_3",
@@ -96,7 +96,7 @@
           "meaning": "同床异梦，细节被草率忽略，团队之气涣散，此路难行，答案倾向「否」。",
           "sentiment": "negative"
         },
-        "image": "/static/themes/golden_dawn/tarot/minor/pentacles/minor_arcana_pentacles_03_three_of_pentacles.jpeg"
+        "image": "./static/themes/golden_dawn/tarot/minor/pentacles/minor_arcana_pentacles_03_three_of_pentacles.jpeg"
       },
       {
         "id": "pentacles_4",
@@ -127,7 +127,7 @@
           "meaning": "执念如锁链缠身，贪婪或匮乏之心蒙蔽双眼，放手方能重生，答案倾向「否」。",
           "sentiment": "negative"
         },
-        "image": "/static/themes/golden_dawn/tarot/minor/pentacles/minor_arcana_pentacles_04_four_of_pentacles.jpeg"
+        "image": "./static/themes/golden_dawn/tarot/minor/pentacles/minor_arcana_pentacles_04_four_of_pentacles.jpeg"
       },
       {
         "id": "pentacles_5",
@@ -158,7 +158,7 @@
           "meaning": "曙光初现，援助之手悄然伸来，困境将逐渐消融，答案倾向「是」。",
           "sentiment": "positive"
         },
-        "image": "/static/themes/golden_dawn/tarot/minor/pentacles/minor_arcana_pentacles_05_five_of_pentacles.jpeg"
+        "image": "./static/themes/golden_dawn/tarot/minor/pentacles/minor_arcana_pentacles_05_five_of_pentacles.jpeg"
       },
       {
         "id": "pentacles_6",
@@ -189,7 +189,7 @@
           "meaning": "恩惠成枷锁，不平等的交易暗藏隐患，此事付出难获回报，答案倾向「否」。",
           "sentiment": "negative"
         },
-        "image": "/static/themes/golden_dawn/tarot/minor/pentacles/minor_arcana_pentacles_06_six_of_pentacles.jpeg"
+        "image": "./static/themes/golden_dawn/tarot/minor/pentacles/minor_arcana_pentacles_06_six_of_pentacles.jpeg"
       },
       {
         "id": "pentacles_7",
@@ -220,7 +220,7 @@
           "meaning": "焦虑焚毁了田园，投资错付或成长停滞，此刻收获甚微，答案倾向「否」。",
           "sentiment": "negative"
         },
-        "image": "/static/themes/golden_dawn/tarot/minor/pentacles/minor_arcana_pentacles_07_seven_of_pentacles.jpeg"
+        "image": "./static/themes/golden_dawn/tarot/minor/pentacles/minor_arcana_pentacles_07_seven_of_pentacles.jpeg"
       },
       {
         "id": "pentacles_8",
@@ -251,7 +251,7 @@
           "meaning": "心神涣散，匠气尽失，敷衍了事难成大器，此事恐有瑕疵，答案倾向「否」。",
           "sentiment": "negative"
         },
-        "image": "/static/themes/golden_dawn/tarot/minor/pentacles/minor_arcana_pentacles_08_eight_of_pentacles.jpeg"
+        "image": "./static/themes/golden_dawn/tarot/minor/pentacles/minor_arcana_pentacles_08_eight_of_pentacles.jpeg"
       },
       {
         "id": "pentacles_9",
@@ -281,7 +281,7 @@
           "meaning": "依赖如藤蔓缠绕，自律之墙崩塌，丰饶假象难以为继，答案倾向「否」。",
           "sentiment": "negative"
         },
-        "image": "/static/themes/golden_dawn/tarot/minor/pentacles/minor_arcana_pentacles_09_nine_of_pentacles.jpeg"
+        "image": "./static/themes/golden_dawn/tarot/minor/pentacles/minor_arcana_pentacles_09_nine_of_pentacles.jpeg"
       },
       {
         "id": "pentacles_10",
@@ -312,7 +312,7 @@
           "meaning": "根基动摇，家庭纷争撕裂纽带，传承成沉重负担，答案倾向「否」。",
           "sentiment": "negative"
         },
-        "image": "/static/themes/golden_dawn/tarot/minor/pentacles/minor_arcana_pentacles_10_ten_of_pentacles.jpeg"
+        "image": "./static/themes/golden_dawn/tarot/minor/pentacles/minor_arcana_pentacles_10_ten_of_pentacles.jpeg"
       },
       {
         "id": "pentacles_page",
@@ -343,7 +343,7 @@
           "meaning": "好高骛远，空想难落地，错失学习的良机，此事尚不成熟，答案倾向「否」。",
           "sentiment": "negative"
         },
-        "image": "/static/themes/golden_dawn/tarot/minor/pentacles/minor_arcana_pentacles_11_page_of_pentacles.jpeg"
+        "image": "./static/themes/golden_dawn/tarot/minor/pentacles/minor_arcana_pentacles_11_page_of_pentacles.jpeg"
       },
       {
         "id": "pentacles_knight",
@@ -374,7 +374,7 @@
           "meaning": "马蹄陷入泥沼，固执与怠惰拖慢步伐，此路漫长而困顿，答案倾向「否」。",
           "sentiment": "negative"
         },
-        "image": "/static/themes/golden_dawn/tarot/minor/pentacles/minor_arcana_pentacles_12_knight_of_pentacles.jpeg"
+        "image": "./static/themes/golden_dawn/tarot/minor/pentacles/minor_arcana_pentacles_12_knight_of_pentacles.jpeg"
       },
       {
         "id": "pentacles_queen",
@@ -404,7 +404,7 @@
           "meaning": "滋养成控制，自我价值在给予中流失，安全感已成虚妄，答案倾向「否」。",
           "sentiment": "negative"
         },
-        "image": "/static/themes/golden_dawn/tarot/minor/pentacles/minor_arcana_pentacles_13_queen_of_pentacles.jpeg"
+        "image": "./static/themes/golden_dawn/tarot/minor/pentacles/minor_arcana_pentacles_13_queen_of_pentacles.jpeg"
       },
       {
         "id": "pentacles_king",
@@ -435,7 +435,7 @@
           "meaning": "金钱之欲腐化王冠，专制与贪婪招致倾覆，根基暗藏危机，答案倾向「否」。",
           "sentiment": "negative"
         },
-        "image": "/static/themes/golden_dawn/tarot/minor/pentacles/minor_arcana_pentacles_14_king_of_pentacles.jpeg"
+        "image": "./static/themes/golden_dawn/tarot/minor/pentacles/minor_arcana_pentacles_14_king_of_pentacles.jpeg"
       }
     ]
   }

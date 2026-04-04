@@ -34,7 +34,7 @@
           "meaning": "迷雾遮蔽心智，混乱思绪阻碍判断，宜暂缓决策，待清明后再问。",
           "sentiment": "negative"
         },
-        "image": "/static/themes/golden_dawn/tarot/minor/swords/minor_arcana_swords_01_ace_of_swords.jpeg"
+        "image": "./static/themes/golden_dawn/tarot/minor/swords/minor_arcana_swords_01_ace_of_swords.jpeg"
       },
       {
         "id": "swords_2",
@@ -64,7 +64,7 @@
           "meaning": "蒙布揭开，真相浮现，僵局终被打破，抉择之刻已然到来。",
           "sentiment": "positive"
         },
-        "image": "/static/themes/golden_dawn/tarot/minor/swords/minor_arcana_swords_02_two_of_swords.jpeg"
+        "image": "./static/themes/golden_dawn/tarot/minor/swords/minor_arcana_swords_02_two_of_swords.jpeg"
       },
       {
         "id": "swords_3",
@@ -94,7 +94,7 @@
           "meaning": "伤口愈合，阴霾渐散，宽恕释放心灵，新生的曙光正在靠近。",
           "sentiment": "positive"
         },
-        "image": "/static/themes/golden_dawn/tarot/minor/swords/minor_arcana_swords_03_three_of_swords.jpeg"
+        "image": "./static/themes/golden_dawn/tarot/minor/swords/minor_arcana_swords_03_three_of_swords.jpeg"
       },
       {
         "id": "swords_4",
@@ -124,7 +124,7 @@
           "meaning": "焦躁难安，休息不足，拖延将错失良机，需速速起身行动。",
           "sentiment": "negative"
         },
-        "image": "/static/themes/golden_dawn/tarot/minor/swords/minor_arcana_swords_04_four_of_swords.jpeg"
+        "image": "./static/themes/golden_dawn/tarot/minor/swords/minor_arcana_swords_04_four_of_swords.jpeg"
       },
       {
         "id": "swords_5",
@@ -154,7 +154,7 @@
           "meaning": "恩怨化解，握手言和，过往纷争可落幕，重新开始未为晚。",
           "sentiment": "positive"
         },
-        "image": "/static/themes/golden_dawn/tarot/minor/swords/minor_arcana_swords_05_five_of_swords.jpeg"
+        "image": "./static/themes/golden_dawn/tarot/minor/swords/minor_arcana_swords_05_five_of_swords.jpeg"
       },
       {
         "id": "swords_6",
@@ -184,7 +184,7 @@
           "meaning": "航程受阻，归途难觅，旧地不肯离去，新岸亦难抵达。",
           "sentiment": "negative"
         },
-        "image": "/static/themes/golden_dawn/tarot/minor/swords/minor_arcana_swords_06_six_of_swords.jpeg"
+        "image": "./static/themes/golden_dawn/tarot/minor/swords/minor_arcana_swords_06_six_of_swords.jpeg"
       },
       {
         "id": "swords_7",
@@ -214,7 +214,7 @@
           "meaning": "诡计败露，真相大白，欺瞒终难长久，坦诚方能化解困局。",
           "sentiment": "positive"
         },
-        "image": "/static/themes/golden_dawn/tarot/minor/swords/minor_arcana_swords_07_seven_of_swords.jpeg"
+        "image": "./static/themes/golden_dawn/tarot/minor/swords/minor_arcana_swords_07_seven_of_swords.jpeg"
       },
       {
         "id": "swords_8",
@@ -245,7 +245,7 @@
           "meaning": "束缚松脱，重获自由，挣脱自我设限，新天地正在眼前展开。",
           "sentiment": "positive"
         },
-        "image": "/static/themes/golden_dawn/tarot/minor/swords/minor_arcana_swords_08_eight_of_swords.jpeg"
+        "image": "./static/themes/golden_dawn/tarot/minor/swords/minor_arcana_swords_08_eight_of_swords.jpeg"
       },
       {
         "id": "swords_9",
@@ -276,7 +276,7 @@
           "meaning": "黎明将至，噩梦消散，放下执念即可重获安宁，转机已在路上。",
           "sentiment": "positive"
         },
-        "image": "/static/themes/golden_dawn/tarot/minor/swords/minor_arcana_swords_09_nine_of_swords.jpeg"
+        "image": "./static/themes/golden_dawn/tarot/minor/swords/minor_arcana_swords_09_nine_of_swords.jpeg"
       },
       {
         "id": "swords_10",
@@ -307,7 +307,7 @@
           "meaning": "绝处逢生，劫后重生，从废墟中站起，新生正在痛苦之后等待。",
           "sentiment": "neutral"
         },
-        "image": "/static/themes/golden_dawn/tarot/minor/swords/minor_arcana_swords_10_ten_of_swords.jpeg"
+        "image": "./static/themes/golden_dawn/tarot/minor/swords/minor_arcana_swords_10_ten_of_swords.jpeg"
       },
       {
         "id": "swords_page",
@@ -338,7 +338,7 @@
           "meaning": "口舌生非，流言暗涌，未经深思的言语恐伤人害己，宜谨言慎行。",
           "sentiment": "negative"
         },
-        "image": "/static/themes/golden_dawn/tarot/minor/swords/minor_arcana_swords_11_page_of_swords.jpeg"
+        "image": "./static/themes/golden_dawn/tarot/minor/swords/minor_arcana_swords_11_page_of_swords.jpeg"
       },
       {
         "id": "swords_knight",
@@ -369,7 +369,7 @@
           "meaning": "横冲直撞，锋芒太露，鲁莽行事将招致挫败，需收敛锐气再谋。",
           "sentiment": "negative"
         },
-        "image": "/static/themes/golden_dawn/tarot/minor/swords/minor_arcana_swords_12_knight_of_swords.jpeg"
+        "image": "./static/themes/golden_dawn/tarot/minor/swords/minor_arcana_swords_12_knight_of_swords.jpeg"
       },
       {
         "id": "swords_queen",
@@ -400,7 +400,7 @@
           "meaning": "冷若冰霜，心机暗藏，过度理性隔绝温情，谨防言语如刀伤人。",
           "sentiment": "negative"
         },
-        "image": "/static/themes/golden_dawn/tarot/minor/swords/minor_arcana_swords_13_queen_of_swords.jpeg"
+        "image": "./static/themes/golden_dawn/tarot/minor/swords/minor_arcana_swords_13_queen_of_swords.jpeg"
       },
       {
         "id": "swords_king",
@@ -431,7 +431,7 @@
           "meaning": "刚愎自用，权力滥用，理性沦为冷漠算计，此道不通需另寻他路。",
           "sentiment": "negative"
         },
-        "image": "/static/themes/golden_dawn/tarot/minor/swords/minor_arcana_swords_14_king_of_swords.jpeg"
+        "image": "./static/themes/golden_dawn/tarot/minor/swords/minor_arcana_swords_14_king_of_swords.jpeg"
       }
     ]
   }

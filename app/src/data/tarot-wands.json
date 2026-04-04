@@ -13,7 +13,7 @@
         "number": 1,
         "type": "minor",
         "suit": "wands",
-        "image": "/static/themes/golden_dawn/tarot/minor/wands/minor_arcana_wands_01_ace_of_wands.jpeg",
+        "image": "./static/themes/golden_dawn/tarot/minor/wands/minor_arcana_wands_01_ace_of_wands.jpeg",
         "upright": {
           "keywords": [
             "新机会",
@@ -42,7 +42,7 @@
         "number": 2,
         "type": "minor",
         "suit": "wands",
-        "image": "/static/themes/golden_dawn/tarot/minor/wands/minor_arcana_wands_02_two_of_wands.jpeg",
+        "image": "./static/themes/golden_dawn/tarot/minor/wands/minor_arcana_wands_02_two_of_wands.jpeg",
         "upright": {
           "keywords": [
             "计划",
@@ -71,7 +71,7 @@
         "number": 3,
         "type": "minor",
         "suit": "wands",
-        "image": "/static/themes/golden_dawn/tarot/minor/wands/minor_arcana_wands_03_three_of_wands.jpeg",
+        "image": "./static/themes/golden_dawn/tarot/minor/wands/minor_arcana_wands_03_three_of_wands.jpeg",
         "upright": {
           "keywords": [
             "远见",
@@ -101,7 +101,7 @@
         "number": 4,
         "type": "minor",
         "suit": "wands",
-        "image": "/static/themes/golden_dawn/tarot/minor/wands/minor_arcana_wands_04_four_of_wands.jpeg",
+        "image": "./static/themes/golden_dawn/tarot/minor/wands/minor_arcana_wands_04_four_of_wands.jpeg",
         "upright": {
           "keywords": [
             "庆祝",
@@ -131,7 +131,7 @@
         "number": 5,
         "type": "minor",
         "suit": "wands",
-        "image": "/static/themes/golden_dawn/tarot/minor/wands/minor_arcana_wands_05_five_of_wands.jpeg",
+        "image": "./static/themes/golden_dawn/tarot/minor/wands/minor_arcana_wands_05_five_of_wands.jpeg",
         "upright": {
           "keywords": [
             "冲突",
@@ -161,7 +161,7 @@
         "number": 6,
         "type": "minor",
         "suit": "wands",
-        "image": "/static/themes/golden_dawn/tarot/minor/wands/minor_arcana_wands_06_six_of_wands.jpeg",
+        "image": "./static/themes/golden_dawn/tarot/minor/wands/minor_arcana_wands_06_six_of_wands.jpeg",
         "upright": {
           "keywords": [
             "胜利",
@@ -191,7 +191,7 @@
         "number": 7,
         "type": "minor",
         "suit": "wands",
-        "image": "/static/themes/golden_dawn/tarot/minor/wands/minor_arcana_wands_07_seven_of_wands.jpeg",
+        "image": "./static/themes/golden_dawn/tarot/minor/wands/minor_arcana_wands_07_seven_of_wands.jpeg",
         "upright": {
           "keywords": [
             "防御",
@@ -221,7 +221,7 @@
         "number": 8,
         "type": "minor",
         "suit": "wands",
-        "image": "/static/themes/golden_dawn/tarot/minor/wands/minor_arcana_wands_08_eight_of_wands.jpeg",
+        "image": "./static/themes/golden_dawn/tarot/minor/wands/minor_arcana_wands_08_eight_of_wands.jpeg",
         "upright": {
           "keywords": [
             "快速行动",
@@ -252,7 +252,7 @@
         "number": 9,
         "type": "minor",
         "suit": "wands",
-        "image": "/static/themes/golden_dawn/tarot/minor/wands/minor_arcana_wands_09_nine_of_wands.jpeg",
+        "image": "./static/themes/golden_dawn/tarot/minor/wands/minor_arcana_wands_09_nine_of_wands.jpeg",
         "upright": {
           "keywords": [
             "韧性",
@@ -283,7 +283,7 @@
         "number": 10,
         "type": "minor",
         "suit": "wands",
-        "image": "/static/themes/golden_dawn/tarot/minor/wands/minor_arcana_wands_10_ten_of_wands.jpeg",
+        "image": "./static/themes/golden_dawn/tarot/minor/wands/minor_arcana_wands_10_ten_of_wands.jpeg",
         "upright": {
           "keywords": [
             "负担",
@@ -313,7 +313,7 @@
         "number": 11,
         "type": "minor",
         "suit": "wands",
-        "image": "/static/themes/golden_dawn/tarot/minor/wands/minor_arcana_wands_11_page_of_wands.jpeg",
+        "image": "./static/themes/golden_dawn/tarot/minor/wands/minor_arcana_wands_11_page_of_wands.jpeg",
         "upright": {
           "keywords": [
             "探索",
@@ -344,7 +344,7 @@
         "number": 12,
         "type": "minor",
         "suit": "wands",
-        "image": "/static/themes/golden_dawn/tarot/minor/wands/minor_arcana_wands_12_knight_of_wands.jpeg",
+        "image": "./static/themes/golden_dawn/tarot/minor/wands/minor_arcana_wands_12_knight_of_wands.jpeg",
         "upright": {
           "keywords": [
             "行动",
@@ -375,7 +375,7 @@
         "number": 13,
         "type": "minor",
         "suit": "wands",
-        "image": "/static/themes/golden_dawn/tarot/minor/wands/minor_arcana_wands_13_queen_of_wands.jpeg",
+        "image": "./static/themes/golden_dawn/tarot/minor/wands/minor_arcana_wands_13_queen_of_wands.jpeg",
         "upright": {
           "keywords": [
             "自信",
@@ -406,7 +406,7 @@
         "number": 14,
         "type": "minor",
         "suit": "wands",
-        "image": "/static/themes/golden_dawn/tarot/minor/wands/minor_arcana_wands_14_king_of_wands.jpeg",
+        "image": "./static/themes/golden_dawn/tarot/minor/wands/minor_arcana_wands_14_king_of_wands.jpeg",
         "upright": {
           "keywords": [
             "领导力",
