@@ -426,7 +426,7 @@ const refreshInners = () => { innersStyle.value = _inners.map(s => _innerStyleSt
 
 // ---- 窗口 resize（跨端兼容：替代 window.addEventListener('resize')）----
 // UniApp 规范：uni.onWindowResize / uni.offWindowResize
-let _resizeHandler: ((res: { windowWidth: number; windowHeight: number }) => void) | null = null
+let _resizeHandler: ((res: UniApp.WindowResizeResult) => void) | null = null
 
 function _checkWidth(windowWidth: number) {
   const wasWide = isWide.value
@@ -443,7 +443,7 @@ onMounted(() => {
   _checkWidth(windowWidth)
 
   // 监听窗口尺寸变化（小程序 / H5 统一 API）
-  _resizeHandler = (res) => { _checkWidth(res.windowWidth) }
+  _resizeHandler = (res) => { _checkWidth(res.size.windowWidth) }
   uni.onWindowResize(_resizeHandler)
 
   nextTick(() => {
@@ -491,7 +491,21 @@ onMounted(() => {
 
 onUnmounted(() => {
   if (_resizeHandler) uni.offWindowResize(_resizeHandler)
-  gsap.killAll()
+  gsap.killTweensOf([
+    _bg,
+    _stage,
+    _header,
+    _footer,
+    _deckCtn,
+    ..._initials,
+    ..._lefts,
+    ..._rights,
+    _cutTop,
+    _cutMid,
+    _cutBot,
+    ..._draws,
+    ..._inners,
+  ])
 })
 
 // ---- 洗牌动画 ----

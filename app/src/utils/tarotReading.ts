@@ -8,6 +8,7 @@ import majorData from '../data/tarot-major.json'
 import pentaclesData from '../data/tarot-pentacles.json'
 import swordsData from '../data/tarot-swords.json'
 import wandsData from '../data/tarot-wands.json'
+import { TAROT_THEME_ASSET_BASE } from '../constants'
 
 export interface TarotCardMeaning {
   keywords: string[]      // 关键词列表（用于快速理解牌意）
@@ -69,20 +70,19 @@ export function loadAllCards(): TarotCardInfo[] {
 }
 
 // 构建卡片图片路径
-// 大阿卡纳：/major/major_arcana_{序号}_{id}.jpeg
-// 小阿卡纳：/minor/{花色}/minor_arcana_{花色}_{序号}_{nameEn}.jpeg
+// 大阿卡纳：./major/major_arcana_{序号}_{id}.jpeg
+// 小阿卡纳：./minor/{花色}/minor_arcana_{花色}_{序号}_{nameEn}.jpeg
+// 运行时统一从 TAROT_THEME_ASSET_BASE 构建路径，避免源码和产物路径策略不一致
 function getCardImagePath(card: TarotCardSeed): string {
-  const theme_id = 'golden_dawn'
-
   if (card.type === 'major') {
-    return `/static/themes/${theme_id}/tarot/major/major_arcana_${String(card.number).padStart(2, '0')}_${card.id}.jpeg`
+    return `${TAROT_THEME_ASSET_BASE}/major/major_arcana_${String(card.number).padStart(2, '0')}_${card.id}.jpeg`
   }
 
   const suit = card.suit ?? ''
   const number_text = String(card.number).padStart(2, '0')
   const formatted_name = card.nameEn.toLowerCase().replace(/\s+/g, '_')
 
-  return `/static/themes/${theme_id}/tarot/minor/${suit}/minor_arcana_${suit}_${number_text}_${formatted_name}.jpeg`
+  return `${TAROT_THEME_ASSET_BASE}/minor/${suit}/minor_arcana_${suit}_${number_text}_${formatted_name}.jpeg`
 }
 
 // Fisher-Yates 洗牌算法 + 随机决定正逆位

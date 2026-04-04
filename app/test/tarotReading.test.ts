@@ -1,5 +1,8 @@
+import { existsSync } from 'node:fs'
+import { resolve } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import { generateReading, loadAllCards, drawThreeCards, type DrawnResult } from '../src/utils/tarotReading'
+import { CARD_BACK_IMAGE, TAROT_THEME_ASSET_BASE } from '../src/constants'
 
 describe('tarotReading', () => {
   it('loads all 78 tarot cards correctly', () => {
@@ -7,7 +10,20 @@ describe('tarotReading', () => {
     expect(cards.length).toBe(78)
     const fool = cards.find(c => c.id === 'the_fool')
     expect(fool).toBeDefined()
+    expect(fool?.image.startsWith(TAROT_THEME_ASSET_BASE)).toBe(true)
     expect(fool?.image).toContain('major_arcana_00_the_fool.jpeg')
+  })
+
+  it('maps every generated card asset path to an existing local static file', () => {
+    const cards = loadAllCards()
+    const card_back_file_path = resolve(__dirname, '..', 'src', CARD_BACK_IMAGE.replace('./', ''))
+
+    expect(existsSync(card_back_file_path)).toBe(true)
+
+    cards.forEach((card) => {
+      const image_file_path = resolve(__dirname, '..', 'src', card.image.replace('./', ''))
+      expect(existsSync(image_file_path)).toBe(true)
+    })
   })
 
   it('draws 3 random cards with positions', () => {
