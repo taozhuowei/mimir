@@ -34,7 +34,8 @@ export interface DrawnResult {
 }
 
 export interface ReadingResult {
-  result: 'yes' | 'no' | 'uncertain'  // 最终结果判定
+  result: 'yes' | 'no'  // 最终结果判定：yes=积极，no=消极
+  score: number         // 最终得分（正数为积极，负数为消极）
   cardDetails: Array<{
     card: TarotCardInfo
     position: 'upright' | 'reversed'
@@ -95,41 +96,87 @@ export function drawThreeCards(allCards: TarotCardInfo[]): DrawnResult[] {
   }))
 }
 
-// 单张牌计分：positive=+1, negative=-1, neutral=0
-// 正位取 upright.sentiment，逆位取 reversed.sentiment
-function getCardScore(drawn_card: DrawnResult): number {
-  const sentiment = drawn_card.position === 'upright'
-    ? drawn_card.card.upright.sentiment
-    : drawn_card.card.reversed.sentiment
-
-  switch (sentiment) {
-    case 'positive':
-      return 1
-    case 'negative':
-      return -1
-    default:
-      return 0
-  }
+// 情感倾向基础权重映射
+const SENTIMENT_BASE_WEIGHT: Record<string, number> = {
+  positive: 3,
+  negative: -3,
+  neutral: 0
 }
 
-// 根据 3 张牌的总分判定结果：>0=yes, <0=no, =0=uncertain
-export function generateReading(drawn_cards: DrawnResult[]): ReadingResult {
-  const total_score = drawn_cards
-    .map(getCardScore)
-    .reduce((sum, score) => sum + score, 0)
-
-  let result: ReadingResult['result']
-
-  if (total_score > 0) {
-    result = 'yes'
-  } else if (total_score < 0) {
-    result = 'no'
+// 计算单张牌的权重得分
+// 规则：
+// 1. 基础权重：positive=+3, negative=-3, neutral=0
+// 2. 正逆位加成：当牌面位置与情感倾向一致时，权重绝对值+2（强化），否则-1（削弱）
+//    - 正位牌且upright为positive：+3+2=+5
+//    - 正位牌且upright为negative：-3-1=-4（逆位含义被削弱）
+//    - 逆位牌且reversed为negative：-3-2=-5（负面被强化）
+//    - 逆位牌且reversed为positive：+3+1=+4（正面被削弱）
+// 3. 大阿卡纳加成：大阿卡纳牌权重×1.3（四舍五入）
+// 4. neutral牌特殊处理：正位时+1，逆位时-1（中性牌的位置决定倾向）
+function getCardScore(drawn_card: DrawnResult): number {
+  const { card, position } = drawn_card
+  const meaning = position === 'upright' ? card.upright : card.reversed
+  const sentiment = meaning.sentiment
+  
+  let score = SENTIMENT_BASE_WEIGHT[sentiment] ?? 0
+  
+  // neutral牌特殊处理：位置决定倾向
+  if (sentiment === 'neutral') {
+    score = position === 'upright' ? 1 : -1
   } else {
-    result = 'uncertain'
+    // 正逆位与情感倾向一致性判断
+    // 正位时看upright，逆位时看reversed
+    const positionSentiment = position === 'upright' 
+      ? card.upright.sentiment 
+      : card.reversed.sentiment
+    
+    // 当位置与当前含义一致时强化，否则削弱
+    if (positionSentiment === sentiment) {
+      // 情感倾向与位置一致，强化
+      score += sentiment === 'positive' ? 2 : -2
+    } else {
+      // 情感倾向与位置不一致，削弱（取相反方向的弱化值）
+      score += sentiment === 'positive' ? -1 : 1
+    }
   }
+  
+  // 大阿卡纳加成
+  if (card.type === 'major') {
+    score = Math.round(score * 1.3)
+  }
+  
+  return score
+}
 
+// 根据 3 张牌的总分判定结果
+// 规则：
+// 1. 计算3张牌的总得分
+// 2. 结果必须是积极或消极，不允许不明朗
+// 3. 如果总分为0，则根据正位牌数量决定：正位多=积极，逆位多=消极，相等=积极（默认）
+// 4. 最终返回：yes=积极，no=消极
+export function generateReading(drawn_cards: DrawnResult[]): ReadingResult {
+  const cardScores = drawn_cards.map(getCardScore)
+  let total_score = cardScores.reduce((sum, score) => sum + score, 0)
+  
+  // 避免0分：如果总得分为0，根据正位牌数量决定
+  if (total_score === 0) {
+    const uprightCount = drawn_cards.filter(c => c.position === 'upright').length
+    const reversedCount = drawn_cards.filter(c => c.position === 'reversed').length
+    
+    if (uprightCount > reversedCount) {
+      total_score = 1  // 正位多，积极
+    } else if (reversedCount > uprightCount) {
+      total_score = -1  // 逆位多，消极
+    } else {
+      total_score = 1  // 相等，默认积极
+    }
+  }
+  
+  const result: ReadingResult['result'] = total_score > 0 ? 'yes' : 'no'
+  
   return {
     result,
+    score: total_score,
     cardDetails: drawn_cards.map((drawn_card) => ({
       card: drawn_card.card,
       position: drawn_card.position,
