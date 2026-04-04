@@ -100,7 +100,7 @@ const resultStatement = computed(() => getResultStatement(props.readingResult.re
   flex-direction: column;
   gap: var(--space-8);
   max-width: 720px;
-  width: min(100%, 720px);
+  width: 100%;
   box-sizing: border-box;
 }
 
@@ -111,14 +111,19 @@ const resultStatement = computed(() => getResultStatement(props.readingResult.re
   padding: var(--space-8) var(--space-6);
   border-radius: var(--radius-xl);
   box-shadow: var(--shadow-lg);
-  backdrop-filter: blur(20rpx);
-  -webkit-backdrop-filter: blur(20rpx);
   background:
-    radial-gradient(ellipse at top right, rgba(201, 151, 58, 0.1), transparent 60%),
-    rgba(45, 27, 20, 0.85);
-  border: 1rpx solid rgba(201, 151, 58, 0.3);
+    radial-gradient(ellipse at top right, rgba(122, 92, 20, 0.08), transparent 60%),
+    var(--color-card-bg);
+  border: 1rpx solid var(--color-border-strong);
   animation: rise-in 600ms cubic-bezier(0.34, 1.56, 0.64, 1);
 }
+
+/* #ifdef H5 */
+.result-hero {
+  backdrop-filter: blur(20rpx);
+  -webkit-backdrop-filter: blur(20rpx);
+}
+/* #endif */
 
 .hero-copy {
   display: flex;
@@ -150,13 +155,18 @@ const resultStatement = computed(() => getResultStatement(props.readingResult.re
 .interpretation-section {
   padding: var(--space-6) var(--space-5);
   border-radius: var(--radius-xl);
-  background: rgba(45, 27, 20, 0.75);
+  background: var(--color-card-bg);
   box-shadow: var(--shadow-md);
-  border: 1rpx solid rgba(201, 151, 58, 0.2);
-  backdrop-filter: blur(12rpx);
-  -webkit-backdrop-filter: blur(12rpx);
+  border: 1rpx solid var(--color-border);
   animation: rise-in 600ms cubic-bezier(0.34, 1.56, 0.64, 1) 150ms both;
 }
+
+/* #ifdef H5 */
+.interpretation-section {
+  backdrop-filter: blur(12rpx);
+  -webkit-backdrop-filter: blur(12rpx);
+}
+/* #endif */
 
 .section-header {
   display: flex;
@@ -189,7 +199,7 @@ const resultStatement = computed(() => getResultStatement(props.readingResult.re
   flex-direction: column;
   gap: var(--space-3);
   padding: var(--space-5) 0;
-  border-bottom: 1rpx solid rgba(184, 148, 62, 0.15);
+  border-bottom: 1rpx solid var(--color-border-rule);
 }
 
 .meaning-item:last-child {
@@ -210,9 +220,9 @@ const resultStatement = computed(() => getResultStatement(props.readingResult.re
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #fff;
+  color: var(--color-bg-primary);
   background: linear-gradient(145deg, var(--color-accent), var(--color-accent-dark));
-  box-shadow: 0 4rpx 12rpx rgba(184, 148, 62, 0.3);
+  box-shadow: 0 4rpx 12rpx rgba(122, 92, 20, 0.25);
   flex-shrink: 0;
   font-size: var(--text-sm);
 }
@@ -260,11 +270,21 @@ const resultStatement = computed(() => getResultStatement(props.readingResult.re
   font-size: var(--text-sm);
 }
 
+/* #ifdef H5 */
 .meaning-arcana::before {
   content: '·';
   margin-right: var(--space-2);
   opacity: 0.4;
 }
+/* #endif */
+
+/* #ifdef MP-WEIXIN */
+/* 小程序使用额外的text元素替代::before */
+.meaning-arcana-separator {
+  margin-right: var(--space-2);
+  opacity: 0.4;
+}
+/* #endif */
 
 .keywords-row {
   display: flex;

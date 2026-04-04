@@ -6,92 +6,51 @@
     <view class="stage-container">
       <view class="progress-header" :style="headerStyle">
         <view class="stars">
-          <!-- 洗牌：权杖 Wands — 带枝芽的火焰权杖 -->
+          <!-- 
+            进度图标 - 四元素对应四阶段
+            使用简化 SVG，确保小程序兼容性
+          -->
+          <!-- 权杖 Wands - 洗牌阶段 -->
           <svg class="star" :class="{ active: isS1Active, blink: isS1Blink }" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <defs>
-              <linearGradient id="gw" x1="30%" y1="0%" x2="70%" y2="100%">
-                <stop offset="0%" stop-color="#EEC95A"/>
-                <stop offset="50%" stop-color="#C9973A"/>
-                <stop offset="100%" stop-color="#7A5820"/>
-              </linearGradient>
-            </defs>
-            <!-- 杖身 -->
-            <line x1="12" y1="21.5" x2="12" y2="9.5" stroke="url(#gw)" stroke-width="1.8" stroke-linecap="round"/>
-            <!-- 顶端菱形火焰叶 -->
-            <path d="M12 9.5 L9.2 6 L12 2.5 L14.8 6 Z" stroke="url(#gw)" stroke-width="1.4" stroke-linejoin="round"/>
-            <!-- 上枝 -->
-            <path d="M12 12.5 C10 12 8 11 7.5 9.5" stroke="url(#gw)" stroke-width="1.3" stroke-linecap="round"/>
-            <path d="M12 12.5 C14 12 16 11 16.5 9.5" stroke="url(#gw)" stroke-width="1.3" stroke-linecap="round"/>
-            <!-- 下枝 -->
-            <path d="M12 16 C10.2 15.5 8.5 14.5 8 13" stroke="url(#gw)" stroke-width="1.1" stroke-linecap="round"/>
-            <path d="M12 16 C13.8 15.5 15.5 14.5 16 13" stroke="url(#gw)" stroke-width="1.1" stroke-linecap="round"/>
+            <!-- 权杖主体 - 简化设计 -->
+            <rect x="11" y="3" width="2" height="14" fill="#C9973A"/>
+            <!-- 火焰形状 - 用简单线条代替复杂 path -->
+            <polygon points="12,2 9,6 12,5 15,6" fill="#C9973A"/>
+            <!-- 两侧装饰 -->
+            <line x1="7" y1="10" x2="10" y2="11" stroke="#C9973A" stroke-width="1.5"/>
+            <line x1="17" y1="10" x2="14" y2="11" stroke="#C9973A" stroke-width="1.5"/>
           </svg>
-
           <view class="star-line" />
-
-          <!-- 切牌：宝剑 Swords — 指天长剑 -->
+          <!-- 宝剑 Swords - 切牌阶段 -->
           <svg class="star" :class="{ active: isS2Active, blink: isS2Blink }" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <defs>
-              <linearGradient id="gs" x1="20%" y1="0%" x2="80%" y2="100%">
-                <stop offset="0%" stop-color="#F0DC90"/>
-                <stop offset="35%" stop-color="#C9973A"/>
-                <stop offset="100%" stop-color="#7A5820"/>
-              </linearGradient>
-            </defs>
-            <!-- 剑刃（菱形截面，两侧弧线形成刃边） -->
-            <path d="M11.2 16 L12 2 L12.8 16" stroke="url(#gs)" stroke-width="1.3" stroke-linejoin="round"/>
-            <!-- 剑刃中脊 -->
-            <line x1="12" y1="3" x2="12" y2="16" stroke="url(#gs)" stroke-width="0.8" stroke-linecap="round" stroke-dasharray="1.5 2.5"/>
-            <!-- 护手（两侧弧翼） -->
-            <path d="M7 16.5 Q9.5 15.2 12 16 Q14.5 15.2 17 16.5" stroke="url(#gs)" stroke-width="1.7" stroke-linecap="round"/>
-            <!-- 剑柄 -->
-            <line x1="12" y1="16.5" x2="12" y2="20.5" stroke="url(#gs)" stroke-width="1.7" stroke-linecap="round"/>
-            <!-- 柄缠线 -->
-            <line x1="10.8" y1="18.2" x2="13.2" y2="18.2" stroke="url(#gs)" stroke-width="1.2" stroke-linecap="round"/>
-            <!-- 剑首圆 -->
-            <circle cx="12" cy="21.8" r="1.3" stroke="url(#gs)" stroke-width="1.4"/>
+            <!-- 剑身 -->
+            <rect x="11.5" y="2" width="1" height="16" fill="#C9973A"/>
+            <!-- 剑柄横条 -->
+            <rect x="8" y="16" width="8" height="2" fill="#C9973A"/>
+            <!-- 剑柄底部 -->
+            <circle cx="12" cy="20" r="1.5" fill="#C9973A"/>
           </svg>
-
           <view class="star-line" />
-
-          <!-- 抽牌：圣杯 Cups — 高脚圣杯 -->
+          <!-- 圣杯 Cups - 抽牌阶段 -->
           <svg class="star" :class="{ active: isS3Active, blink: isS3Blink }" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <defs>
-              <linearGradient id="gc" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stop-color="#EEC95A"/>
-                <stop offset="50%" stop-color="#C9973A"/>
-                <stop offset="100%" stop-color="#7A5820"/>
-              </linearGradient>
-            </defs>
             <!-- 杯口 -->
-            <line x1="6.5" y1="5.5" x2="17.5" y2="5.5" stroke="url(#gc)" stroke-width="1.7" stroke-linecap="round"/>
-            <!-- 杯身 -->
-            <path d="M6.5 5.5 C6.5 11.5 9 15 12 15.5 C15 15 17.5 11.5 17.5 5.5" stroke="url(#gc)" stroke-width="1.5" stroke-linecap="round"/>
-            <!-- 茎 -->
-            <path d="M12 15.5 L11 19 L13 19" stroke="url(#gc)" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
+            <ellipse cx="12" cy="6" rx="5" ry="2" stroke="#C9973A" stroke-width="1.5" fill="none"/>
+            <!-- 杯身 - 简化为梯形 -->
+            <polygon points="7,6 9,15 15,15 17,6" fill="#C9973A"/>
+            <!-- 杯底柱子 -->
+            <rect x="11" y="15" width="2" height="3" fill="#C9973A"/>
             <!-- 底座 -->
-            <path d="M8.5 21.5 Q12 20 15.5 21.5" stroke="url(#gc)" stroke-width="1.7" stroke-linecap="round"/>
-            <!-- 杯内水滴装饰 -->
-            <path d="M12 8 C11 9 10.5 10 11.5 11 C12.5 10 12 9 12 8 Z" stroke="url(#gc)" stroke-width="1.1" stroke-linejoin="round"/>
+            <ellipse cx="12" cy="19" rx="3" ry="1" fill="#C9973A"/>
           </svg>
-
           <view class="star-line" />
-
-          <!-- 解读：星币 Pentacles — 古币内嵌五芒星 -->
+          <!-- 星币 Pentacles - 解读阶段 -->
           <svg class="star" :class="{ active: isS4Active, blink: isS4Blink }" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <defs>
-              <linearGradient id="gp" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stop-color="#EEC95A"/>
-                <stop offset="50%" stop-color="#C9973A"/>
-                <stop offset="100%" stop-color="#7A5820"/>
-              </linearGradient>
-            </defs>
             <!-- 外圆 -->
-            <circle cx="12" cy="12" r="9.2" stroke="url(#gp)" stroke-width="1.6"/>
-            <!-- 内圆（做旧边框感） -->
-            <circle cx="12" cy="12" r="7.2" stroke="url(#gp)" stroke-width="0.7" stroke-dasharray="2 1.5"/>
-            <!-- 五芒星 — 精确5角星 -->
-            <path d="M12 5.2 L13.4 9.6 L18 9.6 L14.3 12.3 L15.7 16.8 L12 14.1 L8.3 16.8 L9.7 12.3 L6 9.6 L10.6 9.6 Z" stroke="url(#gp)" stroke-width="1.3" stroke-linejoin="round"/>
+            <circle cx="12" cy="12" r="9" stroke="#C9973A" stroke-width="1.5" fill="none"/>
+            <!-- 内圆 -->
+            <circle cx="12" cy="12" r="6" stroke="#C9973A" stroke-width="1" fill="none"/>
+            <!-- 五角星 - 简化为小圆点 -->
+            <circle cx="12" cy="12" r="2.5" fill="#C9973A"/>
           </svg>
         </view>
       </view>
@@ -826,11 +785,14 @@ function handleRestart() {
 
 <style scoped>
 .divination-overlay {
-  --card-width: clamp(108px, 26vw, 172px);
+  --card-width: 172px;
   --card-height: calc(var(--card-width) * 1.6);
 
   position: fixed;
-  inset: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
   z-index: 500;
   display: flex;
   flex-direction: column;
@@ -839,12 +801,27 @@ function handleRestart() {
   transition: flex-direction 0.4s ease;
 }
 
+/* #ifdef H5 */
+.divination-overlay {
+  --card-width: clamp(108px, 26vw, 172px);
+}
+/* #endif */
+
+/* #ifdef MP-WEIXIN */
+.divination-overlay {
+  --card-width: 140px;
+}
+/* #endif */
+
 .overlay-bg {
   position: absolute;
-  inset: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
   z-index: -1;
   /* 深色神秘背景；opacity 由 GSAP 驱动淡入 */
-  background: rgba(26, 15, 10, 0.95);
+  background: rgba(242, 232, 208, 0.97);
 }
 
 /* 结果展示后的容器变形 */
@@ -881,8 +858,8 @@ function handleRestart() {
   flex: 1;
   overflow-y: auto;
   animation: result-slide-in 0.5s cubic-bezier(0.4, 0, 0.2, 1) both;
-  background: rgba(26, 15, 10, 0.8);
-  border-top: 1px solid rgba(201, 151, 58, 0.2);
+  background: rgba(242, 232, 208, 0.92);
+  border-top: 1px solid var(--color-border);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -890,7 +867,7 @@ function handleRestart() {
 
 .is-wide .result-zone {
   border-top: none;
-  border-left: 1px solid rgba(201, 151, 58, 0.2);
+  border-left: 1px solid var(--color-border);
 }
 
 @keyframes result-slide-in {
@@ -921,17 +898,34 @@ function handleRestart() {
   }
 }
 
+/* 进度条头部位置 */
 .progress-header {
-  margin-top: calc(env(safe-area-inset-top, 0px) + 60rpx);
   display: flex;
   flex-direction: column;
   align-items: center;
   z-index: 20;
 }
 
+/* #ifdef H5 */
+.progress-header {
+  margin-top: calc(env(safe-area-inset-top, 0px) + 60rpx);
+}
+
 .show-results .progress-header {
   margin-top: calc(env(safe-area-inset-top, 0px) + 20rpx);
 }
+/* #endif */
+
+/* #ifdef MP-WEIXIN */
+.progress-header {
+  /* 小程序需要更大的顶部间距，避开刘海(44px) + 胶囊按钮(32px) + 额外间距 */
+  margin-top: calc(env(safe-area-inset-top, 44px) + 140rpx);
+}
+
+.show-results .progress-header {
+  margin-top: calc(env(safe-area-inset-top, 44px) + 80rpx);
+}
+/* #endif */
 
 .stars {
   display: flex;
@@ -944,19 +938,46 @@ function handleRestart() {
   width: 48rpx;
   height: 48rpx;
   transition: all 0.5s ease;
-  /* 未激活状态：铜锈暗色 */
-  filter: brightness(0.3) saturate(0.2);
+}
+
+/* 统一 SVG 图标样式 */
+.star {
+  width: 48rpx;
+  height: 48rpx;
+  transition: all 0.5s ease;
+  /* 未激活状态：降低透明度 */
+  opacity: 0.4;
 }
 
 .star.active {
-  transform: scale(1.2);
-  /* 激活状态：恢复金色 + 发光 */
-  filter: brightness(1) saturate(1) drop-shadow(0 0 6px rgba(201, 151, 58, 0.7));
+  transform: scale(1.15);
+  opacity: 1;
 }
 
 .star.blink {
   animation: star-blink 1s infinite alternate;
 }
+
+/* #ifdef H5 */
+.star {
+  filter: brightness(0.8);
+}
+
+.star.active {
+  filter: brightness(1) drop-shadow(0 0 6px rgba(122, 92, 20, 0.65));
+}
+/* #endif */
+
+/* #ifdef MP-WEIXIN */
+/* 小程序 SVG 需要显式尺寸 */
+.star {
+  display: block;
+}
+
+.star.active {
+  /* 小程序使用 box-shadow 模拟发光效果 */
+}
+/* #endif */
 
 .star-line {
   width: 60rpx;
@@ -973,7 +994,10 @@ function handleRestart() {
 
 .stage {
   position: absolute;
-  inset: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1010,9 +1034,11 @@ function handleRestart() {
   box-shadow: none;
 }
 
+/* #ifdef H5 */
 .stack-card:first-child {
   box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5);
 }
+/* #endif */
 
 .cut-t,
 .cut-m,
@@ -1029,7 +1055,10 @@ function handleRestart() {
 
 .draw-container {
   position: absolute;
-  inset: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
   pointer-events: none;
 }
 
@@ -1046,7 +1075,10 @@ function handleRestart() {
 .face-back,
 .face-front {
   position: absolute;
-  inset: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
   backface-visibility: hidden;
   margin: 0 !important;
 }
@@ -1150,24 +1182,43 @@ function handleRestart() {
   animation: dot-pulse 1.4s infinite;
 }
 
+/* #ifdef H5 */
 .thinking-dots span:nth-child(2) { animation-delay: 0.2s; }
 .thinking-dots span:nth-child(3) { animation-delay: 0.4s; }
+/* #endif */
+
+/* #ifdef MP-WEIXIN */
+/* 小程序使用类名替代nth-child */
+.thinking-dots .dot-2 { animation-delay: 0.2s; }
+.thinking-dots .dot-3 { animation-delay: 0.4s; }
+/* #endif */
 
 @keyframes dot-pulse {
   0%, 80%, 100% { opacity: 0.2; transform: translateY(0); }
   40% { opacity: 1; transform: translateY(-4rpx); }
 }
 
+/* #ifdef H5 */
 @media (min-width: 768px) {
   .divination-overlay {
     --card-width: clamp(120px, 13vw, 188px);
   }
 }
+/* #endif */
 
+/* #ifdef MP-WEIXIN */
+@media (min-width: 768px) {
+  .divination-overlay {
+    --card-width: 188px;
+  }
+}
+/* #endif */
+
+/* #ifdef H5 */
 @keyframes star-blink {
   0% {
     opacity: 0.7;
-    filter: brightness(0.8) saturate(0.8) drop-shadow(0 0 4px rgba(201, 151, 58, 0.4));
+    filter: brightness(0.9) saturate(0.8) drop-shadow(0 0 4px rgba(122, 92, 20, 0.35));
     transform: scale(1.15);
   }
 
@@ -1177,6 +1228,21 @@ function handleRestart() {
     transform: scale(1.35);
   }
 }
+/* #endif */
+
+/* #ifdef MP-WEIXIN */
+@keyframes star-blink {
+  0% {
+    opacity: 0.5;
+    transform: scale(1.15);
+  }
+
+  100% {
+    opacity: 1;
+    transform: scale(1.35);
+  }
+}
+/* #endif */
 
 @keyframes oracle-breathe {
   0%,

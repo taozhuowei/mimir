@@ -1,58 +1,85 @@
 <template>
-  <!-- 
-    首页/唯一页
-    负责问题输入和触发占卜流程
-    占卜动画和结果展示由 DivinationOverlay 组件接管
-  -->
   <view class="index-page parchment-bg">
-    <!-- 空闲状态：显示入口UI（标题 + 神秘圆环），点击后进入占卜流程 -->
-    <view v-if="isIdle" class="idle-view">
-      <view class="header">
-        <text class="title font-display text-4xl">Scales Tarot</text>
-        <text class="subtitle font-display text-xl">以牌权衡，让塔罗来定夺</text>
-        <text class="hint text-base">轻触圆环开始占卜</text>
+    <view v-if="isIdle" class="idle-view" :style="{ height: windowHeight + 'px' }">
+      <!-- 精简头部 - 更紧凑的布局 -->
+      <view class="header" :style="{ paddingTop: headerPaddingTop + 'px' }">
+        <text class="title font-display">Scales Tarot</text>
+        <text class="subtitle">以牌权衡，让塔罗来定夺</text>
       </view>
 
-      <!-- 点击区域：触发 startDivination 进入占卜流程 -->
-      <view class="start-area" @click="startDivination">
-        <view class="start-stage">
-          <!-- 
-            神秘圆环：idle状态下的入口UI
-            由多层轨道+核心+粒子组成，纯CSS动画无需JS
-          -->
-          <view class="mystic-circle">
-            <!-- 三层轨道：外层/中层/内层，不同速度反向旋转营造立体感 -->
+      <!-- 神秘圆环 - 强化仪式感和视觉分量 -->
+      <view class="circle-area" @click="startDivination">
+        <view 
+          class="mystic-circle" 
+          :style="{ width: layout.circleSize + 'px', height: layout.circleSize + 'px' }"
+        >
+          <!-- 外发光层 -->
+          <view class="glow-ring"></view>
+          
+          <!-- 轨道圆环 - 共用一个容器确保完美居中 -->
+          <view class="orbits-container">
             <view class="orbit orbit-outer"></view>
             <view class="orbit orbit-middle"></view>
             <view class="orbit orbit-inner"></view>
-
-            <!-- 中心核心：点击反馈区域 -->
-            <view class="circle-core">
-              <text class="core-symbol">✦</text>
-            </view>
-
-            <!-- 轨道粒子：沿轨道运行的装饰光点 -->
-            <view class="orbital-particle particle-1"></view>
-            <view class="orbital-particle particle-2"></view>
-            <view class="orbital-particle particle-3"></view>
           </view>
+
+          <!-- 核心按钮 -->
+          <view class="circle-core">
+            <text class="core-symbol">✦</text>
+          </view>
+
+          <!-- 轨道粒子 -->
+          <view 
+            class="orbital-particle particle-1" 
+            :style="{ 
+              width: layout.particleSize1 + 'px',
+              height: layout.particleSize1 + 'px',
+              marginLeft: -layout.particleSize1/2 + 'px',
+              marginTop: -layout.orbitRadius1 - layout.particleSize1/2 + 'px',
+              transformOrigin: '50% ' + (layout.orbitRadius1 + layout.particleSize1/2) + 'px'
+            }"
+          ></view>
+          <view 
+            class="orbital-particle particle-2" 
+            :style="{ 
+              width: layout.particleSize2 + 'px',
+              height: layout.particleSize2 + 'px',
+              marginLeft: -layout.particleSize2/2 + 'px',
+              marginTop: -layout.orbitRadius2 - layout.particleSize2/2 + 'px',
+              transformOrigin: '50% ' + (layout.orbitRadius2 + layout.particleSize2/2) + 'px'
+            }"
+          ></view>
+          <view 
+            class="orbital-particle particle-3" 
+            :style="{ 
+              width: layout.particleSize3 + 'px',
+              height: layout.particleSize3 + 'px',
+              marginLeft: -layout.particleSize3/2 + 'px',
+              marginTop: -layout.orbitRadius3 - layout.particleSize3/2 + 'px',
+              transformOrigin: '50% ' + (layout.orbitRadius3 + layout.particleSize3/2) + 'px'
+            }"
+          ></view>
+        </view>
+        
+        <!-- 底部提示 - 更克制的呈现 -->
+        <view class="touch-hint">
+          <view class="hint-line"></view>
+          <text class="hint-text">轻触召唤</text>
+          <view class="hint-line"></view>
         </view>
       </view>
     </view>
 
-    <!-- 四角装饰和神秘光球：背景装饰元素 -->
+    <!-- 角落装饰 - 增强古典边框感 -->
     <view class="corner-decoration corner-tl"></view>
     <view class="corner-decoration corner-tr"></view>
     <view class="corner-decoration corner-bl"></view>
     <view class="corner-decoration corner-br"></view>
-    <view class="mystic-orb orb-tl"></view>
-    <view class="mystic-orb orb-br"></view>
+    
+    <!-- 神秘光晕 - 深色背景氛围 -->
+    <view class="ambient-glow glow-tl"></view>
+    <view class="ambient-glow glow-br"></view>
 
-    <!-- 
-      DivinationOverlay 全程接管占卜流程
-      v-if条件：动画进行中或结果展示时显示
-      @restart：用户点击"再占一次"时触发，调用 restartDivination 重置状态
-    -->
     <DivinationOverlay
       v-if="tarotStore.isAnimating || tarotStore.isResultVisible"
       @restart="restartDivination"
@@ -61,37 +88,111 @@
 </template>
 
 <script setup lang="ts">
-import { computed, nextTick } from 'vue'
+import { computed, nextTick, ref, onMounted } from 'vue'
 import DivinationOverlay from '../../components/DivinationOverlay.vue'
 import { useTarotStore } from '../../stores/tarot'
 
-// 塔罗状态管理：控制占卜流程（idle -> animating -> result）
 const tarotStore = useTarotStore()
-
-// 是否处于空闲状态（未开始占卜）
 const isIdle = computed(() => tarotStore.isIdle)
 
+// 窗口可用高度（excludes 导航栏）；setup 阶段同步读取，防止首帧闪烁
+const windowHeight = ref((() => {
+  try { return uni.getWindowInfo().windowHeight } catch { return 600 }
+})())
+// 顶部内边距：小程序取胶囊按钮底部偏移，H5 取默认值
+const headerPaddingTop = ref(20)
+
 /**
- * 开始占卜
- * 触发条件：用户点击神秘圆环，问题为空字符串（当前版本简化流程）
- * 进入后 DivinationOverlay 接管：洗牌 -> 切牌 -> 抽牌 -> 翻转 -> 结果
+ * 布局计算 - 使用绝对 px 值
  */
+const layout = ref({
+  circleSize: 320,      // 增大圆环直径（px）
+  orbitRadius1: 160,    // 外层：100%
+  orbitRadius2: 120,    // 中层：75%
+  orbitRadius3: 80,     // 内层：50%
+  particleSize1: 8,     // 增大粒子
+  particleSize2: 6,
+  particleSize3: 7,
+})
+
+// 根据屏幕尺寸计算布局
+function calculateLayout() {
+  try {
+    const windowInfo = uni.getWindowInfo()
+    const screenWidth = windowInfo.screenWidth
+    const screenHeight = windowInfo.windowHeight
+    
+    // Save window height for page sizing
+    windowHeight.value = windowInfo.windowHeight
+    
+    // Calculate header padding top based on platform
+    // #ifdef MP-WEIXIN
+    try {
+      const menuButtonRect = uni.getMenuButtonBoundingClientRect()
+      headerPaddingTop.value = menuButtonRect.bottom + 8
+    } catch (e) {
+      headerPaddingTop.value = 20
+    }
+    // #endif
+    // #ifdef H5
+    headerPaddingTop.value = 20
+    // #endif
+    
+    // rpx 换算比例
+    const rpxRatio = screenWidth / 750
+    
+    // 圆环大小：根据屏幕高度比例计算，确保在不同尺寸设备上都有良好展示
+    // 目标：圆环占屏幕高度的 35-42%
+    const targetSize = Math.min(screenHeight * 0.38, screenWidth * 0.75)
+    const finalCircleSize = Math.round(Math.min(targetSize, 520)) // 最大 520px
+    
+    // 计算圆环半径
+    const circleRadius = finalCircleSize / 2
+    
+    // 轨道半径
+    const orbitRadius1 = Math.round(circleRadius * 1.0)
+    const orbitRadius2 = Math.round(circleRadius * 0.72)
+    const orbitRadius3 = Math.round(circleRadius * 0.44)
+    
+    // 粒子尺寸（随屏幕缩放）
+    const scale = Math.min(screenWidth / 375, 1.2) // 限制最大缩放
+    const particleSize1 = Math.max(6, Math.round(8 * scale))
+    const particleSize2 = Math.max(4, Math.round(6 * scale))
+    const particleSize3 = Math.max(5, Math.round(7 * scale))
+    
+    layout.value = {
+      circleSize: finalCircleSize,
+      orbitRadius1,
+      orbitRadius2,
+      orbitRadius3,
+      particleSize1,
+      particleSize2,
+      particleSize3,
+    }
+    
+    console.log('Screen:', screenWidth, 'x', screenHeight, 'Layout:', layout.value)
+  } catch (e) {
+    console.error('Failed to calculate layout:', e)
+  }
+}
+
+onMounted(() => {
+  calculateLayout()
+  
+  // 监听窗口变化
+  uni.onWindowResize(() => {
+    calculateLayout()
+  })
+})
+
 function startDivination() {
   tarotStore.startDivination('')
 }
 
-/**
- * 重启占卜
- * 处理 @restart 事件：重置store状态，滚动回顶部
- */
 function restartDivination() {
   tarotStore.reset()
-
   nextTick(() => {
-    uni.pageScrollTo({
-      scrollTop: 0,
-      duration: 0
-    })
+    uni.pageScrollTo({ scrollTop: 0, duration: 0 })
   })
 }
 </script>
@@ -110,272 +211,322 @@ function restartDivination() {
 }
 
 .idle-view {
-  min-height: 100vh;
+  /* 高度由 JS 精确注入，避免 100vh 在小程序中含导航栏导致居中偏移 */
   display: flex;
   flex-direction: column;
   position: relative;
   z-index: 10;
 }
 
+/* 精简头部 - 更紧凑的布局 */
 .header {
-  padding-top: calc(env(safe-area-inset-top, 0px) + 120rpx);
   padding-left: var(--space-5);
   padding-right: var(--space-5);
-  padding-bottom: var(--space-6);
+  padding-bottom: var(--space-4);
   text-align: center;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: var(--space-2);
+  gap: 16rpx;
 }
 
 .title {
+  font-size: 52rpx;
   color: var(--color-text-primary);
-  text-shadow: 0 4rpx 16rpx rgba(74, 52, 40, 0.15);
-  letter-spacing: 0.15em;
+  letter-spacing: 0.12em;
+  text-shadow: 0 4rpx 20rpx rgba(122, 92, 20, 0.15);
 }
 
 .subtitle {
+  font-size: 28rpx;
   color: var(--color-text-secondary);
-  letter-spacing: 0.25em;
-  margin-top: var(--space-1);
+  letter-spacing: 0.2em;
+  font-family: var(--font-body);
 }
 
-.hint {
-  color: var(--color-text-tertiary);
-  margin-top: var(--space-4);
-  animation: breathe 2.5s ease-in-out infinite;
-}
-
-.start-area {
+/* 圆环区域 - 占据主要视觉空间 */
+.circle-area {
   flex: 1;
-  width: 100%;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: var(--space-6) var(--space-5) calc(env(safe-area-inset-bottom, 0px) + 14vh);
+  padding: var(--space-4) 0 calc(env(safe-area-inset-bottom, 0px) + 80rpx);
 }
 
-.start-stage {
-  width: min(100%, 960rpx);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
+/* 神秘圆环 - 使用 flex 完美居中 */
 .mystic-circle {
-  width: min(72vw, 420rpx);
-  aspect-ratio: 1;
   position: relative;
-  display: grid;
-  place-items: center;
-  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* 确保在 flex 容器中居中 */
+  align-self: center;
+}
+
+/* 外发光层 */
+.glow-ring {
+  position: absolute;
+  top: -5%;
+  left: -5%;
+  width: 110%;
+  height: 110%;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(122, 92, 20, 0.06) 0%, transparent 70%);
+  pointer-events: none;
+  animation: pulse-glow 4s ease-in-out infinite;
+}
+
+/* 轨道圆环容器 - 绝对定位完美居中 */
+.orbits-container {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
 }
 
 .orbit {
   position: absolute;
-  inset: 0;
-  margin: auto;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
   border-radius: 50%;
   border: 1rpx solid var(--color-border);
 }
 
-/* 
-  轨道动画：纯CSS旋转，不同速度和方向
-  外层20s顺时针，中层15s逆时针（虚线），内层10s顺时针
-  形成层次感和神秘氛围
-*/
 .orbit-outer {
   width: 100%;
   height: 100%;
-  border-color: rgba(184, 148, 62, 0.25);
-  animation: spin 20s linear infinite;
+  border-color: rgba(122, 92, 20, 0.22);
+  animation: spin-cw 24s linear infinite;
 }
 
 .orbit-middle {
-  width: 75%;
-  height: 75%;
-  border-color: rgba(184, 148, 62, 0.35);
+  width: 72%;
+  height: 72%;
+  border-color: rgba(122, 92, 20, 0.30);
   border-style: dashed;
-  animation: spin 15s linear infinite reverse;
+  animation: spin-ccw 18s linear infinite;
 }
 
 .orbit-inner {
-  width: 50%;
-  height: 50%;
-  border-color: rgba(184, 148, 62, 0.45);
-  animation: spin 10s linear infinite;
+  width: 44%;
+  height: 44%;
+  border-color: rgba(122, 92, 20, 0.40);
+  animation: spin-cw 12s linear infinite;
 }
 
+/* 核心按钮 - 增强金属质感 */
 .circle-core {
-  width: 120rpx;
-  height: 120rpx;
+  width: 140rpx;
+  height: 140rpx;
   border-radius: 50%;
-  background: linear-gradient(145deg,
-    rgba(212, 184, 114, 0.25) 0%,
-    rgba(184, 148, 62, 0.15) 50%,
-    rgba(139, 111, 46, 0.1) 100%);
-  border: 2rpx solid rgba(184, 148, 62, 0.5);
+  background: radial-gradient(circle at 30% 30%,
+    rgba(184, 148, 80, 0.25) 0%,
+    rgba(158, 122, 28, 0.15) 50%,
+    rgba(122, 92, 20, 0.10) 100%);
+  border: 2rpx solid rgba(122, 92, 20, 0.55);
   display: flex;
   align-items: center;
   justify-content: center;
   position: relative;
   z-index: 10;
-  backdrop-filter: blur(10rpx);
   box-shadow:
-    0 8rpx 32rpx rgba(184, 148, 62, 0.2),
-    inset 0 1rpx 2rpx rgba(255, 255, 255, 0.3);
-  transition: transform var(--transition-base), box-shadow var(--transition-base), background var(--transition-base);
+    0 12rpx 48rpx rgba(122, 92, 20, 0.20),
+    inset 0 2rpx 4rpx rgba(255, 255, 255, 0.2),
+    inset 0 -2rpx 4rpx rgba(0, 0, 0, 0.2);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
+/* #ifdef H5 */
+.circle-core {
+  backdrop-filter: blur(12rpx);
+}
+/* #endif */
+
 .mystic-circle:active .circle-core {
-  transform: scale(0.95);
-  background: linear-gradient(145deg,
-    rgba(212, 184, 114, 0.35) 0%,
-    rgba(184, 148, 62, 0.25) 50%,
-    rgba(139, 111, 46, 0.15) 100%);
+  transform: scale(0.96);
+  box-shadow:
+    0 8rpx 32rpx rgba(122, 92, 20, 0.18),
+    inset 0 2rpx 4rpx rgba(255, 255, 255, 0.15);
 }
 
 .core-symbol {
-  font-size: 48rpx;
+  font-size: 56rpx;
   color: var(--color-accent);
-  animation: pulse 2s ease-in-out infinite;
-  filter: drop-shadow(0 0 8rpx rgba(184, 148, 62, 0.5));
+  animation: pulse 3s ease-in-out infinite;
+  text-shadow: 0 0 24rpx rgba(122, 92, 20, 0.50);
 }
 
+/* 轨道粒子 - 增强发光效果 */
 .orbital-particle {
   position: absolute;
-  border-radius: 50%;
-  background: var(--color-accent);
-  box-shadow: 0 0 12rpx var(--color-accent-glow);
-}
-
-/* 
-  轨道粒子动画：沿各自轨道运行
-  使用CSS transform配合rotate和translateY实现圆周运动
-*/
-.particle-1 {
-  width: 12rpx;
-  height: 12rpx;
   top: 50%;
   left: 50%;
-  animation: orbit-outer 20s linear infinite;
+  border-radius: 50%;
+  background: var(--color-accent);
+  box-shadow: 0 0 20rpx var(--color-accent), 0 0 40rpx rgba(122, 92, 20, 0.35);
+}
+
+.particle-1 {
+  animation: orbit-rotate 24s linear infinite;
 }
 
 .particle-2 {
-  width: 8rpx;
-  height: 8rpx;
-  top: 50%;
-  left: 50%;
-  opacity: 0.7;
-  animation: orbit-middle 15s linear infinite reverse;
+  opacity: 0.85;
+  animation: orbit-rotate 18s linear infinite reverse;
 }
 
 .particle-3 {
-  width: 10rpx;
-  height: 10rpx;
-  top: 50%;
-  left: 50%;
+  opacity: 0.7;
+  animation: orbit-rotate 12s linear infinite;
+}
+
+/* 底部提示 - 克制的呈现 */
+.touch-hint {
+  margin-top: 60rpx;
+  display: flex;
+  align-items: center;
+  gap: 20rpx;
   opacity: 0.6;
-  animation: orbit-inner 10s linear infinite;
+  animation: breathe 3s ease-in-out infinite;
 }
 
-.orb-tl {
-  width: 400rpx;
-  height: 400rpx;
-  top: -150rpx;
-  left: -150rpx;
+.hint-line {
+  width: 60rpx;
+  height: 1rpx;
+  background: linear-gradient(90deg, transparent, var(--color-border-strong), transparent);
 }
 
-.orb-br {
-  width: 500rpx;
-  height: 500rpx;
-  bottom: -200rpx;
-  right: -200rpx;
+.hint-text {
+  font-size: 24rpx;
+  color: var(--color-text-tertiary);
+  letter-spacing: 0.15em;
+  font-family: var(--font-body);
 }
 
+/* 角落装饰 - 增强古典感 */
+.corner-decoration {
+  position: absolute;
+  width: 100rpx;
+  height: 100rpx;
+  border: 2rpx solid var(--color-border);
+  opacity: 0.35;
+  pointer-events: none;
+}
+
+.corner-tl { 
+  top: calc(env(safe-area-inset-top, 44px) + 40rpx); 
+  left: 40rpx; 
+  border-right: none; 
+  border-bottom: none; 
+  border-top-left-radius: 20rpx;
+}
+.corner-tr { 
+  top: calc(env(safe-area-inset-top, 44px) + 40rpx); 
+  right: 40rpx; 
+  border-left: none; 
+  border-bottom: none; 
+  border-top-right-radius: 20rpx;
+}
+.corner-bl { 
+  bottom: calc(env(safe-area-inset-bottom, 0px) + 40rpx); 
+  left: 40rpx; 
+  border-right: none; 
+  border-top: none; 
+  border-bottom-left-radius: 20rpx;
+}
+.corner-br { 
+  bottom: calc(env(safe-area-inset-bottom, 0px) + 40rpx); 
+  right: 40rpx; 
+  border-left: none; 
+  border-top: none; 
+  border-bottom-right-radius: 20rpx;
+}
+
+/* 环境光晕 - 深色氛围 */
+.ambient-glow {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+  filter: blur(80rpx);
+}
+
+.glow-tl {
+  width: 600rpx;
+  height: 600rpx;
+  top: -200rpx;
+  left: -200rpx;
+  background: radial-gradient(circle, rgba(100, 60, 20, 0.08) 0%, transparent 70%);
+}
+
+.glow-br {
+  width: 700rpx;
+  height: 700rpx;
+  bottom: -250rpx;
+  right: -250rpx;
+  background: radial-gradient(circle, rgba(122, 92, 20, 0.06) 0%, transparent 70%);
+}
+
+/* #ifdef MP-WEIXIN */
+.ambient-glow {
+  opacity: 0.7;
+}
+/* #endif */
+
+/* 响应式 */
 @media (min-width: 768px) {
-  .header {
-    padding-top: calc(env(safe-area-inset-top, 0px) + 160rpx);
-  }
+  /* 注意：.header padding-top 由 JS 内联注入，不在此覆盖 */
 
-  .start-area {
-    padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 10vh);
+  .title {
+    font-size: 64rpx;
   }
-
-  .mystic-circle {
-    width: min(32vw, 440rpx);
+  
+  .subtitle {
+    font-size: 32rpx;
   }
-
+  
   .circle-core {
-    width: 150rpx;
-    height: 150rpx;
+    width: 160rpx;
+    height: 160rpx;
   }
-
+  
   .core-symbol {
-    font-size: 60rpx;
+    font-size: 64rpx;
   }
 }
 
-@keyframes orbit-outer {
-  from {
-    transform: translate(-50%, -50%) rotate(0deg) translateY(calc(min(72vw, 420rpx) * -0.5)) rotate(0deg);
-  }
-
-  to {
-    transform: translate(-50%, -50%) rotate(360deg) translateY(calc(min(72vw, 420rpx) * -0.5)) rotate(-360deg);
-  }
-}
-
-@keyframes orbit-middle {
-  from {
-    transform: translate(-50%, -50%) rotate(0deg) translateY(calc(min(72vw, 420rpx) * -0.375)) rotate(0deg);
-  }
-
-  to {
-    transform: translate(-50%, -50%) rotate(360deg) translateY(calc(min(72vw, 420rpx) * -0.375)) rotate(-360deg);
-  }
-}
-
-@keyframes orbit-inner {
-  from {
-    transform: translate(-50%, -50%) rotate(0deg) translateY(calc(min(72vw, 420rpx) * -0.25)) rotate(0deg);
-  }
-
-  to {
-    transform: translate(-50%, -50%) rotate(360deg) translateY(calc(min(72vw, 420rpx) * -0.25)) rotate(-360deg);
-  }
+/* 动画 */
+@keyframes orbit-rotate {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }
 
 @keyframes pulse {
-  0%, 100% {
-    transform: scale(1);
-    opacity: 0.9;
-  }
-
-  50% {
-    transform: scale(1.15);
-    opacity: 1;
-  }
+  0%, 100% { transform: scale(1); opacity: 0.9; }
+  50% { transform: scale(1.1); opacity: 1; }
 }
 
 @keyframes breathe {
-  0%, 100% {
-    opacity: 0.5;
-  }
-
-  50% {
-    opacity: 1;
-  }
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 0.7; }
 }
 
-@keyframes spin {
-  from {
-    transform: rotate(0deg);
-  }
+@keyframes spin-cw {
+  from { transform: translate(-50%, -50%) rotate(0deg); }
+  to { transform: translate(-50%, -50%) rotate(360deg); }
+}
 
-  to {
-    transform: rotate(360deg);
-  }
+@keyframes spin-ccw {
+  from { transform: translate(-50%, -50%) rotate(0deg); }
+  to { transform: translate(-50%, -50%) rotate(-360deg); }
+}
+
+@keyframes pulse-glow {
+  0%, 100% { opacity: 0.6; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.05); }
 }
 </style>

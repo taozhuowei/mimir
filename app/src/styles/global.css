@@ -52,51 +52,57 @@
    设计令牌 (Design Tokens)
    ======================================== */
 
-/* 颜色系统 — 深色神秘风格，深棕近黑为基调 */
-:root {
-  /* 主色调 */
-  --color-bg-primary: #1A0F0A;
-  --color-bg-secondary: #2D1B14;
-  --color-bg-tertiary: #3D2518;
+/* 颜色系统 — 浅色中世纪手稿风格，羊皮纸为基调
+   通用变量在 :root 和 page 中同时定义 */
+:root, page {
+  /* === Background: Parchment Layers === */
+  --color-bg-primary:   #F2E8D0;
+  --color-bg-secondary: #EAD9BC;
+  --color-bg-tertiary:  #DFC9A4;
+  --color-bg-page:      #F7F0E0;
+  --color-bg-sunken:    #D4B98C;
 
-  /* 文字色 — 羊皮纸色在深背景上保持古典质感 */
-  --color-text-primary: #E8D4A8;
-  --color-text-secondary: #C4A480;
-  --color-text-tertiary: #9A7A60;
-  --color-text-muted: #7A5C42;
+  /* === Text: Iron Gall Ink === */
+  --color-text-primary:   #1E0F06;
+  --color-text-secondary: #4A2510;
+  --color-text-tertiary:  #7A4E28;
+  --color-text-muted:     #A67C4E;
 
-  /* 强调色 — 暗金/旧铜质感 */
-  --color-accent: #C9973A;
-  --color-accent-light: #E8B84A;
-  --color-accent-dark: #8B6F2E;
-  --color-accent-glow: rgba(201, 151, 58, 0.35);
+  /* === Accent: Antique Gold / Tarnished Copper === */
+  --color-accent:       #7A5C14;
+  --color-accent-light: #9E7A1C;
+  --color-accent-dark:  #503C0A;
+  --color-accent-warm:  #B8892A;
+  --color-accent-glow:  rgba(122, 92, 20, 0.22);
 
-  /* 功能色 */
-  --color-success: #4CAF50;
-  --color-warning: #FF9800;
-  --color-error: #F44336;
+  /* === Functional Colors: Medieval Pigments === */
+  --color-yes:         #7A1515;
+  --color-yes-light:   #9E2020;
+  --color-yes-bg:      rgba(122, 21, 21, 0.08);
+  --color-no:          #1A2E4A;
+  --color-no-light:    #2A4066;
+  --color-no-bg:       rgba(26, 46, 74, 0.08);
+  --color-success:     #2E5C30;
+  --color-warning:     #8B5C10;
+  --color-error:       #7A1515;
 
-  /* 中性色 */
-  --color-border: rgba(201, 151, 58, 0.3);
-  --color-border-strong: rgba(201, 151, 58, 0.55);
-  --color-card-bg: rgba(45, 27, 20, 0.85);
-  --color-overlay: rgba(10, 5, 3, 0.75);
+  /* === Borders: Book Binding Lines === */
+  --color-border:        rgba(74, 37, 16, 0.20);
+  --color-border-strong: rgba(74, 37, 16, 0.45);
+  --color-border-accent: rgba(122, 92, 20, 0.50);
+  --color-border-rule:   rgba(74, 37, 16, 0.12);   /* 页面规则线，最淡 */
 
-  /* 字体系统
-     H5: Cinzel(Latin展示) + LXGW WenKai(中文)，本地 WOFF2
-     小程序: 系统楷体兜底，无需加载外部字体 */
-  --font-display: 'Cinzel', 'LXGW WenKai', 'STKaiti', 'KaiTi', 'Kaiti SC', serif;
-  --font-body: 'LXGW WenKai', 'STKaiti', 'KaiTi', 'Kaiti SC', 'STSong', serif;
+  /* === Surfaces === */
+  --color-card-bg:   rgba(242, 232, 208, 0.94);
+  --color-card-raised: rgba(247, 240, 224, 0.97);
+  --color-overlay:   rgba(15, 8, 3, 0.72);
 
-  /* 字体大小 — 模块化比例 (1.25) */
-  --text-xs: clamp(0.75rem, 0.7rem + 0.25vw, 0.875rem);
-  --text-sm: clamp(0.875rem, 0.8rem + 0.35vw, 1rem);
-  --text-base: clamp(1rem, 0.9rem + 0.5vw, 1.125rem);
-  --text-lg: clamp(1.125rem, 1rem + 0.65vw, 1.375rem);
-  --text-xl: clamp(1.375rem, 1.2rem + 0.85vw, 1.75rem);
-  --text-2xl: clamp(1.75rem, 1.5rem + 1.25vw, 2.25rem);
-  --text-3xl: clamp(2.25rem, 2rem + 1.5vw, 3rem);
-  --text-4xl: clamp(3rem, 2.5rem + 2.5vw, 4rem);
+  /* === Shadows: Warm Brown Tinted === */
+  --shadow-sm:   0 1rpx 4rpx rgba(30, 15, 6, 0.12);
+  --shadow-md:   0 4rpx 14rpx rgba(30, 15, 6, 0.18), 0 1rpx 3rpx rgba(30, 15, 6, 0.10);
+  --shadow-lg:   0 8rpx 28rpx rgba(30, 15, 6, 0.22), 0 2rpx 6rpx rgba(30, 15, 6, 0.12);
+  --shadow-xl:   0 16rpx 48rpx rgba(30, 15, 6, 0.28), 0 4rpx 12rpx rgba(30, 15, 6, 0.15);
+  --shadow-glow: 0 0 32rpx rgba(122, 92, 20, 0.30), 0 0 60rpx rgba(122, 92, 20, 0.12);
 
   /* 间距系统 — 8px 基准 */
   --space-1: 0.25rem;
@@ -119,13 +125,6 @@
   --radius-xl: 32rpx;
   --radius-full: 9999rpx;
 
-  /* 阴影 — 深色系精致层次感 */
-  --shadow-sm: 0 1rpx 3rpx rgba(0, 0, 0, 0.3);
-  --shadow-md: 0 4rpx 12rpx rgba(0, 0, 0, 0.4);
-  --shadow-lg: 0 8rpx 24rpx rgba(0, 0, 0, 0.5);
-  --shadow-xl: 0 16rpx 48rpx rgba(0, 0, 0, 0.6);
-  --shadow-glow: 0 0 40rpx var(--color-accent-glow);
-
   /* 过渡 */
   --transition-fast: 150ms ease;
   --transition-base: 250ms ease;
@@ -141,6 +140,38 @@
   --z-toast: 500;
   --z-tooltip: 600;
 }
+
+/* H5 专用：响应式字体大小 */
+/* #ifdef H5 */
+:root {
+  --font-display: 'Cinzel', 'LXGW WenKai', 'STKaiti', 'KaiTi', 'Kaiti SC', serif;
+  --font-body: 'LXGW WenKai', 'STKaiti', 'KaiTi', 'Kaiti SC', 'STSong', serif;
+  --text-xs: clamp(0.75rem, 0.7rem + 0.25vw, 0.875rem);
+  --text-sm: clamp(0.875rem, 0.8rem + 0.35vw, 1rem);
+  --text-base: clamp(1rem, 0.9rem + 0.5vw, 1.125rem);
+  --text-lg: clamp(1.125rem, 1rem + 0.65vw, 1.375rem);
+  --text-xl: clamp(1.375rem, 1.2rem + 0.85vw, 1.75rem);
+  --text-2xl: clamp(1.75rem, 1.5rem + 1.25vw, 2.25rem);
+  --text-3xl: clamp(2.25rem, 2rem + 1.5vw, 3rem);
+  --text-4xl: clamp(3rem, 2.5rem + 2.5vw, 4rem);
+}
+/* #endif */
+
+/* 小程序专用：固定 rpx 字体大小 */
+/* #ifdef MP-WEIXIN */
+page {
+  --font-display: 'STKaiti', 'KaiTi', 'Kaiti SC', serif;
+  --font-body: 'STKaiti', 'KaiTi', 'Kaiti SC', 'STSong', serif;
+  --text-xs: 24rpx;
+  --text-sm: 28rpx;
+  --text-base: 32rpx;
+  --text-lg: 36rpx;
+  --text-xl: 44rpx;
+  --text-2xl: 56rpx;
+  --text-3xl: 72rpx;
+  --text-4xl: 96rpx;
+}
+/* #endif */
 
 /* ========================================
    基础重置
@@ -191,19 +222,17 @@ page {
    背景系统
    ======================================== */
 
-/* 深色神秘背景 — 多层渐变营造夜深私密感 */
+/* 浅色羊皮纸背景 — 多层渐变营造中世纪手稿质感
+   温暖棕色/金色调交织，营造古典神秘氛围 */
 .parchment-bg {
   background-color: var(--color-bg-primary);
   background-image:
-    /* 暗紫光晕 — 神秘感 */
-    radial-gradient(ellipse 80% 50% at 20% 40%, rgba(80, 40, 80, 0.12) 0%, transparent 60%),
-    /* 暗金光源 — 古铜质感 */
-    radial-gradient(ellipse 60% 40% at 80% 20%, rgba(201, 151, 58, 0.06) 0%, transparent 50%),
-    /* 底部深蓝光晕 — 神秘深度 */
-    radial-gradient(ellipse 70% 30% at 50% 100%, rgba(20, 20, 60, 0.15) 0%, transparent 50%),
-    /* 微妙噪点纹理 */
-    url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200"><filter id="n"><feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="4" stitchTiles="stitch"/></filter><rect width="100%" height="100%" filter="url(%23n)" opacity="0.025"/></svg>');
-  background-size: cover, cover, cover, 200px 200px;
+    radial-gradient(ellipse 65% 55% at 10% 20%, rgba(160, 100, 40, 0.10) 0%, transparent 60%),
+    radial-gradient(ellipse 55% 45% at 92% 88%, rgba(80, 45, 10, 0.12) 0%, transparent 55%),
+    radial-gradient(ellipse 50% 35% at 50% 30%, rgba(255, 245, 220, 0.25) 0%, transparent 60%),
+    radial-gradient(ellipse 100% 30% at 50% 100%, rgba(100, 60, 20, 0.10) 0%, transparent 45%),
+    url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="180" height="180"><filter id="g"><feTurbulence type="fractalNoise" baseFrequency="0.75" numOctaves="4" stitchTiles="stitch"/><feColorMatrix type="saturate" values="0"/></filter><rect width="100%" height="100%" filter="url(%23g)" opacity="0.04"/></svg>');
+  background-size: cover, cover, cover, cover, 180px 180px;
 }
 
 /* ========================================
@@ -294,15 +323,26 @@ page {
   border-radius: var(--radius-lg);
   padding: var(--space-6);
   box-shadow: var(--shadow-md);
+  transition: transform var(--transition-base), box-shadow var(--transition-base);
+}
+
+/* #ifdef H5 */
+.card {
   backdrop-filter: blur(20rpx);
   -webkit-backdrop-filter: blur(20rpx);
-  transition: transform var(--transition-base), box-shadow var(--transition-base);
 }
 
 .card:hover {
   transform: translateY(-2rpx);
   box-shadow: var(--shadow-lg);
 }
+/* #endif */
+
+/* #ifdef MP-WEIXIN */
+.card {
+  background: rgba(242, 232, 208, 0.98);
+}
+/* #endif */
 
 /* 按钮系统 — 多层次按钮样式 */
 .btn {
@@ -331,6 +371,7 @@ page {
   box-shadow: var(--shadow-md), 0 0 0 1rpx rgba(255, 255, 255, 0.1) inset;
 }
 
+/* #ifdef H5 */
 .btn-primary::before {
   content: '';
   position: absolute;
@@ -345,23 +386,26 @@ page {
 .btn-primary:hover::before {
   left: 100%;
 }
+/* #endif */
 
 .btn-primary:active {
   transform: scale(0.97);
   box-shadow: var(--shadow-sm);
 }
 
-/* 次按钮 — 深色背景 + 金色描边 */
+/* 次按钮 — 羊皮纸背景 + 古铜色描边 */
 .btn-secondary {
-  background: rgba(45, 27, 20, 0.7);
+  background: rgba(242, 228, 204, 0.8);
   color: var(--color-accent);
   border: 2rpx solid var(--color-border-strong);
 }
 
+/* #ifdef H5 */
 .btn-secondary:hover {
   background: rgba(61, 37, 24, 0.9);
   border-color: var(--color-accent-light);
 }
+/* #endif */
 
 /* 文字按钮 */
 .btn-ghost {
@@ -370,10 +414,12 @@ page {
   padding: var(--space-2) var(--space-3);
 }
 
+/* #ifdef H5 */
 .btn-ghost:hover {
   color: var(--color-text-primary);
-  background: rgba(201, 151, 58, 0.08);
+  background: rgba(122, 92, 20, 0.08);
 }
+/* #endif */
 
 /* 图标按钮 */
 .btn-icon {
@@ -421,9 +467,21 @@ page {
   position: absolute;
   border-radius: 50%;
   background: radial-gradient(circle, var(--color-accent-glow) 0%, transparent 70%);
-  filter: blur(40rpx);
   pointer-events: none;
 }
+
+/* #ifdef H5 */
+.mystic-orb {
+  filter: blur(40rpx);
+}
+/* #endif */
+
+/* #ifdef MP-WEIXIN */
+/* 小程序降低透明度模拟模糊效果 */
+.mystic-orb {
+  opacity: 0.6;
+}
+/* #endif */
 
 /* 金属边框效果 — 使用 card-bg 适配深色卡片 */
 .border-brass {
@@ -529,7 +587,7 @@ page {
 
 /* 平板 */
 @media (min-width: 768px) {
-  :root {
+  :root, page {
     --space-4: 1.25rem;
     --space-6: 2rem;
     --space-8: 2.5rem;
@@ -538,7 +596,7 @@ page {
 
 /* 桌面 */
 @media (min-width: 1024px) {
-  :root {
+  :root, page {
     --space-6: 2.5rem;
     --space-8: 3rem;
   }
