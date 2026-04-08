@@ -127,7 +127,8 @@
       enable-flex
     >
       <ResultPanel
-        :reading-result="tarotStore.readingResult!"
+        v-if="tarotStore.readingResult"
+        :reading-result="tarotStore.readingResult"
         :question="tarotStore.currentQuestion"
         @restart="handleRestart"
       />
@@ -176,25 +177,25 @@ const stageIcons = {
   pentacles: `${getStaticIconBase()}/icon-pentacles.png`,
 }
 
-// User-facing copy is stored with unicode escapes so Mini Program build output stays ASCII-safe.
+// User-facing copy strings.
 const overlay_text = {
-  position_reversed: '\u9006',
-  position_upright: '\u6b63',
-  restart: '\u518d\u5360\u4e00\u6b21',
-  start_shuffle: '\u5f00\u59cb\u6d17\u724c',
-  shuffle_again: '\u518d\u6d17\u4e00\u6b21',
-  start_cut: '\u5f00\u59cb\u5207\u724c',
-  cut_again: '\u518d\u5207\u4e00\u6b21',
-  start_draw: '\u62bd\u53d6\u724c\u9635',
-  revealing: '\u795e\u8c15\u663e\u73b0\u4e2d',
-  prompt_shuffle: '\u6d41\u7a0b\uff1a\u8bf7\u6d17\u724c',
-  prompt_shuffling: '\u6d41\u7a0b\uff1a\u6d17\u724c\u4e2d',
-  prompt_cutting: '\u6d41\u7a0b\uff1a\u5207\u724c\u4e2d',
-  prompt_cut: '\u6d41\u7a0b\uff1a\u8bf7\u5207\u724c',
-  prompt_draw: '\u6d41\u7a0b\uff1a\u8bf7\u62bd\u53d6\u724c\u9635',
-  prompt_drawing: '\u6d41\u7a0b\uff1a\u724c\u9635\u51dd\u805a\u4e2d',
-  revealed: '\u795e\u8c15\u5df2\u7ecf\u663e\u73b0',
-  result: '\u89e3\u8bfb\u7ed3\u679c',
+  position_reversed: '逆',
+  position_upright: '正',
+  restart: '再占一次',
+  start_shuffle: '开始洗牌',
+  shuffle_again: '再洗一次',
+  start_cut: '开始切牌',
+  cut_again: '再切一次',
+  start_draw: '抽取牌阵',
+  revealing: '神谕显现中',
+  prompt_shuffle: '流程：请洗牌',
+  prompt_shuffling: '流程：洗牌中',
+  prompt_cutting: '流程：切牌中',
+  prompt_cut: '流程：请切牌',
+  prompt_draw: '流程：请抽取牌阵',
+  prompt_drawing: '流程：牌阵凝聚中',
+  revealed: '神谕已经显现',
+  result: '解读结果',
 }
 
 // ---- 响应式状态 ----

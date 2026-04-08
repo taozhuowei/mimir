@@ -20,6 +20,7 @@ export const useTarotStore = defineStore('tarot', () => {
   const allCards = ref<TarotCardInfo[]>([])      // 从 GET /api/v1/cards 加载
   const currentQuestion = ref('')
   const isCardsLoading = ref(false)
+  const cardsLoadError = ref<string | null>(null)
 
   const isIdle = computed(() => phase.value === 'idle')
   const isAnimating = computed(() => ['shuffling', 'cutting', 'drawing', 'revealing'].includes(phase.value))
@@ -27,10 +28,13 @@ export const useTarotStore = defineStore('tarot', () => {
 
   /** 应用启动时调用一次，从后端加载全部 78 张牌数据 */
   async function loadCards(): Promise<void> {
+    cardsLoadError.value = null
     if (allCards.value.length > 0 || isCardsLoading.value) return
     isCardsLoading.value = true
     try {
       allCards.value = await fetchAllCards()
+    } catch (err) {
+      cardsLoadError.value = err instanceof Error ? err.message : 'Failed to load card data'
     } finally {
       isCardsLoading.value = false
     }
@@ -84,6 +88,7 @@ export const useTarotStore = defineStore('tarot', () => {
     isResultVisible,
     readingResult,
     isCardsLoading,
+    cardsLoadError,
     loadCards,
     startDivination,
     setPhase,

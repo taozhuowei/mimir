@@ -30,7 +30,7 @@ app.use((_req, res, next) => {
 app.use(express.json())
 
 // Static tarot assets (images, fonts, icons)
-app.use('/static', express.static(path.join(__dirname, '../public/static')))
+app.use('/static', express.static(path.join(__dirname, '../public/static'), { maxAge: '7d', etag: true }))
 
 // API routes
 app.use('/api/v1/cards', cardsRouter)

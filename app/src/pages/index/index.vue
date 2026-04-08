@@ -2,7 +2,17 @@
   <view class="index-page parchment-bg">
     <!-- 将所有内容包裹在一层，方便做整体的镜头推移 -->
     <view class="scene-container" :style="sceneStyle">
-      <view v-if="isIdle" class="idle-view">
+      <view v-if="cardsLoadError" class="idle-view error-view">
+        <view class="header" :style="{ paddingTop: headerPaddingTop + 'px' }">
+          <text class="title font-display">Scales Tarot</text>
+          <text class="subtitle">星盘感应受阻</text>
+          <text class="guidance-text">请检查网络连接</text>
+        </view>
+        <view class="error-body">
+          <view class="btn btn-primary" @click="retryLoadCards">重新感应</view>
+        </view>
+      </view>
+      <view v-if="isIdle && !cardsLoadError" class="idle-view">
         <!-- 头部 -->
         <view class="header" :style="{ paddingTop: headerPaddingTop + 'px' }">
           <text class="title font-display">Scales Tarot</text>
@@ -59,6 +69,8 @@ import { CARD_BACK_IMAGE as cardBack } from '../../constants'
 
 const tarotStore = useTarotStore()
 const isIdle = computed(() => tarotStore.isIdle)
+const cardsLoadError = computed(() => tarotStore.cardsLoadError)
+function retryLoadCards() { tarotStore.loadCards() }
 
 const headerPaddingTop = ref(20)
 const hintOpacity = ref(0)
@@ -379,4 +391,11 @@ onUnmounted(() => {
 .corner-tr { top: 30rpx; right: 30rpx; border-left: none; border-bottom: none; }
 .corner-bl { bottom: 30rpx; left: 30rpx; border-right: none; border-top: none; }
 .corner-br { bottom: 30rpx; right: 30rpx; border-left: none; border-top: none; }
+
+.error-body {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
 </style>

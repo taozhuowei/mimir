@@ -45,8 +45,12 @@ export interface ReadingResult {
  * Interpretation of the drawn cards is done by POST /api/v1/readings.
  */
 export function drawThreeCards(all_cards: TarotCardInfo[]): DrawnResult[] {
-  const shuffled = [...all_cards].sort(() => Math.random() - 0.5)
-  return shuffled.slice(0, 3).map(card => ({
+  const deck = [...all_cards]
+  for (let i = 0; i < Math.min(3, deck.length); i++) {
+    const j = i + Math.floor(Math.random() * (deck.length - i))
+    ;[deck[i], deck[j]] = [deck[j], deck[i]]
+  }
+  return deck.slice(0, 3).map(card => ({
     card,
     position: Math.random() > 0.5 ? 'upright' : 'reversed'
   }))
