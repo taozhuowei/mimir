@@ -1,6 +1,7 @@
 /dist/
 /app/dist/
 /server/dist/
+/app/unpackage/
 /project.private.config.json
 /node_modules/
 /app/node_modules/

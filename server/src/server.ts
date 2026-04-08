@@ -27,7 +27,7 @@ app.use((_req, res, next) => {
 
 app.use(express.json())
 
-// Static assets served from public/static
+// Static tarot assets (images, fonts, icons)
 app.use('/static', express.static(path.join(__dirname, '../public/static')))
 
 // API routes
@@ -36,6 +36,13 @@ app.use('/api/v1/readings', readingsRouter)
 
 app.get('/api/health', (_req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() })
+})
+
+// H5 SPA — serve built frontend and fall back to index.html for client-side routing
+const h5Dist = path.join(__dirname, '../../dist/build/h5')
+app.use(express.static(h5Dist))
+app.get('*', (_req, res) => {
+  res.sendFile(path.join(h5Dist, 'index.html'))
 })
 
 app.listen(PORT, () => {

@@ -3,11 +3,8 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "dev": "concurrently -n server,h5 --prefix-colors cyan,yellow \"npm run server\" \"npm run dev:h5\"",
-    "dev:h5": "cross-env UNI_INPUT_DIR=app/src VITE_ROOT_DIR=app node node_modules/@dcloudio/vite-plugin-uni/bin/uni.js --config app/vite.config.ts",
-    "dev:mp": "cross-env UNI_INPUT_DIR=app/src VITE_ROOT_DIR=app node node_modules/@dcloudio/vite-plugin-uni/bin/uni.js -p mp-weixin --config app/vite.config.ts",
-    "build:h5": "cross-env UNI_INPUT_DIR=app/src VITE_ROOT_DIR=app node node_modules/@dcloudio/vite-plugin-uni/bin/uni.js build --config app/vite.config.ts",
-    "build:mp": "cross-env UNI_INPUT_DIR=app/src VITE_ROOT_DIR=app node node_modules/@dcloudio/vite-plugin-uni/bin/uni.js build -p mp-weixin --config app/vite.config.ts",
+    "h5": "cross-env UNI_INPUT_DIR=app/src VITE_ROOT_DIR=app node node_modules/@dcloudio/vite-plugin-uni/bin/uni.js build --config app/vite.config.ts",
+    "mp": "cross-env UNI_INPUT_DIR=app/src VITE_ROOT_DIR=app node node_modules/@dcloudio/vite-plugin-uni/bin/uni.js build -p mp-weixin --config app/vite.config.ts",
     "server": "tsx server/src/server.ts",
     "test": "vitest run --config vitest.config.ts",
     "typecheck": "vue-tsc --noEmit -p app/tsconfig.json && tsc --noEmit -p server/tsconfig.json"
