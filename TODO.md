@@ -1,0 +1,179 @@
+# TODO
+
+## 状态说明
+
+| 标记 | 含义 |
+|------|------|
+| `[ ]` | 待处理 |
+| `[~]` | 进行中 |
+| `[x]` | 已完成 |
+| `[-]` | 已取消 / 不做 |
+
+---
+
+## Phase 1 · 前后端分离
+
+**目标**：将牌库数据和解读逻辑迁移至后端，前端只保留抽牌逻辑和 UI，保证功能不受影响。单条 npm 命令同时启动前端编译和后端服务器。
+
+**验收标准**：H5 和小程序均可正常完成完整占卜流程；`npm start` 一条命令可同时启动前端开发服务和后端服务。
+
+### 后端重构
+
+- [x] 新建 `server/package.json`，配置 TypeScript + tsx 运行环境
+- [x] 将 `server/server.js` 重写为 TypeScript，拆分为模块化结构（`server/src/`）
+- [x] 将 `app/src/data/tarot-*.json` 迁移至 `server/src/data/`（保持 JSON 结构不变）
+- [x] 实现 `GET /api/v1/cards`：返回全部 78 张牌数据（含图片 URL，图片 URL 由服务端拼接主题基础路径）
+- [x] 实现 `POST /api/v1/readings`：接收 `[{ cardId, position }]`，返回解读结果（`result`、`score`、`cardDetails`）；将 `generateReading` / `getCardScore` 逻辑迁移至 `server/src/services/tarot_reading.ts`
+
+### 前端重构
+
+- [x] 新建 `app/src/api/`，用 `uni.request` 封装 API 客户端（兼容 H5 和小程序；支持 base URL 配置）
+- [x] `app/src/utils/tarotReading.ts`：删除 `loadAllCards` / `generateReading` / `getCardScore`，只保留 `drawThreeCards` 和类型定义
+- [x] 删除 `app/src/data/` 目录（所有 JSON 文件随后端迁移一并删除）
+- [x] 更新 `app/src/stores/tarot.ts`：`allCards` 初始化改为调用 `GET /api/v1/cards`；`drawThreeCards` 后调用 `POST /api/v1/readings` 获取解读
+- [x] 更新 `app/src/constants.ts`：统一 API base URL 配置（开发用 `http://localhost:3000`，小程序生产用可配置域名）
+
+### 工程配置
+
+- [x] 根目录 `package.json` 引入 `concurrently`，`npm start` 同时启动后端（`tsx`）和前端（`uni dev:h5`）；`npm install` 从根目录运行
+- [x] `npm run build` 同时执行前端 H5 构建和后端 TypeScript 编译
+
+### 文档
+
+- [ ] 更新 `PRD.md` §7 技术方案：补充前后端分离架构说明、API 端点列表
+- [ ] 更新 `README.md`：本地开发启动方式（`npm install` 在根目录，`npm start` 在 `app/`）
+
+---
+
+## Phase 2 · 小程序登录
+
+**目标**：实现微信小程序 OAuth 登录，前端以 openid 为身份标识，后端签发 JWT Token 维持会话。为后续配额和用户数据功能打基础。
+
+**依赖**：Phase 1 完成。
+
+**验收标准**：小程序冷启动可静默完成登录（无需用户感知），Token 存入本地缓存，后续 API 请求自动携带 Token。
+
+### 后端
+
+- [ ] 引入 `jsonwebtoken`，封装 Token 签发与验证中间件
+- [ ] 实现 `POST /api/v1/auth/wx-login`：接收小程序 `code`，调用微信 `jscode2session` 接口换取 `openid`，签发 JWT 并返回
+- [ ] 新建 `server/src/data/users.json`（开发阶段临时存储 openid → user 映射，生产阶段换数据库）
+- [ ] 通过环境变量（`.env`）管理微信 AppID / AppSecret，不入库
+
+### 前端
+
+- [ ] 新建 `app/src/stores/user.ts`：管理登录态、Token、openid
+- [ ] 小程序启动时（`App.vue onLaunch`）静默执行登录流程：`wx.login()` → `POST /api/v1/auth/wx-login` → 存入 `uni.setStorageSync`
+- [ ] API 客户端 `app/src/api/` 支持自动注入 `Authorization: Bearer <token>` 请求头
+- [ ] H5 模式下跳过登录（Token 为空时 API 仍可正常调用，仅无法使用需身份的功能）
+
+### 文档
+
+- [ ] 新建 `server/ENV.md`：记录所有环境变量名称、用途、示例值（不记录真实值）
+- [ ] 更新 `PRD.md`：补充登录流程说明
+
+---
+
+## Phase 3 · 主题系统
+
+**目标**：实现可多人协作的主题机制。贡献者在 `server/themes/` 下新建一个符合规范的目录即可新增主题；前端可在不改动任何动画和功能代码的情况下切换主题。
+
+**依赖**：Phase 1 完成。
+
+**验收标准**：新增一个测试主题目录并切换后，所有图片、图标、配色均更换，动画和占卜流程不受影响。
+
+### 主题规范与迁移
+
+- [ ] 制定主题目录规范文档（见下方「主题目录结构」）
+- [ ] 将现有 `golden_dawn` 资源迁移到新规范目录结构（icons 并入主题目录）
+
+**主题目录结构（规范）**：
+
+```
+server/themes/
+└── {theme_id}/                       # 目录名即主题 ID（snake_case）
+    ├── theme.json                    # 主题元数据 + 配色方案
+    ├── tarot/
+    │   ├── card_back.jpeg
+    │   ├── major/
+    │   │   └── major_arcana_{nn}_{id}.jpeg
+    │   └── minor/
+    │       ├── cups/
+    │       ├── swords/
+    │       ├── wands/
+    │       └── pentacles/
+    └── icons/
+        ├── icon-cups.png
+        ├── icon-pentacles.png
+        ├── icon-swords.png
+        └── icon-wands.png
+```
+
+**theme.json 结构（规范）**：
+
+```json
+{
+  "id": "golden_dawn",
+  "name": "Golden Dawn",
+  "author": "",
+  "colors": {
+    "bg_primary": "#...",
+    "bg_secondary": "#...",
+    "text_primary": "#...",
+    "text_secondary": "#...",
+    "accent": "#...",
+    "border": "#..."
+  }
+}
+```
+
+### 后端
+
+- [ ] 实现 `GET /api/v1/themes`：扫描 `server/themes/` 目录，返回所有主题的 `id` + `name` + `author`
+- [ ] 实现 `GET /api/v1/themes/:id`：返回指定主题的完整 `theme.json` 内容
+- [ ] 静态资源路径调整：`/static/themes/:id/tarot/...`、`/static/themes/:id/icons/...`
+
+### 前端
+
+- [ ] 新建 `app/src/stores/theme.ts`：管理当前主题 ID、主题配置，提供 `switchTheme()` 方法
+- [ ] 将 `constants.ts` 中的图片/图标路径改为从 `theme store` 动态获取（拼接主题 ID）
+- [ ] 将 `app/src/styles/global.css` 中的颜色硬编码替换为 CSS 变量（`--color-bg-primary` 等）；主题切换时动态注入 CSS 变量值
+- [ ] 新增主题选择 UI 入口（简单的主题列表弹窗即可，无需复杂设计）
+- [ ] 小程序端：通过 `page.setData` 更新 CSS 变量（适配小程序 CSS 变量注入方式）
+
+### 文档
+
+- [ ] 新建 `server/themes/THEME_SPEC.md`：主题贡献指南（目录结构、文件命名规则、theme.json 字段说明）
+- [ ] 更新 `PRD.md`：补充主题系统说明
+
+---
+
+## Phase 4 · 解读功能扩展
+
+**目标**：在现有离线规则解读基础上，新增 AI 解读模式。每位用户每天可使用 3 次 AI 解读，无限次离线解读。
+
+**依赖**：Phase 2（需要用户身份用于配额追踪）。
+
+**注意**：AI 解读的 prompt 设计、provider 选择（Claude / OpenAI）、结果格式需单独详细设计后再实现，本 phase 仅列出已明确的结构性任务。
+
+### 待专项设计
+
+- [ ] **AI 解读详细设计**：确定 prompt 模板、AI provider、解读结果字段格式、用户展示方式（流式输出 or 一次性返回）
+
+### 后端（结构已明确部分）
+
+- [ ] `POST /api/v1/readings` 新增 `mode` 字段（`offline` | `ai`），`offline` 走现有逻辑，`ai` 走 AI 流程
+- [ ] 实现每日配额系统：基于 openid + 日期，记录当日 AI 解读次数；超出 3 次返回 `429 Quota Exceeded`
+- [ ] 实现 `GET /api/v1/quota`：返回当前用户今日剩余 AI 解读次数
+- [ ] AI 解读服务实现（待详细设计确认后实现）
+
+### 前端（结构已明确部分）
+
+- [ ] 结果揭示前提供解读模式选择（离线解读 / AI 解读）
+- [ ] 展示今日剩余 AI 解读次数
+- [ ] AI 解读结果展示区域（字段格式待详细设计确认后实现）
+- [ ] 配额耗尽时的友好提示 + 引导使用离线解读
+
+### 文档
+
+- [ ] 完成 AI 解读详细设计文档后更新 `PRD.md`

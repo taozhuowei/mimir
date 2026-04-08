@@ -1,38 +1,41 @@
 /**
  * 占卜流程状态管理（Pinia Store）
- * 管理整副牌、当前问题、抽牌结果、阅读结果及流程阶段
+ * 管理整副牌（从 API 加载）、当前问题、抽牌结果、阅读结果及流程阶段。
+ * 抽牌（随机选牌）在前端执行；解读（评分）由后端 API 完成。
  */
 
 import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
-import {
-  drawThreeCards as drawCards,
-  generateReading,
-  loadAllCards,
-  type DrawnResult,
-  type ReadingResult,
-  type TarotCardInfo
-} from '../utils/tarotReading'
+import { drawThreeCards as drawCards, type DrawnResult, type ReadingResult, type TarotCardInfo } from '../utils/tarotReading'
+import { fetchAllCards } from '../api/cards'
+import { fetchReading } from '../api/readings'
 
-// 占卜流程阶段：
-// idle=空闲，shuffling=洗牌中，cutting=切牌中，drawing=抽牌动画中，revealing=揭示中，result=结果页
+// 占卜流程阶段
 export type DivinationPhase = 'idle' | 'shuffling' | 'cutting' | 'drawing' | 'revealing' | 'result'
 
 export const useTarotStore = defineStore('tarot', () => {
-  const phase = ref<DivinationPhase>('idle')           // 当前流程阶段
-  const drawnCards = ref<DrawnResult[]>([])            // 抽出的 3 张牌（含正逆位）
-  const readingResult = ref<ReadingResult | null>(null) // 阅读结果（含最终判定 yes/no/uncertain）
-  const allCards = ref<TarotCardInfo[]>(loadAllCards()) // 整副 78 张牌（初始化加载）
-  const currentQuestion = ref('')                       // 用户当前问题
+  const phase = ref<DivinationPhase>('idle')
+  const drawnCards = ref<DrawnResult[]>([])
+  const readingResult = ref<ReadingResult | null>(null)
+  const allCards = ref<TarotCardInfo[]>([])      // 从 GET /api/v1/cards 加载
+  const currentQuestion = ref('')
+  const isCardsLoading = ref(false)
 
-  // 是否处于空闲状态（可开始新占卜）
   const isIdle = computed(() => phase.value === 'idle')
-  // 是否处于动画阶段（用于禁用交互、显示动画 UI）
   const isAnimating = computed(() => ['shuffling', 'cutting', 'drawing', 'revealing'].includes(phase.value))
-  // 结果是否可见（阶段为 result 且已生成 readingResult）
   const isResultVisible = computed(() => phase.value === 'result' && readingResult.value !== null)
 
-  // 开始新占卜：保存问题，重置牌组与结果，进入洗牌阶段
+  /** 应用启动时调用一次，从后端加载全部 78 张牌数据 */
+  async function loadCards(): Promise<void> {
+    if (allCards.value.length > 0 || isCardsLoading.value) return
+    isCardsLoading.value = true
+    try {
+      allCards.value = await fetchAllCards()
+    } finally {
+      isCardsLoading.value = false
+    }
+  }
+
   function startDivination(question: string) {
     currentQuestion.value = question
     phase.value = 'shuffling'
@@ -48,25 +51,22 @@ export const useTarotStore = defineStore('tarot', () => {
     phase.value = 'result'
   }
 
-  // 抽取 3 张牌并立即生成阅读结果，同步存入 store
-  function drawThreeCards(): DrawnResult[] {
+  /**
+   * 前端随机抽取 3 张牌，同时向后端请求解读结果。
+   * 两个操作异步并行：动画播放期间 API 已在后台获取，
+   * readingResult 到位后 isResultVisible 自动变为 true。
+   */
+  async function drawThreeCards(): Promise<DrawnResult[]> {
     const drawn = drawCards(allCards.value)
     drawnCards.value = drawn
-    readingResult.value = generateReading(drawn)
+    readingResult.value = await fetchReading(drawn)
     return drawn
   }
 
-  // 获取阅读结果（懒计算）：若已抽牌但未生成结果，则补算
-  // 用于抽牌与结果展示分离的场景（如先动画后计算）
   function getReadingResult(): ReadingResult | null {
-    if (!readingResult.value && drawnCards.value.length > 0) {
-      readingResult.value = generateReading(drawnCards.value)
-    }
-
     return readingResult.value
   }
 
-  // 重置至初始状态（清空所有数据，回到 idle）
   function reset() {
     phase.value = 'idle'
     drawnCards.value = []
@@ -83,6 +83,8 @@ export const useTarotStore = defineStore('tarot', () => {
     isIdle,
     isResultVisible,
     readingResult,
+    isCardsLoading,
+    loadCards,
     startDivination,
     setPhase,
     revealResult,
