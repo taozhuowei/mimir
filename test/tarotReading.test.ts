@@ -5,7 +5,7 @@
  */
 
 import { describe, expect, it } from 'vitest'
-import { drawThreeCards, type TarotCardInfo, type DrawnResult } from '../src/utils/tarotReading'
+import { drawThreeCards, type TarotCardInfo, type DrawnResult } from '../app/src/utils/tarotReading'
 
 // 构造最小合法的 TarotCardInfo 用于测试，不依赖实际 JSON 数据
 function makeCard(id: string, sentiment: 'positive' | 'negative' | 'neutral' = 'positive'): TarotCardInfo {
