@@ -47,7 +47,7 @@ function buildMoonSvg(rx: number): string {
   const shadow = rx > 0
     ? `<ellipse cx="50" cy="50" rx="${safe_rx}" ry="44" fill="${MOON_DARK}"/>`
     : ''
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="46" fill="none" stroke="${MOON_GOLD}" stroke-width="1" opacity="0.35"/><circle cx="50" cy="50" r="44" fill="${MOON_GOLD}"/>${shadow}</svg>`
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="46" fill="none" stroke="${MOON_GOLD}" stroke-width="2" opacity="0.6"/><circle cx="50" cy="50" r="44" fill="${MOON_GOLD}"/>${shadow}</svg>`
   return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`
 }
 

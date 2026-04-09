@@ -7,7 +7,7 @@
  * Fallback values used before theme loads. Theme store overrides these.
  */
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:3000'
+import { API_BASE } from './api/client'
 const THEME_BASE = `${API_BASE}/static/themes/golden_dawn`
 
 /** Fallback card back image used during shuffle / cut / draw animations */

@@ -5,6 +5,8 @@ import path from "path";
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
   plugins: [uni()],
+  // Read .env files from project root (not app/), where dev_env.js writes .env.development.local
+  envDir: path.resolve(__dirname, ".."),
   resolve: {
     alias: {
       // Use gsap-core (no CSSPlugin) to avoid DOM API calls that crash WeChat Mini Program

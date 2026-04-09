@@ -7,7 +7,15 @@
  * Production mini program: set VITE_API_BASE_URL to your HTTPS domain in .env.production.
  */
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:3000'
+/**
+ * Resolve API base URL:
+ * - H5: empty string (same-origin, server serves both API and SPA)
+ * - MP: VITE_API_BASE_URL from .env (LAN IP for dev, HTTPS domain for production)
+ */
+let API_BASE = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:3000'
+// #ifdef H5
+API_BASE = ''
+// #endif
 
 export { API_BASE }
 
