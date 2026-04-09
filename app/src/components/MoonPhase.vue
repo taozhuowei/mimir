@@ -1,31 +1,13 @@
 <template>
   <!--
     Moon Phase Progress Indicator
-    Renders a single SVG moon that transitions through 4 phases:
-    0 = New Moon (dark), 1 = Waxing Crescent, 2 = First Quarter, 3 = Full Moon + glow
-    Uses GSAP state-object pattern for cross-platform animation (H5 + WeChat MP).
+    Renders a moon via data:image/svg+xml URI on <image> for cross-platform support.
+    0 = New Moon (dark), 1 = Waxing Crescent, 2 = First Quarter, 3 = Full Moon + glow.
+    Uses GSAP state-object pattern for animation (H5 + WeChat MP safe).
   -->
   <view class="moon-phase-container">
     <view class="moon-glow" :style="glowStyle" />
-    <view class="moon-svg-wrap">
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        viewBox="0 0 100 100"
-        class="moon-svg"
-      >
-        <!-- Outer ring (always visible, thin gold outline) -->
-        <circle cx="50" cy="50" r="46" fill="none" stroke="#C8A850" stroke-width="1" opacity="0.35" />
-        <!-- Moon lit surface -->
-        <circle cx="50" cy="50" r="44" :fill="MOON_GOLD" />
-        <!-- Shadow overlay: an ellipse whose rx animates to reveal the moon -->
-        <ellipse
-          cx="50" cy="50"
-          :rx="shadowRx"
-          ry="44"
-          :fill="MOON_DARK"
-        />
-      </svg>
-    </view>
+    <image class="moon-img" :src="moonSrc" mode="aspectFit" />
   </view>
 </template>
 
@@ -33,7 +15,7 @@
 /**
  * MoonPhase component
  * Props: phase (0-3) controls illumination.
- * GSAP animates the shadow ellipse rx from 44 (new moon) to 0 (full moon).
+ * GSAP animates the shadow ellipse rx; each frame rebuilds the SVG data URI.
  * Glow breathing animation pulses on the current active phase.
  */
 import { watch, ref, onMounted, onUnmounted } from 'vue'
@@ -42,26 +24,35 @@ import { gsap } from 'gsap'
 const props = defineProps<{ phase: number }>()
 
 // Design tokens matching Golden Dawn card art
-const MOON_GOLD = '#C8A850'
-const MOON_DARK = '#1E0F06'
+const MOON_GOLD = '%23C8A850'   // URL-encoded #C8A850
+const MOON_DARK = '%231E0F06'   // URL-encoded #1E0F06
 
 // Shadow ellipse rx values for each phase
-// 44 = full cover (new moon), 30 = crescent, 0 = half moon, -44 = full moon (shadow behind)
+// 44 = full cover (new moon), 28 = crescent, 0 = half moon, -44 = full moon
 const PHASE_RX = [44, 28, 0, -44]
 
-// GSAP state objects (plain JS, no Vue reactivity — MP safe)
+// GSAP state objects (plain JS, MP safe)
 const _moon = { rx: 44 }
 const _glow = { opacity: 0, scale: 1 }
 
-// Reactive style refs bound to template
-const shadowRx = ref(44)
+// Reactive refs bound to template
+const moonSrc = ref('')
 const glowStyle = ref('opacity: 0; transform: scale(1)')
 
 let breathTween: gsap.core.Tween | null = null
 
+/** Build SVG data URI for current moon state */
+function buildMoonSvg(rx: number): string {
+  const safe_rx = Math.max(0, rx)
+  // For full moon (rx <= 0), hide the shadow ellipse entirely
+  const shadow = rx > 0
+    ? `<ellipse cx="50" cy="50" rx="${safe_rx}" ry="44" fill="${MOON_DARK}"/>`
+    : ''
+  return `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='46' fill='none' stroke='${MOON_GOLD}' stroke-width='1' opacity='0.35'/%3E%3Ccircle cx='50' cy='50' r='44' fill='${MOON_GOLD}'/%3E${shadow}%3C/svg%3E`
+}
+
 function refreshMoon() {
-  // rx can go negative to push shadow off screen for full moon
-  shadowRx.value = Math.max(0, _moon.rx)
+  moonSrc.value = buildMoonSvg(_moon.rx)
 }
 
 function refreshGlow() {
@@ -86,7 +77,6 @@ function animateToPhase(target_phase: number) {
 
   // Full moon gets a radiant glow; other phases get subtle breathing
   if (target_phase === 3) {
-    // Expand glow for full moon reveal
     gsap.to(_glow, {
       opacity: 0.7,
       scale: 1.6,
@@ -94,7 +84,6 @@ function animateToPhase(target_phase: number) {
       ease: 'power2.out',
       onUpdate: refreshGlow,
       onComplete: () => {
-        // Then breathe
         breathTween = gsap.to(_glow, {
           opacity: 0.4,
           scale: 1.4,
@@ -107,7 +96,6 @@ function animateToPhase(target_phase: number) {
       },
     })
   } else {
-    // Subtle breathing for non-full phases
     gsap.to(_glow, {
       opacity: 0.2,
       scale: 1.1,
@@ -166,16 +154,10 @@ onUnmounted(() => {
   will-change: transform, opacity;
 }
 
-.moon-svg-wrap {
+.moon-img {
   width: 100%;
   height: 100%;
   position: relative;
   z-index: 1;
-}
-
-.moon-svg {
-  width: 100%;
-  height: 100%;
-  display: block;
 }
 </style>
