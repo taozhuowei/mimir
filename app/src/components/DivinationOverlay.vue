@@ -808,10 +808,14 @@ function playDraw() {
       .to(_draws[index], { y: targetY[index], duration: 1.5, ease: 'power3.out' }, '>')
   })
 
-  // After all 3 cards land: align final positions → compress → flip
-  const alignTime = 1 + 2 * 0.3 + 0.7 + 0.4 + 1.5 + 0.5
-  const revealingStart = alignTime + 2.7
-  const finishTime = alignTime + 4.3
+  // After all cards land: align → compress → flip
+  // alignTime is based on the last card's fall sequence
+  const alignTime = 1 + (CARD_COUNT - 1) * 0.3 + 0.7 + 0.4 + 1.5 + 0.5
+  // revealingStart: after align(0.8s) + compress(0.5s) + flip(1s + stagger) with small buffer
+  const flipDuration = 1 + (CARD_COUNT - 1) * 0.4
+  const revealingStart = alignTime + 1.2 + flipDuration + 0.1
+  // finishTime: 0.3s after revealing starts — reading request was fired at t=0, already resolved
+  const finishTime = revealingStart + 0.3
 
   timeline
     .to(
@@ -1073,8 +1077,8 @@ function handleRestart() {
 }
 
 .phase-step-icon {
-  width: 28px;
-  height: 28px;
+  width: 40px;
+  height: 40px;
   transition: opacity 0.2s ease;
 }
 
