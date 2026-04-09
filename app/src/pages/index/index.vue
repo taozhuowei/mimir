@@ -202,13 +202,22 @@ function startDeckAnimation() {
   idleTimeline.to({}, { duration: 1.0 })
 }
 
+let isStartingDivination = false
+
 function handleDeckClick() {
+  // Prevent double-trigger during transition
+  if (isStartingDivination || tarotStore.isAnimating) return
+  isStartingDivination = true
+
+  // Start divination immediately - don't wait for animations
+  tarotStore.startDivination('')
+
   if (idleTimeline) {
     idleTimeline.kill()
     idleTimeline = null
   }
 
-  // 1. 快速把散开的牌收拢，同时放大背景模拟镜头推进
+  // Animations run in parallel without blocking startDivination
   gsap.to(_cards, {
     duration: 0.3,
     ease: 'power2.out',
@@ -218,20 +227,15 @@ function handleDeckClick() {
     scale: 1,
     onUpdate: updateCardsStyle,
     onComplete: () => {
-      // 2. 镜头向空白区域推移放大（模拟牌堆下落前的准备）
       const _scene = { scale: 1, y: 0, opacity: 1 }
       gsap.to(_scene, {
         scale: 1.5,
-        y: winHeight * 0.2, // 镜头向空白区域平移
-        opacity: 0,         // 顺势淡出首页元素
+        y: winHeight * 0.2,
+        opacity: 0,
         duration: 0.8,
         ease: 'power2.in',
         onUpdate: () => {
           sceneStyle.value = `transform: scale(${_scene.scale}) translateY(${_scene.y}px); opacity: ${_scene.opacity};`
-        },
-        onComplete: () => {
-          // 3. 衔接下一段动画：启动占卜，原版的卡牌落下动画将顺理成章地出现
-          tarotStore.startDivination('')
         }
       })
     }
@@ -239,6 +243,7 @@ function handleDeckClick() {
 }
 
 function restartDivination() {
+  isStartingDivination = false
   tarotStore.reset()
   nextTick(() => {
     uni.pageScrollTo({ scrollTop: 0, duration: 0 })

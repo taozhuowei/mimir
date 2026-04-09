@@ -639,23 +639,26 @@ function playShuffle() {
   actionDone.value = false
   phasePrompt.value = overlay_text.prompt_shuffling
   resetPhaseIndicatorProgress()
+  // Instant state switch — no animation, avoids GPU contention with card tweens
+  _phaseIndicator.progress = 1
+  refreshPhaseIndicator()
+
   const cardWidth = getCardWidth()
   const spreadX = cardWidth * 0.85
 
+  // Timeline-level onUpdate fires once per RAF frame regardless of how many sub-tweens are active,
+  // eliminating the O(stagger_count) per-frame refresh calls during the cross-interleave phase.
   const timeline = gsap.timeline({
     onComplete: () => {
       actionDone.value = true
       phasePrompt.value = overlay_text.prompt_cut
     },
+    onUpdate: () => {
+      refreshInitials()
+      refreshLefts()
+      refreshRights()
+    },
   })
-
-  // Phase icon crossfade: quick (0.35s) so it finishes before the heavy interleave phase at ~0.7s
-  timeline.to(_phaseIndicator, {
-    progress: 1,
-    duration: 0.35,
-    ease: 'power2.out',
-    onUpdate: refreshPhaseIndicator,
-  }, 0)
 
   // Init: hide initial cards, show left/right cards (equivalent to original .set + autoAlpha)
   // Position 0 — run immediately at t=0, parallel with phase indicator tween
@@ -673,17 +676,17 @@ function playShuffle() {
 
   // Split left/right — starts at t=0, parallel with phase indicator
   timeline
-    .to(_lefts, { x: -spreadX, y: (i: number) => -30 - i * 0.8, rotation: -16, duration: 0.5, ease: 'power2.out', onUpdate: refreshLefts }, 0)
-    .to(_rights, { x: spreadX, y: (i: number) => 30 - i * 0.8, rotation: 16, duration: 0.5, ease: 'power2.out', onUpdate: refreshRights }, '<')
+    .to(_lefts, { x: -spreadX, y: (i: number) => -30 - i * 0.8, rotation: -16, duration: 0.5, ease: 'power2.out' }, 0)
+    .to(_rights, { x: spreadX, y: (i: number) => 30 - i * 0.8, rotation: 16, duration: 0.5, ease: 'power2.out' }, '<')
 
-    // Cross interleave
-    .to(_lefts, { x: 0, y: (i: number) => -(i * 1.6), rotation: -2, duration: 0.4, stagger: 0.06, ease: 'power2.out', onUpdate: refreshLefts }, '+=0.2')
-    .to(_rights, { x: 0, y: (i: number) => -0.8 - i * 1.6, rotation: 2, duration: 0.4, stagger: 0.06, ease: 'power2.out', onUpdate: refreshRights }, '<0.03')
+    // Cross interleave — previously each staggered sub-tween had its own onUpdate (6× per frame each)
+    .to(_lefts, { x: 0, y: (i: number) => -(i * 1.6), rotation: -2, duration: 0.4, stagger: 0.06, ease: 'power2.out' }, '+=0.2')
+    .to(_rights, { x: 0, y: (i: number) => -0.8 - i * 1.6, rotation: 2, duration: 0.4, stagger: 0.06, ease: 'power2.out' }, '<0.03')
 
     // Return to position
     .to(
       [..._lefts, ..._rights],
-      { x: 0, rotation: 0, duration: 0.3, ease: 'back.out(1.5)', onUpdate: () => { refreshLefts(); refreshRights() } },
+      { x: 0, rotation: 0, duration: 0.3, ease: 'back.out(1.5)' },
       '+=0.1',
     )
 
@@ -699,7 +702,7 @@ function playShuffle() {
       _initials.forEach(s => { s.opacity = 1; s.scaleY = 0.9 })
       refreshInitials()
     })
-    .to(_initials, { scaleY: 1, duration: 0.4, ease: 'elastic.out(1, 0.4)', onUpdate: refreshInitials })
+    .to(_initials, { scaleY: 1, duration: 0.4, ease: 'elastic.out(1, 0.4)' })
 }
 
 // ---- Cut animation ----
@@ -710,6 +713,9 @@ function playCut() {
   actionDone.value = false
   phasePrompt.value = overlay_text.prompt_cutting
   resetPhaseIndicatorProgress()
+  // Instant state switch — no animation, avoids GPU contention with cut card tweens
+  _phaseIndicator.progress = 1
+  refreshPhaseIndicator()
 
   const cardWidth = getCardWidth()
   const cardHeight = getCardHeight()
@@ -719,20 +725,17 @@ function playCut() {
   const rightX = isWide.value ? spread : 0
   const rightY = isWide.value ? 0 : spread
 
+  // Timeline-level onUpdate fires once per RAF frame, covering all cut card tweens.
   const timeline = gsap.timeline({
     onComplete: () => {
       actionDone.value = true
       phasePrompt.value = overlay_text.prompt_draw
     },
+    onUpdate: () => {
+      refreshInitials()
+      refreshCuts()
+    },
   })
-
-  // Phase icon crossfade: quick (0.35s) to avoid GPU competition with cut card tweens
-  timeline.to(_phaseIndicator, {
-    progress: 1,
-    duration: 0.35,
-    ease: 'power2.out',
-    onUpdate: refreshPhaseIndicator,
-  }, 0)
 
   // Init cut card state
   timeline.add(() => {
@@ -750,21 +753,21 @@ function playCut() {
 
   timeline
     // Separate: top/bottom swap, middle stays
-    .to(_cutTop, { x: leftX, y: leftY, duration: 0.7, ease: 'power3.out', onUpdate: refreshCutTop })
-    .to(_cutBot, { x: rightX, y: rightY, duration: 0.7, ease: 'power3.out', onUpdate: refreshCutBot }, '<')
+    .to(_cutTop, { x: leftX, y: leftY, duration: 0.7, ease: 'power3.out' })
+    .to(_cutBot, { x: rightX, y: rightY, duration: 0.7, ease: 'power3.out' }, '<')
 
     // Overall scale up (levitation effect)
-    .to([_cutTop, _cutMid, _cutBot], { scale: 1.1, duration: 0.4, ease: 'power1.out', onUpdate: refreshCuts })
+    .to([_cutTop, _cutMid, _cutBot], { scale: 1.1, duration: 0.4, ease: 'power1.out' })
 
     // Swap: top→right, middle→0, bottom→left
-    .to(_cutTop, { x: rightX, y: rightY, zIndex: 11, duration: 0.7, ease: 'power2.inOut', onUpdate: refreshCutTop }, '+=0.15')
-    .to(_cutMid, { x: 0, y: 0, zIndex: 12, duration: 0.7, ease: 'power2.inOut', onUpdate: refreshCutMid }, '<')
-    .to(_cutBot, { x: leftX, y: leftY, zIndex: 13, duration: 0.7, ease: 'power2.inOut', onUpdate: refreshCutBot }, '<')
+    .to(_cutTop, { x: rightX, y: rightY, zIndex: 11, duration: 0.7, ease: 'power2.inOut' }, '+=0.15')
+    .to(_cutMid, { x: 0, y: 0, zIndex: 12, duration: 0.7, ease: 'power2.inOut' }, '<')
+    .to(_cutBot, { x: leftX, y: leftY, zIndex: 13, duration: 0.7, ease: 'power2.inOut' }, '<')
 
     // Merge back (stagger simulates original logic)
-    .to(_cutTop, { x: 0, y: 0, rotation: 0, scale: 1, duration: 0.6, ease: 'back.out(1.5)', onUpdate: refreshCutTop }, '+=0.2')
-    .to(_cutMid, { x: 0, y: 0, rotation: 0, scale: 1, duration: 0.6, delay: 0.15, ease: 'back.out(1.5)', onUpdate: refreshCutMid }, '<')
-    .to(_cutBot, { x: 0, y: 0, rotation: 0, scale: 1, duration: 0.6, delay: 0.3, ease: 'back.out(1.5)', onUpdate: refreshCutBot }, '<')
+    .to(_cutTop, { x: 0, y: 0, rotation: 0, scale: 1, duration: 0.6, ease: 'back.out(1.5)' }, '+=0.2')
+    .to(_cutMid, { x: 0, y: 0, rotation: 0, scale: 1, duration: 0.6, delay: 0.15, ease: 'back.out(1.5)' }, '<')
+    .to(_cutBot, { x: 0, y: 0, rotation: 0, scale: 1, duration: 0.6, delay: 0.3, ease: 'back.out(1.5)' }, '<')
 
     // Hide cut cards, restore initial deck
     .add(() => {
@@ -797,17 +800,30 @@ function playDraw() {
   // Random initial rotation angles (pre-generate to avoid re-randomizing per frame)
   const preRotations = [0, 1, 2].map(() => (Math.random() - 0.5) * 15)
 
-  const timeline = gsap.timeline()
+  // Instant state switch at draw start — no animation, avoids GPU contention with card tweens
+  _phaseIndicator.progress = 1
+  refreshPhaseIndicator()
+
+  // Timeline-level onUpdate fires once per RAF frame, covering all draw-phase sub-tweens.
+  const timeline = gsap.timeline({
+    onUpdate: () => {
+      refreshDeckCtn()
+      refreshStage()
+      refreshInitials()
+      refreshDraws()
+      refreshInners()
+    },
+  })
 
   // Deck trembles (shake effect)
   timeline
-    .to(_deckCtn, { x: '+=4', yoyo: true, repeat: 10, duration: 0.05, onUpdate: refreshDeckCtn })
-    .to(_deckCtn, { x: 0, duration: 0.1, onUpdate: refreshDeckCtn })
+    .to(_deckCtn, { x: '+=4', yoyo: true, repeat: 10, duration: 0.05 })
+    .to(_deckCtn, { x: 0, duration: 0.1 })
 
   // Stage lifts + initial cards fade out
   timeline
-    .to(_stage, { y: -liftY, duration: 1.8, ease: 'power2.inOut', onUpdate: refreshStage }, '+=0.2')
-    .to(_initials, { opacity: 0, y: (i: number) => -card_height * 0.4 - i * 0.8, scale: 0.8, duration: 0.6, ease: 'power1.in', onUpdate: refreshInitials }, '<0.2')
+    .to(_stage, { y: -liftY, duration: 1.8, ease: 'power2.inOut' }, '+=0.2')
+    .to(_initials, { opacity: 0, y: (i: number) => -card_height * 0.4 - i * 0.8, scale: 0.8, duration: 0.6, ease: 'power1.in' }, '<0.2')
 
   // 3 cards fall from above to target positions
   ;[0, 1, 2].forEach((index) => {
@@ -826,23 +842,15 @@ function playDraw() {
     }, 1 + index * 0.3)
 
     timeline
-      .to(_draws[index], { x: targetX[index], y: targetY[index] + card_height * 0.4, duration: 0.7, ease: 'power2.in', onUpdate: refreshDraws }, '>')
-      .to(_draws[index], { y: targetY[index] + card_height * 0.56, duration: 0.4, ease: 'power1.out', onUpdate: refreshDraws }, '>')
-      .to(_draws[index], { y: targetY[index], duration: 1.5, ease: 'power3.out', onUpdate: refreshDraws }, '>')
+      .to(_draws[index], { x: targetX[index], y: targetY[index] + card_height * 0.4, duration: 0.7, ease: 'power2.in' }, '>')
+      .to(_draws[index], { y: targetY[index] + card_height * 0.56, duration: 0.4, ease: 'power1.out' }, '>')
+      .to(_draws[index], { y: targetY[index], duration: 1.5, ease: 'power3.out' }, '>')
   })
 
   // After all 3 cards land: align final positions → compress → flip
   const alignTime = 1 + 2 * 0.3 + 0.7 + 0.4 + 1.5 + 0.5
   const revealingStart = alignTime + 2.7
   const finishTime = alignTime + 4.3
-
-  // Phase icon crossfade: quick (0.35s), runs only at draw-phase start
-  timeline.to(_phaseIndicator, {
-    progress: 1,
-    duration: 0.35,
-    ease: 'power2.out',
-    onUpdate: refreshPhaseIndicator,
-  }, 0)
 
   timeline
     .to(
@@ -853,28 +861,24 @@ function playDraw() {
         rotation: 0,
         duration: 0.8,
         ease: 'power3.inOut',
-        onUpdate: refreshDraws,
       },
       alignTime + 0.1,
     )
-    .to(_draws, { scale: 0.92, duration: 0.5, ease: 'power1.out', onUpdate: refreshDraws }, alignTime + 0.9)
-    // Flip (3D rotationY: 180deg, stagger sequential flip)
+    .to(_draws, { scale: 0.92, duration: 0.5, ease: 'power1.out' }, alignTime + 0.9)
+    // Flip (3D rotationY: 180deg, stagger sequential flip) — previously 3× onUpdate per frame
     .to(
       _inners,
-      { rotationY: 180, duration: 1, stagger: 0.4, ease: 'back.out(1.1)', onUpdate: refreshInners },
+      { rotationY: 180, duration: 1, stagger: 0.4, ease: 'back.out(1.1)' },
       alignTime + 1.2,
     )
     .add(() => {
       phase.value = 'revealing'
       tarotStore.setPhase('revealing')
       phasePrompt.value = overlay_text.revealed
+      // Instant phase icon switch at reveal — no tween, avoids GPU contention
       resetPhaseIndicatorProgress()
-    }, revealingStart)
-    .to(_phaseIndicator, {
-      progress: 1,
-      duration: 0.35,
-      ease: 'power2.out',
-      onUpdate: refreshPhaseIndicator,
+      _phaseIndicator.progress = 1
+      refreshPhaseIndicator()
     }, revealingStart)
     .add(() => { void finish() }, finishTime)
 
