@@ -13,11 +13,11 @@
         </view>
       </view>
       <view v-if="isIdle && !cardsLoadError" class="idle-view">
-        <!-- 头部 -->
+        <!-- Header -->
         <view class="header" :style="{ paddingTop: headerPaddingTop + 'px' }">
-          <text class="title font-display">Scales Tarot</text>
-          <text class="subtitle">命运之轨 · 星辰之语</text>
-          <text class="guidance-text">轻触牌堆，聆听高维指引</text>
+          <text class="title font-display" :style="titleStyle">Scales Tarot</text>
+          <text class="subtitle" :style="subtitleStyle">命运之轨 · 星辰之语</text>
+          <text class="guidance-text" :style="guidanceStyle">轻触牌堆，聆听高维指引</text>
         </view>
 
         <!-- 手拨牌堆空闲区域 -->
@@ -76,6 +76,23 @@ const headerPaddingTop = ref(20)
 const hintOpacity = ref(0)
 const sceneStyle = ref('')
 
+// Header text animation styles - reactive refs bound to :style
+const titleStyle = ref('')
+const subtitleStyle = ref('')
+const guidanceStyle = ref('')
+
+// Plain JS state objects for GSAP animation (DOM-free for WeChat Mini Program compatibility)
+const _title = { y: 20, opacity: 0 }
+const _subtitle = { y: 20, opacity: 0 }
+const _guidance = { y: 20, opacity: 0 }
+
+// Serialize animation state to CSS transform strings
+function updateHeaderStyles() {
+  titleStyle.value = `transform: translateY(${_title.y}px); opacity: ${_title.opacity};`
+  subtitleStyle.value = `transform: translateY(${_subtitle.y}px); opacity: ${_subtitle.opacity};`
+  guidanceStyle.value = `transform: translateY(${_guidance.y}px); opacity: ${_guidance.opacity};`
+}
+
 // 牌组状态
 const cardsStyle = ref<string[]>(Array(12).fill(''))
 const _cards = Array(12).fill(0).map(() => ({ x: 0, y: 0, rotation: 0, scale: 1 }))
@@ -103,11 +120,20 @@ function calculateLayout() {
 }
 
 function initEntranceAnimation() {
-  gsap.fromTo('.header text', 
-    { y: 20, opacity: 0 }, 
-    { y: 0, opacity: 1, duration: 0.6, stagger: 0.08, ease: 'back.out(1.2)' }
-  )
+  // Reset header text state
+  _title.y = 20; _title.opacity = 0
+  _subtitle.y = 20; _subtitle.opacity = 0
+  _guidance.y = 20; _guidance.opacity = 0
+  updateHeaderStyles()
   
+  // Animate header text elements using DOM-free pattern (WeChat Mini Program compatible)
+  const headerTimeline = gsap.timeline()
+  headerTimeline
+    .to(_title, { y: 0, opacity: 1, duration: 0.6, ease: 'back.out(1.2)', onUpdate: updateHeaderStyles })
+    .to(_subtitle, { y: 0, opacity: 1, duration: 0.6, ease: 'back.out(1.2)', onUpdate: updateHeaderStyles }, 0.08)
+    .to(_guidance, { y: 0, opacity: 1, duration: 0.6, ease: 'back.out(1.2)', onUpdate: updateHeaderStyles }, 0.16)
+  
+  // Animate touch hint - already uses correct DOM-free pattern
   const _hint = { opacity: 0 }
   gsap.to(_hint, {
     opacity: 0.6,
