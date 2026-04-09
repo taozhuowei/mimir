@@ -37,21 +37,22 @@ export interface ThemeFonts {
 }
 
 /**
- * Theme icons mapping: icon name -> relative path
+ * Theme UI assets mapping: icons + other UI elements -> relative paths
  */
-export interface ThemeIcons {
-  cups: string
-  pentacles: string
-  swords: string
-  wands: string
+export interface ThemeUI {
+  icon_cups: string
+  icon_pentacles: string
+  icon_swords: string
+  icon_wands: string
+  btn_primary?: string
+  [key: string]: string | undefined
 }
 
 /**
- * Theme images mapping: image name -> relative path
+ * Theme images mapping: non-UI images -> relative paths
  */
 export interface ThemeImages {
   card_back: string
-  btn_primary?: string
   [key: string]: string | undefined
 }
 
@@ -101,7 +102,7 @@ export interface ThemeData {
   name: string
   description: string
   fonts: ResolvedThemeFonts
-  icons: { [key: string]: string }
+  ui: { [key: string]: string }
   images: { [key: string]: string }
   colors: ThemeColors
 }
@@ -123,7 +124,7 @@ interface RawThemeData {
   name: string
   description: string
   fonts: ThemeFonts
-  icons: ThemeIcons
+  ui: ThemeUI
   images: ThemeImages
   colors: ThemeColors
 }
@@ -178,31 +179,14 @@ function resolveFonts(themeId: string, fonts: ThemeFonts): ResolvedThemeFonts {
 }
 
 /**
- * Resolve all relative paths in icons to full URLs
- * @param themeId - The theme identifier
- * @param icons - Raw icons mapping
- * @returns Icons mapping with full URLs
- */
-function resolveIcons(
-  themeId: string,
-  icons: ThemeIcons
-): { [key: string]: string } {
-  const resolved: { [key: string]: string } = {}
-  for (const [name, relativePath] of Object.entries(icons)) {
-    resolved[name] = resolvePath(themeId, relativePath)
-  }
-  return resolved
-}
-
-/**
- * Resolve all relative paths in images to full URLs
+ * Resolve all relative paths in a string-valued record to full URLs
  * @param themeId - The theme identifier
  * @param images - Raw images mapping
  * @returns Images mapping with full URLs
  */
-function resolveImages(
+function resolveAssetPaths(
   themeId: string,
-  images: ThemeImages
+  images: Record<string, string | undefined>
 ): { [key: string]: string } {
   const resolved: { [key: string]: string } = {}
   for (const [name, relativePath] of Object.entries(images)) {
@@ -250,8 +234,8 @@ export function getTheme(themeId: string): ThemeData | undefined {
     name: rawData.name,
     description: rawData.description,
     fonts: resolveFonts(themeId, rawData.fonts),
-    icons: resolveIcons(themeId, rawData.icons),
-    images: resolveImages(themeId, rawData.images),
+    ui: resolveAssetPaths(themeId, rawData.ui),
+    images: resolveAssetPaths(themeId, rawData.images),
     colors: rawData.colors
   }
 

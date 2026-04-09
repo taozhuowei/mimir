@@ -34,16 +34,18 @@ export interface ThemeColors {
   no: string
 }
 
-export interface ThemeIcons {
-  cups: string
-  pentacles: string
-  swords: string
-  wands: string
+export interface ThemeUI {
+  icon_cups: string
+  icon_pentacles: string
+  icon_swords: string
+  icon_wands: string
+  btn_primary?: string
+  [key: string]: string | undefined
 }
 
 export interface ThemeImages {
   card_back: string
-  btn_primary?: string
+  [key: string]: string | undefined
 }
 
 export interface ThemeSummary {
@@ -57,7 +59,7 @@ export interface ThemeData {
   name: string
   description: string
   fonts: ThemeFonts
-  icons: ThemeIcons
+  ui: ThemeUI
   images: ThemeImages
   colors: ThemeColors
 }

@@ -5,7 +5,7 @@
 
 import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
-import { fetchTheme, type ThemeData, type ThemeColors, type ThemeFonts, type ThemeIcons } from '../api/themes'
+import { fetchTheme, type ThemeData, type ThemeColors, type ThemeFonts } from '../api/themes'
 
 export const useThemeStore = defineStore('theme', () => {
   // State
@@ -45,13 +45,16 @@ export const useThemeStore = defineStore('theme', () => {
   })
 
   /**
-   * Suit icons from theme, or empty strings if not loaded
+   * Suit icons from theme UI assets, or empty strings if not loaded
    */
-  const icons = computed<ThemeIcons>(() => {
-    if (!currentTheme.value?.icons) {
-      return { wands: '', swords: '', cups: '', pentacles: '' }
+  const icons = computed(() => {
+    const ui = currentTheme.value?.ui
+    return {
+      wands: ui?.icon_wands ?? '',
+      swords: ui?.icon_swords ?? '',
+      cups: ui?.icon_cups ?? '',
+      pentacles: ui?.icon_pentacles ?? '',
     }
-    return currentTheme.value.icons
   })
 
   /**

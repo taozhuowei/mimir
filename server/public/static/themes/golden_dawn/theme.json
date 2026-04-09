@@ -19,15 +19,15 @@
       }
     }
   },
-  "icons": {
-    "cups": "icons/icon-cups.png",
-    "pentacles": "icons/icon-pentacles.png",
-    "swords": "icons/icon-swords.png",
-    "wands": "icons/icon-wands.png"
+  "ui": {
+    "icon_cups": "ui/icon-cups.png",
+    "icon_pentacles": "ui/icon-pentacles.png",
+    "icon_swords": "ui/icon-swords.png",
+    "icon_wands": "ui/icon-wands.png",
+    "btn_primary": "ui/btn_primary.svg"
   },
   "images": {
-    "card_back": "tarot/card_back.jpeg",
-    "btn_primary": "ui/btn_primary.svg"
+    "card_back": "tarot/card_back.jpeg"
   },
   "colors": {
     "bg_primary": "#F2E8D0",
