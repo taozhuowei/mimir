@@ -27,9 +27,9 @@ const props = defineProps<{ phase: number }>()
 const MOON_GOLD = '#C8A850'
 const MOON_DARK = '#1E0F06'
 
-// Shadow ellipse rx values for each phase
-// 44 = full cover (new moon), 28 = crescent, 0 = half moon, -44 = full moon
-const PHASE_RX = [44, 28, 0, -44]
+// Shadow ellipse rx values for each phase (exaggerated for small icon visibility)
+// 44 = full cover (new moon), 20 = visible crescent, 0 = half moon, -44 = full moon
+const PHASE_RX = [44, 18, 0, -44]
 
 // GSAP state objects (plain JS, MP safe)
 const _moon = { rx: 44 }
@@ -136,8 +136,8 @@ onUnmounted(() => {
 <style scoped>
 .moon-phase-container {
   position: relative;
-  width: 96rpx;
-  height: 96rpx;
+  width: 112rpx;
+  height: 112rpx;
   display: flex;
   align-items: center;
   justify-content: center;
