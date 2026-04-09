@@ -86,22 +86,21 @@
         <view class="actions">
           <!-- Show restart button after results are displayed -->
           <template v-if="showResults">
-            <view class="btn btn-primary" @tap="handleRestart">{{ overlay_text.restart }}</view>
+            <view class="btn btn-primary" @click="handleRestart">{{ overlay_text.restart }}</view>
           </template>
 
           <template v-else-if="phase === 'shuffling'">
-            <view v-if="!entryAnimationComplete" class="action-placeholder" />
-            <view v-else-if="!actionDone" class="btn btn-primary" @tap="playShuffle">{{ overlay_text.start_shuffle }}</view>
+            <view v-if="!actionDone" class="btn btn-primary" @click="playShuffle">{{ overlay_text.start_shuffle }}</view>
             <template v-else>
-              <view class="btn" @tap="playShuffle">{{ overlay_text.shuffle_again }}</view>
-              <view class="btn btn-primary" @tap="playCut">{{ overlay_text.start_cut }}</view>
+              <view class="btn" @click="playShuffle">{{ overlay_text.shuffle_again }}</view>
+              <view class="btn btn-primary" @click="playCut">{{ overlay_text.start_cut }}</view>
             </template>
           </template>
 
           <template v-else-if="phase === 'cutting'">
             <template v-if="actionDone">
-              <view class="btn" @tap="playCut">{{ overlay_text.cut_again }}</view>
-              <view class="btn btn-primary" @tap="playDraw">{{ overlay_text.start_draw }}</view>
+              <view class="btn" @click="playCut">{{ overlay_text.cut_again }}</view>
+              <view class="btn btn-primary" @click="playDraw">{{ overlay_text.start_draw }}</view>
             </template>
           </template>
 
@@ -594,18 +593,18 @@ onMounted(() => {
     entryTimeline.fromTo(_header, { y: 100, opacity: 0 }, {
       y: 0,
       opacity: 1,
-      duration: 0.55,
+      duration: 0.4,
       ease: 'power2.out',
       onUpdate: refreshHeader,
-    }, 0.72)
+    }, 0.4)
 
     entryTimeline.fromTo(_footer, { y: 100, opacity: 0 }, {
       y: 0,
       opacity: 1,
-      duration: 0.45,
+      duration: 0.35,
       ease: 'power2.out',
       onUpdate: refreshFooter,
-    }, 1.12)
+    }, 0.6)
   })
 })
 
@@ -636,8 +635,6 @@ onUnmounted(() => {
 // ---- Shuffle animation ----
 // Deck splits left/right → cross-merge → bounce back; shows "next step" button on complete
 function playShuffle() {
-  if (!entryAnimationComplete.value) return
-
   settleEntryAnimation()
   actionDone.value = false
   phasePrompt.value = overlay_text.prompt_shuffling
@@ -660,6 +657,7 @@ function playShuffle() {
   }, 0)
 
   // Init: hide initial cards, show left/right cards (equivalent to original .set + autoAlpha)
+  // Position 0 — run immediately at t=0, parallel with phase indicator tween
   timeline.add(() => {
     _initials.forEach(s => { s.opacity = 0 })
     refreshInitials()
@@ -670,11 +668,11 @@ function playShuffle() {
     rightsVisible.value = true
     refreshLefts()
     refreshRights()
-  })
+  }, 0)
 
-  // Split left/right
+  // Split left/right — starts at t=0, parallel with phase indicator
   timeline
-    .to(_lefts, { x: -spreadX, y: (i: number) => -30 - i * 0.8, rotation: -16, duration: 0.5, ease: 'power2.out', onUpdate: refreshLefts })
+    .to(_lefts, { x: -spreadX, y: (i: number) => -30 - i * 0.8, rotation: -16, duration: 0.5, ease: 'power2.out', onUpdate: refreshLefts }, 0)
     .to(_rights, { x: spreadX, y: (i: number) => 30 - i * 0.8, rotation: 16, duration: 0.5, ease: 'power2.out', onUpdate: refreshRights }, '<')
 
     // Cross interleave
@@ -1327,11 +1325,6 @@ function handleRestart() {
   display: flex;
   gap: 30rpx;
   align-items: center;
-}
-
-.action-placeholder {
-  width: 1px;
-  height: 64rpx;
 }
 
 .btn {
