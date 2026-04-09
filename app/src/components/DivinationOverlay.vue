@@ -225,9 +225,27 @@ function getCardImg(index: number) {
 }
 
 // ---- 窗口尺寸（跨端兼容：替代 window.innerWidth/innerHeight）----
+// Get the height occupied by the progress-header in mini program
+function getTopBarHeight(): number {
+  // #ifdef MP-WEIXIN
+  try {
+    const { top, height } = uni.getMenuButtonBoundingClientRect()
+    return top + height + 8  // capsule button bottom + padding
+  } catch {
+    return 88  // fallback: status bar(44) + nav bar(44)
+  }
+  // #endif
+  return 0
+}
+
 function getCardWidth(): number {
   const { windowWidth } = uni.getWindowInfo()
   if (isWide.value) return Math.min(188, Math.max(120, windowWidth * 0.13))
+  const topBar = getTopBarHeight()
+  if (topBar > 0) {
+    // Mini program: smaller cards to fit reduced vertical space
+    return Math.min(120, Math.max(88, windowWidth * 0.22))
+  }
   return Math.min(172, Math.max(108, windowWidth * 0.26))
 }
 
@@ -240,11 +258,12 @@ function getCardHeight(): number {
 // stage-container 的尺寸由 CSS 布局决定，可从窗口尺寸推算
 function getStageDimensions(): { width: number; height: number } {
   const { windowWidth, windowHeight } = uni.getWindowInfo()
+  const topBar = getTopBarHeight()
   if (showResults.value) {
     if (isWide.value) return { width: windowWidth * 0.44, height: windowHeight }
     return { width: windowWidth, height: windowHeight * 0.42 }
   }
-  return { width: windowWidth, height: windowHeight }
+  return { width: windowWidth, height: windowHeight - topBar }
 }
 
 function clamp(value: number, min: number, max: number) {
@@ -815,7 +834,7 @@ function handleRestart() {
 
 /* #ifdef MP-WEIXIN */
 .divination-overlay {
-  --card-width: 140px;
+  --card-width: clamp(88px, 22vw, 120px);
 }
 /* #endif */
 
