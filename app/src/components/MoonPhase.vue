@@ -24,8 +24,8 @@ import { gsap } from 'gsap'
 const props = defineProps<{ phase: number }>()
 
 // Design tokens matching Golden Dawn card art
-const MOON_GOLD = '%23C8A850'   // URL-encoded #C8A850
-const MOON_DARK = '%231E0F06'   // URL-encoded #1E0F06
+const MOON_GOLD = '#C8A850'
+const MOON_DARK = '#1E0F06'
 
 // Shadow ellipse rx values for each phase
 // 44 = full cover (new moon), 28 = crescent, 0 = half moon, -44 = full moon
@@ -41,14 +41,14 @@ const glowStyle = ref('opacity: 0; transform: scale(1)')
 
 let breathTween: gsap.core.Tween | null = null
 
-/** Build SVG data URI for current moon state */
+/** Build SVG data URI for current moon state (charset=utf-8 for MP compatibility) */
 function buildMoonSvg(rx: number): string {
   const safe_rx = Math.max(0, rx)
-  // For full moon (rx <= 0), hide the shadow ellipse entirely
   const shadow = rx > 0
     ? `<ellipse cx="50" cy="50" rx="${safe_rx}" ry="44" fill="${MOON_DARK}"/>`
     : ''
-  return `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='46' fill='none' stroke='${MOON_GOLD}' stroke-width='1' opacity='0.35'/%3E%3Ccircle cx='50' cy='50' r='44' fill='${MOON_GOLD}'/%3E${shadow}%3C/svg%3E`
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="46" fill="none" stroke="${MOON_GOLD}" stroke-width="1" opacity="0.35"/><circle cx="50" cy="50" r="44" fill="${MOON_GOLD}"/>${shadow}</svg>`
+  return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`
 }
 
 function refreshMoon() {
@@ -136,8 +136,8 @@ onUnmounted(() => {
 <style scoped>
 .moon-phase-container {
   position: relative;
-  width: 72rpx;
-  height: 72rpx;
+  width: 96rpx;
+  height: 96rpx;
   display: flex;
   align-items: center;
   justify-content: center;
