@@ -19,7 +19,7 @@ export interface CardDetail {
 }
 
 export interface ReadingResult {
-  result: 'yes' | 'no'
+  result: 'positive' | 'negative'
   score: number
   cardDetails: CardDetail[]
 }
@@ -84,7 +84,7 @@ export function generateReading(inputs: DrawnInput[]): ReadingResult {
   }
 
   return {
-    result: total_score > 0 ? 'yes' : 'no',
+    result: total_score > 0 ? 'positive' : 'negative',
     score: total_score,
     cardDetails: resolved.map(({ card, position }) => ({
       card,

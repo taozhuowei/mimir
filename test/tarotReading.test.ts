@@ -5,7 +5,7 @@
  */
 
 import { describe, expect, it } from 'vitest'
-import { drawThreeCards, type TarotCardInfo, type DrawnResult } from '../app/src/utils/tarotReading'
+import { drawCards, type TarotCardInfo, type DrawnResult } from '../app/src/utils/tarotReading'
 
 // 构造最小合法的 TarotCardInfo 用于测试，不依赖实际 JSON 数据
 function makeCard(id: string, sentiment: 'positive' | 'negative' | 'neutral' = 'positive'): TarotCardInfo {
@@ -23,28 +23,28 @@ function makeCard(id: string, sentiment: 'positive' | 'negative' | 'neutral' = '
 
 const MOCK_DECK: TarotCardInfo[] = Array.from({ length: 10 }, (_, i) => makeCard(`card_${i}`))
 
-describe('drawThreeCards', () => {
-  it('draws exactly 3 cards', () => {
-    const drawn = drawThreeCards(MOCK_DECK)
+describe('drawCards', () => {
+  it('draws exactly 3 cards when count is 3', () => {
+    const drawn = drawCards(MOCK_DECK, 3)
     expect(drawn).toHaveLength(3)
   })
 
   it('each drawn card has a valid position', () => {
-    const drawn = drawThreeCards(MOCK_DECK)
+    const drawn = drawCards(MOCK_DECK, 3)
     drawn.forEach((d: DrawnResult) => {
       expect(['upright', 'reversed']).toContain(d.position)
     })
   })
 
   it('each drawn card exists in the original deck', () => {
-    const drawn = drawThreeCards(MOCK_DECK)
+    const drawn = drawCards(MOCK_DECK, 3)
     drawn.forEach((d: DrawnResult) => {
       expect(MOCK_DECK.find(c => c.id === d.card.id)).toBeDefined()
     })
   })
 
   it('draws unique cards (no duplicates)', () => {
-    const drawn = drawThreeCards(MOCK_DECK)
+    const drawn = drawCards(MOCK_DECK, 3)
     const ids = drawn.map(d => d.card.id)
     expect(new Set(ids).size).toBe(3)
   })

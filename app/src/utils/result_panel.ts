@@ -7,14 +7,14 @@ import type { ReadingResult } from './tarotReading'
 
 // 结果类型的中文标签映射：yes/no → 积极/消极
 const RESULT_INDICATION_MAP: Record<ReadingResult['result'], string> = {
-  yes: '积极',
-  no: '消极'
+  positive: '积极',
+  negative: '消极'
 }
 
 // 摘要首句映射：根据结果类型生成引导语
 const SUMMARY_LEAD_MAP: Record<ReadingResult['result'], string> = {
-  yes: '当前牌面传递出积极信号',
-  no: '当前牌面传递出谨慎信号'
+  positive: '当前牌面传递出积极信号',
+  negative: '当前牌面传递出谨慎信号'
 }
 
 // 生成结果陈述句："塔罗牌根据您的问题呈现出{积极/消极}的指示。"

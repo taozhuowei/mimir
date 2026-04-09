@@ -6,7 +6,9 @@
 
 import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
-import { drawThreeCards as drawCards, type DrawnResult, type ReadingResult, type TarotCardInfo } from '../utils/tarotReading'
+import { drawCards as drawCardsUtil, type DrawnResult, type ReadingResult, type TarotCardInfo } from '../utils/tarotReading'
+import config from '../config.json'
+const CARD_COUNT: number = config.cardCount
 import { fetchAllCards } from '../api/cards'
 import { fetchReading } from '../api/readings'
 
@@ -70,13 +72,13 @@ export const useTarotStore = defineStore('tarot', () => {
   }
 
   /**
-   * Synchronous local draw: randomly select 3 cards from the deck.
+   * Synchronous local draw: randomly select cards from the deck.
    * This is immediate and suitable for triggering animations.
    * Use startReadingRequest() to fetch the interpretation separately.
    */
-  function drawThreeCards(): DrawnResult[] {
+  function drawCards(): DrawnResult[] {
     invalidateReadingRequest()
-    const drawn = drawCards(allCards.value)
+    const drawn = drawCardsUtil(allCards.value, CARD_COUNT)
     drawnCards.value = drawn
     readingResult.value = null
     readingError.value = null
@@ -145,8 +147,8 @@ export const useTarotStore = defineStore('tarot', () => {
    * Kept for backward compatibility with existing callers.
    * Internally splits into sync draw + async reading.
    */
-  async function drawThreeCardsAndFetchReading(): Promise<DrawnResult[]> {
-    const drawn = drawThreeCards()
+  async function drawCardsAndFetchReading(): Promise<DrawnResult[]> {
+    const drawn = drawCards()
     startReadingRequest().catch(() => {
       // Keep the legacy helper non-throwing for existing callers.
     })
@@ -183,10 +185,10 @@ export const useTarotStore = defineStore('tarot', () => {
     startDivination,
     setPhase,
     revealResult,
-    drawThreeCards,
+    drawCards,
     startReadingRequest,
     waitForReadingResult,
-    drawThreeCardsAndFetchReading,
+    drawCardsAndFetchReading,
     getReadingResult,
     reset
   }

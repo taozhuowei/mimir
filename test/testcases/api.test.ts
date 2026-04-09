@@ -102,7 +102,7 @@ describe('GET /api/v1/cards', () => {
 // POST /api/v1/readings
 // Frontend contract: fetchReading(drawn) → Promise<ReadingResult>
 // Request body: { cards: [{ cardId: string, position: 'upright' | 'reversed' }] }
-// Expected shape: { result: 'yes'|'no', score: number, cardDetails: CardDetail[] }
+// Expected shape: { result: 'positive'|'negative', score: number, cardDetails: CardDetail[] }
 // ---------------------------------------------------------------------------
 
 describe('POST /api/v1/readings', () => {
@@ -121,7 +121,7 @@ describe('POST /api/v1/readings', () => {
 
   it('response satisfies ReadingResult shape', async () => {
     const res = await request(app).post('/api/v1/readings').send(VALID_BODY)
-    expect(['yes', 'no']).toContain(res.body.result)
+    expect(['positive', 'negative']).toContain(res.body.result)
     expect(typeof res.body.score).toBe('number')
     expect(Array.isArray(res.body.cardDetails)).toBe(true)
   })
@@ -149,7 +149,7 @@ describe('POST /api/v1/readings', () => {
       .post('/api/v1/readings')
       .send({ cards: [{ cardId: 'the_fool', position: 'upright' }] })
     expect(res.body.score).toBe(7)
-    expect(res.body.result).toBe('yes')
+    expect(res.body.result).toBe('positive')
   })
 
   it('returns 400 when cards array is empty', async () => {

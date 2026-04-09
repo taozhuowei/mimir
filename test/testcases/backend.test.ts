@@ -76,26 +76,26 @@ describe('generateReading — scoring', () => {
   it('minor positive upright scores +5', () => {
     const r = generateReading([{ cardId: 'cups_ace', position: 'upright' }])
     expect(r.score).toBe(5)
-    expect(r.result).toBe('yes')
+    expect(r.result).toBe('positive')
   })
 
   it('minor negative upright scores -5', () => {
     const r = generateReading([{ cardId: 'swords_2', position: 'upright' }])
     expect(r.score).toBe(-5)
-    expect(r.result).toBe('no')
+    expect(r.result).toBe('negative')
   })
 
   it('minor positive reversed scores -5 (reversed.sentiment=negative)', () => {
     const r = generateReading([{ cardId: 'cups_ace', position: 'reversed' }])
     expect(r.score).toBe(-5)
-    expect(r.result).toBe('no')
+    expect(r.result).toBe('negative')
   })
 
   it('minor negative reversed scores +5 (reversed.sentiment=positive)', () => {
     // swords_2 has reversed.sentiment=positive — a redemptive reversal
     const r = generateReading([{ cardId: 'swords_2', position: 'reversed' }])
     expect(r.score).toBe(5)
-    expect(r.result).toBe('yes')
+    expect(r.result).toBe('positive')
   })
 
   it('major positive upright scores +7 (×1.3 multiplier)', () => {
@@ -131,7 +131,7 @@ describe('generateReading — result and details', () => {
       { cardId: 'cups_ace', position: 'upright' },
     ])
     expect(r.score).toBe(15)
-    expect(r.result).toBe('yes')
+    expect(r.result).toBe('positive')
   })
 
   it('returns no for a net negative score (3 negative minor upright)', () => {
@@ -141,7 +141,7 @@ describe('generateReading — result and details', () => {
       { cardId: 'swords_2', position: 'upright' },
     ])
     expect(r.score).toBe(-15)
-    expect(r.result).toBe('no')
+    expect(r.result).toBe('negative')
   })
 
   it('returns correct total for a mixed three-card spread', () => {
@@ -152,7 +152,7 @@ describe('generateReading — result and details', () => {
       { cardId: 'swords_2', position: 'reversed' },
     ])
     expect(r.score).toBe(5)
-    expect(r.result).toBe('yes')
+    expect(r.result).toBe('positive')
   })
 
   it('populates cardDetails with the drawn position and meaning', () => {
@@ -195,7 +195,7 @@ describe('generateReading — tie-break', () => {
       { cardId: 'swords_2', position: 'upright' },  // -5  → total=0, 2 up / 0 rv
     ])
     expect(r.score).toBe(1)
-    expect(r.result).toBe('yes')
+    expect(r.result).toBe('positive')
   })
 
   it('more reversed than upright → reversed wins → no', () => {
@@ -204,7 +204,7 @@ describe('generateReading — tie-break', () => {
       { cardId: 'cups_ace', position: 'reversed' }, // -5 (reversed.sentiment=negative)
     ])                                               // total=0, 0 up / 2 rv
     expect(r.score).toBe(-1)
-    expect(r.result).toBe('no')
+    expect(r.result).toBe('negative')
   })
 
   it('equal upright and reversed count → upright wins (>=) → yes', () => {
@@ -213,6 +213,6 @@ describe('generateReading — tie-break', () => {
       { cardId: 'cups_ace', position: 'reversed' }, // -5  → total=0, 1 up / 1 rv
     ])
     expect(r.score).toBe(1)
-    expect(r.result).toBe('yes')
+    expect(r.result).toBe('positive')
   })
 })

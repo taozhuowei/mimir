@@ -3,7 +3,7 @@
  * Interpretation logic (scoring, generateReading) has moved to the backend.
  * This file retains only:
  *   - Shared TypeScript interfaces (used by store, components, API layer)
- *   - drawThreeCards — random card selection and position assignment
+ *   - drawCards — random card selection and position assignment
  */
 
 export interface TarotCardMeaning {
@@ -30,7 +30,7 @@ export interface DrawnResult {
 }
 
 export interface ReadingResult {
-  result: 'yes' | 'no'
+  result: 'positive' | 'negative'
   score: number
   cardDetails: Array<{
     card: TarotCardInfo
@@ -40,17 +40,17 @@ export interface ReadingResult {
 }
 
 /**
- * Draw 3 cards from the full deck using Fisher-Yates shuffle and random position.
+ * Draw `count` cards from the full deck using Fisher-Yates shuffle and random position.
  * Card data must be pre-loaded from the backend via fetchAllCards().
  * Interpretation of the drawn cards is done by POST /api/v1/readings.
  */
-export function drawThreeCards(all_cards: TarotCardInfo[]): DrawnResult[] {
+export function drawCards(all_cards: TarotCardInfo[], count: number): DrawnResult[] {
   const deck = [...all_cards]
-  for (let i = 0; i < Math.min(3, deck.length); i++) {
+  for (let i = 0; i < Math.min(count, deck.length); i++) {
     const j = i + Math.floor(Math.random() * (deck.length - i))
     ;[deck[i], deck[j]] = [deck[j], deck[i]]
   }
-  return deck.slice(0, 3).map(card => ({
+  return deck.slice(0, count).map(card => ({
     card,
     position: Math.random() > 0.5 ? 'upright' : 'reversed'
   }))

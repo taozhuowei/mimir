@@ -23,6 +23,12 @@ vi.mock('../app/src/api/cards', () => ({
   fetchAllCards: mockFetchAllCards,
 }))
 
+// Mock config.json to use 3 cards for backward compatibility with tests
+vi.mock('../app/src/config.json', () => ({
+  default: { cardCount: 3 },
+  cardCount: 3,
+}))
+
 // Helper to create minimal valid TarotCardInfo
 function makeCard(id: string, sentiment: 'positive' | 'negative' | 'neutral' = 'positive'): TarotCardInfo {
   return {
@@ -40,7 +46,7 @@ function makeCard(id: string, sentiment: 'positive' | 'negative' | 'neutral' = '
 // Helper to create a mock reading result
 function makeReadingResult(drawn: DrawnResult[]): ReadingResult {
   return {
-    result: 'yes',
+    result: 'positive',
     score: 3,
     cardDetails: drawn.map(d => ({
       card: d.card,
@@ -63,13 +69,13 @@ describe('tarot store - draw and reading flow', () => {
     vi.clearAllMocks()
   })
 
-  describe('drawThreeCards (synchronous)', () => {
+  describe('drawCards (synchronous)', () => {
     it('draws exactly 3 cards synchronously', () => {
       const store = useTarotStore()
       store.allCards = MOCK_DECK
 
       // Draw should be synchronous and return immediately
-      const drawn = store.drawThreeCards()
+      const drawn = store.drawCards()
 
       expect(drawn).toHaveLength(3)
       expect(store.drawnCards).toHaveLength(3)
@@ -81,9 +87,9 @@ describe('tarot store - draw and reading flow', () => {
       const store = useTarotStore()
       store.allCards = MOCK_DECK
 
-      store.drawThreeCards()
+      store.drawCards()
 
-      // fetchReading should not be called by drawThreeCards
+      // fetchReading should not be called by drawCards
       expect(mockFetchReading).not.toHaveBeenCalled()
     })
 
@@ -91,7 +97,7 @@ describe('tarot store - draw and reading flow', () => {
       const store = useTarotStore()
       store.allCards = MOCK_DECK
 
-      const drawn = store.drawThreeCards()
+      const drawn = store.drawCards()
 
       drawn.forEach((d: DrawnResult) => {
         expect(['upright', 'reversed']).toContain(d.position)
@@ -102,7 +108,7 @@ describe('tarot store - draw and reading flow', () => {
       const store = useTarotStore()
       store.allCards = MOCK_DECK
 
-      const drawn = store.drawThreeCards()
+      const drawn = store.drawCards()
       const ids = drawn.map(d => d.card.id)
       expect(new Set(ids).size).toBe(3)
     })
@@ -111,10 +117,10 @@ describe('tarot store - draw and reading flow', () => {
       const store = useTarotStore()
       store.allCards = MOCK_DECK
 
-      store.drawThreeCards()
+      store.drawCards()
       const firstIds = store.drawnCards.map(c => c.card.id).sort()
 
-      store.drawThreeCards()
+      store.drawCards()
       const secondIds = store.drawnCards.map(c => c.card.id).sort()
 
       // The store should contain 3 cards after second draw
@@ -131,7 +137,7 @@ describe('tarot store - draw and reading flow', () => {
       const store = useTarotStore()
       store.allCards = MOCK_DECK
 
-      const drawn = store.drawThreeCards()
+      const drawn = store.drawCards()
       const mockResult = makeReadingResult(drawn)
       mockFetchReading.mockResolvedValue(mockResult)
 
@@ -158,7 +164,7 @@ describe('tarot store - draw and reading flow', () => {
       store.allCards = MOCK_DECK
 
       // Draw synchronously
-      const drawn = store.drawThreeCards()
+      const drawn = store.drawCards()
 
       // Set up delayed reading response
       let resolveReading: (value: ReadingResult) => void
@@ -188,7 +194,7 @@ describe('tarot store - draw and reading flow', () => {
       const store = useTarotStore()
       store.allCards = MOCK_DECK
 
-      store.drawThreeCards()
+      store.drawCards()
 
       // Simulate slow reading API
       const mockResult = makeReadingResult(store.drawnCards)
@@ -212,7 +218,7 @@ describe('tarot store - draw and reading flow', () => {
       store.allCards = MOCK_DECK
 
       // First draw
-      store.drawThreeCards()
+      store.drawCards()
       const firstResult = makeReadingResult(store.drawnCards)
 
       // Set up delayed reading response
@@ -246,7 +252,7 @@ describe('tarot store - draw and reading flow', () => {
       store.allCards = MOCK_DECK
 
       // First draw and start reading
-      store.drawThreeCards()
+      store.drawCards()
       const firstResult = makeReadingResult(store.drawnCards)
 
       let resolveFirstReading: (value: ReadingResult) => void
@@ -259,7 +265,7 @@ describe('tarot store - draw and reading flow', () => {
       const firstRequestPromise = store.startReadingRequest()
 
       // Second draw (this invalidates the first reading request)
-      store.drawThreeCards()
+      store.drawCards()
       const secondResult = makeReadingResult(store.drawnCards)
 
       // Resolve first request first - should be ignored
@@ -282,7 +288,7 @@ describe('tarot store - draw and reading flow', () => {
       store.allCards = MOCK_DECK
 
       // First draw and start reading
-      store.drawThreeCards()
+      store.drawCards()
       const firstDrawCards = [...store.drawnCards]
 
       let resolveFirstReading: (value: ReadingResult) => void
@@ -295,7 +301,7 @@ describe('tarot store - draw and reading flow', () => {
       const firstPromise = store.startReadingRequest()
 
       // Second draw - this should increment requestId, invalidating first request
-      store.drawThreeCards()
+      store.drawCards()
       const secondDrawCards = [...store.drawnCards]
 
       // Complete the first API call
@@ -331,12 +337,12 @@ describe('tarot store - draw and reading flow', () => {
       )
 
       // First draw and request
-      store.drawThreeCards()
+      store.drawCards()
       const firstResult = makeReadingResult(store.drawnCards)
       const firstPromise = store.startReadingRequest()
 
       // Second draw and request (this should invalidate first)
-      store.drawThreeCards()
+      store.drawCards()
       const secondResult = makeReadingResult(store.drawnCards)
       const secondPromise = store.startReadingRequest()
 
@@ -363,7 +369,7 @@ describe('tarot store - draw and reading flow', () => {
 
       store.startDivination('Test question')
 
-      store.drawThreeCards()
+      store.drawCards()
       const mockResult = makeReadingResult(store.drawnCards)
 
       let resolveReading: (value: ReadingResult) => void
@@ -430,7 +436,7 @@ describe('tarot store - draw and reading flow', () => {
       expect(store.isResultVisible).toBe(false)
 
       // Need both phase='result' AND readingResult
-      store.drawThreeCards()
+      store.drawCards()
       const mockResult = makeReadingResult(store.drawnCards)
       mockFetchReading.mockResolvedValue(mockResult)
       
@@ -443,7 +449,7 @@ describe('tarot store - draw and reading flow', () => {
       store.allCards = MOCK_DECK
 
       store.startDivination('Test question')
-      store.drawThreeCards()
+      store.drawCards()
       store.setPhase('revealing')
       store.readingResult = makeReadingResult(store.drawnCards)
 
@@ -462,12 +468,12 @@ describe('tarot store - draw and reading flow', () => {
       const store = useTarotStore()
       store.allCards = MOCK_DECK
 
-      store.drawThreeCards()
+      store.drawCards()
       const mockResult = makeReadingResult(store.drawnCards)
       mockFetchReading.mockResolvedValue(mockResult)
 
       // Use the legacy method
-      const result = await store.drawThreeCardsAndFetchReading()
+      const result = await store.drawCardsAndFetchReading()
 
       expect(result).toHaveLength(3)
       expect(mockFetchReading).toHaveBeenCalled()

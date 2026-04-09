@@ -4,13 +4,13 @@ import type { ReadingResult } from '../app/src/utils/tarotReading'
 
 describe('result_panel utils', () => {
   it('returns proper result statements', () => {
-    expect(getResultStatement('yes')).toBe('塔罗牌根据您的问题呈现出积极的指示。')
-    expect(getResultStatement('no')).toBe('塔罗牌根据您的问题呈现出消极的指示。')
+    expect(getResultStatement('positive')).toBe('塔罗牌根据您的问题呈现出积极的指示。')
+    expect(getResultStatement('negative')).toBe('塔罗牌根据您的问题呈现出消极的指示。')
   })
 
   it('returns proper summary text joining meanings', () => {
     const mockReading: ReadingResult = {
-      result: 'yes',
+      result: 'positive',
       score: 5,
       cardDetails: [
         {
@@ -36,7 +36,7 @@ describe('result_panel utils', () => {
 
   it('handles single card meaning (one fragment, no separator)', () => {
     const mockReading: ReadingResult = {
-      result: 'yes',
+      result: 'positive',
       score: 2,
       cardDetails: [
         {
@@ -52,7 +52,7 @@ describe('result_panel utils', () => {
 
   it('handles empty card meanings gracefully (falls back to lead text)', () => {
     const mockReading: ReadingResult = {
-      result: 'no',
+      result: 'negative',
       score: -3,
       cardDetails: []
     }

@@ -5,10 +5,18 @@
     <!-- Animation area: always present, shrinks to top/left after results shown -->
     <view class="stage-container">
       <view class="progress-header" :style="headerStyle">
-        <view :key="phase" class="phase-indicator">
-          <image class="phase-icon phase-icon-inactive" :src="currentPhaseInactiveIcon" :style="phaseIconInactiveStyle" mode="aspectFit" />
-          <image class="phase-icon phase-icon-active" :src="currentPhaseActiveIcon" :style="phaseIconActiveStyle" mode="aspectFit" />
-          <view class="phase-icon-glow" :style="phaseIconGlowStyle" />
+        <view class="phase-progress-bar">
+          <view
+            v-for="(step, idx) in phaseSteps"
+            :key="step.phase"
+            class="phase-step"
+          >
+            <image
+              class="phase-step-icon"
+              :src="idx <= activePhaseIndex ? themeStore.getUiAsset(step.activeIcon) || themeStore.getUiAsset(step.inactiveIcon) : themeStore.getUiAsset(step.inactiveIcon) || themeStore.getUiAsset(step.activeIcon)"
+              mode="aspectFit"
+            />
+          </view>
         </view>
       </view>
 
@@ -53,7 +61,7 @@
         <view class="draw-container">
           <!-- Drawn 3 cards: v-show + style driven by GSAP state object; centerStyle uses calc(-50%+Xpx) for centering -->
           <view
-            v-for="idx in [0, 1, 2]"
+            v-for="(_, idx) in drawsVisible"
             :key="idx"
             v-show="drawsVisible[idx]"
             class="draw-wrapper stage-center"
@@ -89,20 +97,7 @@
             <view class="btn btn-primary" @click="handleRestart">{{ overlay_text.restart }}</view>
           </template>
 
-          <template v-else-if="phase === 'shuffling'">
-            <view v-if="!actionDone" class="btn btn-primary" @click="playShuffle">{{ overlay_text.start_shuffle }}</view>
-            <template v-else>
-              <view class="btn" @click="playShuffle">{{ overlay_text.shuffle_again }}</view>
-              <view class="btn btn-primary" @click="playCut">{{ overlay_text.start_cut }}</view>
-            </template>
-          </template>
 
-          <template v-else-if="phase === 'cutting'">
-            <template v-if="actionDone">
-              <view class="btn" @click="playCut">{{ overlay_text.cut_again }}</view>
-              <view class="btn btn-primary" @click="playDraw">{{ overlay_text.start_draw }}</view>
-            </template>
-          </template>
 
           <template v-else-if="phase === 'revealing'">
             <!-- Text hint + animated dots, shown while waiting for reading result -->
@@ -154,6 +149,8 @@ import { useTarotStore } from '../stores/tarot'
 import { useThemeStore } from '../stores/theme'
 import ResultPanel from './ResultPanel.vue'
 import { CARD_BACK_IMAGE } from '../constants'
+import config from '../config.json'
+const CARD_COUNT: number = config.cardCount
 
 // Emits definition
 // complete - triggered when divination flow completes (draw animation ends, result about to show)
@@ -196,45 +193,21 @@ const phaseSteps = [
   },
 ] as const
 
-const currentPhaseStep = computed(() => {
-  return phaseSteps.find(step => step.phase === phase.value) ?? phaseSteps[0]
-})
-
-const currentPhaseActiveIcon = computed(() => {
-  const step = currentPhaseStep.value
-  return themeStore.getUiAsset(step.activeIcon) || themeStore.getUiAsset(step.inactiveIcon)
-})
-
-const currentPhaseInactiveIcon = computed(() => {
-  const step = currentPhaseStep.value
-  return themeStore.getUiAsset(step.inactiveIcon) || themeStore.getUiAsset(step.activeIcon)
-})
+// Index of the current phase in phaseSteps (0=shuffling, 1=cutting, 2=drawing, 3=revealing)
+const activePhaseIndex = computed(() =>
+  phaseSteps.findIndex(s => s.phase === phase.value)
+)
 
 // User-facing copy strings.
 const overlay_text = {
   position_reversed: '逆',
   position_upright: '正',
   restart: '再占一次',
-  start_shuffle: '开始洗牌',
-  shuffle_again: '再洗一次',
-  start_cut: '开始切牌',
-  cut_again: '再切一次',
-  start_draw: '抽取牌阵',
   revealing: '神谕显现中',
-  prompt_shuffle: '流程：请洗牌',
-  prompt_shuffling: '流程：洗牌中',
-  prompt_cutting: '流程：切牌中',
-  prompt_cut: '流程：请切牌',
-  prompt_draw: '流程：请抽取牌阵',
-  prompt_drawing: '流程：牌阵凝聚中',
-  revealed: '神谕已经显现',
-  result: '解读结果',
 }
 
 // ---- Reactive state ----
 const phase = ref<'shuffling' | 'cutting' | 'drawing' | 'revealing'>('shuffling')
-const actionDone = ref(false)
-const phasePrompt = ref(overlay_text.prompt_shuffle)
 const showResults = ref(false)
 const isWide = ref(false)
 
@@ -301,6 +274,7 @@ function getDrawLayout(
   card_width: number,
   card_height: number,
   is_wide: boolean,
+  card_count: number,
 ) {
   const horizontal_margin = Math.max(card_width * 0.2, 24)
   const vertical_margin = Math.max(card_height * 0.12, 24)
@@ -312,6 +286,35 @@ function getDrawLayout(
     ? Math.min(stage_height * 0.32, card_height * 1.26)
     : Math.min(stage_height * 0.16, card_height * 0.56)
 
+  if (card_count === 1) {
+    const center_y = clamp(lift_y, min_center_y, max_center_y)
+    return {
+      liftY: lift_y,
+      targetX: [0],
+      targetY: [center_y],
+    }
+  }
+
+  if (card_count === 2) {
+    const half_offset = Math.min(card_width * 0.7, max_center_x)
+    const center_y = clamp(lift_y, min_center_y, max_center_y)
+    if (is_wide) {
+      return {
+        liftY: lift_y,
+        targetX: [-half_offset, half_offset],
+        targetY: [center_y, center_y],
+      }
+    }
+    const mobile_spread_2 = Math.min(card_height * 0.6, (max_center_y - min_center_y) / 2)
+    const mobile_center_y_2 = clamp(lift_y, min_center_y + mobile_spread_2, max_center_y - mobile_spread_2)
+    return {
+      liftY: lift_y,
+      targetX: [0, 0],
+      targetY: [mobile_center_y_2 + mobile_spread_2, mobile_center_y_2 - mobile_spread_2],
+    }
+  }
+
+  // card_count === 3: existing logic unchanged
   if (is_wide) {
     const centered_row_y = clamp(lift_y, min_center_y, max_center_y)
     return {
@@ -320,11 +323,9 @@ function getDrawLayout(
       targetY: [centered_row_y, centered_row_y, centered_row_y],
     }
   }
-
   const available_mobile_span = Math.max(0, max_center_y - min_center_y)
   const mobile_spread = Math.min(card_height * 1.12, available_mobile_span / 2)
   const mobile_center_y = clamp(lift_y, min_center_y + mobile_spread, max_center_y - mobile_spread)
-
   return {
     liftY: lift_y,
     targetX: [0, 0, 0],
@@ -381,12 +382,12 @@ const _rights: CardState[] = Array.from({ length: 6 }, () => ({
 const _cutTop: CenterCardState = { x: 0, y: 0, rotation: 0, scale: 1, opacity: 0, zIndex: 10 }
 const _cutMid: CenterCardState = { x: 0, y: 0, rotation: 0, scale: 1, opacity: 0, zIndex: 10 }
 const _cutBot: CenterCardState = { x: 0, y: 0, rotation: 0, scale: 1, opacity: 0, zIndex: 10 }
-// Drawn 3 cards (absolute positioned centered)
-const _draws: CenterCardState[] = Array.from({ length: 3 }, (_, i) => ({
+// Drawn cards (absolute positioned centered)
+const _draws: CenterCardState[] = Array.from({ length: CARD_COUNT }, (_, i) => ({
   x: 0, y: 0, rotation: 0, scale: 1, opacity: 0, zIndex: 20 - i,
 }))
 // 3D flip inner
-const _inners: InnerState[] = Array.from({ length: 3 }, () => ({ rotationY: 0 }))
+const _inners: InnerState[] = Array.from({ length: CARD_COUNT }, () => ({ rotationY: 0 }))
 
 // ---- Vue style refs (bound to template :style, updated by refresh functions) ----
 
@@ -395,9 +396,7 @@ const stageStyle = ref('')
 const headerStyle = ref('transform: translateY(60px); opacity: 0')
 const footerStyle = ref('transform: translateY(60px); opacity: 0')
 const deckCtnStyle = ref('')
-const phaseIconInactiveStyle = ref('')
-const phaseIconActiveStyle = ref('')
-const phaseIconGlowStyle = ref('')
+
 
 // Initial values consistent with _initials state
 const initialsStyle = ref<string[]>(
@@ -416,11 +415,11 @@ const cutTopStyle = ref('')
 const cutMidStyle = ref('')
 const cutBotStyle = ref('')
 
-const drawsVisible = ref<boolean[]>([false, false, false])
-const drawsStyle = ref<string[]>(['', '', ''])
-const innersStyle = ref<string[]>(['', '', ''])
+const drawsVisible = ref<boolean[]>(Array(CARD_COUNT).fill(false))
+const drawsStyle = ref<string[]>(Array(CARD_COUNT).fill(''))
+const innersStyle = ref<string[]>(Array(CARD_COUNT).fill(''))
 
-const _phaseIndicator = { progress: 0 }
+
 
 // ---- CSS style string constructors ----
 
@@ -463,24 +462,6 @@ const refreshCutBot = () => { cutBotStyle.value = _centerStyleStr(_cutBot) }
 const refreshCuts = () => { refreshCutTop(); refreshCutMid(); refreshCutBot() }
 const refreshDraws = () => { drawsStyle.value = _draws.map(s => _centerStyleStr(s)) }
 const refreshInners = () => { innersStyle.value = _inners.map(s => _innerStyleStr(s)) }
-const refreshPhaseIndicator = () => {
-  const progress = clamp(_phaseIndicator.progress, 0, 1)
-  const inactiveOpacity = 0.94 - progress * 0.76
-  const inactiveScale = 0.9 + progress * 0.08
-  const activeOpacity = progress
-  const activeScale = 0.68 + progress * 0.32
-  const glowOpacity = progress * 0.32
-  const glowScale = 0.82 + progress * 0.18
-
-  phaseIconInactiveStyle.value = `opacity: ${inactiveOpacity}; transform: scale(${inactiveScale})`
-  phaseIconActiveStyle.value = `opacity: ${activeOpacity}; transform: scale(${activeScale})`
-  phaseIconGlowStyle.value = `opacity: ${glowOpacity}; transform: scale(${glowScale})`
-}
-
-function resetPhaseIndicatorProgress() {
-  _phaseIndicator.progress = 0
-  refreshPhaseIndicator()
-}
 
 function clearReadingRequestTimer() {
   if (readingRequestTimer !== null) {
@@ -559,12 +540,12 @@ onMounted(() => {
     const cardHeight = getCardHeight()
     const entryDrop = cardHeight * 4
     entryAnimationComplete.value = false
-    resetPhaseIndicatorProgress()
 
     entryTimeline = gsap.timeline({
       onComplete: () => {
         entryAnimationComplete.value = true
         entryTimeline = null
+        setTimeout(() => { playShuffle() }, 300)
       },
     })
 
@@ -619,7 +600,6 @@ onUnmounted(() => {
     _stage,
     _header,
     _footer,
-    _phaseIndicator,
     _deckCtn,
     ..._initials,
     ..._lefts,
@@ -636,12 +616,6 @@ onUnmounted(() => {
 // Deck splits left/right → cross-merge → bounce back; shows "next step" button on complete
 function playShuffle() {
   settleEntryAnimation()
-  actionDone.value = false
-  phasePrompt.value = overlay_text.prompt_shuffling
-  resetPhaseIndicatorProgress()
-  // Instant state switch — no animation, avoids GPU contention with card tweens
-  _phaseIndicator.progress = 1
-  refreshPhaseIndicator()
 
   const cardWidth = getCardWidth()
   const spreadX = cardWidth * 0.85
@@ -650,8 +624,7 @@ function playShuffle() {
   // eliminating the O(stagger_count) per-frame refresh calls during the cross-interleave phase.
   const timeline = gsap.timeline({
     onComplete: () => {
-      actionDone.value = true
-      phasePrompt.value = overlay_text.prompt_cut
+      playCut()
     },
     onUpdate: () => {
       refreshInitials()
@@ -710,12 +683,6 @@ function playShuffle() {
 function playCut() {
   phase.value = 'cutting'
   tarotStore.setPhase('cutting')
-  actionDone.value = false
-  phasePrompt.value = overlay_text.prompt_cutting
-  resetPhaseIndicatorProgress()
-  // Instant state switch — no animation, avoids GPU contention with cut card tweens
-  _phaseIndicator.progress = 1
-  refreshPhaseIndicator()
 
   const cardWidth = getCardWidth()
   const cardHeight = getCardHeight()
@@ -728,8 +695,7 @@ function playCut() {
   // Timeline-level onUpdate fires once per RAF frame, covering all cut card tweens.
   const timeline = gsap.timeline({
     onComplete: () => {
-      actionDone.value = true
-      phasePrompt.value = overlay_text.prompt_draw
+      playDraw()
     },
     onUpdate: () => {
       refreshInitials()
@@ -786,23 +752,18 @@ function playCut() {
 function playDraw() {
   phase.value = 'drawing'
   tarotStore.setPhase('drawing')
-  tarotStore.drawThreeCards()
-  actionDone.value = false
-  phasePrompt.value = overlay_text.prompt_drawing
-  resetPhaseIndicatorProgress()
+  tarotStore.drawCards()
 
   const { width: stage_width, height: stage_height } = getStageDimensions()
   const card_width = getCardWidth()
   const card_height = getCardHeight()
-  const draw_layout = getDrawLayout(stage_width, stage_height, card_width, card_height, isWide.value)
+  const draw_layout = getDrawLayout(stage_width, stage_height, card_width, card_height, isWide.value, CARD_COUNT)
   const { targetX, targetY, liftY } = draw_layout
 
   // Random initial rotation angles (pre-generate to avoid re-randomizing per frame)
-  const preRotations = [0, 1, 2].map(() => (Math.random() - 0.5) * 15)
+  const preRotations = Array.from({ length: CARD_COUNT }, () => (Math.random() - 0.5) * 15)
 
-  // Instant state switch at draw start — no animation, avoids GPU contention with card tweens
-  _phaseIndicator.progress = 1
-  refreshPhaseIndicator()
+
 
   // Timeline-level onUpdate fires once per RAF frame, covering all draw-phase sub-tweens.
   const timeline = gsap.timeline({
@@ -825,8 +786,8 @@ function playDraw() {
     .to(_stage, { y: -liftY, duration: 1.8, ease: 'power2.inOut' }, '+=0.2')
     .to(_initials, { opacity: 0, y: (i: number) => -card_height * 0.4 - i * 0.8, scale: 0.8, duration: 0.6, ease: 'power1.in' }, '<0.2')
 
-  // 3 cards fall from above to target positions
-  ;[0, 1, 2].forEach((index) => {
+  // Cards fall from above to target positions
+  Array.from({ length: CARD_COUNT }, (_, i) => i).forEach((index) => {
     timeline.add(() => {
       Object.assign(_draws[index], {
         x: 0,
@@ -874,11 +835,6 @@ function playDraw() {
     .add(() => {
       phase.value = 'revealing'
       tarotStore.setPhase('revealing')
-      phasePrompt.value = overlay_text.revealed
-      // Instant phase icon switch at reveal — no tween, avoids GPU contention
-      resetPhaseIndicatorProgress()
-      _phaseIndicator.progress = 1
-      refreshPhaseIndicator()
     }, revealingStart)
     .add(() => { void finish() }, finishTime)
 
@@ -894,28 +850,28 @@ function updateLayout() {
   const card_width = getCardWidth()
   const card_height = getCardHeight()
 
-  let targetX = [0, 0, 0]
-  let targetY = [0, 0, 0]
+  let targetX: number[] = []
+  let targetY: number[] = []
 
   if (showResults.value) {
     if (isWide.value) {
       const gap_x = 20
       const gap_y = 20
-      let cols = 3
-      if (card_width * 3 + gap_x * 2 > stage_width * 0.9) cols = 2
+      let cols = CARD_COUNT
+      if (card_width * CARD_COUNT + gap_x * (CARD_COUNT - 1) > stage_width * 0.9) cols = 2
       if (card_width * 2 + gap_x > stage_width * 0.9) cols = 1
 
-      const rows = Math.ceil(3 / cols)
+      const rows = Math.ceil(CARD_COUNT / cols)
       const grid_height = rows * card_height + (rows - 1) * gap_y
       let current_y = -grid_height / 2 + card_height / 2
 
       let i = 0
       for (let r = 0; r < rows; r++) {
-        const row_cols = Math.min(3 - i, cols)
+        const row_cols = Math.min(CARD_COUNT - i, cols)
         const row_width = row_cols * card_width + (row_cols - 1) * gap_x
         const start_x = -row_width / 2 + card_width / 2
         for (let c = 0; c < row_cols; c++) {
-          if (i < 3) {
+          if (i < CARD_COUNT) {
             targetX[i] = start_x + c * (card_width + gap_x)
             targetY[i] = current_y
           }
@@ -929,13 +885,15 @@ function updateLayout() {
       if (spreadX * 2 + card_width > available_width) {
         spreadX = (available_width - card_width) / 2
       }
-      targetX = [-spreadX, 0, spreadX]
-      targetY = [0, 0, 0]
+      // Calculate spread positions for CARD_COUNT cards in a horizontal line
+      const totalSpreadWidth = (CARD_COUNT - 1) * spreadX
+      targetX = Array.from({ length: CARD_COUNT }, (_, i) => -totalSpreadWidth / 2 + i * spreadX)
+      targetY = Array(CARD_COUNT).fill(0)
     }
 
     gsap.to(_stage, { y: 0, duration: 0.6, ease: 'power2.out', onUpdate: refreshStage })
   } else {
-    const layout = getDrawLayout(stage_width, stage_height, card_width, card_height, isWide.value)
+    const layout = getDrawLayout(stage_width, stage_height, card_width, card_height, isWide.value, CARD_COUNT)
     targetX = layout.targetX
     targetY = layout.targetY
   }
@@ -967,7 +925,6 @@ async function finish() {
 
   tarotStore.revealResult()
   showResults.value = true
-  phasePrompt.value = overlay_text.result
   nextTick(() => { updateLayout() })
 }
 
@@ -1101,39 +1058,24 @@ function handleRestart() {
   z-index: 20;
 }
 
-.phase-indicator {
-  position: relative;
-  width: 112rpx;
-  height: 112rpx;
+.phase-progress-bar {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+}
+
+.phase-step {
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
-.phase-icon {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  filter: drop-shadow(0 8rpx 18rpx rgba(74, 37, 16, 0.12));
-}
-
-.phase-icon-inactive {
-  opacity: 0.94;
-  transform: scale(0.9);
-}
-
-.phase-icon-active {
-  opacity: 0;
-  transform: scale(0.68);
-}
-
-.phase-icon-glow {
-  position: absolute;
-  inset: 18rpx;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(122, 92, 20, 0.14) 0%, rgba(122, 92, 20, 0) 72%);
-  opacity: 0;
+.phase-step-icon {
+  width: 28px;
+  height: 28px;
+  transition: opacity 0.2s ease;
 }
 
 /* #ifdef H5 */
@@ -1157,22 +1099,10 @@ function handleRestart() {
 }
 /* #endif */
 
-/* #ifdef H5 */
-@media (min-width: 768px) {
-  .phase-indicator {
-    width: 124rpx;
-    height: 124rpx;
-  }
-}
-/* #endif */
 
 
-.phase-prompt {
-  font-size: 28rpx;
-  color: var(--color-text-primary);
-  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
-  letter-spacing: 0.05em;
-}
+
+
 
 .stage {
   position: absolute;
