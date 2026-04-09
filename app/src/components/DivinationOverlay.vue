@@ -2,17 +2,21 @@
   <view class="divination-overlay" :class="{ 'show-results': showResults, 'is-wide': isWide }">
     <view class="overlay-bg" :style="bgStyle" />
 
-    <!-- 动画区：始终存在，结果展示后收缩到上方/左侧 -->
+    <!-- Animation area: always present, shrinks to top/left after results shown -->
     <view class="stage-container">
       <view class="progress-header" :style="headerStyle">
-        <MoonPhase :phase="moonPhaseIndex" />
+        <view :key="phase" class="phase-indicator">
+          <image class="phase-icon phase-icon-inactive" :src="currentPhaseInactiveIcon" :style="phaseIconInactiveStyle" mode="aspectFit" />
+          <image class="phase-icon phase-icon-active" :src="currentPhaseActiveIcon" :style="phaseIconActiveStyle" mode="aspectFit" />
+          <view class="phase-icon-glow" :style="phaseIconGlowStyle" />
+        </view>
       </view>
 
-      <!-- 动画舞台：:style 驱动 GSAP 动画的 y-lift 效果 -->
+      <!-- Animation stage: :style drives GSAP y-lift animation -->
       <view class="stage" :style="stageStyle">
-        <!-- 牌组容器：:style 驱动洗牌摇晃动画 -->
+        <!-- Deck container: :style drives shuffle shake animation -->
         <view class="deck-layer" :style="deckCtnStyle">
-          <!-- 初始牌组（12张叠放）：style 由 GSAP 状态对象驱动 -->
+          <!-- Initial deck (12 stacked cards): style driven by GSAP state object -->
           <image
             v-for="i in 12"
             :key="`m${i}`"
@@ -21,7 +25,7 @@
             :style="initialsStyle[i-1]"
           />
 
-          <!-- 洗牌左半牌组：v-show + style 由 GSAP 状态对象驱动 -->
+          <!-- Shuffle left half: v-show + style driven by GSAP state object -->
           <image
             v-for="i in 6"
             :key="`l${i}`"
@@ -30,7 +34,7 @@
             :src="cardBack"
             :style="leftsStyle[i-1]"
           />
-          <!-- 洗牌右半牌组：v-show + style 由 GSAP 状态对象驱动 -->
+          <!-- Shuffle right half: v-show + style driven by GSAP state object -->
           <image
             v-for="i in 6"
             :key="`r${i}`"
@@ -41,13 +45,13 @@
           />
         </view>
 
-        <!-- 切牌三张：v-show + style 由 GSAP 状态对象驱动；centerStyle 含 calc(-50%+Xpx) 居中偏移 -->
+        <!-- Cut cards: v-show + style driven by GSAP state object; centerStyle uses calc(-50%+Xpx) for centering -->
         <image v-show="cutTopVisible" class="tarot-card stage-center cut-t" :src="cardBack" :style="cutTopStyle" />
         <image v-show="cutMidVisible" class="tarot-card stage-center cut-m" :src="cardBack" :style="cutMidStyle" />
         <image v-show="cutBotVisible" class="tarot-card stage-center cut-b" :src="cardBack" :style="cutBotStyle" />
 
         <view class="draw-container">
-          <!-- 抽出的3张牌：v-show + style 由 GSAP 状态对象驱动；centerStyle 含居中偏移 -->
+          <!-- Drawn 3 cards: v-show + style driven by GSAP state object; centerStyle uses calc(-50%+Xpx) for centering -->
           <view
             v-for="idx in [0, 1, 2]"
             :key="idx"
@@ -55,7 +59,7 @@
             class="draw-wrapper stage-center"
             :style="drawsStyle[idx]"
           >
-            <!-- 3D 翻转内层：style 由 GSAP 驱动 rotationY -->
+            <!-- 3D flip inner: style driven by GSAP rotationY -->
             <view class="card-3d-inner" :style="innersStyle[idx]">
               <image class="tarot-card face-back" :src="cardBack" />
               <view class="tarot-card face-front">
@@ -63,7 +67,7 @@
               </view>
             </view>
 
-            <!-- 正位/逆位徽章，翻牌后淡入 -->
+            <!-- Upright/Reversed badge, fades in after flip -->
             <view
               v-if="showResults"
               class="position-badge"
@@ -77,31 +81,32 @@
         </view>
       </view>
 
-      <!-- 底部操作区：:style 驱动入场动画 -->
+      <!-- Bottom action area: :style drives entry animation -->
       <view class="action-footer" :style="footerStyle">
         <view class="actions">
-          <!-- 结果展示后显示再占一次，与洗牌/切牌的"再来一次"按钮逻辑一致 -->
+          <!-- Show restart button after results are displayed -->
           <template v-if="showResults">
-            <view class="btn btn-primary" @click="handleRestart">{{ overlay_text.restart }}</view>
+            <view class="btn btn-primary" @tap="handleRestart">{{ overlay_text.restart }}</view>
           </template>
 
           <template v-else-if="phase === 'shuffling'">
-            <view v-if="!actionDone" class="btn btn-primary" @click="playShuffle">{{ overlay_text.start_shuffle }}</view>
+            <view v-if="!entryAnimationComplete" class="action-placeholder" />
+            <view v-else-if="!actionDone" class="btn btn-primary" @tap="playShuffle">{{ overlay_text.start_shuffle }}</view>
             <template v-else>
-              <view class="btn" @click="playShuffle">{{ overlay_text.shuffle_again }}</view>
-              <view class="btn btn-primary" @click="playCut">{{ overlay_text.start_cut }}</view>
+              <view class="btn" @tap="playShuffle">{{ overlay_text.shuffle_again }}</view>
+              <view class="btn btn-primary" @tap="playCut">{{ overlay_text.start_cut }}</view>
             </template>
           </template>
 
           <template v-else-if="phase === 'cutting'">
             <template v-if="actionDone">
-              <view class="btn" @click="playCut">{{ overlay_text.cut_again }}</view>
-              <view class="btn btn-primary" @click="playDraw">{{ overlay_text.start_draw }}</view>
+              <view class="btn" @tap="playCut">{{ overlay_text.cut_again }}</view>
+              <view class="btn btn-primary" @tap="playDraw">{{ overlay_text.start_draw }}</view>
             </template>
           </template>
 
           <template v-else-if="phase === 'revealing'">
-            <!-- 纯文字提示 + 点点点进度动画，替代原来的按钮样式 -->
+            <!-- Text hint + animated dots, shown while waiting for reading result -->
             <view class="revealing-hint font-display">
               {{ overlay_text.revealing }}<span class="thinking-dots"><span>.</span><span>.</span><span>.</span></span>
             </view>
@@ -110,7 +115,7 @@
       </view>
     </view>
 
-    <!-- 结果区：结果显示后从底部/右侧滑入 -->
+    <!-- Result area: slides in from bottom/right after results shown -->
     <scroll-view
       v-if="showResults"
       class="result-zone"
@@ -128,46 +133,82 @@
 </template>
 
 <!--
-  文件用途：全屏占卜遮罩组件
-  - 包含洗牌 / 切牌 / 抽牌三阶段动画
-  - 三阶段完成后展示塔罗解读结果（ResultPanel）
-  - 支持宽屏（≥768px）与窄屏自适应布局
+  File purpose: Full-screen divination overlay component
+  - Includes shuffle / cut / draw three-phase animation
+  - Displays tarot interpretation result (ResultPanel) after three phases
+  - Supports responsive layout for wide (≥768px) and narrow screens
 
-  跨端兼容说明（H5 & 微信小程序）：
-  - 禁止使用 window.innerWidth/innerHeight，改用 uni.getWindowInfo()
-  - 禁止使用 window.addEventListener/removeEventListener，改用 uni.onWindowResize/offWindowResize
-  - 禁止使用 getBoundingClientRect/offsetWidth/offsetHeight，改用窗口尺寸推算
-  - GSAP 不可直接操作 DOM 元素，改用"plain JS 状态对象 + onUpdate → Vue ref<string> :style 绑定"模式：
-      1. 定义 plain JS 状态对象（如 _bg, _initials[], _draws[]）
-      2. GSAP tween 作用在状态对象上，onUpdate 中调用刷新函数
-      3. 刷新函数将状态对象序列化为 CSS style 字符串，写入 Vue ref
-      4. 模板用 :style="xxxStyle" 绑定，Vue 负责最终 DOM 更新
+  Cross-platform compatibility (H5 & WeChat Mini Program):
+  - Avoid window.innerWidth/innerHeight, use uni.getWindowInfo() instead
+  - Avoid window.addEventListener/removeEventListener, use uni.onWindowResize/offWindowResize
+  - Avoid getBoundingClientRect/offsetWidth/offsetHeight, calculate from window dimensions
+  - GSAP cannot directly manipulate DOM elements, use "plain JS state object + onUpdate → Vue ref<string> :style binding" pattern:
+      1. Define plain JS state objects (e.g., _bg, _initials[], _draws[])
+      2. GSAP tweens operate on state objects, refresh functions called in onUpdate
+      3. Refresh functions serialize state objects to CSS style strings, written to Vue refs
+      4. Template binds with :style="xxxStyle", Vue handles final DOM updates
 -->
 <script setup lang="ts">
 import { computed, nextTick, onMounted, onUnmounted, ref } from 'vue'
 import gsap from 'gsap'
 import { useTarotStore } from '../stores/tarot'
+import { useThemeStore } from '../stores/theme'
 import ResultPanel from './ResultPanel.vue'
-import MoonPhase from './MoonPhase.vue'
 import { CARD_BACK_IMAGE } from '../constants'
 
-// Emits 定义
-// complete - 占卜流程完成时触发（抽牌动画结束、结果即将展示）
-// restart  - 用户点击重新开始时触发
+// Emits definition
+// complete - triggered when divination flow completes (draw animation ends, result about to show)
+// restart  - triggered when user clicks restart
 const emit = defineEmits<{
   (event: 'complete'): void
   (event: 'restart'): void
 }>()
 
 const tarotStore = useTarotStore()
+const themeStore = useThemeStore()
 
 // Card back image
-const cardBack = computed(() => CARD_BACK_IMAGE)
+const cardBack = computed(() => themeStore.cardBackImage || CARD_BACK_IMAGE)
 
-// Map phase to moon phase index (0-3)
-const moonPhaseIndex = computed(() => {
-  const map: Record<string, number> = { shuffling: 0, cutting: 1, drawing: 2, revealing: 3 }
-  return map[phase.value] ?? 0
+/**
+ * Current phase icon mapping
+ * Wands=shuffle, Swords=cut, Cups=draw, Pentacles=interpret.
+ */
+const phaseSteps = [
+  {
+    phase: 'shuffling',
+    activeIcon: 'icon_wands',
+    inactiveIcon: 'icon_wands_inactive',
+  },
+  {
+    phase: 'cutting',
+    activeIcon: 'icon_swords',
+    inactiveIcon: 'icon_swords_inactive',
+  },
+  {
+    phase: 'drawing',
+    activeIcon: 'icon_cups',
+    inactiveIcon: 'icon_cups_inactive',
+  },
+  {
+    phase: 'revealing',
+    activeIcon: 'icon_pentacles',
+    inactiveIcon: 'icon_pentacles_inactive',
+  },
+] as const
+
+const currentPhaseStep = computed(() => {
+  return phaseSteps.find(step => step.phase === phase.value) ?? phaseSteps[0]
+})
+
+const currentPhaseActiveIcon = computed(() => {
+  const step = currentPhaseStep.value
+  return themeStore.getUiAsset(step.activeIcon) || themeStore.getUiAsset(step.inactiveIcon)
+})
+
+const currentPhaseInactiveIcon = computed(() => {
+  const step = currentPhaseStep.value
+  return themeStore.getUiAsset(step.inactiveIcon) || themeStore.getUiAsset(step.activeIcon)
 })
 
 // User-facing copy strings.
@@ -191,18 +232,23 @@ const overlay_text = {
   result: '解读结果',
 }
 
-// ---- 响应式状态 ----
+// ---- Reactive state ----
 const phase = ref<'shuffling' | 'cutting' | 'drawing' | 'revealing'>('shuffling')
 const actionDone = ref(false)
 const phasePrompt = ref(overlay_text.prompt_shuffle)
 const showResults = ref(false)
 const isWide = ref(false)
 
+// Track entry animation completion to prevent shuffle CTA competition
+const entryAnimationComplete = ref(false)
+let entryTimeline: gsap.core.Timeline | null = null
+let readingRequestTimer: ReturnType<typeof setTimeout> | null = null
+
 function getCardImg(index: number) {
   return tarotStore.drawnCards[index]?.card.image || cardBack.value
 }
 
-// ---- 窗口尺寸（跨端兼容：替代 window.innerWidth/innerHeight）----
+// ---- Window dimensions (cross-platform: replaces window.innerWidth/innerHeight) ----
 // Get the height occupied by the progress-header in mini program
 function getTopBarHeight(): number {
   // #ifdef MP-WEIXIN
@@ -232,9 +278,9 @@ function getCardHeight(): number {
   return getCardWidth() * 1.6
 }
 
-// 根据当前布局状态推算舞台尺寸（替代 getBoundingClientRect）
-// stage 是 position:absolute; inset:0 填满 stage-container
-// stage-container 的尺寸由 CSS 布局决定，可从窗口尺寸推算
+// Calculate stage dimensions from layout state (replaces getBoundingClientRect)
+// stage is position:absolute; inset:0 filling stage-container
+// stage-container dimensions determined by CSS layout, calculable from window dimensions
 function getStageDimensions(): { width: number; height: number } {
   const { windowWidth, windowHeight } = uni.getWindowInfo()
   const topBar = getTopBarHeight()
@@ -249,7 +295,7 @@ function clamp(value: number, min: number, max: number) {
   return Math.min(Math.max(value, min), max)
 }
 
-// 根据宽屏/窄屏计算3张抽牌的目标坐标（相对于舞台中心）
+// Calculate target coordinates for 3 drawn cards (relative to stage center) based on wide/narrow layout
 function getDrawLayout(
   stage_width: number,
   stage_height: number,
@@ -287,15 +333,15 @@ function getDrawLayout(
   }
 }
 
-// ---- GSAP 动画状态对象（plain JS，GSAP 直接操作这些对象）----
-// 不使用 Vue 响应式，避免在微信小程序中直接操作 DOM
+// ---- GSAP animation state objects (plain JS, GSAP manipulates these directly) ----
+// Avoid Vue reactivity to prevent direct DOM manipulation in WeChat Mini Program
 
 interface CardState {
   x: number
   y: number
   rotation: number
   scale: number
-  scaleY: number  // 仅用于洗牌结束的弹性效果
+  scaleY: number  // only for shuffle end bounce effect
   opacity: number
 }
 
@@ -312,46 +358,49 @@ interface InnerState {
   rotationY: number
 }
 
-// 背景遮罩
+// Background overlay
 const _bg = { opacity: 0 }
-// 舞台整体（抽牌时上移）
+// Stage overall (moves up during draw)
 const _stage = { y: 0 }
-// 进度头部 / 底部操作区（入场动画）
+// Progress header / footer actions (entry animation)
 const _header = { y: 60, opacity: 0 }
 const _footer = { y: 60, opacity: 0 }
-// 牌组容器（洗牌摇晃效果）
+// Deck container (shuffle shake effect)
 const _deckCtn = { x: 0 }
-// 初始牌组 12 张（叠放）
+// Initial deck 12 cards (stacked)
 const _initials: CardState[] = Array.from({ length: 12 }, (_, i) => ({
   x: 0, y: -(i * 0.8), rotation: 0, scale: 1, scaleY: 1, opacity: 1,
 }))
-// 洗牌左/右各 6 张
+// Shuffle left/right 6 cards each
 const _lefts: CardState[] = Array.from({ length: 6 }, () => ({
   x: 0, y: 0, rotation: 0, scale: 1, scaleY: 1, opacity: 0,
 }))
 const _rights: CardState[] = Array.from({ length: 6 }, () => ({
   x: 0, y: 0, rotation: 0, scale: 1, scaleY: 1, opacity: 0,
 }))
-// 切牌三张（绝对定位居中）
+// Cut cards 3 (absolute positioned centered)
 const _cutTop: CenterCardState = { x: 0, y: 0, rotation: 0, scale: 1, opacity: 0, zIndex: 10 }
 const _cutMid: CenterCardState = { x: 0, y: 0, rotation: 0, scale: 1, opacity: 0, zIndex: 10 }
 const _cutBot: CenterCardState = { x: 0, y: 0, rotation: 0, scale: 1, opacity: 0, zIndex: 10 }
-// 抽出的3张牌（绝对定位居中）
+// Drawn 3 cards (absolute positioned centered)
 const _draws: CenterCardState[] = Array.from({ length: 3 }, (_, i) => ({
   x: 0, y: 0, rotation: 0, scale: 1, opacity: 0, zIndex: 20 - i,
 }))
-// 3D 翻转内层
+// 3D flip inner
 const _inners: InnerState[] = Array.from({ length: 3 }, () => ({ rotationY: 0 }))
 
-// ---- Vue 样式 ref（绑定到模板 :style，由刷新函数更新）----
+// ---- Vue style refs (bound to template :style, updated by refresh functions) ----
 
 const bgStyle = ref('opacity: 0')
 const stageStyle = ref('')
 const headerStyle = ref('transform: translateY(60px); opacity: 0')
 const footerStyle = ref('transform: translateY(60px); opacity: 0')
 const deckCtnStyle = ref('')
+const phaseIconInactiveStyle = ref('')
+const phaseIconActiveStyle = ref('')
+const phaseIconGlowStyle = ref('')
 
-// 初始值与 _initials 状态一致
+// Initial values consistent with _initials state
 const initialsStyle = ref<string[]>(
   _initials.map((s, i) => `transform: translateY(${-i * 0.8}px)`),
 )
@@ -372,9 +421,11 @@ const drawsVisible = ref<boolean[]>([false, false, false])
 const drawsStyle = ref<string[]>(['', '', ''])
 const innersStyle = ref<string[]>(['', '', ''])
 
-// ---- CSS style 字符串构造函数 ----
+const _phaseIndicator = { progress: 0 }
 
-// 普通卡牌（stack-card）：简单位移 + 旋转 + 缩放
+// ---- CSS style string constructors ----
+
+// Normal cards (stack-card): simple translate + rotate + scale
 function _cardStyleStr(s: CardState): string {
   const sy = s.scaleY !== 1 ? ` scaleY(${s.scaleY})` : ''
   return (
@@ -383,7 +434,7 @@ function _cardStyleStr(s: CardState): string {
   )
 }
 
-// 居中卡牌（stage-center）：transform 内含 calc(-50% + Xpx) 偏移，替代 GSAP 的 xPercent/yPercent:-50
+// Centered cards (stage-center): transform includes calc(-50% + Xpx) offset, replaces GSAP xPercent/yPercent:-50
 function _centerStyleStr(s: CenterCardState): string {
   return (
     `transform: translateX(calc(-50% + ${s.x}px)) translateY(calc(-50% + ${s.y}px))` +
@@ -392,12 +443,12 @@ function _centerStyleStr(s: CenterCardState): string {
   )
 }
 
-// 3D 翻转内层
+// 3D flip inner
 function _innerStyleStr(s: InnerState): string {
   return `transform: rotateY(${s.rotationY}deg)`
 }
 
-// ---- 刷新函数（在 GSAP onUpdate 中调用，将状态对象同步到 Vue ref）----
+// ---- Refresh functions (called in GSAP onUpdate, sync state objects to Vue refs) ----
 
 const refreshBg = () => { bgStyle.value = `opacity: ${_bg.opacity}` }
 const refreshStage = () => { stageStyle.value = `transform: translateY(${_stage.y}px)` }
@@ -413,9 +464,78 @@ const refreshCutBot = () => { cutBotStyle.value = _centerStyleStr(_cutBot) }
 const refreshCuts = () => { refreshCutTop(); refreshCutMid(); refreshCutBot() }
 const refreshDraws = () => { drawsStyle.value = _draws.map(s => _centerStyleStr(s)) }
 const refreshInners = () => { innersStyle.value = _inners.map(s => _innerStyleStr(s)) }
+const refreshPhaseIndicator = () => {
+  const progress = clamp(_phaseIndicator.progress, 0, 1)
+  const inactiveOpacity = 0.94 - progress * 0.76
+  const inactiveScale = 0.9 + progress * 0.08
+  const activeOpacity = progress
+  const activeScale = 0.68 + progress * 0.32
+  const glowOpacity = progress * 0.32
+  const glowScale = 0.82 + progress * 0.18
 
-// ---- 窗口 resize（跨端兼容：替代 window.addEventListener('resize')）----
-// UniApp 规范：uni.onWindowResize / uni.offWindowResize
+  phaseIconInactiveStyle.value = `opacity: ${inactiveOpacity}; transform: scale(${inactiveScale})`
+  phaseIconActiveStyle.value = `opacity: ${activeOpacity}; transform: scale(${activeScale})`
+  phaseIconGlowStyle.value = `opacity: ${glowOpacity}; transform: scale(${glowScale})`
+}
+
+function resetPhaseIndicatorProgress() {
+  _phaseIndicator.progress = 0
+  refreshPhaseIndicator()
+}
+
+function clearReadingRequestTimer() {
+  if (readingRequestTimer !== null) {
+    clearTimeout(readingRequestTimer)
+    readingRequestTimer = null
+  }
+}
+
+function scheduleReadingRequest() {
+  clearReadingRequestTimer()
+  readingRequestTimer = setTimeout(() => {
+    readingRequestTimer = null
+    tarotStore.startReadingRequest().catch(() => {
+      // Keep the overlay in revealing state when the request fails.
+    })
+  }, 0)
+}
+
+/**
+ * Ensure the entry animation is fully settled before a user-triggered flow animation starts.
+ * This prevents the first shuffle from competing with the mount-time tweens and causing a hitch.
+ */
+function settleEntryAnimation() {
+  if (entryTimeline) {
+    entryTimeline.progress(1)
+    entryTimeline.kill()
+    entryTimeline = null
+  }
+
+  _bg.opacity = 1
+  refreshBg()
+
+  _initials.forEach((state, index) => {
+    state.x = 0
+    state.y = -(index * 0.8)
+    state.rotation = 0
+    state.scale = 1
+    state.scaleY = 1
+    state.opacity = 1
+  })
+  refreshInitials()
+
+  _header.y = 0
+  _header.opacity = 1
+  _footer.y = 0
+  _footer.opacity = 1
+  refreshHeader()
+  refreshFooter()
+
+  entryAnimationComplete.value = true
+}
+
+// ---- Window resize (cross-platform: replaces window.addEventListener('resize')) ----
+// UniApp spec: uni.onWindowResize / uni.offWindowResize
 let _resizeHandler: ((res: UniApp.WindowResizeResult) => void) | null = null
 
 function _checkWidth(windowWidth: number) {
@@ -426,29 +546,36 @@ function _checkWidth(windowWidth: number) {
   }
 }
 
-// ---- 生命周期 ----
+// ---- Lifecycle ----
 
 onMounted(() => {
   const { windowWidth } = uni.getWindowInfo()
   _checkWidth(windowWidth)
 
-  // 监听窗口尺寸变化（小程序 / H5 统一 API）
+  // Listen for window size changes (unified API for mini program / H5)
   _resizeHandler = (res) => { _checkWidth(res.size.windowWidth) }
   uni.onWindowResize(_resizeHandler)
 
   nextTick(() => {
     const cardHeight = getCardHeight()
     const entryDrop = cardHeight * 4
+    entryAnimationComplete.value = false
+    resetPhaseIndicatorProgress()
 
-    // 背景淡入
-    gsap.fromTo(_bg, { opacity: 0 }, {
-      opacity: 1,
-      duration: 1,
-      onUpdate: refreshBg,
+    entryTimeline = gsap.timeline({
+      onComplete: () => {
+        entryAnimationComplete.value = true
+        entryTimeline = null
+      },
     })
 
-    // 牌组从上方坠入并回弹（stagger：每张牌依次落下）
-    gsap.fromTo(
+    entryTimeline.fromTo(_bg, { opacity: 0 }, {
+      opacity: 1,
+      duration: 0.7,
+      onUpdate: refreshBg,
+    }, 0)
+
+    entryTimeline.fromTo(
       _initials,
       { y: -entryDrop, rotation: 180, scale: 0.5, opacity: 1, scaleY: 1, x: 0 },
       {
@@ -456,36 +583,44 @@ onMounted(() => {
         rotation: 0,
         scale: 1,
         scaleY: 1,
-        duration: 1.2,
-        ease: 'back.out(1.4)',
+        duration: 1.05,
+        ease: 'power3.out',
         stagger: 0.02,
         onUpdate: refreshInitials,
       },
+      0,
     )
 
-    // header / footer 从下方入场
-    gsap.fromTo(
-      [_header, _footer],
-      { y: 100, opacity: 0 },
-      {
-        y: 0,
-        opacity: 1,
-        duration: 0.8,
-        delay: 0.8,
-        ease: 'power2.out',
-        onUpdate: () => { refreshHeader(); refreshFooter() },
-      },
-    )
+    entryTimeline.fromTo(_header, { y: 100, opacity: 0 }, {
+      y: 0,
+      opacity: 1,
+      duration: 0.55,
+      ease: 'power2.out',
+      onUpdate: refreshHeader,
+    }, 0.72)
+
+    entryTimeline.fromTo(_footer, { y: 100, opacity: 0 }, {
+      y: 0,
+      opacity: 1,
+      duration: 0.45,
+      ease: 'power2.out',
+      onUpdate: refreshFooter,
+    }, 1.12)
   })
 })
 
 onUnmounted(() => {
+  clearReadingRequestTimer()
   if (_resizeHandler) uni.offWindowResize(_resizeHandler)
+  if (entryTimeline) {
+    entryTimeline.kill()
+  }
   gsap.killTweensOf([
     _bg,
     _stage,
     _header,
     _footer,
+    _phaseIndicator,
     _deckCtn,
     ..._initials,
     ..._lefts,
@@ -498,11 +633,15 @@ onUnmounted(() => {
   ])
 })
 
-// ---- 洗牌动画 ----
-// 牌组拆分左右 → 交叉合并 → 弹性归位；完成后显示「下一步」按钮
+// ---- Shuffle animation ----
+// Deck splits left/right → cross-merge → bounce back; shows "next step" button on complete
 function playShuffle() {
+  if (!entryAnimationComplete.value) return
+
+  settleEntryAnimation()
   actionDone.value = false
   phasePrompt.value = overlay_text.prompt_shuffling
+  resetPhaseIndicatorProgress()
   const cardWidth = getCardWidth()
   const spreadX = cardWidth * 0.85
 
@@ -513,7 +652,14 @@ function playShuffle() {
     },
   })
 
-  // 初始化：隐藏初始牌，显示左右牌（等价于原 .set + autoAlpha）
+  timeline.to(_phaseIndicator, {
+    progress: 1,
+    duration: 1.9,
+    ease: 'power1.out',
+    onUpdate: refreshPhaseIndicator,
+  }, 0)
+
+  // Init: hide initial cards, show left/right cards (equivalent to original .set + autoAlpha)
   timeline.add(() => {
     _initials.forEach(s => { s.opacity = 0 })
     refreshInitials()
@@ -526,23 +672,23 @@ function playShuffle() {
     refreshRights()
   })
 
-  // 左右分开
+  // Split left/right
   timeline
     .to(_lefts, { x: -spreadX, y: (i: number) => -30 - i * 0.8, rotation: -16, duration: 0.5, ease: 'power2.out', onUpdate: refreshLefts })
     .to(_rights, { x: spreadX, y: (i: number) => 30 - i * 0.8, rotation: 16, duration: 0.5, ease: 'power2.out', onUpdate: refreshRights }, '<')
 
-    // 交叉穿插
+    // Cross interleave
     .to(_lefts, { x: 0, y: (i: number) => -(i * 1.6), rotation: -2, duration: 0.4, stagger: 0.06, ease: 'power2.out', onUpdate: refreshLefts }, '+=0.2')
     .to(_rights, { x: 0, y: (i: number) => -0.8 - i * 1.6, rotation: 2, duration: 0.4, stagger: 0.06, ease: 'power2.out', onUpdate: refreshRights }, '<0.03')
 
-    // 归位
+    // Return to position
     .to(
       [..._lefts, ..._rights],
       { x: 0, rotation: 0, duration: 0.3, ease: 'back.out(1.5)', onUpdate: () => { refreshLefts(); refreshRights() } },
       '+=0.1',
     )
 
-    // 隐藏左右牌，恢复初始牌并弹性效果
+    // Hide left/right cards, restore initial cards with bounce effect
     .add(() => {
       _lefts.forEach(s => { s.opacity = 0 })
       _rights.forEach(s => { s.opacity = 0 })
@@ -557,13 +703,14 @@ function playShuffle() {
     .to(_initials, { scaleY: 1, duration: 0.4, ease: 'elastic.out(1, 0.4)', onUpdate: refreshInitials })
 }
 
-// ---- 切牌动画 ----
-// 三张牌展开 → 互换位置 → 归位合并；完成后显示「抽取牌阵」按钮
+// ---- Cut animation ----
+// 3 cards expand → swap positions → merge back; shows "draw spread" button on complete
 function playCut() {
   phase.value = 'cutting'
   tarotStore.setPhase('cutting')
   actionDone.value = false
   phasePrompt.value = overlay_text.prompt_cutting
+  resetPhaseIndicatorProgress()
 
   const cardWidth = getCardWidth()
   const cardHeight = getCardHeight()
@@ -580,7 +727,14 @@ function playCut() {
     },
   })
 
-  // 初始化切牌状态
+  timeline.to(_phaseIndicator, {
+    progress: 1,
+    duration: 3.05,
+    ease: 'power1.out',
+    onUpdate: refreshPhaseIndicator,
+  }, 0)
+
+  // Init cut card state
   timeline.add(() => {
     Object.assign(_cutTop, { x: 0, y: 0, rotation: 0, scale: 1, opacity: 1, zIndex: 10 })
     Object.assign(_cutMid, { x: 0, y: 0, rotation: 0, scale: 1, opacity: 1, zIndex: 10 })
@@ -595,24 +749,24 @@ function playCut() {
   })
 
   timeline
-    // 分离：上/下对调，中间保持
+    // Separate: top/bottom swap, middle stays
     .to(_cutTop, { x: leftX, y: leftY, duration: 0.7, ease: 'power3.out', onUpdate: refreshCutTop })
     .to(_cutBot, { x: rightX, y: rightY, duration: 0.7, ease: 'power3.out', onUpdate: refreshCutBot }, '<')
 
-    // 整体放大（悬浮感）
+    // Overall scale up (levitation effect)
     .to([_cutTop, _cutMid, _cutBot], { scale: 1.1, duration: 0.4, ease: 'power1.out', onUpdate: refreshCuts })
 
-    // 互换：上→右、中→0、下→左
+    // Swap: top→right, middle→0, bottom→left
     .to(_cutTop, { x: rightX, y: rightY, zIndex: 11, duration: 0.7, ease: 'power2.inOut', onUpdate: refreshCutTop }, '+=0.15')
     .to(_cutMid, { x: 0, y: 0, zIndex: 12, duration: 0.7, ease: 'power2.inOut', onUpdate: refreshCutMid }, '<')
     .to(_cutBot, { x: leftX, y: leftY, zIndex: 13, duration: 0.7, ease: 'power2.inOut', onUpdate: refreshCutBot }, '<')
 
-    // 归位合并（stagger 模拟原逻辑）
+    // Merge back (stagger simulates original logic)
     .to(_cutTop, { x: 0, y: 0, rotation: 0, scale: 1, duration: 0.6, ease: 'back.out(1.5)', onUpdate: refreshCutTop }, '+=0.2')
     .to(_cutMid, { x: 0, y: 0, rotation: 0, scale: 1, duration: 0.6, delay: 0.15, ease: 'back.out(1.5)', onUpdate: refreshCutMid }, '<')
     .to(_cutBot, { x: 0, y: 0, rotation: 0, scale: 1, duration: 0.6, delay: 0.3, ease: 'back.out(1.5)', onUpdate: refreshCutBot }, '<')
 
-    // 隐藏切牌，恢复初始牌
+    // Hide cut cards, restore initial deck
     .add(() => {
       cutTopVisible.value = false
       cutMidVisible.value = false
@@ -624,14 +778,15 @@ function playCut() {
     })
 }
 
-// ---- 抽牌动画 ----
-// 牌组颤动 → 舞台上移 → 三张牌错落落下 → 翻牌 → 触发结果展示
+// ---- Draw animation ----
+// Deck trembles → stage lifts → 3 cards fall staggered → flip → triggers result display
 function playDraw() {
   phase.value = 'drawing'
   tarotStore.setPhase('drawing')
   tarotStore.drawThreeCards()
   actionDone.value = false
   phasePrompt.value = overlay_text.prompt_drawing
+  resetPhaseIndicatorProgress()
 
   const { width: stage_width, height: stage_height } = getStageDimensions()
   const card_width = getCardWidth()
@@ -639,22 +794,22 @@ function playDraw() {
   const draw_layout = getDrawLayout(stage_width, stage_height, card_width, card_height, isWide.value)
   const { targetX, targetY, liftY } = draw_layout
 
-  // 随机初始旋转角度（提前生成，避免每帧重新随机）
+  // Random initial rotation angles (pre-generate to avoid re-randomizing per frame)
   const preRotations = [0, 1, 2].map(() => (Math.random() - 0.5) * 15)
 
   const timeline = gsap.timeline()
 
-  // 牌组颤动（摇晃效果）
+  // Deck trembles (shake effect)
   timeline
     .to(_deckCtn, { x: '+=4', yoyo: true, repeat: 10, duration: 0.05, onUpdate: refreshDeckCtn })
     .to(_deckCtn, { x: 0, duration: 0.1, onUpdate: refreshDeckCtn })
 
-  // 舞台上移 + 初始牌淡出
+  // Stage lifts + initial cards fade out
   timeline
     .to(_stage, { y: -liftY, duration: 1.8, ease: 'power2.inOut', onUpdate: refreshStage }, '+=0.2')
     .to(_initials, { opacity: 0, y: (i: number) => -card_height * 0.4 - i * 0.8, scale: 0.8, duration: 0.6, ease: 'power1.in', onUpdate: refreshInitials }, '<0.2')
 
-  // 三张牌逐一从上方落下到目标位
+  // 3 cards fall from above to target positions
   ;[0, 1, 2].forEach((index) => {
     timeline.add(() => {
       Object.assign(_draws[index], {
@@ -676,8 +831,17 @@ function playDraw() {
       .to(_draws[index], { y: targetY[index], duration: 1.5, ease: 'power3.out', onUpdate: refreshDraws }, '>')
   })
 
-  // 三张牌均落定后：对齐最终位置 → 压缩 → 翻牌
+  // After all 3 cards land: align final positions → compress → flip
   const alignTime = 1 + 2 * 0.3 + 0.7 + 0.4 + 1.5 + 0.5
+  const revealingStart = alignTime + 2.7
+  const finishTime = alignTime + 4.3
+
+  timeline.to(_phaseIndicator, {
+    progress: 1,
+    duration: revealingStart,
+    ease: 'power1.out',
+    onUpdate: refreshPhaseIndicator,
+  }, 0)
 
   timeline
     .to(
@@ -693,7 +857,7 @@ function playDraw() {
       alignTime + 0.1,
     )
     .to(_draws, { scale: 0.92, duration: 0.5, ease: 'power1.out', onUpdate: refreshDraws }, alignTime + 0.9)
-    // 翻牌（3D rotationY: 180deg，stagger 依次翻转）
+    // Flip (3D rotationY: 180deg, stagger sequential flip)
     .to(
       _inners,
       { rotationY: 180, duration: 1, stagger: 0.4, ease: 'back.out(1.1)', onUpdate: refreshInners },
@@ -703,12 +867,21 @@ function playDraw() {
       phase.value = 'revealing'
       tarotStore.setPhase('revealing')
       phasePrompt.value = overlay_text.revealed
-    }, alignTime + 2.7)
-    .add(() => { finish() }, alignTime + 4.3)
+      resetPhaseIndicatorProgress()
+    }, revealingStart)
+    .to(_phaseIndicator, {
+      progress: 1,
+      duration: finishTime - revealingStart,
+      ease: 'power1.out',
+      onUpdate: refreshPhaseIndicator,
+    }, revealingStart)
+    .add(() => { void finish() }, finishTime)
+
+  scheduleReadingRequest()
 }
 
-// ---- 结果布局更新（resize 或进入结果展示时调用）----
-// 重新计算3张牌的目标坐标并动画至新位置
+// ---- Result layout update (called on resize or when entering result display) ----
+// Recalculate target coordinates for 3 cards and animate to new positions
 function updateLayout() {
   if (phase.value !== 'revealing' && phase.value !== 'drawing') return
 
@@ -774,7 +947,19 @@ function updateLayout() {
   })
 }
 
-function finish() {
+async function finish() {
+  try {
+    if (!tarotStore.readingResult) {
+      await tarotStore.waitForReadingResult()
+    }
+  } catch {
+    return
+  }
+
+  if (!tarotStore.readingResult) {
+    return
+  }
+
   tarotStore.revealResult()
   showResults.value = true
   phasePrompt.value = overlay_text.result
@@ -782,6 +967,7 @@ function finish() {
 }
 
 function handleRestart() {
+  clearReadingRequestTimer()
   showResults.value = false
   emit('restart')
 }
@@ -801,7 +987,7 @@ function handleRestart() {
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  /* 布局切换的过渡 */
+  /* Layout transition */
   transition: flex-direction 0.4s ease;
 }
 
@@ -824,30 +1010,30 @@ function handleRestart() {
   bottom: 0;
   left: 0;
   z-index: -1;
-  /* 深色神秘背景；opacity 由 GSAP 驱动淡入 */
+  /* Dark mystical background; opacity driven by GSAP fade-in */
   background: rgba(242, 232, 208, 0.97);
 }
 
-/* 结果展示后的容器变形 */
+/* Post-result container deformation */
 .stage-container {
   position: relative;
   display: flex;
   flex-direction: column;
   flex-shrink: 0;
   transition: flex 0.6s cubic-bezier(0.4, 0, 0.2, 1), height 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-  /* 默认占满全部纵向空间 */
+  /* Default fills all vertical space */
   flex: 1 0 100%;
   height: 100vh;
 }
 
-/* 窄屏：结果展示后，动画区缩至上半 */
+/* Narrow screen: after results shown, animation area shrinks to upper half */
 .show-results .stage-container {
   flex: 0 0 42vh;
   height: 42vh;
   min-height: 260px;
 }
 
-/* 宽屏：结果展示后，动画区变为左侧列 */
+/* Wide screen: after results shown, animation area becomes left column */
 .is-wide.show-results {
   flex-direction: row;
 }
@@ -886,10 +1072,6 @@ function handleRestart() {
   }
 }
 
-.is-wide .result-zone {
-  animation-name: result-slide-in-right;
-}
-
 @keyframes result-slide-in-right {
   from {
     opacity: 0;
@@ -902,12 +1084,51 @@ function handleRestart() {
   }
 }
 
-/* 进度条头部位置 */
+.is-wide .result-zone {
+  animation-name: result-slide-in-right;
+}
+
+/* Progress header position */
 .progress-header {
   display: flex;
   flex-direction: column;
   align-items: center;
   z-index: 20;
+}
+
+.phase-indicator {
+  position: relative;
+  width: 112rpx;
+  height: 112rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.phase-icon {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  filter: drop-shadow(0 8rpx 18rpx rgba(74, 37, 16, 0.12));
+}
+
+.phase-icon-inactive {
+  opacity: 0.94;
+  transform: scale(0.9);
+}
+
+.phase-icon-active {
+  opacity: 0;
+  transform: scale(0.68);
+}
+
+.phase-icon-glow {
+  position: absolute;
+  inset: 18rpx;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(122, 92, 20, 0.14) 0%, rgba(122, 92, 20, 0) 72%);
+  opacity: 0;
 }
 
 /* #ifdef H5 */
@@ -922,7 +1143,7 @@ function handleRestart() {
 
 /* #ifdef MP-WEIXIN */
 .progress-header {
-  /* 小程序需要更大的顶部间距，避开刘海(44px) + 胶囊按钮(32px) + 额外间距 */
+  /* Mini program needs larger top margin to avoid notch(44px) + capsule button(32px) + extra spacing */
   margin-top: calc(env(safe-area-inset-top, 44px) + 140rpx);
 }
 
@@ -930,6 +1151,16 @@ function handleRestart() {
   margin-top: calc(env(safe-area-inset-top, 44px) + 80rpx);
 }
 /* #endif */
+
+/* #ifdef H5 */
+@media (min-width: 768px) {
+  .phase-indicator {
+    width: 124rpx;
+    height: 124rpx;
+  }
+}
+/* #endif */
+
 
 .phase-prompt {
   font-size: 28rpx;
@@ -1041,7 +1272,7 @@ function handleRestart() {
   object-fit: cover;
 }
 
-/* 正位/逆位徽章 */
+/* Upright/Reversed badge */
 .position-badge {
   position: absolute;
   top: -12rpx;
@@ -1098,6 +1329,11 @@ function handleRestart() {
   align-items: center;
 }
 
+.action-placeholder {
+  width: 1px;
+  height: 64rpx;
+}
+
 .btn {
   padding: 18rpx 40rpx;
   border-radius: 40rpx;
@@ -1134,7 +1370,7 @@ function handleRestart() {
 /* #endif */
 
 /* #ifdef MP-WEIXIN */
-/* 小程序使用类名替代nth-child */
+/* Mini program uses class names instead of nth-child */
 .thinking-dots .dot-2 { animation-delay: 0.2s; }
 .thinking-dots .dot-3 { animation-delay: 0.4s; }
 /* #endif */

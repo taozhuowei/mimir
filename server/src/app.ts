@@ -11,6 +11,7 @@
  */
 
 import express from 'express'
+import fs from 'fs'
 import path from 'path'
 import cardsRouter from './routes/cards'
 import readingsRouter from './routes/readings'
@@ -42,8 +43,14 @@ app.get('/api/health', (_req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() })
 })
 
-// H5 SPA — serve built frontend and fall back to index.html for client-side routing
-const h5Dist = path.join(__dirname, '../../dist/build/h5')
+// H5 SPA — in development prefer dist/dev/h5 produced by watch mode,
+// and fall back to dist/build/h5 for production / prebuilt previews.
+const devH5Dist = path.join(__dirname, '../../dist/dev/h5')
+const buildH5Dist = path.join(__dirname, '../../dist/build/h5')
+const h5Dist = process.env.NODE_ENV === 'production'
+  ? buildH5Dist
+  : (fs.existsSync(devH5Dist) ? devH5Dist : buildH5Dist)
+
 app.use(express.static(h5Dist))
 app.get('*', (_req, res) => {
   res.sendFile(path.join(h5Dist, 'index.html'))

@@ -52,6 +52,28 @@ export const useThemeStore = defineStore('theme', () => {
   })
 
   /**
+   * Theme UI assets, or empty object if not loaded.
+   * Provides direct access to resolved icon / button asset URLs from theme.json.
+   */
+  const uiAssets = computed<Record<string, string>>(() => {
+    const resolvedUi = currentTheme.value?.ui ?? {}
+    return Object.entries(resolvedUi).reduce<Record<string, string>>((acc, [key, value]) => {
+      if (value !== undefined) {
+        acc[key] = value
+      }
+      return acc
+    }, {})
+  })
+
+  /**
+   * Read a single resolved UI asset URL by key.
+   * Returns empty string when the asset is not configured in the current theme.
+   */
+  function getUiAsset(assetKey: string): string {
+    return uiAssets.value[assetKey] ?? ''
+  }
+
+  /**
    * Theme colors, or null if not loaded
    */
   const colors = computed<ThemeColors | null>(() => {
@@ -72,6 +94,8 @@ export const useThemeStore = defineStore('theme', () => {
     loadTheme,
     themeBase,
     cardBackImage,
+    uiAssets,
+    getUiAsset,
     colors,
     fonts,
   }

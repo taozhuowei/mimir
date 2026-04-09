@@ -1,7 +1,7 @@
 /**
- * 占卜流程状态管理（Pinia Store）
- * 管理整副牌（从 API 加载）、当前问题、抽牌结果、阅读结果及流程阶段。
- * 抽牌（随机选牌）在前端执行；解读（评分）由后端 API 完成。
+ * Divination flow state management (Pinia Store)
+ * Manages the full deck (loaded from API), current question, drawn cards, reading result, and flow phases.
+ * Card drawing (random selection) happens client-side; interpretation (scoring) is done by backend API.
  */
 
 import { defineStore } from 'pinia'
@@ -10,23 +10,35 @@ import { drawThreeCards as drawCards, type DrawnResult, type ReadingResult, type
 import { fetchAllCards } from '../api/cards'
 import { fetchReading } from '../api/readings'
 
-// 占卜流程阶段
+// Divination flow phases
 export type DivinationPhase = 'idle' | 'shuffling' | 'cutting' | 'drawing' | 'revealing' | 'result'
 
 export const useTarotStore = defineStore('tarot', () => {
   const phase = ref<DivinationPhase>('idle')
   const drawnCards = ref<DrawnResult[]>([])
   const readingResult = ref<ReadingResult | null>(null)
-  const allCards = ref<TarotCardInfo[]>([])      // 从 GET /api/v1/cards 加载
+  const allCards = ref<TarotCardInfo[]>([])      // loaded from GET /api/v1/cards
   const currentQuestion = ref('')
   const isCardsLoading = ref(false)
   const cardsLoadError = ref<string | null>(null)
+  const isReadingLoading = ref(false)
+  const readingError = ref<string | null>(null)
+
+  // Track the current reading request to guard against stale responses
+  const currentReadingRequestId = ref<number>(0)
+  let pendingReadingPromise: Promise<ReadingResult | null> | null = null
 
   const isIdle = computed(() => phase.value === 'idle')
   const isAnimating = computed(() => ['shuffling', 'cutting', 'drawing', 'revealing'].includes(phase.value))
   const isResultVisible = computed(() => phase.value === 'result' && readingResult.value !== null)
 
-  /** 应用启动时调用一次，从后端加载全部 78 张牌数据 */
+  function invalidateReadingRequest() {
+    currentReadingRequestId.value += 1
+    pendingReadingPromise = null
+    isReadingLoading.value = false
+  }
+
+  /** Call once at app startup to load all 78 cards from backend */
   async function loadCards(): Promise<void> {
     cardsLoadError.value = null
     if (allCards.value.length > 0 || isCardsLoading.value) return
@@ -45,6 +57,8 @@ export const useTarotStore = defineStore('tarot', () => {
     phase.value = 'shuffling'
     drawnCards.value = []
     readingResult.value = null
+    readingError.value = null
+    invalidateReadingRequest()
   }
 
   function setPhase(nextPhase: DivinationPhase) {
@@ -56,14 +70,86 @@ export const useTarotStore = defineStore('tarot', () => {
   }
 
   /**
-   * 前端随机抽取 3 张牌，同时向后端请求解读结果。
-   * 两个操作异步并行：动画播放期间 API 已在后台获取，
-   * readingResult 到位后 isResultVisible 自动变为 true。
+   * Synchronous local draw: randomly select 3 cards from the deck.
+   * This is immediate and suitable for triggering animations.
+   * Use startReadingRequest() to fetch the interpretation separately.
    */
-  async function drawThreeCards(): Promise<DrawnResult[]> {
+  function drawThreeCards(): DrawnResult[] {
+    invalidateReadingRequest()
     const drawn = drawCards(allCards.value)
     drawnCards.value = drawn
-    readingResult.value = await fetchReading(drawn)
+    readingResult.value = null
+    readingError.value = null
+    return drawn
+  }
+
+  /**
+   * Start the async reading request. Returns a promise that resolves when
+   * the reading result arrives. Stale responses (from previous draws/resets)
+   * are automatically ignored and will not update the store.
+   * 
+   * The caller can await this or let it resolve in the background.
+   */
+  async function startReadingRequest(): Promise<ReadingResult | null> {
+    if (pendingReadingPromise) {
+      return pendingReadingPromise
+    }
+
+    const drawn = drawnCards.value
+    if (drawn.length === 0) {
+      return null
+    }
+
+    const requestId = ++currentReadingRequestId.value
+    isReadingLoading.value = true
+    readingError.value = null
+
+    pendingReadingPromise = (async () => {
+      const result = await fetchReading(drawn)
+
+      if (requestId !== currentReadingRequestId.value) {
+        return null
+      }
+
+      readingResult.value = result
+      return result
+    })()
+      .catch((err: unknown) => {
+        if (requestId !== currentReadingRequestId.value) {
+          return null
+        }
+
+        readingError.value = err instanceof Error ? err.message : 'Failed to load reading'
+        throw err
+      })
+      .finally(() => {
+        if (requestId === currentReadingRequestId.value) {
+          isReadingLoading.value = false
+          pendingReadingPromise = null
+        }
+      })
+
+    return pendingReadingPromise
+  }
+
+  function waitForReadingResult(): Promise<ReadingResult | null> {
+    if (pendingReadingPromise) {
+      return pendingReadingPromise
+    }
+
+    return Promise.resolve(readingResult.value)
+  }
+
+  /**
+   * Legacy combined draw + reading method.
+   * Kept for backward compatibility with existing callers.
+   * Internally splits into sync draw + async reading.
+   */
+  async function drawThreeCardsAndFetchReading(): Promise<DrawnResult[]> {
+    const drawn = drawThreeCards()
+    startReadingRequest().catch(() => {
+      // Keep the legacy helper non-throwing for existing callers.
+    })
     return drawn
   }
 
@@ -76,6 +162,8 @@ export const useTarotStore = defineStore('tarot', () => {
     drawnCards.value = []
     readingResult.value = null
     currentQuestion.value = ''
+    readingError.value = null
+    invalidateReadingRequest()
   }
 
   return {
@@ -86,7 +174,9 @@ export const useTarotStore = defineStore('tarot', () => {
     isAnimating,
     isIdle,
     isResultVisible,
+    isReadingLoading,
     readingResult,
+    readingError,
     isCardsLoading,
     cardsLoadError,
     loadCards,
@@ -94,6 +184,9 @@ export const useTarotStore = defineStore('tarot', () => {
     setPhase,
     revealResult,
     drawThreeCards,
+    startReadingRequest,
+    waitForReadingResult,
+    drawThreeCardsAndFetchReading,
     getReadingResult,
     reset
   }

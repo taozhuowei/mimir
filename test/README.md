@@ -6,7 +6,7 @@
 npm test -w test
 ```
 
-当前共 **50 个测试用例，4 个测试文件**。
+当前共 **68 个测试用例，5 个测试文件**。
 
 ---
 
@@ -15,6 +15,7 @@ npm test -w test
 ```
 test/
 ├── result_panel.test.ts       # 前端 result_panel 工具函数
+├── tarot_store.test.ts        # 前端 tarot store 抽牌/读牌时序与失效请求保护
 ├── tarotReading.test.ts       # 前端 drawThreeCards 逻辑
 └── testcases/
     ├── backend.test.ts        # 后端服务层单元测试（card_loader + tarot_reading）
@@ -47,6 +48,17 @@ test/
 | `drawThreeCards` | 每张牌 position 为合法值 | `'upright' \| 'reversed'` 随机分支 |
 | `drawThreeCards` | 抽到的牌均来自原始牌组 | 牌数据引用完整性 |
 | `drawThreeCards` | 无重复牌（id 唯一） | Fisher-Yates shuffle 无碰撞 |
+
+### `tarot_store.test.ts`
+
+测试对象：`app/src/stores/tarot.ts`
+
+| 函数 | 用例 | 覆盖路径 |
+|------|------|----------|
+| `drawThreeCards` | 同步完成本地抽牌 | 动画首帧不等待网络 |
+| `startReadingRequest` | 单独启动异步读牌并可被等待 | 抽牌/读牌解耦路径 |
+| `waitForReadingResult` | 复用当前进行中的 Promise | 结果展示等待路径 |
+| `reset` + `startReadingRequest` | 旧请求完成后不会覆盖新结果 | 失效请求保护 |
 
 ---
 

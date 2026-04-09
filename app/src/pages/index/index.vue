@@ -103,7 +103,6 @@ const cardsStyle = ref<string[]>(Array(12).fill(''))
 const _cards = Array(12).fill(0).map(() => ({ x: 0, y: 0, rotation: 0, scale: 1 }))
 let idleTimeline: gsap.core.Timeline | null = null
 
-let winWidth = 375
 let winHeight = 667
 
 function updateCardsStyle() {
@@ -113,13 +112,12 @@ function updateCardsStyle() {
 function calculateLayout() {
   try {
     const winInfo = uni.getWindowInfo()
-    winWidth = winInfo.windowWidth
     winHeight = winInfo.windowHeight
     // #ifdef MP-WEIXIN
     const menuButtonRect = uni.getMenuButtonBoundingClientRect()
     headerPaddingTop.value = menuButtonRect.bottom + 8
     // #endif
-  } catch (e) {
+  } catch {
     headerPaddingTop.value = 20
   }
 }

@@ -85,7 +85,9 @@
 ### 主题规范与迁移
 
 - [ ] 制定主题目录规范文档（见下方「主题目录结构」）
-- [ ] 将现有 `golden_dawn` 资源迁移到新规范目录结构（icons 并入主题目录）
+- [x] 将现有 `golden_dawn` 资源迁移到新规范目录结构（icons 并入主题目录）
+- [x] 更新 `golden_dawn/ui/icon-*.png` 为统一塔罗主题图标（active / inactive 方案）
+- [x] 优化占卜流程动画时序：延后读牌请求到抽牌动画启动后，并避免洗牌按钮与入场动画竞争造成首帧卡顿
 
 **主题目录结构（规范）**：
 
@@ -129,15 +131,15 @@ server/themes/
 
 ### 后端
 
-- [ ] 实现 `GET /api/v1/themes`：扫描 `server/themes/` 目录，返回所有主题的 `id` + `name` + `author`
-- [ ] 实现 `GET /api/v1/themes/:id`：返回指定主题的完整 `theme.json` 内容
-- [ ] 静态资源路径调整：`/static/themes/:id/tarot/...`、`/static/themes/:id/icons/...`
+- [x] 实现 `GET /api/v1/themes`：扫描主题目录，返回所有主题的 `id` + `name` + `description`
+- [x] 实现 `GET /api/v1/themes/:id`：返回指定主题的完整 `theme.json` 内容
+- [x] 静态资源路径调整：`/static/themes/:id/tarot/...`、`/static/themes/:id/ui/...`
 
 ### 前端
 
-- [ ] 新建 `app/src/stores/theme.ts`：管理当前主题 ID、主题配置，提供 `switchTheme()` 方法
+- [~] 新建 `app/src/stores/theme.ts`：已支持加载当前主题与读取主题资源；`switchTheme()` 与完整切换能力待补齐
 - [ ] 将 `constants.ts` 中的图片/图标路径改为从 `theme store` 动态获取（拼接主题 ID）
-- [ ] 将 `app/src/styles/global.css` 中的颜色硬编码替换为 CSS 变量（`--color-bg-primary` 等）；主题切换时动态注入 CSS 变量值
+- [~] 将 `app/src/styles/global.css` 中的颜色硬编码替换为 CSS 变量（`--color-bg-primary` 等）；主题切换时动态注入 CSS 变量值待补齐
 - [ ] 新增主题选择 UI 入口（简单的主题列表弹窗即可，无需复杂设计）
 - [ ] 小程序端：通过 `page.setData` 更新 CSS 变量（适配小程序 CSS 变量注入方式）
 
