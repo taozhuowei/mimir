@@ -59,16 +59,16 @@
         <image v-show="cutBotVisible" class="tarot-card stage-center cut-b" :src="cardBack" :style="cutBotStyle" />
 
         <view class="draw-container">
-          <!-- Drawn 3 cards: v-show + style driven by GSAP state object; centerStyle uses calc(-50%+Xpx) for centering -->
+          <!-- Drawn cards: v-show + style driven by GSAP state object; centerStyle uses calc(-50%+Xpx) for centering -->
           <view
             v-for="(_, idx) in drawsVisible"
             :key="idx"
             v-show="drawsVisible[idx]"
             class="draw-wrapper stage-center"
-            :style="drawsStyle[idx]"
+            :style="[drawsStyle[idx], drawsSizeStyle[idx]]"
           >
             <!-- 3D flip inner: style driven by GSAP rotationY -->
-            <view class="card-3d-inner" :style="innersStyle[idx]">
+            <view class="card-3d-inner" :style="[innersStyle[idx], drawsSizeStyle[idx]]">
               <image class="tarot-card face-back" :src="cardBack" />
               <view class="tarot-card face-front">
                 <image class="front-img" :src="getCardImg(idx)" />
@@ -150,7 +150,10 @@ import { useThemeStore } from '../stores/theme'
 import ResultPanel from './ResultPanel.vue'
 import { CARD_BACK_IMAGE } from '../constants'
 import config from '../config.json'
-const CARD_COUNT: number = config.cardCount
+import { resolveSpreadLayout, type SpreadScene, type SpreadKind, getSpreadCardCount } from '../utils/spread_layout'
+
+const SPREAD_KIND: SpreadKind = config.spreadKind as SpreadKind
+const CARD_COUNT: number = getSpreadCardCount(SPREAD_KIND)
 
 // Emits definition
 // complete - triggered when divination flow completes (draw animation ends, result about to show)
@@ -211,6 +214,10 @@ const phase = ref<'shuffling' | 'cutting' | 'drawing' | 'revealing'>('shuffling'
 const showResults = ref(false)
 const isWide = ref(false)
 
+// Card dimensions from layout solver (consumed by draw/result cards)
+const layoutCardWidth = ref(172)
+const layoutCardHeight = ref(275)
+
 // Track entry animation completion to prevent shuffle CTA competition
 const entryAnimationComplete = ref(false)
 let entryTimeline: gsap.core.Timeline | null = null
@@ -261,76 +268,6 @@ function getStageDimensions(): { width: number; height: number } {
     return { width: windowWidth, height: windowHeight * 0.42 }
   }
   return { width: windowWidth, height: windowHeight - topBar }
-}
-
-function clamp(value: number, min: number, max: number) {
-  return Math.min(Math.max(value, min), max)
-}
-
-// Calculate target coordinates for 3 drawn cards (relative to stage center) based on wide/narrow layout
-function getDrawLayout(
-  stage_width: number,
-  stage_height: number,
-  card_width: number,
-  card_height: number,
-  is_wide: boolean,
-  card_count: number,
-) {
-  const horizontal_margin = Math.max(card_width * 0.2, 24)
-  const vertical_margin = Math.max(card_height * 0.12, 24)
-  const max_center_x = Math.max(0, stage_width / 2 - card_width / 2 - horizontal_margin)
-  const side_offset = Math.min(card_width * 1.28, max_center_x)
-  const min_center_y = -stage_height / 2 + card_height / 2 + vertical_margin
-  const max_center_y = stage_height / 2 - card_height / 2 - vertical_margin
-  const lift_y = is_wide
-    ? Math.min(stage_height * 0.32, card_height * 1.26)
-    : Math.min(stage_height * 0.16, card_height * 0.56)
-
-  if (card_count === 1) {
-    const center_y = clamp(lift_y, min_center_y, max_center_y)
-    return {
-      liftY: lift_y,
-      targetX: [0],
-      targetY: [center_y],
-    }
-  }
-
-  if (card_count === 2) {
-    const half_offset = Math.min(card_width * 0.7, max_center_x)
-    const center_y = clamp(lift_y, min_center_y, max_center_y)
-    if (is_wide) {
-      return {
-        liftY: lift_y,
-        targetX: [-half_offset, half_offset],
-        targetY: [center_y, center_y],
-      }
-    }
-    const mobile_spread_2 = Math.min(card_height * 0.6, (max_center_y - min_center_y) / 2)
-    const mobile_center_y_2 = clamp(lift_y, min_center_y + mobile_spread_2, max_center_y - mobile_spread_2)
-    return {
-      liftY: lift_y,
-      targetX: [0, 0],
-      targetY: [mobile_center_y_2 + mobile_spread_2, mobile_center_y_2 - mobile_spread_2],
-    }
-  }
-
-  // card_count === 3: existing logic unchanged
-  if (is_wide) {
-    const centered_row_y = clamp(lift_y, min_center_y, max_center_y)
-    return {
-      liftY: lift_y,
-      targetX: [-side_offset, 0, side_offset],
-      targetY: [centered_row_y, centered_row_y, centered_row_y],
-    }
-  }
-  const available_mobile_span = Math.max(0, max_center_y - min_center_y)
-  const mobile_spread = Math.min(card_height * 1.12, available_mobile_span / 2)
-  const mobile_center_y = clamp(lift_y, min_center_y + mobile_spread, max_center_y - mobile_spread)
-  return {
-    liftY: lift_y,
-    targetX: [0, 0, 0],
-    targetY: [mobile_center_y + mobile_spread, mobile_center_y, mobile_center_y - mobile_spread],
-  }
 }
 
 // ---- GSAP animation state objects (plain JS, GSAP manipulates these directly) ----
@@ -417,6 +354,7 @@ const cutBotStyle = ref('')
 
 const drawsVisible = ref<boolean[]>(Array(CARD_COUNT).fill(false))
 const drawsStyle = ref<string[]>(Array(CARD_COUNT).fill(''))
+const drawsSizeStyle = ref<{ width: string; height: string }[]>(Array(CARD_COUNT).fill({ width: '', height: '' }))
 const innersStyle = ref<string[]>(Array(CARD_COUNT).fill(''))
 
 
@@ -441,6 +379,14 @@ function _centerStyleStr(s: CenterCardState): string {
   )
 }
 
+// Card size style string constructor (uses solver-returned dimensions)
+function _cardSizeStyleStr(width: number, height: number): { width: string; height: string } {
+  return {
+    width: `${width}px`,
+    height: `${height}px`,
+  }
+}
+
 // 3D flip inner
 function _innerStyleStr(s: InnerState): string {
   return `transform: rotateY(${s.rotationY}deg)`
@@ -460,7 +406,9 @@ const refreshCutTop = () => { cutTopStyle.value = _centerStyleStr(_cutTop) }
 const refreshCutMid = () => { cutMidStyle.value = _centerStyleStr(_cutMid) }
 const refreshCutBot = () => { cutBotStyle.value = _centerStyleStr(_cutBot) }
 const refreshCuts = () => { refreshCutTop(); refreshCutMid(); refreshCutBot() }
-const refreshDraws = () => { drawsStyle.value = _draws.map(s => _centerStyleStr(s)) }
+const refreshDraws = () => {
+  drawsStyle.value = _draws.map(s => _centerStyleStr(s))
+}
 const refreshInners = () => { innersStyle.value = _inners.map(s => _innerStyleStr(s)) }
 
 function clearReadingRequestTimer() {
@@ -748,17 +696,31 @@ function playCut() {
 }
 
 // ---- Draw animation ----
-// Deck trembles → stage lifts → 3 cards fall staggered → flip → triggers result display
+// Deck trembles → stage lifts → cards fall staggered → flip → triggers result display
 function playDraw() {
   phase.value = 'drawing'
   tarotStore.setPhase('drawing')
   tarotStore.drawCards()
 
   const { width: stage_width, height: stage_height } = getStageDimensions()
-  const card_width = getCardWidth()
   const card_height = getCardHeight()
-  const draw_layout = getDrawLayout(stage_width, stage_height, card_width, card_height, isWide.value, CARD_COUNT)
-  const { targetX, targetY, liftY } = draw_layout
+
+  // Use spread layout solver for draw stage
+  const drawLayout = resolveSpreadLayout({
+    spreadKind: SPREAD_KIND,
+    scene: 'draw_stage',
+    containerWidth: stage_width,
+    containerHeight: stage_height,
+    isWide: isWide.value,
+    cardAspectRatio: 1.6,
+  })
+
+  const targetX = drawLayout.cards.map(c => c.x)
+  const targetY = drawLayout.cards.map(c => c.y)
+  const liftY = drawLayout.stageShiftY
+
+  // Set initial card sizes from solver output
+  drawsSizeStyle.value = drawLayout.cards.map(c => _cardSizeStyleStr(c.width, c.height))
 
   // Random initial rotation angles (pre-generate to avoid re-randomizing per frame)
   const preRotations = Array.from({ length: CARD_COUNT }, () => (Math.random() - 0.5) * 15)
@@ -846,60 +808,35 @@ function playDraw() {
 }
 
 // ---- Result layout update (called on resize or when entering result display) ----
-// Recalculate target coordinates for 3 cards and animate to new positions
+// Recalculate target coordinates for cards and animate to new positions
 function updateLayout() {
   if (phase.value !== 'revealing' && phase.value !== 'drawing') return
 
   const { width: stage_width, height: stage_height } = getStageDimensions()
-  const card_width = getCardWidth()
-  const card_height = getCardHeight()
 
-  let targetX: number[] = []
-  let targetY: number[] = []
+  // Use spread layout solver for result stage
+  const scene: SpreadScene = showResults.value ? 'result_stage' : 'draw_stage'
+  const layout = resolveSpreadLayout({
+    spreadKind: SPREAD_KIND,
+    scene,
+    containerWidth: stage_width,
+    containerHeight: stage_height,
+    isWide: isWide.value,
+    cardAspectRatio: 1.6,
+  })
+
+  // Consume solver-returned card dimensions for result stage
+  layoutCardWidth.value = layout.cardWidth
+  layoutCardHeight.value = layout.cardHeight
+
+  // Update per-card size styles from solver output
+  drawsSizeStyle.value = layout.cards.map(c => _cardSizeStyleStr(c.width, c.height))
+
+  const targetX = layout.cards.map(c => c.x)
+  const targetY = layout.cards.map(c => c.y)
 
   if (showResults.value) {
-    if (isWide.value) {
-      const gap_x = 20
-      const gap_y = 20
-      let cols = CARD_COUNT
-      if (card_width * CARD_COUNT + gap_x * (CARD_COUNT - 1) > stage_width * 0.9) cols = 2
-      if (card_width * 2 + gap_x > stage_width * 0.9) cols = 1
-
-      const rows = Math.ceil(CARD_COUNT / cols)
-      const grid_height = rows * card_height + (rows - 1) * gap_y
-      let current_y = -grid_height / 2 + card_height / 2
-
-      let i = 0
-      for (let r = 0; r < rows; r++) {
-        const row_cols = Math.min(CARD_COUNT - i, cols)
-        const row_width = row_cols * card_width + (row_cols - 1) * gap_x
-        const start_x = -row_width / 2 + card_width / 2
-        for (let c = 0; c < row_cols; c++) {
-          if (i < CARD_COUNT) {
-            targetX[i] = start_x + c * (card_width + gap_x)
-            targetY[i] = current_y
-          }
-          i++
-        }
-        current_y += card_height + gap_y
-      }
-    } else {
-      const available_width = Math.max(stage_width * 0.95, card_width)
-      let spreadX = card_width * 0.9
-      if (spreadX * 2 + card_width > available_width) {
-        spreadX = (available_width - card_width) / 2
-      }
-      // Calculate spread positions for CARD_COUNT cards in a horizontal line
-      const totalSpreadWidth = (CARD_COUNT - 1) * spreadX
-      targetX = Array.from({ length: CARD_COUNT }, (_, i) => -totalSpreadWidth / 2 + i * spreadX)
-      targetY = Array(CARD_COUNT).fill(0)
-    }
-
     gsap.to(_stage, { y: 0, duration: 0.6, ease: 'power2.out', onUpdate: refreshStage })
-  } else {
-    const layout = getDrawLayout(stage_width, stage_height, card_width, card_height, isWide.value, CARD_COUNT)
-    targetX = layout.targetX
-    targetY = layout.targetY
   }
 
   _draws.forEach((draw, i) => {
@@ -1102,7 +1039,6 @@ function handleRestart() {
   margin-top: calc(env(safe-area-inset-top, 44px) + 80rpx);
 }
 /* #endif */
-
 
 
 

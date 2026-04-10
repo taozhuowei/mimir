@@ -28,10 +28,11 @@
 ### 前端重构
 
 - [x] 新建 `app/src/api/`，用 `uni.request` 封装 API 客户端（兼容 H5 和小程序；支持 base URL 配置）
-- [x] `app/src/utils/tarotReading.ts`：删除 `loadAllCards` / `generateReading` / `getCardScore`，只保留 `drawThreeCards` 和类型定义
+- [x] `app/src/utils/tarotReading.ts`：删除 `loadAllCards` / `generateReading` / `getCardScore`，只保留 `drawCards` 和类型定义
 - [x] 删除 `app/src/data/` 目录（所有 JSON 文件随后端迁移一并删除）
-- [x] 更新 `app/src/stores/tarot.ts`：`allCards` 初始化改为调用 `GET /api/v1/cards`；`drawThreeCards` 后调用 `POST /api/v1/readings` 获取解读
+- [x] 更新 `app/src/stores/tarot.ts`：`allCards` 初始化改为调用 `GET /api/v1/cards`；本地 `drawCards` 后调用 `POST /api/v1/readings` 获取解读
 - [x] 更新 `app/src/constants.ts`：统一 API base URL 配置（开发用 `http://localhost:3000`，小程序生产用可配置域名）
+- [x] 新建 `app/src/config.json`：集中配置抽牌数量（当前 `cardCount=1`）
 
 ### 工程配置
 
@@ -142,6 +143,7 @@ server/themes/
 - [~] 将 `app/src/styles/global.css` 中的颜色硬编码替换为 CSS 变量（`--color-bg-primary` 等）；主题切换时动态注入 CSS 变量值待补齐
 - [ ] 新增主题选择 UI 入口（简单的主题列表弹窗即可，无需复杂设计）
 - [ ] 小程序端：通过 `page.setData` 更新 CSS 变量（适配小程序 CSS 变量注入方式）
+- [x] 抽离通用牌阵布局引擎：从 `DivinationOverlay.vue` 提取牌阵位置/尺寸计算，统一支持 `single_card`、`three_card`、`cross_spread`，供抽牌态与结果态复用
 
 ### 文档
 

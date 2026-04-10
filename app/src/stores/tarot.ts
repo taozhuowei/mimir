@@ -8,7 +8,13 @@ import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
 import { drawCards as drawCardsUtil, type DrawnResult, type ReadingResult, type TarotCardInfo } from '../utils/tarotReading'
 import config from '../config.json'
-const CARD_COUNT: number = config.cardCount
+import { getSpreadCardCount, type SpreadKind } from '../utils/spread_layout'
+
+const SPREAD_KINDS: readonly SpreadKind[] = ['single_card', 'three_card', 'cross_spread']
+const SPREAD_KIND: SpreadKind = SPREAD_KINDS.includes(config.spreadKind as SpreadKind) 
+  ? (config.spreadKind as SpreadKind) 
+  : 'three_card'
+const CARD_COUNT: number = getSpreadCardCount(SPREAD_KIND)
 import { fetchAllCards } from '../api/cards'
 import { fetchReading } from '../api/readings'
 

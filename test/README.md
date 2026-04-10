@@ -6,7 +6,7 @@
 npm test -w test
 ```
 
-当前共 **68 个测试用例，5 个测试文件**。
+当前共 **99 个测试用例，6 个测试文件**。
 
 ---
 
@@ -15,8 +15,9 @@ npm test -w test
 ```
 test/
 ├── result_panel.test.ts       # 前端 result_panel 工具函数
+├── spread_layout.test.ts      # 前端 spread layout 求解器单元测试
 ├── tarot_store.test.ts        # 前端 tarot store 抽牌/读牌时序与失效请求保护
-├── tarotReading.test.ts       # 前端 drawThreeCards 逻辑
+├── tarotReading.test.ts       # 前端 drawCards 逻辑
 └── testcases/
     ├── backend.test.ts        # 后端服务层单元测试（card_loader + tarot_reading）
     └── api.test.ts            # 前后端接口联调测试（supertest HTTP）
@@ -25,6 +26,21 @@ test/
 ---
 
 ## 前端单元测试
+
+### `spread_layout.test.ts`
+
+测试对象：`app/src/utils/spread_layout.ts`
+
+| 函数 | 用例 | 覆盖路径 |
+|------|------|----------|
+| `getSpreadCardCount` | single_card → 1 | 单卡展开 |
+| `getSpreadCardCount` | three_card → 3 | 三张展开 |
+| `getSpreadCardCount` | cross_spread → 5 | 十字展开 |
+| `resolveSpreadLayout` | single_card 居中 | 单卡位置计算 |
+| `resolveSpreadLayout` | three_card 宽屏水平/窄屏垂直 | 响应式布局 |
+| `resolveSpreadLayout` | cross_spread 5 张卡位 | 十字形布局 |
+| `resolveSpreadLayout` | draw_stage vs result_stage | 场景切换 |
+| `resolveSpreadLayout` | 宽屏 vs 窄屏布局选择 | 响应式适配 |
 
 ### `result_panel.test.ts`
 
@@ -44,10 +60,10 @@ test/
 
 | 函数 | 用例 | 覆盖路径 |
 |------|------|----------|
-| `drawThreeCards` | 精确抽出 3 张 | slice(0,3) 主流程 |
-| `drawThreeCards` | 每张牌 position 为合法值 | `'upright' \| 'reversed'` 随机分支 |
-| `drawThreeCards` | 抽到的牌均来自原始牌组 | 牌数据引用完整性 |
-| `drawThreeCards` | 无重复牌（id 唯一） | Fisher-Yates shuffle 无碰撞 |
+| `drawCards` | 精确抽出 N 张 | spreadKind 驱动数量 |
+| `drawCards` | 每张牌 position 为合法值 | `'upright' \| 'reversed'` 随机分支 |
+| `drawCards` | 抽到的牌均来自原始牌组 | 牌数据引用完整性 |
+| `drawCards` | 无重复牌（id 唯一） | Fisher-Yates shuffle 无碰撞 |
 
 ### `tarot_store.test.ts`
 
@@ -55,7 +71,7 @@ test/
 
 | 函数 | 用例 | 覆盖路径 |
 |------|------|----------|
-| `drawThreeCards` | 同步完成本地抽牌 | 动画首帧不等待网络 |
+| `drawCards` | 同步完成本地抽牌 | 动画首帧不等待网络 |
 | `startReadingRequest` | 单独启动异步读牌并可被等待 | 抽牌/读牌解耦路径 |
 | `waitForReadingResult` | 复用当前进行中的 Promise | 结果展示等待路径 |
 | `reset` + `startReadingRequest` | 旧请求完成后不会覆盖新结果 | 失效请求保护 |
@@ -151,5 +167,5 @@ test/
 
 以下场景在当前业务逻辑中**不可能发生**，暂不测试：
 
-- `drawThreeCards` 传入不足 3 张的牌组（实际牌组固定 78 张）
+- `drawCards` 传入不足 N 张的牌组（实际牌组固定 78 张）
 - `getSummaryText` 传入全为标点的 meaning（数据来自后端受控 JSON）

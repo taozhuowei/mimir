@@ -23,10 +23,10 @@ vi.mock('../app/src/api/cards', () => ({
   fetchAllCards: mockFetchAllCards,
 }))
 
-// Mock config.json to use 3 cards for backward compatibility with tests
+// Mock config.json to use three_card spread for backward compatibility with tests
 vi.mock('../app/src/config.json', () => ({
-  default: { cardCount: 3 },
-  cardCount: 3,
+  default: { spreadKind: 'three_card' },
+  spreadKind: 'three_card',
 }))
 
 // Helper to create minimal valid TarotCardInfo
@@ -70,7 +70,7 @@ describe('tarot store - draw and reading flow', () => {
   })
 
   describe('drawCards (synchronous)', () => {
-    it('draws exactly 3 cards synchronously', () => {
+    it('draws correct number of cards synchronously (spreadKind=three_card)', () => {
       const store = useTarotStore()
       store.allCards = MOCK_DECK
 
@@ -464,7 +464,7 @@ describe('tarot store - draw and reading flow', () => {
   })
 
   describe('backward compatibility', () => {
-    it('drawThreeCardsAndFetchReading maintains old behavior', async () => {
+    it('drawCardsAndFetchReading maintains old behavior', async () => {
       const store = useTarotStore()
       store.allCards = MOCK_DECK
 
