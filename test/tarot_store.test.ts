@@ -483,4 +483,95 @@ describe('tarot store - draw and reading flow', () => {
       expect(store.readingResult).toEqual(mockResult)
     })
   })
+
+  describe('runtime spread switching', () => {
+    it('has spreadKind initialized from config default', () => {
+      const store = useTarotStore()
+      // Config is mocked to three_card in this test file
+      expect(store.spreadKind).toBe('three_card')
+      expect(store.cardCount).toBe(3)
+    })
+
+    it('setSpreadKind updates runtime spread state', () => {
+      const store = useTarotStore()
+      store.allCards = MOCK_DECK
+
+      // Switch to single_card
+      store.setSpreadKind('single_card')
+      expect(store.spreadKind).toBe('single_card')
+      expect(store.cardCount).toBe(1)
+
+      // Switch to cross_spread
+      store.setSpreadKind('cross_spread')
+      expect(store.spreadKind).toBe('cross_spread')
+      expect(store.cardCount).toBe(5)
+
+      // Switch back to three_card
+      store.setSpreadKind('three_card')
+      expect(store.spreadKind).toBe('three_card')
+      expect(store.cardCount).toBe(3)
+    })
+
+    it('drawCards uses current runtime spreadKind (single_card)', () => {
+      const store = useTarotStore()
+      store.allCards = MOCK_DECK
+
+      // Switch to single_card and draw
+      store.setSpreadKind('single_card')
+      const drawn = store.drawCards()
+
+      expect(drawn).toHaveLength(1)
+      expect(store.drawnCards).toHaveLength(1)
+    })
+
+    it('drawCards uses current runtime spreadKind (cross_spread)', () => {
+      const store = useTarotStore()
+      store.allCards = MOCK_DECK
+
+      // Switch to cross_spread and draw
+      store.setSpreadKind('cross_spread')
+      const drawn = store.drawCards()
+
+      expect(drawn).toHaveLength(5)
+      expect(store.drawnCards).toHaveLength(5)
+    })
+
+    it('spread state persists across reset for next run', () => {
+      const store = useTarotStore()
+      store.allCards = MOCK_DECK
+
+      // Set to single_card and do a divination
+      store.setSpreadKind('single_card')
+      store.startDivination('Test')
+      store.drawCards()
+      expect(store.drawnCards).toHaveLength(1)
+
+      // Reset (simulating "再占一次" back to homepage)
+      store.reset()
+
+      // spreadKind should persist for next run
+      expect(store.spreadKind).toBe('single_card')
+      expect(store.cardCount).toBe(1)
+
+      // Next divination should also draw 1 card
+      store.startDivination('Test 2')
+      store.drawCards()
+      expect(store.drawnCards).toHaveLength(1)
+    })
+
+    it('ignores invalid spread kind values', () => {
+      const store = useTarotStore()
+      
+      // Set a valid spread first
+      store.setSpreadKind('three_card')
+      expect(store.spreadKind).toBe('three_card')
+
+      // Attempt to set an invalid spread (should be ignored)
+      // @ts-expect-error Testing invalid input
+      store.setSpreadKind('invalid_spread')
+      
+      // Should retain previous valid value
+      expect(store.spreadKind).toBe('three_card')
+    })
+  })
 })

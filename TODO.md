@@ -141,7 +141,7 @@ server/themes/
 - [~] 新建 `app/src/stores/theme.ts`：已支持加载当前主题与读取主题资源；`switchTheme()` 与完整切换能力待补齐
 - [ ] 将 `constants.ts` 中的图片/图标路径改为从 `theme store` 动态获取（拼接主题 ID）
 - [~] 将 `app/src/styles/global.css` 中的颜色硬编码替换为 CSS 变量（`--color-bg-primary` 等）；主题切换时动态注入 CSS 变量值待补齐
-- [ ] 新增主题选择 UI 入口（简单的主题列表弹窗即可，无需复杂设计）
+- [~] 新增首页设置 UI 入口：右上角显示 theme 内设置图标，仅首页可切换牌阵（`single_card` / `three_card` / `cross_spread`），运行时立即生效
 - [ ] 小程序端：通过 `page.setData` 更新 CSS 变量（适配小程序 CSS 变量注入方式）
 - [x] 抽离通用牌阵布局引擎：从 `DivinationOverlay.vue` 提取牌阵位置/尺寸计算，统一支持 `single_card`、`three_card`、`cross_spread`，供抽牌态与结果态复用
 

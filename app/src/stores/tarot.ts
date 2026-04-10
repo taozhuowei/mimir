@@ -11,10 +11,10 @@ import config from '../config.json'
 import { getSpreadCardCount, type SpreadKind } from '../utils/spread_layout'
 
 const SPREAD_KINDS: readonly SpreadKind[] = ['single_card', 'three_card', 'cross_spread']
-const SPREAD_KIND: SpreadKind = SPREAD_KINDS.includes(config.spreadKind as SpreadKind) 
+const DEFAULT_SPREAD_KIND: SpreadKind = SPREAD_KINDS.includes(config.spreadKind as SpreadKind) 
   ? (config.spreadKind as SpreadKind) 
   : 'three_card'
-const CARD_COUNT: number = getSpreadCardCount(SPREAD_KIND)
+
 import { fetchAllCards } from '../api/cards'
 import { fetchReading } from '../api/readings'
 
@@ -31,6 +31,10 @@ export const useTarotStore = defineStore('tarot', () => {
   const cardsLoadError = ref<string | null>(null)
   const isReadingLoading = ref(false)
   const readingError = ref<string | null>(null)
+
+  // Runtime spread state (initialized from config, can be changed at runtime)
+  const spreadKind = ref<SpreadKind>(DEFAULT_SPREAD_KIND)
+  const cardCount = computed(() => getSpreadCardCount(spreadKind.value))
 
   // Track the current reading request to guard against stale responses
   const currentReadingRequestId = ref<number>(0)
@@ -84,7 +88,7 @@ export const useTarotStore = defineStore('tarot', () => {
    */
   function drawCards(): DrawnResult[] {
     invalidateReadingRequest()
-    const drawn = drawCardsUtil(allCards.value, CARD_COUNT)
+    const drawn = drawCardsUtil(allCards.value, cardCount.value)
     drawnCards.value = drawn
     readingResult.value = null
     readingError.value = null
@@ -174,11 +178,23 @@ export const useTarotStore = defineStore('tarot', () => {
     invalidateReadingRequest()
   }
 
+  /**
+   * Set the runtime spread kind.
+   * Changes take effect immediately for the next divination run.
+   */
+  function setSpreadKind(kind: SpreadKind) {
+    if (SPREAD_KINDS.includes(kind)) {
+      spreadKind.value = kind
+    }
+  }
+
   return {
     phase,
     drawnCards,
     allCards,
     currentQuestion,
+    spreadKind,
+    cardCount,
     isAnimating,
     isIdle,
     isResultVisible,
@@ -196,6 +212,7 @@ export const useTarotStore = defineStore('tarot', () => {
     waitForReadingResult,
     drawCardsAndFetchReading,
     getReadingResult,
+    setSpreadKind,
     reset
   }
 })

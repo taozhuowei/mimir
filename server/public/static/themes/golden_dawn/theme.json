@@ -28,7 +28,8 @@
     "icon_cups": "ui/icon-cups.png",
     "icon_cups_inactive": "ui/icon-cups-inactive.png",
     "icon_pentacles": "ui/icon-pentacles.png",
-    "icon_pentacles_inactive": "ui/icon-pentacles-inactive.png"
+    "icon_pentacles_inactive": "ui/icon-pentacles-inactive.png",
+    "icon_settings": "ui/icon-settings.svg"
   },
   "images": {
     "card_back": "tarot/card_back.jpeg"
