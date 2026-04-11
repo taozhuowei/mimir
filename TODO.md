@@ -147,6 +147,7 @@ server/themes/
 - [x] **重构**：将 `DivinationOverlay.vue` 中全部 GSAP 动画逻辑抽离至 `app/src/composables/use_overlay_animation.ts`，stage-container 高度改由 GSAP 控制（删除 CSS height transition）
 - [x] **修复**：`spread_layout.ts` 新增 `headerHeight` 参数，修正所有牌阵结果页居中公式，draw_stage 预对齐减少过渡位移（≤60px 均匀）
 - [x] **修复**：`single_card` 抽牌终点位置改为以屏幕几何中心为准，移除 `draw_stage` 额外上浮偏移
+- [x] **优化**：覆盖层卡牌仅保留统一尺寸图片显示，移除卡牌本体装饰；同步去除洗牌尾部回弹、切牌放大与抽牌前抖动
 
 ### 文档
 

@@ -433,7 +433,6 @@ function handleRestart() {
 }
 
 .tarot-card {
-  border-radius: 12rpx;
   will-change: transform;
 }
 
@@ -445,20 +444,6 @@ function handleRestart() {
   position: absolute;
   top: 0;
   left: 0;
-  box-shadow: none;
-}
-
-/* #ifdef H5 */
-.stack-card:first-child {
-  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5);
-}
-/* #endif */
-
-.cut-t,
-.cut-m,
-.cut-b,
-.draw-wrapper {
-  box-shadow: 0 4px 12rpx rgba(0, 0, 0, 0.15);
 }
 
 .stage-center {
@@ -504,7 +489,6 @@ function handleRestart() {
 .front-img {
   width: 100%;
   height: 100%;
-  border-radius: 12rpx;
   object-fit: cover;
 }
 

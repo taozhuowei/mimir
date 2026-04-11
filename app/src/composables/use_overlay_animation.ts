@@ -336,11 +336,6 @@ export function useOverlayAnimation(deps: {
       .to(_rights, { x: spreadX, y: (i: number) => 30 - i * 0.8, rotation: 16, duration: 0.5, ease: 'power2.out' }, '<')
       .to(_lefts, { x: 0, y: (i: number) => -(i * 1.6), rotation: -2, duration: 0.4, stagger: 0.06, ease: 'power2.out' }, '+=0.2')
       .to(_rights, { x: 0, y: (i: number) => -0.8 - i * 1.6, rotation: 2, duration: 0.4, stagger: 0.06, ease: 'power2.out' }, '<0.03')
-      .to(
-        [..._lefts, ..._rights],
-        { x: 0, rotation: 0, duration: 0.3, ease: 'back.out(1.5)' },
-        '+=0.1',
-      )
       .add(() => {
         _lefts.forEach(s => { s.opacity = 0 })
         _rights.forEach(s => { s.opacity = 0 })
@@ -352,7 +347,7 @@ export function useOverlayAnimation(deps: {
         _initials.forEach(s => { s.opacity = 1; s.scaleY = 0.9 })
         refreshInitials()
       })
-      .to(_initials, { scaleY: 1, duration: 0.4, ease: 'elastic.out(1, 0.4)' })
+      .to(_initials, { scaleY: 1, duration: 0.2, ease: 'power1.out' })
   }
 
   // ---- Cut animation ----
@@ -394,13 +389,12 @@ export function useOverlayAnimation(deps: {
     timeline
       .to(_cutTop, { x: leftX, y: leftY, duration: 0.7, ease: 'power3.out' })
       .to(_cutBot, { x: rightX, y: rightY, duration: 0.7, ease: 'power3.out' }, '<')
-      .to([_cutTop, _cutMid, _cutBot], { scale: 1.1, duration: 0.4, ease: 'power1.out' })
       .to(_cutTop, { x: rightX, y: rightY, zIndex: 11, duration: 0.7, ease: 'power2.inOut' }, '+=0.15')
       .to(_cutMid, { x: 0, y: 0, zIndex: 12, duration: 0.7, ease: 'power2.inOut' }, '<')
       .to(_cutBot, { x: leftX, y: leftY, zIndex: 13, duration: 0.7, ease: 'power2.inOut' }, '<')
-      .to(_cutTop, { x: 0, y: 0, rotation: 0, scale: 1, duration: 0.6, ease: 'back.out(1.5)' }, '+=0.2')
-      .to(_cutMid, { x: 0, y: 0, rotation: 0, scale: 1, duration: 0.6, delay: 0.15, ease: 'back.out(1.5)' }, '<')
-      .to(_cutBot, { x: 0, y: 0, rotation: 0, scale: 1, duration: 0.6, delay: 0.3, ease: 'back.out(1.5)' }, '<')
+      .to(_cutTop, { x: 0, y: 0, rotation: 0, scale: 1, duration: 0.45, ease: 'power2.out' }, '+=0.2')
+      .to(_cutMid, { x: 0, y: 0, rotation: 0, scale: 1, duration: 0.45, delay: 0.15, ease: 'power2.out' }, '<')
+      .to(_cutBot, { x: 0, y: 0, rotation: 0, scale: 1, duration: 0.45, delay: 0.3, ease: 'power2.out' }, '<')
       .add(() => {
         cutTopVisible.value = false
         cutMidVisible.value = false
@@ -452,8 +446,6 @@ export function useOverlayAnimation(deps: {
     })
 
     timeline
-      .to(_deckCtn, { x: '+=4', yoyo: true, repeat: 10, duration: 0.05 })
-      .to(_deckCtn, { x: 0, duration: 0.1 })
       .to(_stage, { y: -liftY, duration: 1.8, ease: 'power2.inOut' }, '+=0.2')
       .to(_initials, { opacity: 0, y: (i: number) => -card_height * 0.4 - i * 0.8, scale: 0.8, duration: 0.6, ease: 'power1.in' }, '<0.2')
 
