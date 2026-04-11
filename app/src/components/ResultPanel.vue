@@ -1,47 +1,85 @@
 <template>
-  <!-- 
-    结果面板组件
-    展示占卜结果：结论句 + 打字机摘要 + 3张牌详情
-    牌阵展示由 DivinationOverlay 负责，本组件仅负责解读内容
-  -->
-  <view class="reading-panel" data-testid="result-shell">
+  <view class="reading-panel" :class="result_tone_class" data-testid="result-shell">
     <view class="result-hero" data-testid="result-hero">
-      <text class="eyebrow font-display text-sm">占卜结果</text>
-      <text class="hero-title font-display text-3xl" data-testid="result-statement">
-        {{ resultStatement }}
-      </text>
-      <text v-if="question" class="question text-base" data-testid="result-question">"{{ question }}"</text>
+      <TypewriterText
+        class="eyebrow font-display text-sm"
+        text="占卜结果"
+        :start-delay="40"
+        :char-interval="44"
+      />
+      <TypewriterText
+        class="hero-title font-display text-3xl"
+        :class="result_tone_class"
+        :text="result_statement"
+        :start-delay="180"
+        :char-interval="38"
+        data-testid="result-statement"
+      />
+      <TypewriterText
+        v-if="question"
+        class="question text-base"
+        :text="`“${question}”`"
+        :start-delay="420"
+        :char-interval="26"
+        data-testid="result-question"
+      />
     </view>
 
-    <!-- 牌义解读列表：遍历3张牌，展示位置徽章+牌名+含义 -->
     <view class="meaning-list">
       <view
         v-for="(detail, index) in readingResult.cardDetails"
         :key="`${detail.card.name}-${detail.position}-${index}`"
         class="meaning-item"
       >
-        <!-- 中英文牌名 -->
-        <text class="meaning-card-name font-body">{{ detail.card.name }}</text>
-        <text class="meaning-card-name-en font-display">{{ detail.card.nameEn }}</text>
-        <!-- 正逆位 + 大/小阿卡纳 -->
+        <TypewriterText
+          class="meaning-card-name font-body"
+          :text="detail.card.name"
+          :start-delay="getFieldDelay(index, 0)"
+          :char-interval="24"
+        />
+        <TypewriterText
+          class="meaning-card-name-en font-display"
+          :text="detail.card.nameEn"
+          :start-delay="getFieldDelay(index, 1)"
+          :char-interval="18"
+        />
+
         <view class="meaning-meta-row">
-          <text class="meaning-position text-sm">
-            {{ detail.position === 'upright' ? '正位' : '逆位' }}
-          </text>
-          <text class="meaning-arcana text-sm">
-            {{ detail.card.type === 'major' ? '大阿卡纳' : '小阿卡纳' }}
-          </text>
+          <TypewriterText
+            class="meaning-position text-sm"
+            :text="detail.position === 'upright' ? '正位' : '逆位'"
+            :start-delay="getFieldDelay(index, 2)"
+            :char-interval="52"
+          />
+          <TypewriterText
+            class="meaning-arcana text-sm"
+            :text="detail.card.type === 'major' ? '大阿尔卡那' : '小阿尔卡那'"
+            :start-delay="getFieldDelay(index, 3)"
+            :char-interval="28"
+          />
         </view>
-        <!-- 关键词标签 -->
+
         <view class="keywords-row">
-          <text
-            v-for="kw in (detail.position === 'upright' ? detail.card.upright.keywords : detail.card.reversed.keywords)"
-            :key="kw"
+          <view
+            v-for="(keyword, keyword_index) in getKeywords(detail)"
+            :key="`${detail.card.id}-${detail.position}-${keyword}`"
             class="keyword-chip text-sm"
-          >{{ kw }}</text>
+          >
+            <TypewriterText
+              class="keyword-chip-text"
+              :text="keyword"
+              :start-delay="getKeywordDelay(index, keyword_index)"
+              :char-interval="20"
+            />
+          </view>
         </view>
-        <!-- 牌义解读文本 -->
-        <text class="meaning-text text-base">{{ detail.meaning }}</text>
+
+        <TypewriterText
+          class="meaning-text text-base"
+          :text="detail.meaning"
+          :start-delay="getFieldDelay(index, 4)"
+          :char-interval="16"
+        />
       </view>
     </view>
   </view>
@@ -49,33 +87,44 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
+import TypewriterText from './TypewriterText.vue'
 import type { ReadingResult } from '../utils/tarotReading'
 import { getResultStatement } from '../utils/result_panel'
 
-/**
- * Props 定义
- * @property readingResult - 占卜结果数据，包含3张牌详情和整体结论
- * @property question - 用户提问（可选），用于回显
- */
 const props = defineProps<{
   readingResult: ReadingResult
   question?: string
 }>()
 
-/**
- * Emits 定义
- * @event restart - 用户点击"再占一次"时触发，父组件应重置状态回到初始页
- */
 defineEmits<{
   (event: 'restart'): void
 }>()
 
-// 从结果数据计算结论句（Yes/No/Mixed 对应的文案）
-const resultStatement = computed(() => getResultStatement(props.readingResult.result))
+const result_statement = computed(() => getResultStatement(props.readingResult.result))
+const result_tone_class = computed(() =>
+  props.readingResult.result === 'positive' ? 'is-positive' : 'is-negative'
+)
+
+function getKeywords(detail: ReadingResult['cardDetails'][number]): string[] {
+  return detail.position === 'upright'
+    ? detail.card.upright.keywords
+    : detail.card.reversed.keywords
+}
+
+function getFieldDelay(index: number, step: number): number {
+  return 620 + index * 320 + step * 90
+}
+
+function getKeywordDelay(index: number, keyword_index: number): number {
+  return getFieldDelay(index, 3) + 90 + keyword_index * 70
+}
 </script>
 
 <style scoped>
 .reading-panel {
+  --result-tone: var(--color-accent);
+  --result-tone-bg: rgba(122, 92, 20, 0.08);
+
   padding: var(--space-6) var(--space-5) calc(env(safe-area-inset-bottom, 0px) + var(--space-10));
   display: flex;
   flex-direction: column;
@@ -83,6 +132,16 @@ const resultStatement = computed(() => getResultStatement(props.readingResult.re
   max-width: 720px;
   width: 100%;
   box-sizing: border-box;
+}
+
+.reading-panel.is-positive {
+  --result-tone: var(--color-yes);
+  --result-tone-bg: var(--color-yes-bg);
+}
+
+.reading-panel.is-negative {
+  --result-tone: var(--color-no);
+  --result-tone-bg: var(--color-no-bg);
 }
 
 .result-hero {
@@ -95,14 +154,14 @@ const resultStatement = computed(() => getResultStatement(props.readingResult.re
 }
 
 .eyebrow {
-  color: var(--color-accent);
+  color: var(--result-tone);
   letter-spacing: 0.18em;
   text-transform: uppercase;
   font-size: var(--text-sm);
 }
 
 .hero-title {
-  color: var(--color-text-primary);
+  color: var(--result-tone);
   line-height: 1.1;
   text-shadow: 0 2rpx 10rpx rgba(74, 52, 40, 0.1);
   margin: var(--space-2) 0;
@@ -173,14 +232,6 @@ const resultStatement = computed(() => getResultStatement(props.readingResult.re
 }
 /* #endif */
 
-/* #ifdef MP-WEIXIN */
-/* 小程序使用额外的text元素替代::before */
-.meaning-arcana-separator {
-  margin-right: var(--space-2);
-  opacity: 0.4;
-}
-/* #endif */
-
 .keywords-row {
   display: flex;
   flex-wrap: wrap;
@@ -189,14 +240,20 @@ const resultStatement = computed(() => getResultStatement(props.readingResult.re
 }
 
 .keyword-chip {
-  display: inline-block;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   padding: 4rpx 16rpx;
   border-radius: 20rpx;
-  background: rgba(184, 148, 62, 0.08);
-  border: 1rpx solid rgba(184, 148, 62, 0.25);
+  background: var(--result-tone-bg);
+  border: 1rpx solid var(--color-border);
   color: var(--color-text-secondary);
   font-size: var(--text-xs);
   letter-spacing: 0.03em;
+}
+
+.keyword-chip-text {
+  color: var(--color-text-secondary);
 }
 
 .meaning-text {

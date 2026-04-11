@@ -1,131 +1,106 @@
 # Scales Tarot
 
-以塔罗牌权衡利弊，帮助用户做出二选一抉择。
+Scales Tarot 是一个基于 `Vue 3 + uni-app + TypeScript + Express` 的单页塔罗占卜应用。前端负责仪式化抽牌动画和结果展示，后端负责牌库与解读计算，并同时服务 H5 静态产物与 API。
 
-## 项目简介
+## 项目结构
 
-Scales Tarot 是一款聚焦二选一决策场景的塔罗占卜工具。用户心中默想面临的两难选择，经由洗牌→切牌→抽牌的仪式感流程，由三张塔罗牌的综合能量给出倾向性指引（Yes / No）。
-
-整个占卜过程在同一页面内通过状态与动画切换完成，无路由跳转，无登录，即开即用。
-
----
-
-## 核心架构
-
-```
-前端（Vue 3 + uni-app）            后端（Express）
-┌──────────────────────┐          ┌────────────────────────┐
-│  页面加载            │─────────▶│  GET /api/v1/cards      │
-│  （获取 78 张牌数据）│          │  返回全量牌数据+图片URL  │
-│                      │          └────────────────────────┘
-│  本地抽牌            │
-│  drawThreeCards()    │          ┌────────────────────────┐
-│  （Fisher-Yates）    │─────────▶│  POST /api/v1/readings  │
-│                      │          │  输入：3 张牌+正逆位    │
-│  展示解读结果        │◀─────────│  输出：score+result+牌义│
-└──────────────────────┘          └────────────────────────┘
-                                  ┌────────────────────────┐
-                                  │  GET /static/*          │
-                                  │  托管图片、字体、图标   │
-                                  └────────────────────────┘
-                                  ┌────────────────────────┐
-                                  │  H5 SPA fallback        │
-                                  │  dist/build/h5/         │
-                                  └────────────────────────┘
+```text
+app/       # uni-app frontend
+server/    # Express + TypeScript backend
+test/      # Vitest test workspace
+dist/      # frontend build output
 ```
 
-**占卜状态机**（由 `stores/tarot.ts` 管理）：
+## 开发命令
 
-```
-idle → shuffling → cutting → drawing → revealing → result → idle
-```
-
-**解读规则**（后端计算）：
-
-- 正位 positive → `+1`，正位 negative → `-1`，neutral → `0`
-- 逆位取逆位含义的情感极性，同上规则
-- 总分 > 0 → `yes`，< 0 → `no`，= 0 → `uncertain`
-
-**构建目标**：H5（浏览器）+ 微信小程序（`mp-weixin`），共用同一套源码。
-
----
-
-## 目录结构
-
-```
-/
-├── app/                          # 前端（Vue 3 + uni-app + TypeScript）
-│   ├── src/
-│   │   ├── api/                  # HTTP 客户端层
-│   │   │   ├── client.ts         # axios 封装，统一 baseURL
-│   │   │   ├── cards.ts          # GET /api/v1/cards
-│   │   │   └── readings.ts       # POST /api/v1/readings
-│   │   ├── components/
-│   │   │   ├── DivinationOverlay.vue  # 全屏仪式动画层（洗/切/抽牌）
-│   │   │   └── ResultPanel.vue        # 结果展示面板
-│   │   ├── pages/index/          # 主页（唯一页面，单页流程）
-│   │   ├── stores/tarot.ts       # Pinia 占卜状态机
-│   │   ├── styles/global.css     # 全局样式
-│   │   ├── utils/
-│   │   │   ├── tarotReading.ts   # 类型定义 + drawThreeCards()
-│   │   │   └── result_panel.ts   # 结果文案生成工具函数
-│   │   └── constants.ts          # 全局常量（API 地址等）
-│   ├── vite.config.ts
-│   └── package.json              # workspace 占位（无依赖）
-│
-├── server/                       # 后端（Express + TypeScript）
-│   ├── public/static/            # 静态资源（塔罗牌图片、字体、图标）
-│   └── src/
-│       ├── data/                 # 78 张塔罗牌 JSON（major + 四花色）
-│       ├── routes/
-│       │   ├── cards.ts          # GET /api/v1/cards
-│       │   └── readings.ts       # POST /api/v1/readings
-│       ├── services/
-│       │   ├── card_loader.ts    # 加载并合并牌数据，注入图片 URL
-│       │   └── tarot_reading.ts  # 评分计算，生成 ReadingResult
-│       └── server.ts             # 入口：路由挂载 + H5 SPA 托管
-│
-├── test/                         # 独立单元测试子项目（vitest）
-│   ├── result_panel.test.ts
-│   ├── tarotReading.test.ts
-│   ├── vitest.config.ts
-│   ├── package.json
-│   └── README.md
-│
-├── dist/build/h5/                # H5 构建产物（npm start 后生成，已 gitignore）
-├── package.json                  # 根工作区，唯一入口脚本 npm start
-├── .npmrc                        # legacy-peer-deps=true（pinia@3 兼容）
-└── PRD.md                        # 产品需求文档
-```
-
----
-
-## 启动
-
-### 安装依赖
+先安装依赖：
 
 ```bash
 npm install
 ```
 
-### 全流程启动（类型检查 → 编译 → 启动服务器）
+本地开发：
 
 ```bash
 npm start
 ```
 
-执行顺序：
+或：
 
-1. TypeScript 类型检查（前端 + 后端）
-2. H5 与微信小程序同步编译（terser 最小化）
-3. 启动后端服务器，同时托管编译好的 H5
+```bash
+npm run dev
+```
 
-H5 访问地址：`http://localhost:3000`
+`dev` 会执行这些步骤：
 
-微信小程序产物目录：`dist/build/mp-weixin/`（导入微信开发者工具）
+1. 生成 `.env.development.local`，写入当前局域网 API 地址。
+2. 执行前后端 TypeScript 类型检查。
+3. 以开发模式并行启动：
+   - H5 watch 构建
+   - 微信小程序 watch 构建
+   - `tsx server/src/server.ts` 开发服务
 
-### 单独运行测试
+## 测试与校验
+
+类型检查：
+
+```bash
+npm run type-check
+```
+
+单元测试：
 
 ```bash
 npm test -w test
 ```
+
+## 生产构建
+
+生产构建：
+
+```bash
+npm run build
+```
+
+`build` 会执行：
+
+1. 前后端类型检查
+2. H5 与微信小程序生产构建
+3. `server/src` 编译到 `server/dist`
+
+当前生产构建策略：
+
+- 前端使用 Vite `production` mode
+- JS 使用 `terser` 压缩
+- 开启 `mangle`
+- 删除 `console` 与 `debugger`
+- 关闭生产 sourcemap
+- 输出可直接运行的 `server/dist/server.js`
+
+运行生产构建产物：
+
+```bash
+npm run start:prod
+```
+
+默认访问：
+
+- H5: `http://localhost:3000`
+- Health Check: `http://localhost:3000/api/health`
+
+## 当前交互特性
+
+- 覆盖层动画流程：洗牌 → 切牌 → 抽牌 → 解读
+- 抽牌完成后自动进入解读，无需额外点击
+- 结果区全量文本打字机动效
+- `positive / negative` 结果着色
+- 仅开发模式显示悬浮 Dev Tools：
+  - 快速回到指定阶段重放
+  - `0.5x / 1x / 2x`
+  - 暂停 / 继续
+
+## 注意事项
+
+- 服务启动前会检测端口占用，优先尝试 `3000`
+- `server/dist/`、`dist/` 已在 `.gitignore`
+- 生产模式不会渲染 Dev Tools

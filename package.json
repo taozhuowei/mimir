@@ -3,8 +3,16 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "dev": "node scripts/dev_env.js && vue-tsc --noEmit -p app/tsconfig.json && tsc --noEmit -p server/tsconfig.json && concurrently --kill-others-on-fail -n h5,mp,server \"cross-env UNI_INPUT_DIR=app/src VITE_ROOT_DIR=app node node_modules/@dcloudio/vite-plugin-uni/bin/uni.js build --watch --config app/vite.config.ts\" \"cross-env UNI_INPUT_DIR=app/src VITE_ROOT_DIR=app node node_modules/@dcloudio/vite-plugin-uni/bin/uni.js build -p mp-weixin --watch --config app/vite.config.ts\" \"tsx server/src/server.ts\"",
-    "build": "vue-tsc --noEmit -p app/tsconfig.json && tsc --noEmit -p server/tsconfig.json && concurrently --kill-others-on-fail -n h5,mp \"cross-env UNI_INPUT_DIR=app/src VITE_ROOT_DIR=app node node_modules/@dcloudio/vite-plugin-uni/bin/uni.js build --mode production --config app/vite.config.ts\" \"cross-env UNI_INPUT_DIR=app/src VITE_ROOT_DIR=app node node_modules/@dcloudio/vite-plugin-uni/bin/uni.js build -p mp-weixin --mode production --config app/vite.config.ts\"",
+    "start": "npm run dev",
+    "dev": "node scripts/dev_env.js && npm run type-check && concurrently --kill-others-on-fail -n h5,mp,server \"cross-env NODE_ENV=development UNI_INPUT_DIR=app/src VITE_ROOT_DIR=app node node_modules/@dcloudio/vite-plugin-uni/bin/uni.js build --watch --mode development --config app/vite.config.ts\" \"cross-env NODE_ENV=development UNI_INPUT_DIR=app/src VITE_ROOT_DIR=app node node_modules/@dcloudio/vite-plugin-uni/bin/uni.js build -p mp-weixin --watch --mode development --config app/vite.config.ts\" \"cross-env NODE_ENV=development tsx server/src/server.ts\"",
+    "type-check": "vue-tsc --noEmit -p app/tsconfig.json && tsc --noEmit -p server/tsconfig.json",
+    "build:app:h5": "cross-env NODE_ENV=production UNI_INPUT_DIR=app/src VITE_ROOT_DIR=app node node_modules/@dcloudio/vite-plugin-uni/bin/uni.js build --mode production --config app/vite.config.ts",
+    "build:app:mp": "cross-env NODE_ENV=production UNI_INPUT_DIR=app/src VITE_ROOT_DIR=app node node_modules/@dcloudio/vite-plugin-uni/bin/uni.js build -p mp-weixin --mode production --config app/vite.config.ts",
+    "build:app": "concurrently --kill-others-on-fail -n h5,mp \"npm run build:app:h5\" \"npm run build:app:mp\"",
+    "build:server": "tsc -p server/tsconfig.json",
+    "build": "npm run type-check && npm run build:app && npm run build:server",
+    "start:prod": "cross-env NODE_ENV=production node server/dist/server.js",
+    "test": "npm run test -w test",
     "lint": "eslint app/src/"
   },
   "workspaces": [

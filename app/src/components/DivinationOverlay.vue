@@ -13,6 +13,7 @@
           >
             <image
               class="phase-step-icon"
+              :class="{ 'phase-step-icon-compensated': idx < 2 }"
               :src="idx <= activePhaseIndex ? themeStore.getUiAsset(step.activeIcon) || themeStore.getUiAsset(step.inactiveIcon) : themeStore.getUiAsset(step.inactiveIcon) || themeStore.getUiAsset(step.activeIcon)"
               mode="aspectFit"
             />
@@ -105,6 +106,45 @@
           </template>
         </view>
       </view>
+
+      <view v-if="isDev" class="dev-tools">
+        <text class="dev-tools-title">Dev Tools</text>
+
+        <view class="dev-tools-row">
+          <view
+            v-for="step in phaseSteps"
+            :key="`replay-${step.phase}`"
+            class="dev-tools-chip"
+            @click="handleReplay(step.phase)"
+          >
+            {{ step.label }}
+          </view>
+        </view>
+
+        <view class="dev-tools-row">
+          <view
+            v-for="speed in playbackRates"
+            :key="`speed-${speed}`"
+            class="dev-tools-chip"
+            :class="{ active: playbackRate === speed }"
+            @click="handlePlaybackRate(speed)"
+          >
+            {{ speed }}x
+          </view>
+        </view>
+
+        <view class="dev-tools-row">
+          <view class="dev-tools-chip" @click="handlePause">
+            暂停
+          </view>
+          <view class="dev-tools-chip" @click="handleResume">
+            继续
+          </view>
+          <text class="dev-tools-status">
+            {{ isPaused ? 'Paused' : `Running ${playbackRate}x` }}
+          </text>
+        </view>
+      </view>
     </view>
 
     <!-- Result area: slides in from bottom/right after results shown -->
@@ -158,6 +198,8 @@ const emit = defineEmits<{
 
 const tarotStore = useTarotStore()
 const themeStore = useThemeStore()
+const isDev = import.meta.env.DEV
+const playbackRates = [0.5, 1, 2] as const
 
 // Runtime card count from store spread kind
 const cardCount = computed(() => getSpreadCardCount(tarotStore.spreadKind))
@@ -169,21 +211,25 @@ const cardCount = computed(() => getSpreadCardCount(tarotStore.spreadKind))
 const phaseSteps = [
   {
     phase: 'shuffling',
+    label: '洗牌',
     activeIcon: 'icon_wands',
     inactiveIcon: 'icon_wands_inactive',
   },
   {
     phase: 'cutting',
+    label: '切牌',
     activeIcon: 'icon_swords',
     inactiveIcon: 'icon_swords_inactive',
   },
   {
     phase: 'drawing',
+    label: '抽牌',
     activeIcon: 'icon_cups',
     inactiveIcon: 'icon_cups_inactive',
   },
   {
     phase: 'revealing',
+    label: '解读',
     activeIcon: 'icon_pentacles',
     inactiveIcon: 'icon_pentacles_inactive',
   },
@@ -242,9 +288,31 @@ const {
   overlayVarsStyle,
   getCardImg,
   cardBack,
+  playbackRate,
+  isPaused,
+  setPlaybackRate,
+  pauseAnimations,
+  resumeAnimations,
+  replayFromPhase,
   restart,
   // Note: entryAnimationComplete, layoutCardWidth, layoutCardHeight available if needed
 } = anim
+
+function handlePlaybackRate(rate: number) {
+  setPlaybackRate(rate)
+}
+
+function handlePause() {
+  pauseAnimations()
+}
+
+function handleResume() {
+  resumeAnimations()
+}
+
+function handleReplay(targetPhase: typeof phaseSteps[number]['phase']) {
+  replayFromPhase(targetPhase)
+}
 
 function handleRestart() {
   restart()
@@ -384,6 +452,11 @@ function handleRestart() {
   width: 40px;
   height: 40px;
   transition: opacity 0.2s ease;
+}
+
+.phase-step-icon-compensated {
+  width: 44px;
+  height: 44px;
 }
 
 /* #ifdef H5 */
@@ -547,6 +620,62 @@ function handleRestart() {
   display: flex;
   gap: 30rpx;
   align-items: center;
+}
+
+.dev-tools {
+  position: absolute;
+  right: 24rpx;
+  bottom: calc(env(safe-area-inset-bottom, 0px) + 24rpx);
+  z-index: 40;
+  width: 420rpx;
+  max-width: calc(100vw - 48rpx);
+  display: flex;
+  flex-direction: column;
+  gap: 12rpx;
+  padding: 18rpx;
+  border-radius: 20rpx;
+  background: rgba(247, 240, 224, 0.9);
+  border: 1rpx solid var(--color-border-strong);
+  box-shadow: 0 12rpx 36rpx rgba(30, 15, 6, 0.16);
+  backdrop-filter: blur(12px);
+}
+
+.dev-tools-title {
+  font-size: 22rpx;
+  letter-spacing: 0.16em;
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+}
+
+.dev-tools-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10rpx;
+  align-items: center;
+}
+
+.dev-tools-chip {
+  min-width: 68rpx;
+  padding: 10rpx 18rpx;
+  border-radius: 999rpx;
+  background: rgba(242, 232, 208, 0.96);
+  border: 1rpx solid var(--color-border);
+  color: var(--color-text-primary);
+  font-size: 22rpx;
+  line-height: 1.2;
+  text-align: center;
+}
+
+.dev-tools-chip.active {
+  color: var(--color-accent);
+  border-color: var(--color-accent);
+  background: rgba(184, 148, 62, 0.1);
+}
+
+.dev-tools-status {
+  font-size: 20rpx;
+  color: var(--color-text-tertiary);
+  margin-left: auto;
 }
 
 .btn {

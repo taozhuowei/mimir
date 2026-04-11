@@ -12,6 +12,9 @@ import { resolveSpreadLayout, type SpreadScene } from '../utils/spread_layout'
 
 // Max cards for array initialization (cross_spread has 5)
 const MAX_CARD_COUNT = 5
+const AUTO_REVEAL_DELAY_MS = 800
+const ENTRY_TO_SHUFFLE_DELAY_MS = 300
+type OverlayPhase = 'shuffling' | 'cutting' | 'drawing' | 'revealing'
 
 interface CardState {
   x: number
@@ -43,9 +46,11 @@ export function useOverlayAnimation(deps: {
   emit: ((event: 'complete') => void) & ((event: 'restart') => void)
 }) {
   // ---- Reactive state ----
-  const phase = ref<'shuffling' | 'cutting' | 'drawing' | 'revealing'>('shuffling')
+  const phase = ref<OverlayPhase>('shuffling')
   const showResults = ref(false)
   const entryAnimationComplete = ref(false)
+  const playbackRate = ref(1)
+  const isPaused = ref(false)
 
   // Card dimensions from layout solver (consumed by draw/result cards)
   const layoutCardWidth = ref(172)
@@ -59,6 +64,7 @@ export function useOverlayAnimation(deps: {
   // Track entry animation completion to prevent shuffle CTA competition
   let entryTimeline: gsap.core.Timeline | null = null
   let readingRequestTimer: ReturnType<typeof setTimeout> | null = null
+  let phaseAdvanceTimer: ReturnType<typeof setTimeout> | null = null
 
   // Card back image
   const cardBack = computed(() => deps.themeStore.cardBackImage || CARD_BACK_IMAGE)
@@ -250,7 +256,181 @@ export function useOverlayAnimation(deps: {
     }
   }
 
+  function clearPhaseAdvanceTimer() {
+    if (phaseAdvanceTimer !== null) {
+      clearTimeout(phaseAdvanceTimer)
+      phaseAdvanceTimer = null
+    }
+  }
+
+  function setPlaybackRate(rate: number) {
+    playbackRate.value = rate
+    gsap.globalTimeline.timeScale(rate)
+  }
+
+  function pauseAnimations() {
+    isPaused.value = true
+    gsap.globalTimeline.pause()
+  }
+
+  function resumeAnimations() {
+    isPaused.value = false
+    gsap.globalTimeline.resume()
+  }
+
+  function resetShuffleVisualState() {
+    leftsVisible.value = false
+    rightsVisible.value = false
+    _lefts.forEach((state) => {
+      state.x = 0
+      state.y = 0
+      state.rotation = 0
+      state.scale = 1
+      state.scaleY = 1
+      state.opacity = 0
+    })
+    _rights.forEach((state) => {
+      state.x = 0
+      state.y = 0
+      state.rotation = 0
+      state.scale = 1
+      state.scaleY = 1
+      state.opacity = 0
+    })
+    refreshLefts()
+    refreshRights()
+  }
+
+  function resetCutVisualState() {
+    cutTopVisible.value = false
+    cutMidVisible.value = false
+    cutBotVisible.value = false
+    Object.assign(_cutTop, { x: 0, y: 0, rotation: 0, scale: 1, opacity: 0, zIndex: 10 })
+    Object.assign(_cutMid, { x: 0, y: 0, rotation: 0, scale: 1, opacity: 0, zIndex: 10 })
+    Object.assign(_cutBot, { x: 0, y: 0, rotation: 0, scale: 1, opacity: 0, zIndex: 10 })
+    refreshCuts()
+  }
+
+  function resetDrawVisualState() {
+    drawsVisible.value = Array(MAX_CARD_COUNT).fill(false)
+    _draws.forEach((state, index) => {
+      state.x = 0
+      state.y = 0
+      state.rotation = 0
+      state.scale = 1
+      state.opacity = 0
+      state.zIndex = 20 - index
+    })
+    _inners.forEach((state) => {
+      state.rotationY = 0
+    })
+    refreshDraws()
+    refreshInners()
+  }
+
+  function resetInitialDeckState() {
+    _initials.forEach((state, index) => {
+      state.x = 0
+      state.y = -(index * 0.8)
+      state.rotation = 0
+      state.scale = 1
+      state.scaleY = 1
+      state.opacity = 1
+    })
+    refreshInitials()
+  }
+
+  function resetOverlayScene() {
+    const { windowHeight } = uni.getWindowInfo()
+
+    showResults.value = false
+    stageContainerHeightPx.value = windowHeight
+
+    _bg.opacity = 1
+    _stage.y = 0
+    _header.y = 0
+    _header.opacity = 1
+    _footer.y = 0
+    _footer.opacity = 1
+    _deckCtn.x = 0
+
+    refreshBg()
+    refreshStage()
+    refreshHeader()
+    refreshFooter()
+    refreshDeckCtn()
+
+    resetInitialDeckState()
+    resetShuffleVisualState()
+    resetCutVisualState()
+    resetDrawVisualState()
+
+    const dimensions = getCardDimensions()
+    layoutCardWidth.value = dimensions.width
+    layoutCardHeight.value = dimensions.height
+    drawsSizeStyle.value = Array.from({ length: MAX_CARD_COUNT }, () => _cardSizeStyleStr(dimensions.width, dimensions.height))
+  }
+
+  function getDrawStageLayout() {
+    const { width: stageWidth, height: stageHeight } = getStageDimensions()
+    const cardHeight = getCardHeight()
+
+    const layout = resolveSpreadLayout({
+      spreadKind: deps.tarotStore.spreadKind,
+      scene: 'draw_stage',
+      containerWidth: stageWidth,
+      containerHeight: stageHeight,
+      isWide: deps.isWide.value,
+      cardAspectRatio: 1.6,
+      headerHeight: getResultHeaderBottom(),
+    })
+
+    drawsSizeStyle.value = layout.cards.map(card => _cardSizeStyleStr(card.width, card.height))
+    layoutCardWidth.value = layout.cardWidth
+    layoutCardHeight.value = layout.cardHeight
+
+    return {
+      stageWidth,
+      stageHeight,
+      cardHeight,
+      targetX: layout.cards.map(card => card.x),
+      targetY: layout.cards.map(card => card.y),
+      liftY: layout.stageShiftY,
+    }
+  }
+
+  function interruptCurrentAnimation() {
+    clearReadingRequestTimer()
+    clearPhaseAdvanceTimer()
+    resumeAnimations()
+
+    if (entryTimeline) {
+      entryTimeline.kill()
+      entryTimeline = null
+    }
+
+    gsap.killTweensOf([
+      _bg,
+      _stage,
+      _header,
+      _footer,
+      _deckCtn,
+      ..._initials,
+      ..._lefts,
+      ..._rights,
+      _cutTop,
+      _cutMid,
+      _cutBot,
+      ..._draws,
+      ..._inners,
+    ])
+  }
+
   function scheduleReadingRequest() {
+    if (deps.tarotStore.readingResult) {
+      return
+    }
+
     clearReadingRequestTimer()
     readingRequestTimer = setTimeout(() => {
       readingRequestTimer = null
@@ -412,26 +592,7 @@ export function useOverlayAnimation(deps: {
     deps.tarotStore.setPhase('drawing')
     deps.tarotStore.drawCards()
 
-    const { width: stage_width, height: stage_height } = getStageDimensions()
-    const card_height = getCardHeight()
-
-    const drawLayout = resolveSpreadLayout({
-      spreadKind: deps.tarotStore.spreadKind,
-      scene: 'draw_stage',
-      containerWidth: stage_width,
-      containerHeight: stage_height,
-      isWide: deps.isWide.value,
-      cardAspectRatio: 1.6,
-      headerHeight: getResultHeaderBottom(),
-    })
-
-    const targetX = drawLayout.cards.map(c => c.x)
-    const targetY = drawLayout.cards.map(c => c.y)
-    const liftY = drawLayout.stageShiftY
-
-    drawsSizeStyle.value = drawLayout.cards.map(c => _cardSizeStyleStr(c.width, c.height))
-    layoutCardWidth.value = drawLayout.cardWidth
-    layoutCardHeight.value = drawLayout.cardHeight
+    const { stageHeight, cardHeight, targetX, targetY, liftY } = getDrawStageLayout()
 
     const preRotations = Array.from({ length: deps.cardCount.value }, () => (Math.random() - 0.5) * 15)
 
@@ -447,13 +608,13 @@ export function useOverlayAnimation(deps: {
 
     timeline
       .to(_stage, { y: -liftY, duration: 1.8, ease: 'power2.inOut' }, '+=0.2')
-      .to(_initials, { opacity: 0, y: (i: number) => -card_height * 0.4 - i * 0.8, scale: 0.8, duration: 0.6, ease: 'power1.in' }, '<0.2')
+      .to(_initials, { opacity: 0, y: (i: number) => -cardHeight * 0.4 - i * 0.8, scale: 0.8, duration: 0.6, ease: 'power1.in' }, '<0.2')
 
     Array.from({ length: deps.cardCount.value }, (_, i) => i).forEach((index) => {
       timeline.add(() => {
         Object.assign(_draws[index], {
           x: 0,
-          y: index === 0 ? -card_height * 0.3 : -stage_height,
+          y: index === 0 ? -cardHeight * 0.3 : -stageHeight,
           rotation: preRotations[index],
           scale: 1,
           opacity: 1,
@@ -465,14 +626,15 @@ export function useOverlayAnimation(deps: {
       }, 1 + index * 0.3)
 
       timeline
-        .to(_draws[index], { x: targetX[index], y: targetY[index] + card_height * 0.4, duration: 0.7, ease: 'power2.in' }, '>')
-        .to(_draws[index], { y: targetY[index] + card_height * 0.56, duration: 0.4, ease: 'power1.out' }, '>')
+        .to(_draws[index], { x: targetX[index], y: targetY[index] + cardHeight * 0.4, duration: 0.7, ease: 'power2.in' }, '>')
+        .to(_draws[index], { y: targetY[index] + cardHeight * 0.56, duration: 0.4, ease: 'power1.out' }, '>')
         .to(_draws[index], { y: targetY[index], duration: 1.5, ease: 'power3.out' }, '>')
     })
 
     const alignTime = 1 + (deps.cardCount.value - 1) * 0.3 + 0.7 + 0.4 + 1.5 + 0.5
     const flipDuration = 1 + (deps.cardCount.value - 1) * 0.4
-    const revealingStart = alignTime + 1.2 + flipDuration + 0.1
+    const revealDelay = AUTO_REVEAL_DELAY_MS / 1000
+    const revealingStart = alignTime + 1.2 + flipDuration + 0.1 + revealDelay
     const finishTime = revealingStart + 0.3
 
     timeline
@@ -500,6 +662,100 @@ export function useOverlayAnimation(deps: {
       .add(() => { void finish() }, finishTime)
 
     scheduleReadingRequest()
+  }
+
+  function playRevealOnly() {
+    phase.value = 'revealing'
+    deps.tarotStore.setPhase('revealing')
+
+    if (deps.tarotStore.drawnCards.length === 0) {
+      deps.tarotStore.drawCards()
+    }
+
+    const { targetX, targetY, liftY } = getDrawStageLayout()
+
+    _stage.y = -liftY
+    refreshStage()
+
+    _initials.forEach((state) => { state.opacity = 0 })
+    refreshInitials()
+
+    resetShuffleVisualState()
+    resetCutVisualState()
+
+    drawsVisible.value = Array.from({ length: MAX_CARD_COUNT }, (_, index) => index < deps.cardCount.value)
+    _draws.forEach((state, index) => {
+      if (index < deps.cardCount.value) {
+        Object.assign(state, {
+          x: targetX[index],
+          y: targetY[index],
+          rotation: 0,
+          scale: 0.92,
+          opacity: 1,
+          zIndex: 20 - index,
+        })
+        _inners[index].rotationY = 0
+        return
+      }
+
+      Object.assign(state, {
+        x: 0,
+        y: 0,
+        rotation: 0,
+        scale: 1,
+        opacity: 0,
+        zIndex: 20 - index,
+      })
+      _inners[index].rotationY = 0
+    })
+    refreshDraws()
+    refreshInners()
+
+    const flipDuration = 1 + (deps.cardCount.value - 1) * 0.4
+    const finishTime = 0.4 + flipDuration + 0.4
+
+    const timeline = gsap.timeline({
+      onUpdate: () => {
+        refreshStage()
+        refreshDraws()
+        refreshInners()
+      },
+    })
+
+    timeline
+      .to(
+        _inners,
+        { rotationY: 180, duration: 1, stagger: 0.4, ease: 'back.out(1.1)' },
+        0.4,
+      )
+      .add(() => { void finish() }, finishTime)
+
+    scheduleReadingRequest()
+  }
+
+  function replayFromPhase(targetPhase: OverlayPhase) {
+    interruptCurrentAnimation()
+    entryAnimationComplete.value = true
+    resetOverlayScene()
+    phase.value = targetPhase
+    deps.tarotStore.setPhase(targetPhase)
+
+    if (targetPhase === 'shuffling') {
+      playShuffle()
+      return
+    }
+
+    if (targetPhase === 'cutting') {
+      playCut()
+      return
+    }
+
+    if (targetPhase === 'drawing') {
+      playDraw()
+      return
+    }
+
+    playRevealOnly()
   }
 
   // ---- Result layout update ----
@@ -582,7 +838,10 @@ export function useOverlayAnimation(deps: {
         onComplete: () => {
           entryAnimationComplete.value = true
           entryTimeline = null
-          setTimeout(() => { playShuffle() }, 300)
+          phaseAdvanceTimer = setTimeout(() => {
+            phaseAdvanceTimer = null
+            playShuffle()
+          }, ENTRY_TO_SHUFFLE_DELAY_MS)
         },
       })
 
@@ -628,12 +887,18 @@ export function useOverlayAnimation(deps: {
 
   // ---- Restart function ----
   function restart() {
+    resumeAnimations()
+    setPlaybackRate(1)
     clearReadingRequestTimer()
+    clearPhaseAdvanceTimer()
     showResults.value = false
   }
 
   // ---- Lifecycle ----
   onMounted(() => {
+    resumeAnimations()
+    setPlaybackRate(1)
+
     const { windowWidth } = uni.getWindowInfo()
     _checkWidth(windowWidth)
 
@@ -649,6 +914,9 @@ export function useOverlayAnimation(deps: {
 
   onUnmounted(() => {
     clearReadingRequestTimer()
+    clearPhaseAdvanceTimer()
+    resumeAnimations()
+    setPlaybackRate(1)
     if (_resizeHandler) uni.offWindowResize(_resizeHandler)
     if (entryTimeline) {
       entryTimeline.kill()
@@ -701,6 +969,12 @@ export function useOverlayAnimation(deps: {
     overlayVarsStyle,
     getCardImg,
     cardBack,
+    playbackRate,
+    isPaused,
+    setPlaybackRate,
+    pauseAnimations,
+    resumeAnimations,
+    replayFromPhase,
     restart,
   }
 }

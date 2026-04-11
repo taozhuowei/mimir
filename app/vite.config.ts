@@ -1,24 +1,39 @@
-import { defineConfig } from "vite";
-import uni from "@dcloudio/vite-plugin-uni";
-import path from "path";
+import { defineConfig } from 'vite'
+import uni from '@dcloudio/vite-plugin-uni'
+import path from 'path'
 
-// https://vitejs.dev/config/
-export default defineConfig(({ mode }) => ({
-  plugins: [uni()],
-  // Read .env files from project root (not app/), where dev_env.js writes .env.development.local
-  envDir: path.resolve(__dirname, ".."),
-  resolve: {
-    alias: {
-      // Use gsap-core (no CSSPlugin) to avoid DOM API calls that crash WeChat Mini Program
-      gsap: path.resolve(__dirname, "../node_modules/gsap/gsap-core.js"),
+export default defineConfig(({ mode }) => {
+  const isProduction = mode === 'production'
+
+  return {
+    plugins: [uni()],
+    envDir: path.resolve(__dirname, '..'),
+    resolve: {
+      alias: {
+        // Use gsap-core (no CSSPlugin) to avoid DOM-only APIs in WeChat Mini Program.
+        gsap: path.resolve(__dirname, '../node_modules/gsap/gsap-core.js'),
+      },
     },
-  },
-  build: mode === 'production'
-    ? {
-        minify: 'terser',
-        terserOptions: {
-          compress: { drop_console: true, drop_debugger: true },
-        },
-      }
-    : { minify: false },
-}));
+    build: {
+      minify: isProduction ? 'terser' : false,
+      sourcemap: !isProduction,
+      cssMinify: isProduction,
+      reportCompressedSize: isProduction,
+      terserOptions: isProduction
+        ? {
+            compress: {
+              passes: 2,
+              drop_console: true,
+              drop_debugger: true,
+            },
+            mangle: {
+              safari10: true,
+            },
+            format: {
+              comments: false,
+            },
+          }
+        : undefined,
+    },
+  }
+})
