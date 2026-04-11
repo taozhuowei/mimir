@@ -6,7 +6,7 @@
 npm test -w test
 ```
 
-当前共 **120 个测试用例，7 个测试文件**。
+当前共 **128 个测试用例，7 个测试文件**。
 
 ---
 
@@ -43,6 +43,10 @@ test/
 | `resolveSpreadLayout` | draw_stage vs result_stage | 场景切换 |
 | `resolveSpreadLayout` | 宽屏 vs 窄屏布局选择 | 响应式适配 |
 | `resolveSpreadLayout` | 小程序手机/H5 移动/iPad/桌面各设备尺寸 | 跨设备尺寸回归（防止 CSS 变量与求解器不同步） |
+| `resolveSpreadLayout` | single_card result_stage headerHeight=50 → center.y=25 | 头部高度影响单卡居中位置 |
+| `resolveSpreadLayout` | three_card narrow result_stage headerHeight=50 → present.y=25 | 头部高度影响三张牌竖列居中 |
+| `resolveSpreadLayout` | cross_spread result_stage headerHeight=50 → center.y=25 | 头部高度影响十字阵居中位置 |
+| `resolveSpreadLayout` | three_card draw vs result spread 相等 | draw_stage 与 result_stage 间距一致 |
 
 ### `result_panel.test.ts`
 

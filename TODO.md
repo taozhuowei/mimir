@@ -144,6 +144,8 @@ server/themes/
 - [~] 新增首页设置 UI 入口：右上角显示 theme 内设置图标，仅首页可切换牌阵（`single_card` / `three_card` / `cross_spread`），运行时立即生效
 - [ ] 小程序端：通过 `page.setData` 更新 CSS 变量（适配小程序 CSS 变量注入方式）
 - [x] 抽离通用牌阵布局引擎：从 `DivinationOverlay.vue` 提取牌阵位置/尺寸计算，统一支持 `single_card`、`three_card`、`cross_spread`，供抽牌态与结果态复用
+- [x] **重构**：将 `DivinationOverlay.vue` 中全部 GSAP 动画逻辑抽离至 `app/src/composables/use_overlay_animation.ts`，stage-container 高度改由 GSAP 控制（删除 CSS height transition）
+- [x] **修复**：`spread_layout.ts` 新增 `headerHeight` 参数，修正所有牌阵结果页居中公式，draw_stage 预对齐减少过渡位移（≤60px 均匀）
 
 ### 文档
 

@@ -651,3 +651,95 @@ describe('cross-device card sizing', () => {
     }
   })
 })
+
+describe('headerHeight support', () => {
+  it('single_card result_stage headerHeight=50 => center.y === 25', () => {
+    const result = resolveSpreadLayout({
+      spreadKind: 'single_card',
+      scene: 'result_stage',
+      containerWidth: 400,
+      containerHeight: 800,
+      isWide: false,
+      cardAspectRatio: 1.6,
+      headerHeight: 50,
+    })
+    expect(result.cards).toHaveLength(1)
+    expect(result.cards[0].y).toBe(25) // headerHeight / 2
+  })
+
+  it('three_card narrow result_stage containerHeight=600 headerHeight=50 => present.y === 25', () => {
+    // Use taller container so headerHeight/2 center is achievable
+    const result = resolveSpreadLayout({
+      spreadKind: 'three_card',
+      scene: 'result_stage',
+      containerWidth: 390,
+      containerHeight: 600,
+      isWide: false,
+      cardAspectRatio: 1.6,
+      headerHeight: 50,
+    })
+    const pastCard = result.cards.find(c => c.slotId === 'past')!
+    const presentCard = result.cards.find(c => c.slotId === 'present')!
+    const futureCard = result.cards.find(c => c.slotId === 'future')!
+
+    // Present card should be at headerHeight/2 (when it fits within clamped bounds)
+    expect(presentCard.y).toBe(25)
+
+    // Equal spacing: past.y - present.y === present.y - future.y
+    const spacingPast = pastCard.y - presentCard.y
+    const spacingFuture = presentCard.y - futureCard.y
+    expect(spacingPast).toBe(spacingFuture)
+  })
+
+  it('cross_spread result_stage containerHeight=354 headerHeight=50 => center.y === 25', () => {
+    const result = resolveSpreadLayout({
+      spreadKind: 'cross_spread',
+      scene: 'result_stage',
+      containerWidth: 390,
+      containerHeight: 354,
+      isWide: false,
+      cardAspectRatio: 1.6,
+      headerHeight: 50,
+    })
+    const centerCard = result.cards.find(c => c.slotId === 'center')!
+    expect(centerCard.y).toBe(25) // headerHeight / 2
+  })
+
+  it('three_card draw vs result spread equal', () => {
+    // Both stages use same spread (unified spread calculation)
+    // The spread is calculated based on containerHeight * 0.42 for both stages
+    // Using same containerWidth/Height for both to get same card dimensions
+    const containerWidth = 390
+    const containerHeight = 400
+
+    const drawResult = resolveSpreadLayout({
+      spreadKind: 'three_card',
+      scene: 'draw_stage',
+      containerWidth,
+      containerHeight,
+      isWide: false,
+      cardAspectRatio: 1.6,
+      headerHeight: 50,
+    })
+
+    const resultResult = resolveSpreadLayout({
+      spreadKind: 'three_card',
+      scene: 'result_stage',
+      containerWidth,
+      containerHeight,
+      isWide: false,
+      cardAspectRatio: 1.6,
+      headerHeight: 50,
+    })
+
+    const drawPast = drawResult.cards.find(c => c.slotId === 'past')!
+    const drawPresent = drawResult.cards.find(c => c.slotId === 'present')!
+    const resultPast = resultResult.cards.find(c => c.slotId === 'past')!
+    const resultPresent = resultResult.cards.find(c => c.slotId === 'present')!
+
+    // Both stages use the same spread (based on result_stage height = containerHeight * 0.42)
+    const drawSpacing = Math.abs(drawPast.y - drawPresent.y)
+    const resultSpacing = Math.abs(resultPast.y - resultPresent.y)
+    expect(drawSpacing).toBe(resultSpacing)
+  })
+})

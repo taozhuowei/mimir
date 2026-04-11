@@ -3,7 +3,7 @@
     <view class="overlay-bg" :style="bgStyle" />
 
     <!-- Animation area: always present, shrinks to top/left after results shown -->
-    <view class="stage-container">
+    <view class="stage-container" :style="stageContainerStyle">
       <view class="progress-header" :style="headerStyle">
         <view class="phase-progress-bar">
           <view
@@ -97,8 +97,6 @@
             <view class="btn btn-primary" @click="handleRestart">{{ overlay_text.restart }}</view>
           </template>
 
-
-
           <template v-else-if="phase === 'revealing'">
             <!-- Text hint + animated dots, shown while waiting for reading result -->
             <view class="revealing-hint font-display">
@@ -130,26 +128,25 @@
   File purpose: Full-screen divination overlay component
   - Includes shuffle / cut / draw three-phase animation
   - Displays tarot interpretation result (ResultPanel) after three phases
-  - Supports responsive layout for wide (≥768px) and narrow screens
+  - Supports responsive layout for wide (>=768px) and narrow screens
 
   Cross-platform compatibility (H5 & WeChat Mini Program):
   - Avoid window.innerWidth/innerHeight, use uni.getWindowInfo() instead
   - Avoid window.addEventListener/removeEventListener, use uni.onWindowResize/offWindowResize
   - Avoid getBoundingClientRect/offsetWidth/offsetHeight, calculate from window dimensions
-  - GSAP cannot directly manipulate DOM elements, use "plain JS state object + onUpdate → Vue ref<string> :style binding" pattern:
+  - GSAP cannot directly manipulate DOM elements, use "plain JS state object + onUpdate -> Vue ref<string> :style binding" pattern:
       1. Define plain JS state objects (e.g., _bg, _initials[], _draws[])
       2. GSAP tweens operate on state objects, refresh functions called in onUpdate
       3. Refresh functions serialize state objects to CSS style strings, written to Vue refs
       4. Template binds with :style="xxxStyle", Vue handles final DOM updates
 -->
 <script setup lang="ts">
-import { computed, nextTick, onMounted, onUnmounted, ref } from 'vue'
-import gsap from 'gsap'
+import { computed, ref } from 'vue'
 import { useTarotStore } from '../stores/tarot'
 import { useThemeStore } from '../stores/theme'
 import ResultPanel from './ResultPanel.vue'
-import { CARD_BACK_IMAGE } from '../constants'
-import { resolveSpreadLayout, type SpreadScene, getSpreadCardCount } from '../utils/spread_layout'
+import { getSpreadCardCount } from '../utils/spread_layout'
+import { useOverlayAnimation } from '../composables/use_overlay_animation'
 
 // Emits definition
 // complete - triggered when divination flow completes (draw animation ends, result about to show)
@@ -162,14 +159,8 @@ const emit = defineEmits<{
 const tarotStore = useTarotStore()
 const themeStore = useThemeStore()
 
-// Card back image
-const cardBack = computed(() => themeStore.cardBackImage || CARD_BACK_IMAGE)
-
 // Runtime card count from store spread kind
 const cardCount = computed(() => getSpreadCardCount(tarotStore.spreadKind))
-
-// Max cards for array initialization (cross_spread has 5)
-const MAX_CARD_COUNT = 5
 
 /**
  * Current phase icon mapping
@@ -211,727 +202,52 @@ const overlay_text = {
   revealing: '神谕显现中',
 }
 
-// ---- Reactive state ----
-const phase = ref<'shuffling' | 'cutting' | 'drawing' | 'revealing'>('shuffling')
-const showResults = ref(false)
+// Wide screen detection ref (will be updated by composable)
 const isWide = ref(false)
 
-// Card dimensions from layout solver (consumed by draw/result cards)
-const layoutCardWidth = ref(172)
-const layoutCardHeight = ref(275)
-
-// CSS variables driven by solver output — cross-platform alternative to document.querySelector
-const overlayVarsStyle = computed(() =>
-  `--card-width: ${layoutCardWidth.value}px; --card-height: ${layoutCardHeight.value}px`
-)
-
-// Track entry animation completion to prevent shuffle CTA competition
-const entryAnimationComplete = ref(false)
-let entryTimeline: gsap.core.Timeline | null = null
-let readingRequestTimer: ReturnType<typeof setTimeout> | null = null
-
-function getCardImg(index: number) {
-  return tarotStore.drawnCards[index]?.card.image || cardBack.value
-}
-
-// ---- Window dimensions (cross-platform: replaces window.innerWidth/innerHeight) ----
-// Get the height occupied by the progress-header in mini program
-function getTopBarHeight(): number {
-  // #ifdef MP-WEIXIN
-  try {
-    const { top, height } = uni.getMenuButtonBoundingClientRect()
-    return top + height + 8  // capsule button bottom + padding
-  } catch {
-    return 88  // fallback: status bar(44) + nav bar(44)
-  }
-  // #endif
-  // eslint-disable-next-line no-unreachable -- reachable on non-MP platforms via conditional compilation
-  return 0
-}
-
-/**
- * Estimate bottom edge of the progress-header in result stage (px from top of
- * stage-container). Cards must be offset downward by half this value so they
- * appear centered in the visible area below the header instead of at the
- * geometric container center (the header overlaps the stage from the top).
- *
- * CSS source of truth — .show-results .progress-header:
- *   H5: margin-top = env(safe-area-inset-top, 0px) + 20rpx + 40px icon
- *   MP: margin-top = env(safe-area-inset-top, 44px) + 80rpx + 40px icon
- */
-function getResultHeaderBottom(): number {
-  const { windowWidth } = uni.getWindowInfo()
-  const rpxToPx = windowWidth / 750  // uni rpx→px conversion for this screen
-  const iconHeight = 40              // .phase-step-icon is always 40px
-
-  // #ifdef MP-WEIXIN
-  try {
-    const { top } = uni.getMenuButtonBoundingClientRect()  // top = status bar height
-    return top + Math.round(80 * rpxToPx) + iconHeight
-  } catch {
-    return Math.round(44 + 80 * rpxToPx) + iconHeight
-  }
-  // #endif
-
-  // eslint-disable-next-line no-unreachable -- reachable on non-MP via conditional compilation
-  return Math.round(20 * rpxToPx) + iconHeight  // H5: safe-area-top ≈0 + 20rpx + icon
-}
-
-/**
- * Get current card dimensions from the spread layout solver
- * This ensures consistency with resolveSpreadLayout calculations
- */
-function getCardDimensions(): { width: number; height: number } {
-  const { width: stage_width, height: stage_height } = getStageDimensions()
-  const scene: SpreadScene = showResults.value ? 'result_stage' : 'draw_stage'
-  const layout = resolveSpreadLayout({
-    spreadKind: tarotStore.spreadKind,
-    scene,
-    containerWidth: stage_width,
-    containerHeight: stage_height,
-    isWide: isWide.value,
-    cardAspectRatio: 1.6,
-  })
-  return { width: layout.cardWidth, height: layout.cardHeight }
-}
-
-// Backward compatibility: use layout solver dimensions
-function getCardWidth(): number {
-  return getCardDimensions().width
-}
-
-function getCardHeight(): number {
-  return getCardDimensions().height
-}
-
-// Calculate stage dimensions from layout state (replaces getBoundingClientRect)
-// stage is position:absolute; inset:0 filling stage-container
-// stage-container dimensions determined by CSS layout, calculable from window dimensions
-function getStageDimensions(): { width: number; height: number } {
-  const { windowWidth, windowHeight } = uni.getWindowInfo()
-  const topBar = getTopBarHeight()
-  if (showResults.value) {
-    if (isWide.value) return { width: windowWidth * 0.44, height: windowHeight }
-    return { width: windowWidth, height: windowHeight * 0.42 }
-  }
-  return { width: windowWidth, height: windowHeight - topBar }
-}
-
-// ---- GSAP animation state objects (plain JS, GSAP manipulates these directly) ----
-// Avoid Vue reactivity to prevent direct DOM manipulation in WeChat Mini Program
-
-interface CardState {
-  x: number
-  y: number
-  rotation: number
-  scale: number
-  scaleY: number  // only for shuffle end bounce effect
-  opacity: number
-}
-
-interface CenterCardState {
-  x: number
-  y: number
-  rotation: number
-  scale: number
-  opacity: number
-  zIndex: number
-}
-
-interface InnerState {
-  rotationY: number
-}
-
-// Background overlay
-const _bg = { opacity: 0 }
-// Stage overall (moves up during draw)
-const _stage = { y: 0 }
-// Progress header / footer actions (entry animation)
-const _header = { y: 60, opacity: 0 }
-const _footer = { y: 60, opacity: 0 }
-// Deck container (shuffle shake effect)
-const _deckCtn = { x: 0 }
-// Initial deck 12 cards (stacked)
-const _initials: CardState[] = Array.from({ length: 12 }, (_, i) => ({
-  x: 0, y: -(i * 0.8), rotation: 0, scale: 1, scaleY: 1, opacity: 1,
-}))
-// Shuffle left/right 6 cards each
-const _lefts: CardState[] = Array.from({ length: 6 }, () => ({
-  x: 0, y: 0, rotation: 0, scale: 1, scaleY: 1, opacity: 0,
-}))
-const _rights: CardState[] = Array.from({ length: 6 }, () => ({
-  x: 0, y: 0, rotation: 0, scale: 1, scaleY: 1, opacity: 0,
-}))
-// Cut cards 3 (absolute positioned centered)
-const _cutTop: CenterCardState = { x: 0, y: 0, rotation: 0, scale: 1, opacity: 0, zIndex: 10 }
-const _cutMid: CenterCardState = { x: 0, y: 0, rotation: 0, scale: 1, opacity: 0, zIndex: 10 }
-const _cutBot: CenterCardState = { x: 0, y: 0, rotation: 0, scale: 1, opacity: 0, zIndex: 10 }
-// Drawn cards (absolute positioned centered)
-const _draws: CenterCardState[] = Array.from({ length: MAX_CARD_COUNT }, (_, i) => ({
-  x: 0, y: 0, rotation: 0, scale: 1, opacity: 0, zIndex: 20 - i,
-}))
-// 3D flip inner
-const _inners: InnerState[] = Array.from({ length: MAX_CARD_COUNT }, () => ({ rotationY: 0 }))
-
-// ---- Vue style refs (bound to template :style, updated by refresh functions) ----
-
-const bgStyle = ref('opacity: 0')
-const stageStyle = ref('')
-const headerStyle = ref('transform: translateY(60px); opacity: 0')
-const footerStyle = ref('transform: translateY(60px); opacity: 0')
-const deckCtnStyle = ref('')
-
-
-// Initial values consistent with _initials state
-const initialsStyle = ref<string[]>(
-  _initials.map((s, i) => `transform: translateY(${-i * 0.8}px)`),
-)
-
-const leftsVisible = ref(false)
-const leftsStyle = ref<string[]>(Array.from({ length: 6 }, () => ''))
-const rightsVisible = ref(false)
-const rightsStyle = ref<string[]>(Array.from({ length: 6 }, () => ''))
-
-const cutTopVisible = ref(false)
-const cutMidVisible = ref(false)
-const cutBotVisible = ref(false)
-const cutTopStyle = ref('')
-const cutMidStyle = ref('')
-const cutBotStyle = ref('')
-
-const drawsVisible = ref<boolean[]>(Array(MAX_CARD_COUNT).fill(false))
-const drawsStyle = ref<string[]>(Array(MAX_CARD_COUNT).fill(''))
-const drawsSizeStyle = ref<{ width: string; height: string }[]>(Array(MAX_CARD_COUNT).fill({ width: '', height: '' }))
-const innersStyle = ref<string[]>(Array(MAX_CARD_COUNT).fill(''))
-
-
-
-// ---- CSS style string constructors ----
-
-// Normal cards (stack-card): simple translate + rotate + scale
-function _cardStyleStr(s: CardState): string {
-  const sy = s.scaleY !== 1 ? ` scaleY(${s.scaleY})` : ''
-  return (
-    `transform: translateX(${s.x}px) translateY(${s.y}px) rotate(${s.rotation}deg) scale(${s.scale})${sy};` +
-    ` opacity: ${s.opacity}; will-change: transform`
-  )
-}
-
-// Centered cards (stage-center): transform includes calc(-50% + Xpx) offset, replaces GSAP xPercent/yPercent:-50
-function _centerStyleStr(s: CenterCardState): string {
-  return (
-    `transform: translateX(calc(-50% + ${s.x}px)) translateY(calc(-50% + ${s.y}px))` +
-    ` rotate(${s.rotation}deg) scale(${s.scale});` +
-    ` opacity: ${s.opacity}; z-index: ${s.zIndex}; will-change: transform`
-  )
-}
-
-// Card size style string constructor (uses solver-returned dimensions)
-function _cardSizeStyleStr(width: number, height: number): { width: string; height: string } {
-  return {
-    width: `${width}px`,
-    height: `${height}px`,
-  }
-}
-
-// 3D flip inner
-function _innerStyleStr(s: InnerState): string {
-  return `transform: rotateY(${s.rotationY}deg)`
-}
-
-// ---- Refresh functions (called in GSAP onUpdate, sync state objects to Vue refs) ----
-
-const refreshBg = () => { bgStyle.value = `opacity: ${_bg.opacity}` }
-const refreshStage = () => { stageStyle.value = `transform: translateY(${_stage.y}px)` }
-const refreshHeader = () => { headerStyle.value = `transform: translateY(${_header.y}px); opacity: ${_header.opacity}` }
-const refreshFooter = () => { footerStyle.value = `transform: translateY(${_footer.y}px); opacity: ${_footer.opacity}` }
-const refreshDeckCtn = () => { deckCtnStyle.value = `transform: translateX(${_deckCtn.x}px)` }
-const refreshInitials = () => { initialsStyle.value = _initials.map(s => _cardStyleStr(s)) }
-const refreshLefts = () => { leftsStyle.value = _lefts.map(s => _cardStyleStr(s)) }
-const refreshRights = () => { rightsStyle.value = _rights.map(s => _cardStyleStr(s)) }
-const refreshCutTop = () => { cutTopStyle.value = _centerStyleStr(_cutTop) }
-const refreshCutMid = () => { cutMidStyle.value = _centerStyleStr(_cutMid) }
-const refreshCutBot = () => { cutBotStyle.value = _centerStyleStr(_cutBot) }
-const refreshCuts = () => { refreshCutTop(); refreshCutMid(); refreshCutBot() }
-const refreshDraws = () => {
-  drawsStyle.value = _draws.map(s => _centerStyleStr(s))
-}
-const refreshInners = () => { innersStyle.value = _inners.map(s => _innerStyleStr(s)) }
-
-function clearReadingRequestTimer() {
-  if (readingRequestTimer !== null) {
-    clearTimeout(readingRequestTimer)
-    readingRequestTimer = null
-  }
-}
-
-function scheduleReadingRequest() {
-  clearReadingRequestTimer()
-  readingRequestTimer = setTimeout(() => {
-    readingRequestTimer = null
-    tarotStore.startReadingRequest().catch(() => {
-      // Keep the overlay in revealing state when the request fails.
-    })
-  }, 0)
-}
-
-/**
- * Ensure the entry animation is fully settled before a user-triggered flow animation starts.
- * This prevents the first shuffle from competing with the mount-time tweens and causing a hitch.
- */
-function settleEntryAnimation() {
-  if (entryTimeline) {
-    entryTimeline.progress(1)
-    entryTimeline.kill()
-    entryTimeline = null
-  }
-
-  _bg.opacity = 1
-  refreshBg()
-
-  _initials.forEach((state, index) => {
-    state.x = 0
-    state.y = -(index * 0.8)
-    state.rotation = 0
-    state.scale = 1
-    state.scaleY = 1
-    state.opacity = 1
-  })
-  refreshInitials()
-
-  _header.y = 0
-  _header.opacity = 1
-  _footer.y = 0
-  _footer.opacity = 1
-  refreshHeader()
-  refreshFooter()
-
-  entryAnimationComplete.value = true
-}
-
-// ---- Window resize (cross-platform: replaces window.addEventListener('resize')) ----
-// UniApp spec: uni.onWindowResize / uni.offWindowResize
-let _resizeHandler: ((res: UniApp.WindowResizeResult) => void) | null = null
-
-function _checkWidth(windowWidth: number) {
-  const wasWide = isWide.value
-  isWide.value = windowWidth >= 768
-  if (wasWide !== isWide.value && showResults.value) {
-    nextTick(() => updateLayout())
-  }
-}
-
-// ---- Lifecycle ----
-
-onMounted(() => {
-  const { windowWidth } = uni.getWindowInfo()
-  _checkWidth(windowWidth)
-
-  // Initialize card dimensions from solver before entry animation
-  const initDims = getCardDimensions()
-  layoutCardWidth.value = initDims.width
-  layoutCardHeight.value = initDims.height
-
-  // Listen for window size changes (unified API for mini program / H5)
-  _resizeHandler = (res) => { _checkWidth(res.size.windowWidth) }
-  uni.onWindowResize(_resizeHandler)
-
-  nextTick(() => {
-    const cardHeight = getCardHeight()
-    const entryDrop = cardHeight * 4
-    entryAnimationComplete.value = false
-
-    entryTimeline = gsap.timeline({
-      onComplete: () => {
-        entryAnimationComplete.value = true
-        entryTimeline = null
-        setTimeout(() => { playShuffle() }, 300)
-      },
-    })
-
-    entryTimeline.fromTo(_bg, { opacity: 0 }, {
-      opacity: 1,
-      duration: 0.7,
-      onUpdate: refreshBg,
-    }, 0)
-
-    entryTimeline.fromTo(
-      _initials,
-      { y: -entryDrop, rotation: 180, scale: 0.5, opacity: 1, scaleY: 1, x: 0 },
-      {
-        y: (index: number) => -(index * 0.8),
-        rotation: 0,
-        scale: 1,
-        scaleY: 1,
-        duration: 1.05,
-        ease: 'power3.out',
-        stagger: 0.02,
-        onUpdate: refreshInitials,
-      },
-      0,
-    )
-
-    entryTimeline.fromTo(_header, { y: 100, opacity: 0 }, {
-      y: 0,
-      opacity: 1,
-      duration: 0.4,
-      ease: 'power2.out',
-      onUpdate: refreshHeader,
-    }, 0.4)
-
-    entryTimeline.fromTo(_footer, { y: 100, opacity: 0 }, {
-      y: 0,
-      opacity: 1,
-      duration: 0.35,
-      ease: 'power2.out',
-      onUpdate: refreshFooter,
-    }, 0.6)
-  })
+// Initialize animation composable
+const anim = useOverlayAnimation({
+  tarotStore,
+  themeStore,
+  isWide,
+  cardCount,
+  emit,
 })
 
-onUnmounted(() => {
-  clearReadingRequestTimer()
-  if (_resizeHandler) uni.offWindowResize(_resizeHandler)
-  if (entryTimeline) {
-    entryTimeline.kill()
-  }
-  gsap.killTweensOf([
-    _bg,
-    _stage,
-    _header,
-    _footer,
-    _deckCtn,
-    ..._initials,
-    ..._lefts,
-    ..._rights,
-    _cutTop,
-    _cutMid,
-    _cutBot,
-    ..._draws,
-    ..._inners,
-  ])
-})
-
-// ---- Shuffle animation ----
-// Deck splits left/right → cross-merge → bounce back; shows "next step" button on complete
-function playShuffle() {
-  settleEntryAnimation()
-
-  const cardWidth = getCardWidth()
-  const spreadX = cardWidth * 0.85
-
-  // Timeline-level onUpdate fires once per RAF frame regardless of how many sub-tweens are active,
-  // eliminating the O(stagger_count) per-frame refresh calls during the cross-interleave phase.
-  const timeline = gsap.timeline({
-    onComplete: () => {
-      playCut()
-    },
-    onUpdate: () => {
-      refreshInitials()
-      refreshLefts()
-      refreshRights()
-    },
-  })
-
-  // Init: hide initial cards, show left/right cards (equivalent to original .set + autoAlpha)
-  // Position 0 — run immediately at t=0, parallel with phase indicator tween
-  timeline.add(() => {
-    _initials.forEach(s => { s.opacity = 0 })
-    refreshInitials()
-
-    _lefts.forEach((s, i) => { s.opacity = 1; s.x = 0; s.y = -(i * 0.8); s.rotation = 0; s.scale = 1; s.scaleY = 1 })
-    _rights.forEach((s, i) => { s.opacity = 1; s.x = 0; s.y = -4.8 - i * 0.8; s.rotation = 0; s.scale = 1; s.scaleY = 1 })
-    leftsVisible.value = true
-    rightsVisible.value = true
-    refreshLefts()
-    refreshRights()
-  }, 0)
-
-  // Split left/right — starts at t=0, parallel with phase indicator
-  timeline
-    .to(_lefts, { x: -spreadX, y: (i: number) => -30 - i * 0.8, rotation: -16, duration: 0.5, ease: 'power2.out' }, 0)
-    .to(_rights, { x: spreadX, y: (i: number) => 30 - i * 0.8, rotation: 16, duration: 0.5, ease: 'power2.out' }, '<')
-
-    // Cross interleave — previously each staggered sub-tween had its own onUpdate (6× per frame each)
-    .to(_lefts, { x: 0, y: (i: number) => -(i * 1.6), rotation: -2, duration: 0.4, stagger: 0.06, ease: 'power2.out' }, '+=0.2')
-    .to(_rights, { x: 0, y: (i: number) => -0.8 - i * 1.6, rotation: 2, duration: 0.4, stagger: 0.06, ease: 'power2.out' }, '<0.03')
-
-    // Return to position
-    .to(
-      [..._lefts, ..._rights],
-      { x: 0, rotation: 0, duration: 0.3, ease: 'back.out(1.5)' },
-      '+=0.1',
-    )
-
-    // Hide left/right cards, restore initial cards with bounce effect
-    .add(() => {
-      _lefts.forEach(s => { s.opacity = 0 })
-      _rights.forEach(s => { s.opacity = 0 })
-      leftsVisible.value = false
-      rightsVisible.value = false
-      refreshLefts()
-      refreshRights()
-
-      _initials.forEach(s => { s.opacity = 1; s.scaleY = 0.9 })
-      refreshInitials()
-    })
-    .to(_initials, { scaleY: 1, duration: 0.4, ease: 'elastic.out(1, 0.4)' })
-}
-
-// ---- Cut animation ----
-// 3 cards expand → swap positions → merge back; shows "draw spread" button on complete
-function playCut() {
-  phase.value = 'cutting'
-  tarotStore.setPhase('cutting')
-
-  const cardWidth = getCardWidth()
-  const cardHeight = getCardHeight()
-  const spread = isWide.value ? cardWidth * 1.5 : cardHeight * 1.3
-  const leftX = isWide.value ? -spread : 0
-  const leftY = isWide.value ? 0 : -spread
-  const rightX = isWide.value ? spread : 0
-  const rightY = isWide.value ? 0 : spread
-
-  // Timeline-level onUpdate fires once per RAF frame, covering all cut card tweens.
-  const timeline = gsap.timeline({
-    onComplete: () => {
-      playDraw()
-    },
-    onUpdate: () => {
-      refreshInitials()
-      refreshCuts()
-    },
-  })
-
-  // Init cut card state
-  timeline.add(() => {
-    Object.assign(_cutTop, { x: 0, y: 0, rotation: 0, scale: 1, opacity: 1, zIndex: 10 })
-    Object.assign(_cutMid, { x: 0, y: 0, rotation: 0, scale: 1, opacity: 1, zIndex: 10 })
-    Object.assign(_cutBot, { x: 0, y: 0, rotation: 0, scale: 1, opacity: 1, zIndex: 10 })
-    cutTopVisible.value = true
-    cutMidVisible.value = true
-    cutBotVisible.value = true
-    refreshCuts()
-
-    _initials.forEach(s => { s.opacity = 0 })
-    refreshInitials()
-  })
-
-  timeline
-    // Separate: top/bottom swap, middle stays
-    .to(_cutTop, { x: leftX, y: leftY, duration: 0.7, ease: 'power3.out' })
-    .to(_cutBot, { x: rightX, y: rightY, duration: 0.7, ease: 'power3.out' }, '<')
-
-    // Overall scale up (levitation effect)
-    .to([_cutTop, _cutMid, _cutBot], { scale: 1.1, duration: 0.4, ease: 'power1.out' })
-
-    // Swap: top→right, middle→0, bottom→left
-    .to(_cutTop, { x: rightX, y: rightY, zIndex: 11, duration: 0.7, ease: 'power2.inOut' }, '+=0.15')
-    .to(_cutMid, { x: 0, y: 0, zIndex: 12, duration: 0.7, ease: 'power2.inOut' }, '<')
-    .to(_cutBot, { x: leftX, y: leftY, zIndex: 13, duration: 0.7, ease: 'power2.inOut' }, '<')
-
-    // Merge back (stagger simulates original logic)
-    .to(_cutTop, { x: 0, y: 0, rotation: 0, scale: 1, duration: 0.6, ease: 'back.out(1.5)' }, '+=0.2')
-    .to(_cutMid, { x: 0, y: 0, rotation: 0, scale: 1, duration: 0.6, delay: 0.15, ease: 'back.out(1.5)' }, '<')
-    .to(_cutBot, { x: 0, y: 0, rotation: 0, scale: 1, duration: 0.6, delay: 0.3, ease: 'back.out(1.5)' }, '<')
-
-    // Hide cut cards, restore initial deck
-    .add(() => {
-      cutTopVisible.value = false
-      cutMidVisible.value = false
-      cutBotVisible.value = false
-      refreshCuts()
-
-      _initials.forEach(s => { s.opacity = 1 })
-      refreshInitials()
-    })
-}
-
-// ---- Draw animation ----
-// Deck trembles → stage lifts → cards fall staggered → flip → triggers result display
-function playDraw() {
-  phase.value = 'drawing'
-  tarotStore.setPhase('drawing')
-  tarotStore.drawCards()
-
-  const { width: stage_width, height: stage_height } = getStageDimensions()
-  const card_height = getCardHeight()
-
-  // Use spread layout solver for draw stage
-  const drawLayout = resolveSpreadLayout({
-    spreadKind: tarotStore.spreadKind,
-    scene: 'draw_stage',
-    containerWidth: stage_width,
-    containerHeight: stage_height,
-    isWide: isWide.value,
-    cardAspectRatio: 1.6,
-  })
-
-  const targetX = drawLayout.cards.map(c => c.x)
-  const targetY = drawLayout.cards.map(c => c.y)
-  const liftY = drawLayout.stageShiftY
-
-  // Set initial card sizes from solver output
-  drawsSizeStyle.value = drawLayout.cards.map(c => _cardSizeStyleStr(c.width, c.height))
-
-  // Sync CSS vars with solver output for the draw phase
-  layoutCardWidth.value = drawLayout.cardWidth
-  layoutCardHeight.value = drawLayout.cardHeight
-
-  // Random initial rotation angles (pre-generate to avoid re-randomizing per frame)
-  const preRotations = Array.from({ length: cardCount.value }, () => (Math.random() - 0.5) * 15)
-
-
-
-  // Timeline-level onUpdate fires once per RAF frame, covering all draw-phase sub-tweens.
-  const timeline = gsap.timeline({
-    onUpdate: () => {
-      refreshDeckCtn()
-      refreshStage()
-      refreshInitials()
-      refreshDraws()
-      refreshInners()
-    },
-  })
-
-  // Deck trembles (shake effect)
-  timeline
-    .to(_deckCtn, { x: '+=4', yoyo: true, repeat: 10, duration: 0.05 })
-    .to(_deckCtn, { x: 0, duration: 0.1 })
-
-  // Stage lifts + initial cards fade out
-  timeline
-    .to(_stage, { y: -liftY, duration: 1.8, ease: 'power2.inOut' }, '+=0.2')
-    .to(_initials, { opacity: 0, y: (i: number) => -card_height * 0.4 - i * 0.8, scale: 0.8, duration: 0.6, ease: 'power1.in' }, '<0.2')
-
-  // Cards fall from above to target positions
-  Array.from({ length: cardCount.value }, (_, i) => i).forEach((index) => {
-    timeline.add(() => {
-      Object.assign(_draws[index], {
-        x: 0,
-        y: index === 0 ? -card_height * 0.3 : -stage_height,
-        rotation: preRotations[index],
-        scale: 1,
-        opacity: 1,
-        zIndex: 20 - index,
-      })
-      const newVisible = drawsVisible.value.map((v, i) => (i === index ? true : v))
-      drawsVisible.value = newVisible
-      refreshDraws()
-    }, 1 + index * 0.3)
-
-    timeline
-      .to(_draws[index], { x: targetX[index], y: targetY[index] + card_height * 0.4, duration: 0.7, ease: 'power2.in' }, '>')
-      .to(_draws[index], { y: targetY[index] + card_height * 0.56, duration: 0.4, ease: 'power1.out' }, '>')
-      .to(_draws[index], { y: targetY[index], duration: 1.5, ease: 'power3.out' }, '>')
-  })
-
-  // After all cards land: align → compress → flip
-  // alignTime is based on the last card's fall sequence
-  const alignTime = 1 + (cardCount.value - 1) * 0.3 + 0.7 + 0.4 + 1.5 + 0.5
-  // revealingStart: after align(0.8s) + compress(0.5s) + flip(1s + stagger) with small buffer
-  const flipDuration = 1 + (cardCount.value - 1) * 0.4
-  const revealingStart = alignTime + 1.2 + flipDuration + 0.1
-  // finishTime: 0.3s after revealing starts — reading request was fired at t=0, already resolved
-  const finishTime = revealingStart + 0.3
-
-  timeline
-    .to(
-      _draws,
-      {
-        x: (index: number) => targetX[index],
-        y: (index: number) => targetY[index],
-        rotation: 0,
-        duration: 0.8,
-        ease: 'power3.inOut',
-      },
-      alignTime + 0.1,
-    )
-    .to(_draws, { scale: 0.92, duration: 0.5, ease: 'power1.out' }, alignTime + 0.9)
-    // Flip (3D rotationY: 180deg, stagger sequential flip) — previously 3× onUpdate per frame
-    .to(
-      _inners,
-      { rotationY: 180, duration: 1, stagger: 0.4, ease: 'back.out(1.1)' },
-      alignTime + 1.2,
-    )
-    .add(() => {
-      phase.value = 'revealing'
-      tarotStore.setPhase('revealing')
-    }, revealingStart)
-    .add(() => { void finish() }, finishTime)
-
-  scheduleReadingRequest()
-}
-
-// ---- Result layout update (called on resize or when entering result display) ----
-// Recalculate target coordinates for cards and animate to new positions
-function updateLayout() {
-  if (phase.value !== 'revealing' && phase.value !== 'drawing') return
-
-  const { width: stage_width, height: stage_height } = getStageDimensions()
-
-  // Use spread layout solver for result stage
-  const scene: SpreadScene = showResults.value ? 'result_stage' : 'draw_stage'
-  const layout = resolveSpreadLayout({
-    spreadKind: tarotStore.spreadKind,
-    scene,
-    containerWidth: stage_width,
-    containerHeight: stage_height,
-    isWide: isWide.value,
-    cardAspectRatio: 1.6,
-  })
-
-  // Consume solver-returned card dimensions for result stage
-  layoutCardWidth.value = layout.cardWidth
-  layoutCardHeight.value = layout.cardHeight
-
-  // Update per-card size styles from solver output
-  drawsSizeStyle.value = layout.cards.map(c => _cardSizeStyleStr(c.width, c.height))
-
-  const targetX = layout.cards.map(c => c.x)
-  // In result stage the progress-header overlaps the top of the stage-container.
-  // Shift cards down by half the header height so they appear visually centered
-  // in the remaining area below the header rather than at the geometric center.
-  const headerOffset = showResults.value ? getResultHeaderBottom() / 2 : 0
-  const targetY = layout.cards.map(c => c.y + headerOffset)
-
-  if (showResults.value) {
-    gsap.to(_stage, { y: 0, duration: 0.6, ease: 'power2.out', onUpdate: refreshStage })
-  }
-
-  _draws.forEach((draw, i) => {
-    gsap.to(draw, {
-      x: targetX[i],
-      y: targetY[i],
-      duration: 0.6,
-      ease: 'power2.out',
-      overwrite: 'auto',
-      onUpdate: refreshDraws,
-    })
-  })
-}
-
-async function finish() {
-  try {
-    if (!tarotStore.readingResult) {
-      await tarotStore.waitForReadingResult()
-    }
-  } catch {
-    return
-  }
-
-  if (!tarotStore.readingResult) {
-    return
-  }
-
-  tarotStore.revealResult()
-  showResults.value = true
-  nextTick(() => { updateLayout() })
-}
+// Destructure all return values
+const {
+  stageContainerStyle,
+  bgStyle,
+  stageStyle,
+  headerStyle,
+  footerStyle,
+  deckCtnStyle,
+  initialsStyle,
+  leftsStyle,
+  rightsStyle,
+  leftsVisible,
+  rightsVisible,
+  cutTopStyle,
+  cutMidStyle,
+  cutBotStyle,
+  cutTopVisible,
+  cutMidVisible,
+  cutBotVisible,
+  drawsStyle,
+  drawsSizeStyle,
+  innersStyle,
+  drawsVisible,
+  showResults,
+  phase,
+  overlayVarsStyle,
+  getCardImg,
+  cardBack,
+  restart,
+  // Note: entryAnimationComplete, layoutCardWidth, layoutCardHeight available if needed
+} = anim
 
 function handleRestart() {
-  clearReadingRequestTimer()
-  showResults.value = false
+  restart()
   emit('restart')
 }
 </script>
@@ -983,17 +299,8 @@ function handleRestart() {
   display: flex;
   flex-direction: column;
   flex-shrink: 0;
-  transition: flex 0.6s cubic-bezier(0.4, 0, 0.2, 1), height 0.6s cubic-bezier(0.4, 0, 0.2, 1);
   /* Default fills all vertical space */
-  flex: 1 0 100%;
   height: 100vh;
-}
-
-/* Narrow screen: after results shown, animation area shrinks to upper half */
-.show-results .stage-container {
-  flex: 0 0 42vh;
-  height: 42vh;
-  min-height: 260px;
 }
 
 /* Wide screen: after results shown, animation area becomes left column */
@@ -1099,10 +406,6 @@ function handleRestart() {
   margin-top: calc(env(safe-area-inset-top, 44px) + 80rpx);
 }
 /* #endif */
-
-
-
-
 
 .stage {
   position: absolute;
