@@ -146,6 +146,7 @@ server/themes/
 - [x] 抽离通用牌阵布局引擎：从 `DivinationOverlay.vue` 提取牌阵位置/尺寸计算，统一支持 `single_card`、`three_card`、`cross_spread`，供抽牌态与结果态复用
 - [x] **重构**：将 `DivinationOverlay.vue` 中全部 GSAP 动画逻辑抽离至 `app/src/composables/use_overlay_animation.ts`，stage-container 高度改由 GSAP 控制（删除 CSS height transition）
 - [x] **修复**：`spread_layout.ts` 新增 `headerHeight` 参数，修正所有牌阵结果页居中公式，draw_stage 预对齐减少过渡位移（≤60px 均匀）
+- [x] **修复**：`single_card` 抽牌终点位置改为以屏幕几何中心为准，移除 `draw_stage` 额外上浮偏移
 
 ### 文档
 

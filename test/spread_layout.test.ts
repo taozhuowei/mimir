@@ -56,9 +56,11 @@ describe('single_card layout', () => {
     const result = resolveSpreadLayout(input)
     
     expect(result.cards[0].x).toBe(0)
-    // Card should be near center Y (with slight lift in draw stage)
-    expect(result.cards[0].y).toBeLessThan(0)
+    // The local card target should offset the stage lift so the final
+    // on-screen landing point stays at center.
+    expect(result.cards[0].y).toBeGreaterThan(0)
     expect(result.stageShiftY).toBeGreaterThan(0)
+    expect(result.cards[0].y - result.stageShiftY).toBeCloseTo(0, 5)
   })
 
   it('centers the card in result_stage', () => {
@@ -82,6 +84,21 @@ describe('single_card layout', () => {
     expect(result.cardWidth).toBeGreaterThan(0)
     expect(result.cardHeight).toBeGreaterThan(0)
     expect(result.cardHeight).toBeCloseTo(result.cardWidth * DEFAULT_ASPECT_RATIO, 1)
+  })
+
+  it('keeps the final draw-stage landing point at screen center on mobile', () => {
+    const result = resolveSpreadLayout({
+      spreadKind: 'single_card',
+      scene: 'draw_stage',
+      containerWidth: 375,
+      containerHeight: 812,
+      isWide: false,
+      cardAspectRatio: DEFAULT_ASPECT_RATIO,
+      headerHeight: 50,
+    })
+
+    expect(result.cards).toHaveLength(1)
+    expect(result.cards[0].y - result.stageShiftY).toBeCloseTo(0, 5)
   })
 })
 

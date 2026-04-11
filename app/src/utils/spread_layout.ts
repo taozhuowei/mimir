@@ -157,9 +157,11 @@ function buildSingleCardLayout(
   if (scene === 'draw_stage') {
     const liftY = Math.min(containerHeight * 0.12, cardHeight * 0.3)
     const stageShiftY = liftY
-    // draw_stage: centerY accounts for header height and pre-alignment
-    const targetCenterY = liftY + hdr / 2 + 60 - containerHeight * 0.29
-    const centerY = Math.max(-containerHeight / 2 + cardHeight / 2, Math.min(containerHeight / 2 - cardHeight / 2, targetCenterY))
+    const minCenterY = -containerHeight / 2 + cardHeight / 2
+    const maxCenterY = containerHeight / 2 - cardHeight / 2
+    // Keep the local card target aligned with the stage lift so the final
+    // on-screen landing point stays at the geometric center of the stage.
+    const centerY = Math.max(minCenterY, Math.min(maxCenterY, liftY))
 
     return {
       cardWidth,
