@@ -6,6 +6,7 @@
 /node_modules/
 /app/node_modules/
 /server/node_modules/
+/test/node_modules/
 CLAUDE.md
 .env*.local
 .env.production
