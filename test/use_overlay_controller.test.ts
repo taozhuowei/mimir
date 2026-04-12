@@ -1,0 +1,328 @@
+// @vitest-environment jsdom
+
+import { mount } from '@vue/test-utils'
+import { defineComponent, h, nextTick, ref } from 'vue'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import type { ReadingResult, TarotCardInfo } from '../app/src/utils/tarotReading'
+
+// Track all mock function calls
+const pauseSpy = vi.fn()
+const resumeSpy = vi.fn()
+const timeScaleSpy = vi.fn()
+const timeSpy = vi.fn()
+const seekSpy = vi.fn()
+
+// Store last created timeline for assertions
+let lastTimeline: MockTimeline | null = null
+
+type MockTimeline = {
+  pause: () => void
+  resume: () => void
+  timeScale: (n?: number) => number | void
+  time: (n?: number) => number | void
+  seek: (p: number | string) => void
+  add: (item?: unknown, position?: number | string) => MockTimeline
+  clear: () => MockTimeline
+  kill: () => MockTimeline
+  _isPaused: () => boolean
+  _timeScale: () => number
+  _currentTime: () => number
+}
+
+vi.mock('gsap', () => {
+  function createTimeline() {
+    let currentTime = 0
+    let isPaused = false
+    let timeScale = 1
+
+    const timeline: MockTimeline = {
+      pause() {
+        pauseSpy()
+        isPaused = true
+        return this
+      },
+      resume() {
+        resumeSpy()
+        isPaused = false
+        return this
+      },
+      timeScale(newScale?: number) {
+        if (typeof newScale === 'number') {
+          timeScaleSpy(newScale)
+          timeScale = newScale
+          return this
+        }
+        return timeScale
+      },
+      time(newTime?: number) {
+        if (typeof newTime === 'number') {
+          timeSpy(newTime)
+          currentTime = Math.max(0, newTime)
+          return this
+        }
+        return currentTime
+      },
+      seek(position: number | string) {
+        seekSpy(position)
+        if (typeof position === 'number') {
+          currentTime = position
+        }
+        return this
+      },
+      to() { return this },
+      fromTo() { return this },
+      add(item?: unknown, _position?: number | string) {
+        return this
+      },
+      call(fn: () => void) {
+        fn()
+        return this
+      },
+      clear() {
+        currentTime = 0
+        return this
+      },
+      kill() {
+        return this
+      },
+      _isPaused: () => isPaused,
+      _timeScale: () => timeScale,
+      _currentTime: () => currentTime,
+    }
+
+    lastTimeline = timeline
+    return timeline
+  }
+
+  return {
+    default: {
+      timeline: createTimeline,
+    },
+    timeline: createTimeline,
+    killTweensOf: vi.fn(),
+  }
+})
+
+const mockResolveSpreadLayout = vi.hoisted(() => vi.fn())
+
+vi.mock('../app/src/utils/spread_layout', () => ({
+  resolveSpreadLayout: mockResolveSpreadLayout,
+}))
+
+vi.mock('../app/src/api/readings', () => ({
+  fetchReading: vi.fn().mockResolvedValue({
+    result: 'positive',
+    score: 3,
+    cardDetails: [],
+  }),
+}))
+
+function makeCard(): TarotCardInfo {
+  return {
+    id: 'test_card',
+    name: 'Test Card',
+    nameEn: 'Test Card',
+    number: 0,
+    type: 'major',
+    image: '/test.jpg',
+    upright: {
+      keywords: ['test'],
+      meaning: 'Test upright meaning',
+      sentiment: 'positive',
+    },
+    reversed: {
+      keywords: ['test reversed'],
+      meaning: 'Test reversed meaning',
+      sentiment: 'negative',
+    },
+  }
+}
+
+function makeReadingResult(): ReadingResult {
+  return {
+    result: 'positive',
+    score: 3,
+    cardDetails: [
+      {
+        card: makeCard(),
+        position: 'upright',
+        meaning: 'Test meaning',
+      },
+    ],
+  }
+}
+
+describe('use_overlay_controller', () => {
+  beforeEach(() => {
+    vi.useFakeTimers()
+    lastTimeline = null
+    pauseSpy.mockClear()
+    resumeSpy.mockClear()
+    timeScaleSpy.mockClear()
+    timeSpy.mockClear()
+    seekSpy.mockClear()
+
+    mockResolveSpreadLayout.mockImplementation(() => ({
+      cardWidth: 172,
+      cardHeight: 275,
+      stageShiftY: 48,
+      cards: [{ x: 0, y: 0, width: 172, height: 275 }],
+    }))
+
+    vi.stubGlobal('uni', {
+      getWindowInfo: () => ({
+        windowWidth: 390,
+        windowHeight: 844,
+      }),
+      onWindowResize: vi.fn(),
+      offWindowResize: vi.fn(),
+      getMenuButtonBoundingClientRect: () => ({
+        top: 12,
+        height: 32,
+      }),
+    })
+  })
+
+  afterEach(() => {
+    lastTimeline = null
+    vi.unstubAllGlobals()
+    vi.useRealTimers()
+  })
+
+  async function mountHarness() {
+    const { useOverlayController } = await import('../app/src/composables/use_overlay_controller')
+
+    const tarotStore = {
+      spreadKind: 'single_card' as const,
+      drawnCards: [{ card: makeCard(), position: 'upright' as const }],
+      readingResult: null as ReadingResult | null,
+      drawCards: vi.fn(),
+      setPhase: vi.fn(),
+      revealResult: vi.fn(),
+      currentQuestion: 'Test question',
+    }
+
+    const themeStore = {
+      cardBackImage: '',
+      getUiAsset: vi.fn((name: string) => `/icons/${name}.png`),
+    }
+
+    let exposedController: ReturnType<typeof useOverlayController> | null = null
+
+    const Harness = defineComponent({
+      setup(_, { expose }) {
+        const controller = useOverlayController({
+          tarotStore: tarotStore as never,
+          themeStore: themeStore as never,
+          isWide: ref(false),
+          cardCount: ref(1),
+          emit: (() => undefined) as never,
+        })
+        exposedController = controller
+        expose({ controller })
+        return () => h('div')
+      },
+    })
+
+    const wrapper = mount(Harness)
+    await nextTick()
+
+    return {
+      wrapper,
+      tarotStore,
+      controller: exposedController!,
+    }
+  }
+
+  it('provides controller with required properties', async () => {
+    const { controller } = await mountHarness()
+
+    // Styles
+    expect(controller.stageContainerStyle).toBeDefined()
+    expect(controller.bgStyle).toBeDefined()
+    expect(controller.stageStyle).toBeDefined()
+    expect(controller.phase).toBeDefined()
+    expect(controller.showResults).toBeDefined()
+
+    // Controls
+    expect(controller.setPlaybackRate).toBeTypeOf('function')
+    expect(controller.pauseAnimations).toBeTypeOf('function')
+    expect(controller.resumeAnimations).toBeTypeOf('function')
+    expect(controller.restart).toBeTypeOf('function')
+
+    // Reading state
+    expect(controller.readingPanelState).toBeDefined()
+    expect(controller.isReadingFailed).toBeDefined()
+    expect(controller.isReadingLoading).toBeDefined()
+    expect(controller.retryReading).toBeTypeOf('function')
+  })
+
+  it('controls playback rate', async () => {
+    const { controller } = await mountHarness()
+    await nextTick()
+
+    expect(lastTimeline).not.toBeNull()
+
+    controller.setPlaybackRate(2)
+    expect(controller.playbackRate.value).toBe(2)
+    expect(timeScaleSpy).toHaveBeenCalledWith(2)
+  })
+
+  it('pauses and resumes animations', async () => {
+    const { controller } = await mountHarness()
+    await nextTick()
+
+    expect(lastTimeline).not.toBeNull()
+
+    controller.pauseAnimations()
+    expect(controller.isPaused.value).toBe(true)
+    expect(pauseSpy).toHaveBeenCalled()
+
+    controller.resumeAnimations()
+    expect(controller.isPaused.value).toBe(false)
+    expect(resumeSpy).toHaveBeenCalled()
+  })
+
+  it('seeks to specific time', async () => {
+    const { controller } = await mountHarness()
+    await nextTick()
+
+    expect(lastTimeline).not.toBeNull()
+
+    controller.seek(3.5)
+    expect(seekSpy).toHaveBeenCalledWith(3.5)
+  })
+
+  it('steps forward and backward', async () => {
+    const { controller } = await mountHarness()
+    await nextTick()
+
+    expect(lastTimeline).not.toBeNull()
+
+    const initialTime = lastTimeline!._currentTime()
+    controller.stepForward()
+    expect(timeSpy).toHaveBeenCalled()
+
+    lastTimeline!.time(5)
+    timeSpy.mockClear()
+    controller.stepBackward()
+    expect(timeSpy).toHaveBeenCalled()
+  })
+
+  it('presents progress header data', async () => {
+    const { controller } = await mountHarness()
+
+    const progress = controller.progressHeaderPresentation
+    expect(progress.value).toBeDefined()
+    expect(progress.value.items).toHaveLength(4)
+  })
+
+  it('presents footer data', async () => {
+    const { controller } = await mountHarness()
+
+    const footer = controller.footerPresentation
+    expect(footer.value).toBeDefined()
+    expect(footer.value.showRestart).toBe(false)
+    expect(footer.value.showRevealingHint).toBe(false)
+  })
+})

@@ -1,75 +1,75 @@
 <template>
-  <view class="reading-panel" :class="result_tone_class" data-testid="result-shell">
+  <view class="reading-panel" :class="viewModel.toneClass" data-testid="result-shell">
     <view class="result-hero" data-testid="result-hero">
       <TypewriterText
         class="eyebrow font-display text-sm"
         text="占卜结果"
-        :start-delay="40"
-        :char-interval="44"
+        :start-delay="viewModel.eyebrowTiming.startDelay"
+        :char-interval="viewModel.eyebrowTiming.charInterval"
       />
       <TypewriterText
         class="hero-title font-display text-3xl"
-        :class="result_tone_class"
-        :text="result_statement"
-        :start-delay="180"
-        :char-interval="38"
+        :class="viewModel.toneClass"
+        :text="viewModel.hero.title"
+        :start-delay="heroTitleTiming.startDelay"
+        :char-interval="heroTitleTiming.charInterval"
         data-testid="result-statement"
       />
       <TypewriterText
-        v-if="question"
+        v-if="viewModel.hero.question"
         class="question text-base"
-        :text="`“${question}”`"
-        :start-delay="420"
-        :char-interval="26"
+        :text="viewModel.hero.question"
+        :start-delay="heroQuestionTiming.startDelay"
+        :char-interval="heroQuestionTiming.charInterval"
         data-testid="result-question"
       />
     </view>
 
     <view class="meaning-list">
       <view
-        v-for="(detail, index) in readingResult.cardDetails"
+        v-for="(detail, index) in viewModel.cardDetails"
         :key="`${detail.card.name}-${detail.position}-${index}`"
         class="meaning-item"
       >
         <TypewriterText
           class="meaning-card-name font-body"
           :text="detail.card.name"
-          :start-delay="getFieldDelay(index, 0)"
-          :char-interval="24"
+          :start-delay="detail.nameTiming.startDelay"
+          :char-interval="detail.nameTiming.charInterval"
         />
         <TypewriterText
           class="meaning-card-name-en font-display"
           :text="detail.card.nameEn"
-          :start-delay="getFieldDelay(index, 1)"
-          :char-interval="18"
+          :start-delay="detail.nameEnTiming.startDelay"
+          :char-interval="detail.nameEnTiming.charInterval"
         />
 
         <view class="meaning-meta-row">
           <TypewriterText
             class="meaning-position text-sm"
-            :text="detail.position === 'upright' ? '正位' : '逆位'"
-            :start-delay="getFieldDelay(index, 2)"
-            :char-interval="52"
+            :text="detail.positionLabel"
+            :start-delay="detail.positionTiming.startDelay"
+            :char-interval="detail.positionTiming.charInterval"
           />
           <TypewriterText
             class="meaning-arcana text-sm"
-            :text="detail.card.type === 'major' ? '大阿尔卡那' : '小阿尔卡那'"
-            :start-delay="getFieldDelay(index, 3)"
-            :char-interval="28"
+            :text="detail.arcanaLabel"
+            :start-delay="detail.arcanaTiming.startDelay"
+            :char-interval="detail.arcanaTiming.charInterval"
           />
         </view>
 
         <view class="keywords-row">
           <view
-            v-for="(keyword, keyword_index) in getKeywords(detail)"
-            :key="`${detail.card.id}-${detail.position}-${keyword}`"
+            v-for="(keywordItem, keyword_index) in detail.keywordsWithTiming"
+            :key="`${detail.card.id}-${detail.position}-${keywordItem.text}`"
             class="keyword-chip text-sm"
           >
             <TypewriterText
               class="keyword-chip-text"
-              :text="keyword"
-              :start-delay="getKeywordDelay(index, keyword_index)"
-              :char-interval="20"
+              :text="keywordItem.text"
+              :start-delay="keywordItem.timing.startDelay"
+              :char-interval="keywordItem.timing.charInterval"
             />
           </view>
         </view>
@@ -77,8 +77,8 @@
         <TypewriterText
           class="meaning-text text-base"
           :text="detail.meaning"
-          :start-delay="getFieldDelay(index, 4)"
-          :char-interval="16"
+          :start-delay="detail.meaningTiming.startDelay"
+          :char-interval="detail.meaningTiming.charInterval"
         />
       </view>
     </view>
@@ -86,10 +86,9 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
 import TypewriterText from './TypewriterText.vue'
+import { useResultPanelController } from '../composables/use_result_panel_controller'
 import type { ReadingResult } from '../utils/tarotReading'
-import { getResultStatement } from '../utils/result_panel'
 
 const props = defineProps<{
   readingResult: ReadingResult
@@ -100,23 +99,21 @@ defineEmits<{
   (event: 'restart'): void
 }>()
 
-const result_statement = computed(() => getResultStatement(props.readingResult.result))
-const result_tone_class = computed(() =>
-  props.readingResult.result === 'positive' ? 'is-positive' : 'is-negative'
-)
+// Get view model from controller
+const viewModel = useResultPanelController({
+  readingResult: props.readingResult,
+  question: props.question,
+})
 
-function getKeywords(detail: ReadingResult['cardDetails'][number]): string[] {
-  return detail.position === 'upright'
-    ? detail.card.upright.keywords
-    : detail.card.reversed.keywords
+// Hero section timing (these are fixed UI timing constants)
+const heroTitleTiming = {
+  startDelay: 180,
+  charInterval: 38,
 }
 
-function getFieldDelay(index: number, step: number): number {
-  return 620 + index * 320 + step * 90
-}
-
-function getKeywordDelay(index: number, keyword_index: number): number {
-  return getFieldDelay(index, 3) + 90 + keyword_index * 70
+const heroQuestionTiming = {
+  startDelay: 420,
+  charInterval: 26,
 }
 </script>
 

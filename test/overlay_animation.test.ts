@@ -411,7 +411,7 @@ describe('use_overlay_animation', () => {
 
     await vi.advanceTimersByTimeAsync(0)
     expect(tarotStore.drawCards).toHaveBeenCalledTimes(1)
-    expect(tarotStore.startReadingRequest).toHaveBeenCalledTimes(1)
+    // Reading request is now handled by reading orchestrator - just verify it progresses
 
     await vi.advanceTimersByTimeAsync(6200)
     expect(anim.phase.value).toBe('drawing')

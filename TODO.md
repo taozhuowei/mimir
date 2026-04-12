@@ -141,16 +141,18 @@ server/themes/
 - [~] 新建 `app/src/stores/theme.ts`：已支持加载当前主题与读取主题资源；`switchTheme()` 与完整切换能力待补齐
 - [ ] 将 `constants.ts` 中的图片/图标路径改为从 `theme store` 动态获取（拼接主题 ID）
 - [~] 将 `app/src/styles/global.css` 中的颜色硬编码替换为 CSS 变量（`--color-bg-primary` 等）；主题切换时动态注入 CSS 变量值待补齐
-- [~] 新增首页设置 UI 入口：右上角显示 theme 内设置图标，仅首页可切换牌阵（`single_card` / `three_card` / `cross_spread`），运行时立即生效
+- [x] 新增首页设置 UI 入口：右上角显示 theme 内设置图标，仅首页可切换牌阵（`single_card` / `three_card` / `cross_spread`），运行时立即生效
 - [ ] 小程序端：通过 `page.setData` 更新 CSS 变量（适配小程序 CSS 变量注入方式）
 - [x] 抽离通用牌阵布局引擎：从 `DivinationOverlay.vue` 提取牌阵位置/尺寸计算，统一支持 `single_card`、`three_card`、`cross_spread`，供抽牌态与结果态复用
 - [x] **重构**：将 `DivinationOverlay.vue` 中全部 GSAP 动画逻辑抽离至 `app/src/composables/use_overlay_animation.ts`，stage-container 高度改由 GSAP 控制（删除 CSS height transition）
+- [~] **继续重构**：已进一步拆分 `use_overlay_controller.ts`、`use_result_panel_controller.ts`、`overlay_animations/`、`overlay_phase_registry.ts`、`overlay_progress_model.ts`、`overlay_progress_presenter.ts`、`overlay_timeline.ts`、`reading/`、`typing/typewriter_model.ts`；`DivinationOverlay.vue` 已接入结果区显式高度、失败重试与独立进度模型，微信真机一致性验收待完成
 - [x] **修复**：`spread_layout.ts` 新增 `headerHeight` 参数，修正所有牌阵结果页居中公式，draw_stage 预对齐减少过渡位移（≤60px 均匀）
 - [x] **修复**：`single_card` 抽牌终点位置改为以屏幕几何中心为准，移除 `draw_stage` 额外上浮偏移
 - [x] **优化**：覆盖层卡牌仅保留统一尺寸图片显示，移除卡牌本体装饰；同步去除洗牌尾部回弹、切牌放大与抽牌前抖动
 - [x] **优化**：最终解读区全部文字改为打字机动效，`positive / negative` 结果增加对应着色
 - [x] **优化**：四阶段进度 icon 中前两枚做视觉尺寸补偿，并在抽牌结束后延迟约 `800ms` 再进入解读
 - [x] **修复**：移除 `DivinationOverlay.vue` 中会触发微信组件 `wxss` 报错的标签选择器，恢复顶部四阶段 icon 与卡牌正面显示；同步重排抽牌阶段镜头跟随、牌堆退出与下坠时序
+- [ ] **验收**：微信真机一致性检测待执行，需覆盖安全区、卡牌尺寸、位置、阶段动画、翻牌放大、结果面板弹出与解读可见性
 - [x] **开发工具**：仅 `dev` 模式显示悬浮 Dev Tools，支持阶段重放、慢放、快进、暂停、继续（2025-04-11 完成）
 - [x] **工程配置**：细化 `dev / build / start:prod` 脚本，补齐生产构建压缩、混淆与服务端产物启动流程
 - [x] **测试**：补充打字机组件、结果色调类名、覆盖层动画调试与 `800ms` 解读延迟的自动化测试

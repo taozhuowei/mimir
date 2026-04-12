@@ -4,6 +4,7 @@
 
 <script setup lang="ts">
 import { onMounted, onUnmounted, ref, watch } from 'vue'
+import { createTypewriterModel } from '../utils/typing/typewriter_model'
 
 const props = withDefaults(defineProps<{
   text: string
@@ -18,71 +19,47 @@ const props = withDefaults(defineProps<{
 
 const displayed_text = ref('')
 
-let start_timer: ReturnType<typeof setTimeout> | null = null
-let tick_timer: ReturnType<typeof setTimeout> | null = null
+// Create typewriter model
+let typewriterModel: ReturnType<typeof createTypewriterModel> | null = null
 
-function clearTimers() {
-  if (start_timer) {
-    clearTimeout(start_timer)
-    start_timer = null
-  }
-
-  if (tick_timer) {
-    clearTimeout(tick_timer)
-    tick_timer = null
-  }
+function createModel() {
+  typewriterModel = createTypewriterModel(
+    {
+      text: props.text,
+      startDelay: props.startDelay,
+      charInterval: props.charInterval,
+      instant: props.instant,
+    },
+    {
+      onUpdate: (text) => {
+        displayed_text.value = text
+      },
+      onComplete: () => {
+        // Animation complete - no-op since we update via onUpdate
+      },
+    },
+  )
 }
 
-function prefersReducedMotion(): boolean {
-  // #ifdef H5
-  if (typeof window !== 'undefined' && typeof window.matchMedia === 'function') {
-    return window.matchMedia('(prefers-reduced-motion: reduce)').matches
-  }
-  // #endif
-
-  return false
-}
-
-function renderText() {
-  clearTimers()
-
-  const full_text = props.text ?? ''
-  if (!full_text) {
-    displayed_text.value = ''
-    return
-  }
-
-  if (props.instant || prefersReducedMotion()) {
-    displayed_text.value = full_text
-    return
-  }
-
-  displayed_text.value = ''
-  let index = 0
-
-  const step = () => {
-    index += 1
-    displayed_text.value = full_text.slice(0, index)
-
-    if (index < full_text.length) {
-      tick_timer = setTimeout(step, props.charInterval)
-    }
-  }
-
-  start_timer = setTimeout(step, props.startDelay)
-}
-
+// Watch for prop changes and restart animation
 watch(
   () => [props.text, props.startDelay, props.charInterval, props.instant],
-  () => { renderText() },
+  () => {
+    if (typewriterModel) {
+      typewriterModel.stop()
+    }
+    createModel()
+    typewriterModel?.start()
+  },
 )
 
 onMounted(() => {
-  renderText()
+  createModel()
+  typewriterModel?.start()
 })
 
 onUnmounted(() => {
-  clearTimers()
+  typewriterModel?.stop()
 })
 </script>
 

@@ -1,20 +1,20 @@
 <template>
-  <view class="divination-overlay" :class="{ 'show-results': showResults, 'is-wide': isWide }" :style="overlayVarsStyle">
-    <view class="overlay-bg" :style="bgStyle" />
+  <view class="divination-overlay" :class="{ 'show-results': controller.showResults.value, 'is-wide': isWide }" :style="controller.overlayVarsStyle.value">
+    <view class="overlay-bg" :style="controller.bgStyle.value" />
 
     <!-- Animation area: always present, shrinks to top/left after results shown -->
-    <view class="stage-container" :style="stageContainerStyle">
-      <view class="progress-header" :style="headerStyle">
+    <view class="stage-container" :style="controller.stageContainerStyle.value">
+      <view class="progress-header" :style="controller.headerStyle.value">
         <view class="phase-progress-bar">
           <view
-            v-for="(step, idx) in phaseSteps"
+            v-for="(step, idx) in controller.phaseSteps.value"
             :key="step.phase"
             class="phase-step"
           >
             <image
               class="phase-step-icon"
               :class="{ 'phase-step-icon-compensated': idx < 2 }"
-              :src="idx <= activePhaseIndex ? themeStore.getUiAsset(step.activeIcon) || themeStore.getUiAsset(step.inactiveIcon) : themeStore.getUiAsset(step.inactiveIcon) || themeStore.getUiAsset(step.activeIcon)"
+              :src="step.isActive || step.isCompleted ? themeStore.getUiAsset(getPhaseStep(step.phase)?.activeIcon || '') || themeStore.getUiAsset(getPhaseStep(step.phase)?.inactiveIcon || '') : themeStore.getUiAsset(getPhaseStep(step.phase)?.inactiveIcon || '') || themeStore.getUiAsset(getPhaseStep(step.phase)?.activeIcon || '')"
               mode="aspectFit"
             />
           </view>
@@ -22,68 +22,68 @@
       </view>
 
       <!-- Animation stage: :style drives GSAP y-lift animation -->
-      <view class="stage" :style="stageStyle">
+      <view class="stage" :style="controller.stageStyle.value">
         <!-- Deck container: :style drives shuffle shake animation -->
-        <view class="deck-layer stage-pointer" :style="deckCtnStyle">
+        <view class="deck-layer stage-pointer" :style="controller.deckCtnStyle.value">
           <!-- Initial deck (12 stacked cards): style driven by GSAP state object -->
           <image
             v-for="i in 12"
             :key="`m${i}`"
             class="tarot-card stack-card initial-deck"
-            :src="cardBack"
-            :style="initialsStyle[i-1]"
+            :src="controller.cardBack.value"
+            :style="controller.initialsStyle.value[i-1]"
           />
 
           <!-- Shuffle left half: v-show + style driven by GSAP state object -->
           <image
             v-for="i in 6"
             :key="`l${i}`"
-            v-show="leftsVisible"
+            v-show="controller.leftsVisible.value"
             class="tarot-card stack-card"
-            :src="cardBack"
-            :style="leftsStyle[i-1]"
+            :src="controller.cardBack.value"
+            :style="controller.leftsStyle.value[i-1]"
           />
           <!-- Shuffle right half: v-show + style driven by GSAP state object -->
           <image
             v-for="i in 6"
             :key="`r${i}`"
-            v-show="rightsVisible"
+            v-show="controller.rightsVisible.value"
             class="tarot-card stack-card"
-            :src="cardBack"
-            :style="rightsStyle[i-1]"
+            :src="controller.cardBack.value"
+            :style="controller.rightsStyle.value[i-1]"
           />
         </view>
 
         <!-- Cut cards: v-show + style driven by GSAP state object; centerStyle uses calc(-50%+Xpx) for centering -->
-        <image v-show="cutTopVisible" class="tarot-card stage-center cut-t stage-pointer" :src="cardBack" :style="cutTopStyle" />
-        <image v-show="cutMidVisible" class="tarot-card stage-center cut-m stage-pointer" :src="cardBack" :style="cutMidStyle" />
-        <image v-show="cutBotVisible" class="tarot-card stage-center cut-b stage-pointer" :src="cardBack" :style="cutBotStyle" />
+        <image v-show="controller.cutTopVisible.value" class="tarot-card stage-center cut-t stage-pointer" :src="controller.cardBack.value" :style="controller.cutTopStyle.value" />
+        <image v-show="controller.cutMidVisible.value" class="tarot-card stage-center cut-m stage-pointer" :src="controller.cardBack.value" :style="controller.cutMidStyle.value" />
+        <image v-show="controller.cutBotVisible.value" class="tarot-card stage-center cut-b stage-pointer" :src="controller.cardBack.value" :style="controller.cutBotStyle.value" />
 
         <view class="draw-container">
           <!-- Drawn cards: v-show + style driven by GSAP state object; centerStyle uses calc(-50%+Xpx) for centering -->
             <view
-              v-for="(_, idx) in drawsVisible"
+              v-for="(_, idx) in controller.drawsVisible.value"
               :key="idx"
-              v-show="drawsVisible[idx]"
+              v-show="controller.drawsVisible.value[idx]"
               class="draw-wrapper stage-center stage-pointer"
-              :style="[drawsStyle[idx], drawsSizeStyle[idx]]"
+              :style="[controller.drawsStyle.value[idx], controller.drawsSizeStyle.value[idx]]"
             >
             <!-- 3D flip inner: style driven by GSAP rotationY -->
-            <view class="card-3d-inner stage-pointer" :style="[innersStyle[idx], drawsSizeStyle[idx]]">
-              <image class="tarot-card face-back" :src="cardBack" />
+            <view class="card-3d-inner stage-pointer" :style="[controller.innersStyle.value[idx], controller.drawsSizeStyle.value[idx]]">
+              <image class="tarot-card face-back" :src="controller.cardBack.value" />
               <view class="tarot-card face-front">
-                <image class="front-img" :src="getCardImg(idx)" />
+                <image class="front-img" :src="controller.getCardImg(idx)" />
               </view>
             </view>
 
-            <!-- Upright/Reversed badge, fades in after flip -->
+            <!-- Upright/Reversed badge, fades in after results shown -->
             <view
-              v-if="showResults"
+              v-if="controller.showResults.value"
               class="position-badge"
               :class="tarotStore.drawnCards[idx]?.position ?? 'upright'"
             >
               <text class="badge-label font-display">
-                {{ tarotStore.drawnCards[idx]?.position === 'reversed' ? overlay_text.position_reversed : overlay_text.position_upright }}
+                {{ tarotStore.drawnCards[idx]?.position === 'reversed' ? controller.overlayText.positionReversed : controller.overlayText.positionUpright }}
               </text>
             </view>
           </view>
@@ -91,17 +91,17 @@
       </view>
 
       <!-- Bottom action area: :style drives entry animation -->
-      <view class="action-footer" :style="footerStyle">
+      <view class="action-footer" :style="controller.footerStyle.value">
         <view class="actions">
           <!-- Show restart button after results are displayed -->
-          <template v-if="showResults">
-            <view class="btn btn-primary" @click="handleRestart">{{ overlay_text.restart }}</view>
+          <template v-if="controller.showResults.value">
+            <view class="btn btn-primary" @click="handleRestart">{{ controller.overlayText.restart }}</view>
           </template>
 
-          <template v-else-if="phase === 'revealing'">
+          <template v-else-if="controller.phase.value === 'revealing'">
             <!-- Text hint + animated dots, shown while waiting for reading result -->
             <view class="revealing-hint font-display">
-              {{ overlay_text.revealing }}
+              {{ controller.overlayText.revealing }}
               <view class="thinking-dots">
                 <text class="dot dot-1">.</text>
                 <text class="dot dot-2">.</text>
@@ -109,15 +109,21 @@
               </view>
             </view>
           </template>
+
+          <!-- Retry button for failed reading -->
+          <template v-else-if="controller.isReadingFailed.value">
+            <view class="btn btn-primary" @click="handleRetry">{{ '重试' }}</view>
+          </template>
         </view>
       </view>
 
+      <!-- Dev Tools -->
       <view v-if="isDev" class="dev-tools">
         <text class="dev-tools-title">Dev Tools</text>
 
         <view class="dev-tools-row">
           <view
-            v-for="step in phaseSteps"
+            v-for="step in phaseStepsForDev"
             :key="`replay-${step.phase}`"
             class="dev-tools-chip"
             @click="handleReplay(step.phase)"
@@ -131,7 +137,7 @@
             v-for="speed in playbackRates"
             :key="`speed-${speed}`"
             class="dev-tools-chip"
-            :class="{ active: playbackRate === speed }"
+            :class="{ active: controller.playbackRate.value === speed }"
             @click="handlePlaybackRate(speed)"
           >
             {{ speed }}x
@@ -147,20 +153,20 @@
           </view>
           <view
             class="dev-tools-chip"
-            :class="{ disabled: !isPaused }"
-            @click="isPaused && handleStepBackward()"
+            :class="{ disabled: !controller.isPaused.value }"
+            @click="controller.isPaused.value && handleStepBackward()"
           >
             ←
           </view>
           <view
             class="dev-tools-chip"
-            :class="{ disabled: !isPaused }"
-            @click="isPaused && handleStepForward()"
+            :class="{ disabled: !controller.isPaused.value }"
+            @click="controller.isPaused.value && handleStepForward()"
           >
             →
           </view>
           <text class="dev-tools-status">
-            {{ isPaused ? 'Paused' : `Running ${playbackRate}x` }}
+            {{ controller.isPaused.value ? 'Paused' : `Running ${controller.playbackRate.value}x` }}
           </text>
         </view>
       </view>
@@ -168,13 +174,31 @@
 
     <!-- Result area: slides in from bottom/right after results shown -->
     <scroll-view
-      v-if="showResults"
+      v-if="controller.showResults.value"
       class="result-zone"
+      :style="controller.resultZoneStyle.value"
       scroll-y
       enable-flex
     >
+      <!-- Loading state -->
+      <view v-if="controller.isReadingLoading.value" class="result-loading">
+        <text class="loading-text">{{ controller.overlayText.revealing }}</text>
+        <view class="thinking-dots">
+          <text class="dot dot-1">.</text>
+          <text class="dot dot-2">.</text>
+          <text class="dot dot-3">.</text>
+        </view>
+      </view>
+
+      <!-- Error state -->
+      <view v-else-if="controller.isReadingFailed.value" class="result-error">
+        <text class="error-text">{{ controller.readingErrorMessage.value }}</text>
+        <view class="btn btn-primary" @click="handleRetry">{{ '重试' }}</view>
+      </view>
+
+      <!-- Success state -->
       <ResultPanel
-        v-if="tarotStore.readingResult"
+        v-else-if="tarotStore.readingResult"
         :reading-result="tarotStore.readingResult"
         :question="tarotStore.currentQuestion"
         @restart="handleRestart"
@@ -205,11 +229,11 @@ import { useTarotStore } from '../stores/tarot'
 import { useThemeStore } from '../stores/theme'
 import ResultPanel from './ResultPanel.vue'
 import { getSpreadCardCount } from '../utils/spread_layout'
-import { useOverlayAnimation } from '../composables/use_overlay_animation'
+import { useOverlayController } from '../composables/use_overlay_controller'
+import { getPhaseStep, PHASE_STEPS } from '../utils/overlay_phase_registry'
+import type { OverlayPhase } from '../utils/overlay_animations/types'
 
 // Emits definition
-// complete - triggered when divination flow completes (draw animation ends, result about to show)
-// restart  - triggered when user clicks restart
 const emit = defineEmits<{
   (event: 'complete'): void
   (event: 'restart'): void
@@ -220,58 +244,20 @@ const themeStore = useThemeStore()
 const isDev = import.meta.env.DEV
 const playbackRates = [0.25, 0.5, 1, 2] as const
 
+// Wide screen detection ref
+const isWide = ref(false)
+
 // Runtime card count from store spread kind
 const cardCount = computed(() => getSpreadCardCount(tarotStore.spreadKind))
 
-/**
- * Current phase icon mapping
- * Wands=shuffle, Swords=cut, Cups=draw, Pentacles=interpret.
- */
-const phaseSteps = [
-  {
-    phase: 'shuffling',
-    label: '洗牌',
-    activeIcon: 'icon_wands',
-    inactiveIcon: 'icon_wands_inactive',
-  },
-  {
-    phase: 'cutting',
-    label: '切牌',
-    activeIcon: 'icon_swords',
-    inactiveIcon: 'icon_swords_inactive',
-  },
-  {
-    phase: 'drawing',
-    label: '抽牌',
-    activeIcon: 'icon_cups',
-    inactiveIcon: 'icon_cups_inactive',
-  },
-  {
-    phase: 'revealing',
-    label: '解读',
-    activeIcon: 'icon_pentacles',
-    inactiveIcon: 'icon_pentacles_inactive',
-  },
-] as const
+// Phase steps for dev tools
+const phaseStepsForDev = PHASE_STEPS.map(s => ({
+  phase: s.phase,
+  label: s.label,
+}))
 
-// Index of the current phase in phaseSteps (0=shuffling, 1=cutting, 2=drawing, 3=revealing)
-const activePhaseIndex = computed(() =>
-  phaseSteps.findIndex(s => s.phase === phase.value)
-)
-
-// User-facing copy strings.
-const overlay_text = {
-  position_reversed: '逆',
-  position_upright: '正',
-  restart: '再占一次',
-  revealing: '神谕显现中',
-}
-
-// Wide screen detection ref (will be updated by composable)
-const isWide = ref(false)
-
-// Initialize animation composable
-const anim = useOverlayAnimation({
+// Initialize controller
+const controller = useOverlayController({
   tarotStore,
   themeStore,
   isWide,
@@ -279,80 +265,37 @@ const anim = useOverlayAnimation({
   emit,
 })
 
-// Destructure all return values
-const {
-  stageContainerStyle,
-  bgStyle,
-  stageStyle,
-  headerStyle,
-  footerStyle,
-  deckCtnStyle,
-  initialsStyle,
-  leftsStyle,
-  rightsStyle,
-  leftsVisible,
-  rightsVisible,
-  cutTopStyle,
-  cutMidStyle,
-  cutBotStyle,
-  cutTopVisible,
-  cutMidVisible,
-  cutBotVisible,
-  drawsStyle,
-  drawsSizeStyle,
-  innersStyle,
-  drawsVisible,
-  showResults,
-  phase,
-  overlayVarsStyle,
-  getCardImg,
-  cardBack,
-  playbackRate,
-  isPaused,
-  setPlaybackRate,
-  pauseAnimations,
-  resumeAnimations,
-  stepForward,
-  stepBackward,
-  seek,
-  replayFromPhase,
-  restart,
-  // Note: entryAnimationComplete, layoutCardWidth, layoutCardHeight available if needed
-} = anim
-
 function handlePlaybackRate(rate: number) {
-  setPlaybackRate(rate)
+  controller.setPlaybackRate(rate)
 }
 
 function handlePause() {
-  pauseAnimations()
+  controller.pauseAnimations()
 }
 
 function handleResume() {
-  resumeAnimations()
+  controller.resumeAnimations()
 }
 
 function handleStepBackward() {
-  stepBackward()
+  controller.stepBackward()
 }
 
 function handleStepForward() {
-  stepForward()
+  controller.stepForward()
 }
 
-function handleSeek(event: Event) {
-  const target = event.target as HTMLInputElement
-  const value = parseFloat(target.value)
-  seek(value)
-}
-
-function handleReplay(targetPhase: typeof phaseSteps[number]['phase']) {
-  replayFromPhase(targetPhase)
+function handleReplay(targetPhase: OverlayPhase) {
+  controller.replayFromPhase(targetPhase)
 }
 
 function handleRestart() {
-  restart()
+  controller.restart()
   emit('restart')
+}
+
+function handleRetry() {
+  void controller.retryReading()
 }
 </script>
 
@@ -764,6 +707,24 @@ function handleRestart() {
 @keyframes dot-pulse {
   0%, 80%, 100% { opacity: 0.2; transform: translateY(0); }
   40% { opacity: 1; transform: translateY(-4rpx); }
+}
+
+/* Result zone states */
+.result-loading,
+.result-error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-8);
+  gap: var(--space-4);
+}
+
+.loading-text,
+.error-text {
+  font-size: var(--text-base);
+  color: var(--color-text-secondary);
+  text-align: center;
 }
 
 /* #ifdef H5 */
