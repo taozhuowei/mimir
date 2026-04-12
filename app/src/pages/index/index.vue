@@ -100,7 +100,7 @@ import { gsap } from 'gsap'
 import DivinationOverlay from '../../components/DivinationOverlay.vue'
 import { useTarotStore } from '../../stores/tarot'
 import { useThemeStore } from '../../stores/theme'
-import { CARD_BACK_IMAGE } from '../../constants'
+import { CARD_BACK_IMAGE, SETTINGS_ICON_URL } from '../../constants'
 import type { SpreadKind } from '../../utils/spread_layout'
 
 const tarotStore = useTarotStore()
@@ -110,7 +110,7 @@ const themeStore = useThemeStore()
 const cardBack = computed(() => themeStore.cardBackImage || CARD_BACK_IMAGE)
 
 // Settings icon from theme or fallback to default
-const settingsIconUrl = computed(() => themeStore.getUiAsset('icon_settings') || '/static/themes/golden_dawn/ui/icon-settings.svg')
+const settingsIconUrl = computed(() => themeStore.getUiAsset('icon_settings') || SETTINGS_ICON_URL)
 const isIdle = computed(() => tarotStore.isIdle)
 const cardsLoadError = computed(() => tarotStore.cardsLoadError)
 function retryLoadCards() { tarotStore.loadCards() }

@@ -61,10 +61,12 @@ export function useOverlayAnimation(deps: {
     `--card-width: ${layoutCardWidth.value}px; --card-height: ${layoutCardHeight.value}px`
   )
 
+  // ---- Private Master Timeline ----
+  // All animations are bound to this timeline for centralized control
+  const masterTimeline = gsap.timeline({ paused: false })
+
   // Track entry animation completion to prevent shuffle CTA competition
-  let entryTimeline: gsap.core.Timeline | null = null
   let readingRequestTimer: ReturnType<typeof setTimeout> | null = null
-  let phaseAdvanceTimer: ReturnType<typeof setTimeout> | null = null
 
   // Card back image
   const cardBack = computed(() => deps.themeStore.cardBackImage || CARD_BACK_IMAGE)
@@ -256,26 +258,43 @@ export function useOverlayAnimation(deps: {
     }
   }
 
-  function clearPhaseAdvanceTimer() {
-    if (phaseAdvanceTimer !== null) {
-      clearTimeout(phaseAdvanceTimer)
-      phaseAdvanceTimer = null
-    }
-  }
-
   function setPlaybackRate(rate: number) {
     playbackRate.value = rate
-    gsap.globalTimeline.timeScale(rate)
+    masterTimeline.timeScale(rate)
   }
 
   function pauseAnimations() {
     isPaused.value = true
-    gsap.globalTimeline.pause()
+    masterTimeline.pause()
   }
 
   function resumeAnimations() {
     isPaused.value = false
-    gsap.globalTimeline.resume()
+    masterTimeline.resume()
+  }
+
+  /**
+   * Step forward by one frame (1/60s)
+   */
+  function stepForward() {
+    const currentTime = masterTimeline.time()
+    masterTimeline.time(currentTime + 1 / 60)
+  }
+
+  /**
+   * Step backward by one frame (1/60s)
+   */
+  function stepBackward() {
+    const currentTime = masterTimeline.time()
+    masterTimeline.time(Math.max(0, currentTime - 1 / 60))
+  }
+
+  /**
+   * Seek to a specific time or progress
+   * @param position - Time in seconds or progress (0-1) with 'progress' label
+   */
+  function seek(position: number | string) {
+    masterTimeline.seek(position)
   }
 
   function resetShuffleVisualState() {
@@ -401,13 +420,11 @@ export function useOverlayAnimation(deps: {
 
   function interruptCurrentAnimation() {
     clearReadingRequestTimer()
-    clearPhaseAdvanceTimer()
     resumeAnimations()
 
-    if (entryTimeline) {
-      entryTimeline.kill()
-      entryTimeline = null
-    }
+    // Clear master timeline and kill all active tweens
+    masterTimeline.clear()
+    masterTimeline.time(0)
 
     gsap.killTweensOf([
       _bg,
@@ -441,12 +458,7 @@ export function useOverlayAnimation(deps: {
   }
 
   function settleEntryAnimation() {
-    if (entryTimeline) {
-      entryTimeline.progress(1)
-      entryTimeline.kill()
-      entryTimeline = null
-    }
-
+    // Jump entry animation to end state
     _bg.opacity = 1
     refreshBg()
 
@@ -528,6 +540,9 @@ export function useOverlayAnimation(deps: {
         refreshInitials()
       })
       .to(_initials, { scaleY: 1, duration: 0.2, ease: 'power1.out' })
+
+    // Add to master timeline
+    masterTimeline.add(timeline)
   }
 
   // ---- Cut animation ----
@@ -584,6 +599,9 @@ export function useOverlayAnimation(deps: {
         _initials.forEach(s => { s.opacity = 1 })
         refreshInitials()
       })
+
+    // Add to master timeline
+    masterTimeline.add(timeline)
   }
 
   // ---- Draw animation ----
@@ -595,6 +613,21 @@ export function useOverlayAnimation(deps: {
     const { stageHeight, cardHeight, targetX, targetY, liftY } = getDrawStageLayout()
 
     const preRotations = Array.from({ length: deps.cardCount.value }, () => (Math.random() - 0.5) * 15)
+    const drawStartTime = 0.88
+    const perCardDelay = 0.34
+    const pullDuration = 0.18
+    const fallDuration = 0.78
+    const reboundDuration = 0.34
+    const settleDuration = 0.82
+    const stageFollowStart = drawStartTime + pullDuration - 0.02
+    const deckExitStart = stageFollowStart + 0.06
+    const lastCardLandingTime = drawStartTime
+      + (deps.cardCount.value - 1) * perCardDelay
+      + pullDuration
+      + fallDuration
+      + reboundDuration
+      + settleDuration
+    const alignTime = lastCardLandingTime + 0.28
 
     const timeline = gsap.timeline({
       onUpdate: () => {
@@ -607,31 +640,84 @@ export function useOverlayAnimation(deps: {
     })
 
     timeline
-      .to(_stage, { y: -liftY, duration: 1.8, ease: 'power2.inOut' }, '+=0.2')
-      .to(_initials, { opacity: 0, y: (i: number) => -cardHeight * 0.4 - i * 0.8, scale: 0.8, duration: 0.6, ease: 'power1.in' }, '<0.2')
+      .to(_stage, { y: -liftY * 0.84, duration: 0.92, ease: 'power2.inOut' }, stageFollowStart)
+      .to(_stage, { y: -liftY, duration: 0.58, ease: 'power3.out' }, '>')
+      .to(
+        _initials,
+        {
+          opacity: 0,
+          y: (i: number) => -cardHeight * 1.12 - i * 1.6,
+          scale: 0.74,
+          rotation: (i: number) => (i - 5.5) * 0.7,
+          duration: 1.08,
+          stagger: 0.018,
+          ease: 'power2.in',
+        },
+        deckExitStart,
+      )
 
     Array.from({ length: deps.cardCount.value }, (_, i) => i).forEach((index) => {
       timeline.add(() => {
         Object.assign(_draws[index], {
           x: 0,
-          y: index === 0 ? -cardHeight * 0.3 : -stageHeight,
-          rotation: preRotations[index],
-          scale: 1,
+          y: index === 0 ? 0 : -stageHeight,
+          rotation: 0,
+          scale: 0.98,
           opacity: 1,
           zIndex: 20 - index,
         })
         const newVisible = drawsVisible.value.map((v, i) => (i === index ? true : v))
         drawsVisible.value = newVisible
         refreshDraws()
-      }, 1 + index * 0.3)
+      }, drawStartTime + index * perCardDelay)
 
       timeline
-        .to(_draws[index], { x: targetX[index], y: targetY[index] + cardHeight * 0.4, duration: 0.7, ease: 'power2.in' }, '>')
-        .to(_draws[index], { y: targetY[index] + cardHeight * 0.56, duration: 0.4, ease: 'power1.out' }, '>')
-        .to(_draws[index], { y: targetY[index], duration: 1.5, ease: 'power3.out' }, '>')
+        .to(
+          _draws[index],
+          {
+            x: targetX[index] * 0.08,
+            y: -cardHeight * 0.18,
+            rotation: preRotations[index],
+            scale: 1.03,
+            duration: pullDuration,
+            ease: 'power2.out',
+          },
+          '>',
+        )
+        .to(
+          _draws[index],
+          {
+            x: targetX[index],
+            y: targetY[index] + cardHeight * 0.86,
+            duration: fallDuration,
+            ease: 'power2.in',
+          },
+          '>',
+        )
+        .to(
+          _draws[index],
+          {
+            y: targetY[index] + cardHeight * 0.18,
+            rotation: preRotations[index] * 0.3,
+            scale: 0.98,
+            duration: reboundDuration,
+            ease: 'power2.out',
+          },
+          '>',
+        )
+        .to(
+          _draws[index],
+          {
+            y: targetY[index],
+            rotation: 0,
+            scale: 1,
+            duration: settleDuration,
+            ease: 'power3.out',
+          },
+          '>',
+        )
     })
 
-    const alignTime = 1 + (deps.cardCount.value - 1) * 0.3 + 0.7 + 0.4 + 1.5 + 0.5
     const flipDuration = 1 + (deps.cardCount.value - 1) * 0.4
     const revealDelay = AUTO_REVEAL_DELAY_MS / 1000
     const revealingStart = alignTime + 1.2 + flipDuration + 0.1 + revealDelay
@@ -662,6 +748,9 @@ export function useOverlayAnimation(deps: {
       .add(() => { void finish() }, finishTime)
 
     scheduleReadingRequest()
+
+    // Add to master timeline
+    masterTimeline.add(timeline)
   }
 
   function playRevealOnly() {
@@ -731,6 +820,9 @@ export function useOverlayAnimation(deps: {
       .add(() => { void finish() }, finishTime)
 
     scheduleReadingRequest()
+
+    // Add to master timeline
+    masterTimeline.add(timeline)
   }
 
   function replayFromPhase(targetPhase: OverlayPhase) {
@@ -783,18 +875,18 @@ export function useOverlayAnimation(deps: {
     const targetY = layout.cards.map(c => c.y)
 
     if (showResults.value) {
-      gsap.to(_stage, { y: 0, duration: 0.6, ease: 'power2.out', onUpdate: refreshStage })
+      masterTimeline.to(_stage, { y: 0, duration: 0.6, ease: 'power2.out', onUpdate: refreshStage }, 0)
     }
 
     _draws.forEach((draw, i) => {
-      gsap.to(draw, {
+      masterTimeline.to(draw, {
         x: targetX[i],
         y: targetY[i],
         duration: 0.6,
         ease: 'power2.out',
         overwrite: 'auto',
         onUpdate: refreshDraws,
-      })
+      }, 0)
     })
   }
 
@@ -816,12 +908,12 @@ export function useOverlayAnimation(deps: {
     const { windowHeight } = uni.getWindowInfo()
     if (!deps.isWide.value) {
       const heightObj = { value: stageContainerHeightPx.value }
-      gsap.to(heightObj, {
+      masterTimeline.to(heightObj, {
         value: windowHeight * 0.42,
         duration: 0.6,
         ease: 'power2.inOut',
         onUpdate: () => { stageContainerHeightPx.value = heightObj.value },
-      })
+      }, 0)
     }
     showResults.value = true
     nextTick(() => { updateLayout() })
@@ -834,14 +926,9 @@ export function useOverlayAnimation(deps: {
       const entryDrop = cardHeight * 4
       entryAnimationComplete.value = false
 
-      entryTimeline = gsap.timeline({
+      const entryTimeline = gsap.timeline({
         onComplete: () => {
           entryAnimationComplete.value = true
-          entryTimeline = null
-          phaseAdvanceTimer = setTimeout(() => {
-            phaseAdvanceTimer = null
-            playShuffle()
-          }, ENTRY_TO_SHUFFLE_DELAY_MS)
         },
       })
 
@@ -882,6 +969,14 @@ export function useOverlayAnimation(deps: {
         ease: 'power2.out',
         onUpdate: refreshFooter,
       }, 0.6)
+
+      // Use timeline callback instead of setTimeout for phase advancement
+      entryTimeline.call(() => {
+        playShuffle()
+      }, [], `+=${ENTRY_TO_SHUFFLE_DELAY_MS / 1000}`)
+
+      // Add entry timeline to master timeline
+      masterTimeline.add(entryTimeline)
     })
   }
 
@@ -890,7 +985,9 @@ export function useOverlayAnimation(deps: {
     resumeAnimations()
     setPlaybackRate(1)
     clearReadingRequestTimer()
-    clearPhaseAdvanceTimer()
+    // Clear master timeline
+    masterTimeline.clear()
+    masterTimeline.time(0)
     showResults.value = false
   }
 
@@ -914,13 +1011,12 @@ export function useOverlayAnimation(deps: {
 
   onUnmounted(() => {
     clearReadingRequestTimer()
-    clearPhaseAdvanceTimer()
     resumeAnimations()
     setPlaybackRate(1)
     if (_resizeHandler) uni.offWindowResize(_resizeHandler)
-    if (entryTimeline) {
-      entryTimeline.kill()
-    }
+    // Clear master timeline
+    masterTimeline.clear()
+    masterTimeline.kill()
     gsap.killTweensOf([
       _bg,
       _stage,
@@ -974,6 +1070,9 @@ export function useOverlayAnimation(deps: {
     setPlaybackRate,
     pauseAnimations,
     resumeAnimations,
+    stepForward,
+    stepBackward,
+    seek,
     replayFromPhase,
     restart,
   }

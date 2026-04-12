@@ -24,7 +24,7 @@
       <!-- Animation stage: :style drives GSAP y-lift animation -->
       <view class="stage" :style="stageStyle">
         <!-- Deck container: :style drives shuffle shake animation -->
-        <view class="deck-layer" :style="deckCtnStyle">
+        <view class="deck-layer stage-pointer" :style="deckCtnStyle">
           <!-- Initial deck (12 stacked cards): style driven by GSAP state object -->
           <image
             v-for="i in 12"
@@ -55,21 +55,21 @@
         </view>
 
         <!-- Cut cards: v-show + style driven by GSAP state object; centerStyle uses calc(-50%+Xpx) for centering -->
-        <image v-show="cutTopVisible" class="tarot-card stage-center cut-t" :src="cardBack" :style="cutTopStyle" />
-        <image v-show="cutMidVisible" class="tarot-card stage-center cut-m" :src="cardBack" :style="cutMidStyle" />
-        <image v-show="cutBotVisible" class="tarot-card stage-center cut-b" :src="cardBack" :style="cutBotStyle" />
+        <image v-show="cutTopVisible" class="tarot-card stage-center cut-t stage-pointer" :src="cardBack" :style="cutTopStyle" />
+        <image v-show="cutMidVisible" class="tarot-card stage-center cut-m stage-pointer" :src="cardBack" :style="cutMidStyle" />
+        <image v-show="cutBotVisible" class="tarot-card stage-center cut-b stage-pointer" :src="cardBack" :style="cutBotStyle" />
 
         <view class="draw-container">
           <!-- Drawn cards: v-show + style driven by GSAP state object; centerStyle uses calc(-50%+Xpx) for centering -->
-          <view
-            v-for="(_, idx) in drawsVisible"
-            :key="idx"
-            v-show="drawsVisible[idx]"
-            class="draw-wrapper stage-center"
-            :style="[drawsStyle[idx], drawsSizeStyle[idx]]"
-          >
+            <view
+              v-for="(_, idx) in drawsVisible"
+              :key="idx"
+              v-show="drawsVisible[idx]"
+              class="draw-wrapper stage-center stage-pointer"
+              :style="[drawsStyle[idx], drawsSizeStyle[idx]]"
+            >
             <!-- 3D flip inner: style driven by GSAP rotationY -->
-            <view class="card-3d-inner" :style="[innersStyle[idx], drawsSizeStyle[idx]]">
+            <view class="card-3d-inner stage-pointer" :style="[innersStyle[idx], drawsSizeStyle[idx]]">
               <image class="tarot-card face-back" :src="cardBack" />
               <view class="tarot-card face-front">
                 <image class="front-img" :src="getCardImg(idx)" />
@@ -101,7 +101,12 @@
           <template v-else-if="phase === 'revealing'">
             <!-- Text hint + animated dots, shown while waiting for reading result -->
             <view class="revealing-hint font-display">
-              {{ overlay_text.revealing }}<span class="thinking-dots"><span>.</span><span>.</span><span>.</span></span>
+              {{ overlay_text.revealing }}
+              <view class="thinking-dots">
+                <text class="dot dot-1">.</text>
+                <text class="dot dot-2">.</text>
+                <text class="dot dot-3">.</text>
+              </view>
             </view>
           </template>
         </view>
@@ -139,6 +144,20 @@
           </view>
           <view class="dev-tools-chip" @click="handleResume">
             继续
+          </view>
+          <view
+            class="dev-tools-chip"
+            :class="{ disabled: !isPaused }"
+            @click="isPaused && handleStepBackward()"
+          >
+            ←
+          </view>
+          <view
+            class="dev-tools-chip"
+            :class="{ disabled: !isPaused }"
+            @click="isPaused && handleStepForward()"
+          >
+            →
           </view>
           <text class="dev-tools-status">
             {{ isPaused ? 'Paused' : `Running ${playbackRate}x` }}
@@ -199,7 +218,7 @@ const emit = defineEmits<{
 const tarotStore = useTarotStore()
 const themeStore = useThemeStore()
 const isDev = import.meta.env.DEV
-const playbackRates = [0.5, 1, 2] as const
+const playbackRates = [0.25, 0.5, 1, 2] as const
 
 // Runtime card count from store spread kind
 const cardCount = computed(() => getSpreadCardCount(tarotStore.spreadKind))
@@ -293,6 +312,9 @@ const {
   setPlaybackRate,
   pauseAnimations,
   resumeAnimations,
+  stepForward,
+  stepBackward,
+  seek,
   replayFromPhase,
   restart,
   // Note: entryAnimationComplete, layoutCardWidth, layoutCardHeight available if needed
@@ -308,6 +330,20 @@ function handlePause() {
 
 function handleResume() {
   resumeAnimations()
+}
+
+function handleStepBackward() {
+  stepBackward()
+}
+
+function handleStepForward() {
+  stepForward()
+}
+
+function handleSeek(event: Event) {
+  const target = event.target as HTMLInputElement
+  const value = parseFloat(target.value)
+  seek(value)
 }
 
 function handleReplay(targetPhase: typeof phaseSteps[number]['phase']) {
@@ -493,8 +529,7 @@ function handleRestart() {
   pointer-events: none;
 }
 
-.stage > view,
-.stage > image {
+.stage-pointer {
   pointer-events: auto;
 }
 
@@ -672,6 +707,11 @@ function handleRestart() {
   background: rgba(184, 148, 62, 0.1);
 }
 
+.dev-tools-chip.disabled {
+  opacity: 0.4;
+  pointer-events: none;
+}
+
 .dev-tools-status {
   font-size: 20rpx;
   color: var(--color-text-tertiary);
@@ -703,21 +743,23 @@ function handleRestart() {
   opacity: 0.9;
 }
 
-.thinking-dots span {
+.thinking-dots {
+  display: inline-flex;
+  gap: 2rpx;
+}
+
+.thinking-dots .dot {
   display: inline-block;
   animation: dot-pulse 1.4s infinite;
 }
 
-/* #ifdef H5 */
-.thinking-dots span:nth-child(2) { animation-delay: 0.2s; }
-.thinking-dots span:nth-child(3) { animation-delay: 0.4s; }
-/* #endif */
+.thinking-dots .dot-2 {
+  animation-delay: 0.2s;
+}
 
-/* #ifdef MP-WEIXIN */
-/* Mini program uses class names instead of nth-child */
-.thinking-dots .dot-2 { animation-delay: 0.2s; }
-.thinking-dots .dot-3 { animation-delay: 0.4s; }
-/* #endif */
+.thinking-dots .dot-3 {
+  animation-delay: 0.4s;
+}
 
 @keyframes dot-pulse {
   0%, 80%, 100% { opacity: 0.2; transform: translateY(0); }
