@@ -1,3 +1,5 @@
 {
-  "spreadKind": "single_card"
+  "spreadKind": "three_card",
+  "deckCount": 12,
+  "cutPileCount": 3
 }

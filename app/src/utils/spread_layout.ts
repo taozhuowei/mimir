@@ -1,12 +1,17 @@
 /**
  * Name: spread_layout
  * Purpose: compose spread card sizing and positioning into a single pure layout solver.
- * Reason: preserve the existing public API while allowing size and position logic to evolve independently.
- * Data flow: generic spread input flows in; sized and positioned cards flow out.
+ * Reason: preserve the existing public API while letting the envelope module own the
+ *   "max bounds during the entire flow" calculation as a single source of truth.
+ * Data flow: spread input flows in; sized + positioned cards (plus the envelope) flow out.
  */
 
 import { resolveOverlayCardPositions } from './overlay_card_positions'
-import { resolveOverlayCardSize, type OverlayLayoutType } from './overlay_card_size'
+import {
+  getSpreadEnvelopeRequirement,
+  resolveOverlayCardEnvelope,
+  type CardEnvelope,
+} from './overlay_card_envelope'
 import type {
   SpreadLayoutInput,
   SpreadLayoutResult,
@@ -20,6 +25,10 @@ export type {
   SpreadKind,
   SpreadScene,
 } from './overlay_layout_types'
+
+export interface SpreadLayoutResultWithEnvelope extends SpreadLayoutResult {
+  envelope: CardEnvelope
+}
 
 /**
  * Get the number of cards for a spread kind.
@@ -39,8 +48,9 @@ export function getSpreadCardCount(spreadKind: SpreadKind): number {
 
 /**
  * Resolve spread layout for given input parameters.
+ * Card sizing is derived from the spread envelope so that animations cannot overflow.
  */
-export function resolveSpreadLayout(input: SpreadLayoutInput): SpreadLayoutResult {
+export function resolveSpreadLayout(input: SpreadLayoutInput): SpreadLayoutResultWithEnvelope {
   const {
     spreadKind,
     scene,
@@ -51,40 +61,22 @@ export function resolveSpreadLayout(input: SpreadLayoutInput): SpreadLayoutResul
     headerHeight,
   } = input
 
-  const cardCount = getSpreadCardCount(spreadKind)
-  let layoutType: OverlayLayoutType
-
-  switch (spreadKind) {
-    case 'single_card':
-      layoutType = 'single'
-      break
-    case 'three_card':
-      layoutType = isWide ? 'row' : 'column'
-      break
-    case 'cross_spread':
-      layoutType = 'cross'
-      break
-    default:
-      layoutType = 'row'
-  }
-
-  const { width: cardWidth, height: cardHeight } = resolveOverlayCardSize({
-    containerWidth,
-    containerHeight,
+  const envelope = resolveOverlayCardEnvelope({
+    safeWidth: containerWidth,
+    safeHeight: containerHeight,
     cardAspectRatio,
-    cardCount,
-    layoutType,
-    isWide,
+    ...getSpreadEnvelopeRequirement(spreadKind, isWide),
   })
 
-  return resolveOverlayCardPositions({
+  const positioned = resolveOverlayCardPositions({
     spreadKind,
     scene,
     containerWidth,
     containerHeight,
     isWide,
-    cardWidth,
-    cardHeight,
+    envelope,
     headerHeight,
   })
+
+  return { ...positioned, envelope }
 }

@@ -14,7 +14,7 @@
       </view>
       <view v-if="isIdle && !cardsLoadError" class="idle-view">
         <!-- Settings button (idle state only) -->
-        <view class="settings-btn" @click.stop="toggleSettingsPanel">
+        <view class="settings-btn" :style="settingsBtnStyle" @click.stop="toggleSettingsPanel">
           <image
             class="settings-icon"
             :src="settingsIconUrl"
@@ -23,7 +23,7 @@
         </view>
 
         <!-- Settings panel -->
-        <view v-if="showSettingsPanel" class="settings-panel" @click.stop>
+        <view v-if="showSettingsPanel" class="settings-panel" :style="settingsPanelStyle" @click.stop>
           <view class="settings-header">
             <text class="settings-title">选择牌阵</text>
             <view class="settings-close" @click.stop="closeSettingsPanel">
@@ -86,10 +86,10 @@
       <view class="corner-decoration corner-br"></view>
     </view>
 
-    <!-- 原封不动的 DivinationOverlay -->
     <DivinationOverlay
       v-if="tarotStore.isAnimating || tarotStore.isResultVisible"
       @restart="restartDivination"
+      @back-home="restartDivination"
     />
   </view>
 </template>
@@ -140,8 +140,12 @@ function selectSpread(kind: SpreadKind) {
 }
 
 const headerPaddingTop = ref(20)
+const settingsBtnTop = ref(20)
 const hintOpacity = ref(0)
 const sceneStyle = ref('')
+
+const settingsBtnStyle = computed(() => `top: ${settingsBtnTop.value}px;`)
+const settingsPanelStyle = computed(() => `top: ${settingsBtnTop.value + 84}px;`)
 
 // Header text animation styles - reactive refs bound to :style
 const titleStyle = ref('')
@@ -178,9 +182,15 @@ function calculateLayout() {
     // #ifdef MP-WEIXIN
     const menuButtonRect = uni.getMenuButtonBoundingClientRect()
     headerPaddingTop.value = menuButtonRect.bottom + 8
+    // Settings button must clear the WeChat capsule menu button.
+    settingsBtnTop.value = menuButtonRect.bottom + 12
+    // #endif
+    // #ifdef H5
+    settingsBtnTop.value = (winInfo.safeAreaInsets?.top ?? 0) + 24
     // #endif
   } catch {
     headerPaddingTop.value = 20
+    settingsBtnTop.value = 20
   }
 }
 
@@ -500,7 +510,7 @@ onUnmounted(() => {
    ========================================= */
 .settings-btn {
   position: absolute;
-  top: calc(env(safe-area-inset-top, 0px) + 30rpx);
+  /* top is set inline via JS to clear the WeChat capsule menu button */
   right: 30rpx;
   width: 72rpx;
   height: 72rpx;
@@ -540,7 +550,7 @@ onUnmounted(() => {
 
 .settings-panel {
   position: absolute;
-  top: calc(env(safe-area-inset-top, 0px) + 120rpx);
+  /* top is set inline via JS so the panel sits below the settings button */
   right: 30rpx;
   width: 320rpx;
   z-index: 60;

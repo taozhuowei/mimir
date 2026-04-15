@@ -15,7 +15,6 @@ export interface DrawAnimationConfig {
   liftY: number
   targetX: number[]
   targetY: number[]
-  focusScale: number
   autoRevealDelayMs: number
 }
 
@@ -50,18 +49,25 @@ export function buildDrawTimeline(
     liftY,
     targetX,
     targetY,
-    focusScale,
     autoRevealDelayMs,
   } = config
 
+  // Per-card durations stay constant — total dealing time is bounded by capping
+  // perCardDelay so adding more cards never balloons the sequence beyond ~2.5s.
   const drawStartTime = 0.88
-  const perCardDelay = 0.34
   const pullDuration = 0.18
   const fallDuration = 0.78
   const reboundDuration = 0.34
   const settleDuration = 0.82
   const stageFollowStart = drawStartTime + pullDuration - 0.02
   const deckExitStart = stageFollowStart + 0.06
+
+  // Bounded stagger: total time between first and last card start never exceeds ~1.6s,
+  // regardless of cardCount. With 1 card it's 0; with 10+ cards it shrinks gracefully.
+  const dealOverlapBudget = 1.6
+  const perCardDelay = cardCount > 1
+    ? Math.min(0.34, dealOverlapBudget / (cardCount - 1))
+    : 0
 
   const lastCardLandingTime = drawStartTime
     + (cardCount - 1) * perCardDelay
@@ -71,7 +77,15 @@ export function buildDrawTimeline(
     + settleDuration
 
   const alignTime = lastCardLandingTime + 0.28
-  const flipDuration = 1 + (cardCount - 1) * 0.4
+
+  // Same idea for the flip stagger: cap so 5 / 10 / 100 cards all flip within ~2.4s.
+  const flipPerCardDuration = 1
+  const flipOverlapBudget = 1.4
+  const flipStagger = cardCount > 1
+    ? Math.min(0.4, flipOverlapBudget / (cardCount - 1))
+    : 0
+  const flipDuration = flipPerCardDuration + (cardCount - 1) * flipStagger
+
   const revealDelay = autoRevealDelayMs / 1000
   const revealingStart = alignTime + 1.2 + flipDuration + 0.1 + revealDelay
   const finishTime = revealingStart + 0.3
@@ -178,18 +192,15 @@ export function buildDrawTimeline(
     ease: 'power3.inOut',
   }, alignTime + 0.1)
 
-  // Focus scale
-  timeline.to(draws, {
-    scale: focusScale,
-    duration: 0.5,
-    ease: 'power1.out',
-  }, alignTime + 0.9)
+  // Note: focus enlargement is handled by CSS (.cards-focused class transition),
+  // not by tweening the GSAP scale. The card slot keeps scale=1 in JS state.
 
-  // Flip
+  // Flip — uses bounded flipStagger so total flip time stays close to flipPerCardDuration
+  // even as cardCount grows.
   timeline.to(inners, {
     rotationY: 180,
-    duration: 1,
-    stagger: 0.4,
+    duration: flipPerCardDuration,
+    stagger: flipStagger,
     ease: 'back.out(1.1)',
   }, alignTime + 1.2)
 

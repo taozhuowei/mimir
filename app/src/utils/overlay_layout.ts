@@ -1,11 +1,17 @@
 /**
  * Name: overlay_layout
  * Purpose: bridge viewport-safe overlay frames with spread and animation layout rules.
- * Reason: keep viewport framing, cut offsets, and reveal emphasis independent from GSAP sequencing.
+ * Reason: keep viewport framing, cut offsets, and reveal emphasis independent from GSAP sequencing,
+ *   while sharing the single card envelope across sizing and animation modules.
  * Data flow: viewport metrics and spread metadata flow in; card layouts and motion plans flow out.
  */
 
 import { resolveSpreadLayout } from './spread_layout'
+import {
+  getSpreadEnvelopeRequirement,
+  resolveOverlayCardEnvelope,
+  type CardEnvelope,
+} from './overlay_card_envelope'
 import type {
   SpreadKind,
   SpreadLayoutResult,
@@ -17,6 +23,7 @@ export interface OverlaySceneLayout extends SpreadLayoutResult {
   safeTopInset: number
   safeBottomInset: number
   safeSideInset: number
+  envelope: CardEnvelope
 }
 
 export interface OverlayCutLayoutResult {
@@ -67,42 +74,41 @@ export function resolveOverlaySceneLayout(input: {
 }
 
 /**
- * Resolve cut offsets that stay inside the safe frame on narrow mini-program screens.
+ * Resolve cut offsets that stay inside the safe frame, anchored on the shared envelope.
+ * On wide screens the three cut cards spread horizontally (3 slots); on narrow screens
+ * they stack vertically (3 slots). Either way, no cut frame can exceed the envelope.
  */
 export function resolveOverlayCutLayout(input: {
   viewport: OverlayViewportMetrics
   isWide: boolean
-  cardWidth: number
-  cardHeight: number
+  cardAspectRatio: number
+  spreadKind: SpreadKind
 }): OverlayCutLayoutResult {
-  const { viewport, isWide, cardWidth, cardHeight } = input
+  const { viewport, isWide, cardAspectRatio, spreadKind } = input
+  const safeFrame = resolveOverlaySafeFrame({ scene: 'draw_stage', viewport })
+
+  const envelope = resolveOverlayCardEnvelope({
+    safeWidth: safeFrame.width,
+    safeHeight: safeFrame.height,
+    cardAspectRatio,
+    ...getSpreadEnvelopeRequirement(spreadKind, isWide),
+  })
 
   if (isWide) {
-    const availableHorizontal = Math.max(0, viewport.stageWidth / 2 - cardWidth / 2 - 28)
-    const spread = Math.min(cardWidth * 1.05, availableHorizontal)
+    // Three cut cards spread horizontally — neighbours sit one slotPitch apart.
     return {
-      leadingOffsetX: -spread,
+      leadingOffsetX: -envelope.slotPitchX,
       leadingOffsetY: 0,
-      trailingOffsetX: spread,
+      trailingOffsetX: envelope.slotPitchX,
       trailingOffsetY: 0,
     }
   }
 
-  const safeTopInset = Math.max(0, viewport.headerBottom - viewport.topBarHeight) + 12
-  const safeBottomInset = Math.min(viewport.footerReserve, Math.max(56, viewport.stageHeight * 0.2))
-  const topBoundary = -viewport.stageHeight / 2 + safeTopInset + cardHeight / 2
-  const bottomBoundary = viewport.stageHeight / 2 - safeBottomInset - cardHeight / 2
-  const availableUp = Math.max(0, -topBoundary)
-  const availableDown = Math.max(0, bottomBoundary)
-  const desiredSpread = cardHeight * 0.82
-  const upwardSpread = Math.min(desiredSpread, availableUp * 0.94)
-  const downwardSpread = Math.min(desiredSpread, availableDown * 0.94)
-
   return {
     leadingOffsetX: 0,
-    leadingOffsetY: -upwardSpread,
+    leadingOffsetY: -envelope.slotPitchY,
     trailingOffsetX: 0,
-    trailingOffsetY: downwardSpread,
+    trailingOffsetY: envelope.slotPitchY,
   }
 }
 

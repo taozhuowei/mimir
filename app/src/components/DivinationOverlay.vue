@@ -1,66 +1,81 @@
 <template>
-  <view class="divination-overlay" :class="{ 'show-results': controller.showResults.value, 'is-wide': isWide }" :style="controller.overlayVarsStyle.value">
+  <view
+    class="divination-overlay"
+    :class="{
+      'show-results': controller.showResults.value,
+      'is-wide': isWide,
+      'cards-focused': controller.cardsFocused.value,
+      'cards-docked': controller.cardsDocked.value,
+    }"
+    :style="controller.overlayVarsStyle.value"
+  >
     <view class="overlay-bg" :style="controller.bgStyle.value" />
 
-    <!-- Animation area: always present, shrinks to top/left after results shown -->
-    <view class="stage-container" :style="controller.stageContainerStyle.value">
-      <view class="progress-header" :style="controller.headerStyle.value">
-        <view class="phase-progress-bar">
-          <view
-            v-for="(step, idx) in controller.phaseSteps.value"
-            :key="step.phase"
-            class="phase-step"
-          >
-            <image
-              class="phase-step-icon"
-              :class="{ 'phase-step-icon-compensated': idx < 2 }"
-              :src="step.isActive || step.isCompleted ? themeStore.getUiAsset(getPhaseStep(step.phase)?.activeIcon || '') || themeStore.getUiAsset(getPhaseStep(step.phase)?.inactiveIcon || '') : themeStore.getUiAsset(getPhaseStep(step.phase)?.inactiveIcon || '') || themeStore.getUiAsset(getPhaseStep(step.phase)?.activeIcon || '')"
-              mode="aspectFit"
-            />
+    <!-- Main flex column: stage on top (or left on wide) + result panel below (or right on wide) -->
+    <view class="overlay-main">
+      <view class="stage-container">
+        <view class="progress-header" :style="controller.headerStyle.value">
+          <view class="phase-progress-bar">
+            <view
+              v-for="(step, idx) in controller.phaseSteps.value"
+              :key="step.phase"
+              class="phase-step"
+            >
+              <image
+                class="phase-step-icon"
+                :class="{ 'phase-step-icon-compensated': idx < 2 }"
+                :src="step.isActive || step.isCompleted ? themeStore.getUiAsset(getPhaseStep(step.phase)?.activeIcon || '') || themeStore.getUiAsset(getPhaseStep(step.phase)?.inactiveIcon || '') : themeStore.getUiAsset(getPhaseStep(step.phase)?.inactiveIcon || '') || themeStore.getUiAsset(getPhaseStep(step.phase)?.activeIcon || '')"
+                mode="aspectFit"
+              />
+            </view>
           </view>
         </view>
-      </view>
 
-      <!-- Animation stage: :style drives GSAP y-lift animation -->
-      <view class="stage" :style="controller.stageStyle.value">
-        <!-- Deck container: :style drives shuffle shake animation -->
-        <view class="deck-layer stage-pointer" :style="controller.deckCtnStyle.value">
-          <!-- Initial deck (12 stacked cards): style driven by GSAP state object -->
-          <image
-            v-for="i in 12"
-            :key="`m${i}`"
-            class="tarot-card stack-card initial-deck"
-            :src="controller.cardBack.value"
-            :style="controller.initialsStyle.value[i-1]"
-          />
+        <view class="stage" :style="controller.stageStyle.value">
+          <view class="deck-layer stage-pointer" :style="controller.deckCtnStyle.value">
+            <image
+              v-for="i in controller.deckCount"
+              :key="`m${i}`"
+              class="tarot-card stack-card initial-deck"
+              :src="controller.cardBack.value"
+              :style="controller.initialsStyle.value[i-1]"
+            />
+            <image
+              v-for="i in controller.shuffleHalfCount"
+              :key="`l${i}`"
+              v-show="controller.leftsVisible.value"
+              class="tarot-card stack-card"
+              :src="controller.cardBack.value"
+              :style="controller.leftsStyle.value[i-1]"
+            />
+            <image
+              v-for="i in controller.shuffleHalfCount"
+              :key="`r${i}`"
+              v-show="controller.rightsVisible.value"
+              class="tarot-card stack-card"
+              :src="controller.cardBack.value"
+              :style="controller.rightsStyle.value[i-1]"
+            />
+          </view>
 
-          <!-- Shuffle left half: v-show + style driven by GSAP state object -->
-          <image
-            v-for="i in 6"
-            :key="`l${i}`"
-            v-show="controller.leftsVisible.value"
-            class="tarot-card stack-card"
-            :src="controller.cardBack.value"
-            :style="controller.leftsStyle.value[i-1]"
-          />
-          <!-- Shuffle right half: v-show + style driven by GSAP state object -->
-          <image
-            v-for="i in 6"
-            :key="`r${i}`"
-            v-show="controller.rightsVisible.value"
-            class="tarot-card stack-card"
-            :src="controller.cardBack.value"
-            :style="controller.rightsStyle.value[i-1]"
-          />
-        </view>
+          <!-- Cut piles: rendered as real multi-card stacks, count driven by config -->
+          <view
+            v-for="pIdx in controller.cutPileCount"
+            :key="`pile${pIdx}`"
+            v-show="controller.pilesVisible.value[pIdx - 1]"
+            class="cut-pile stage-center stage-pointer"
+            :style="controller.pilesStyle.value[pIdx - 1]"
+          >
+            <image
+              v-for="cIdx in controller.cardsPerPile"
+              :key="`pile${pIdx}-${cIdx}`"
+              class="tarot-card pile-card"
+              :src="controller.cardBack.value"
+              :style="`top: ${-(cIdx - 1) * 1.2}px; left: ${(cIdx - 1) * 0.4}px; z-index: ${cIdx};`"
+            />
+          </view>
 
-        <!-- Cut cards: v-show + style driven by GSAP state object; centerStyle uses calc(-50%+Xpx) for centering -->
-        <image v-show="controller.cutTopVisible.value" class="tarot-card stage-center cut-t stage-pointer" :src="controller.cardBack.value" :style="controller.cutTopStyle.value" />
-        <image v-show="controller.cutMidVisible.value" class="tarot-card stage-center cut-m stage-pointer" :src="controller.cardBack.value" :style="controller.cutMidStyle.value" />
-        <image v-show="controller.cutBotVisible.value" class="tarot-card stage-center cut-b stage-pointer" :src="controller.cardBack.value" :style="controller.cutBotStyle.value" />
-
-        <view class="draw-container">
-          <!-- Drawn cards: v-show + style driven by GSAP state object; centerStyle uses calc(-50%+Xpx) for centering -->
+          <view class="draw-container">
             <view
               v-for="(_, idx) in controller.drawsVisible.value"
               :key="idx"
@@ -68,161 +83,140 @@
               class="draw-wrapper stage-center stage-pointer"
               :style="[controller.drawsStyle.value[idx], controller.drawsSizeStyle.value[idx]]"
             >
-            <!-- 3D flip inner: style driven by GSAP rotationY -->
-            <view class="card-3d-inner stage-pointer" :style="[controller.innersStyle.value[idx], controller.drawsSizeStyle.value[idx]]">
-              <image class="tarot-card face-back" :src="controller.cardBack.value" />
-              <view class="tarot-card face-front">
-                <image class="front-img" :src="controller.getCardImg(idx)" />
-              </view>
-            </view>
+              <view class="card-focus-frame">
+                <view class="card-3d-inner stage-pointer" :style="[controller.innersStyle.value[idx], controller.drawsSizeStyle.value[idx]]">
+                  <image class="tarot-card face-back" :src="controller.cardBack.value" />
+                  <view class="tarot-card face-front">
+                    <image class="front-img" :src="controller.getCardImg(idx)" />
+                  </view>
+                </view>
 
-            <!-- Upright/Reversed badge, fades in after results shown -->
-            <view
-              v-if="controller.showResults.value"
-              class="position-badge"
-              :class="tarotStore.drawnCards[idx]?.position ?? 'upright'"
-            >
-              <text class="badge-label font-display">
-                {{ tarotStore.drawnCards[idx]?.position === 'reversed' ? controller.overlayText.positionReversed : controller.overlayText.positionUpright }}
-              </text>
+                <view
+                  v-if="controller.showResults.value"
+                  class="position-badge"
+                  :class="tarotStore.drawnCards[idx]?.position ?? 'upright'"
+                >
+                  <text class="badge-label font-display">
+                    {{ tarotStore.drawnCards[idx]?.position === 'reversed' ? controller.overlayText.positionReversed : controller.overlayText.positionUpright }}
+                  </text>
+                </view>
+              </view>
             </view>
           </view>
         </view>
       </view>
 
-      <!-- Bottom action area: :style drives entry animation -->
-      <view class="action-footer" :style="controller.footerStyle.value">
-        <view class="actions">
-          <!-- Show restart button after results are displayed -->
-          <template v-if="controller.showResults.value">
-            <view class="btn btn-primary" @click="handleRestart">{{ controller.overlayText.restart }}</view>
-          </template>
-
-          <template v-else-if="controller.phase.value === 'revealing'">
-            <!-- Text hint + animated dots, shown while waiting for reading result -->
-            <view class="revealing-hint font-display">
-              {{ controller.overlayText.revealing }}
-              <view class="thinking-dots">
-                <text class="dot dot-1">.</text>
-                <text class="dot dot-2">.</text>
-                <text class="dot dot-3">.</text>
-              </view>
+      <!-- Result area: scrolls only when content overflows; sized to fit naturally otherwise. -->
+      <scroll-view
+        v-if="controller.showResults.value"
+        class="result-zone"
+        scroll-y
+        enable-flex
+      >
+        <view class="result-zone-inner">
+          <view v-if="controller.isReadingLoading.value" class="result-loading">
+            <text class="loading-text">{{ controller.overlayText.revealing }}</text>
+            <view class="thinking-dots">
+              <text class="dot dot-1">.</text>
+              <text class="dot dot-2">.</text>
+              <text class="dot dot-3">.</text>
             </view>
-          </template>
+          </view>
 
-          <!-- Retry button for failed reading -->
-          <template v-else-if="controller.isReadingFailed.value">
+          <view v-else-if="controller.isReadingFailed.value" class="result-error">
+            <text class="error-text">{{ controller.readingErrorMessage.value }}</text>
             <view class="btn btn-primary" @click="handleRetry">{{ '重试' }}</view>
-          </template>
-        </view>
-      </view>
+          </view>
 
-      <!-- Dev Tools -->
-      <view v-if="isDev" class="dev-tools">
-        <text class="dev-tools-title">Dev Tools</text>
-
-        <view class="dev-tools-row">
-          <view
-            v-for="step in phaseStepsForDev"
-            :key="`replay-${step.phase}`"
-            class="dev-tools-chip"
-            @click="handleReplay(step.phase)"
-          >
-            {{ step.label }}
-          </view>
+          <ResultPanel
+            v-else-if="tarotStore.readingResult"
+            :reading-result="tarotStore.readingResult"
+            :question="tarotStore.currentQuestion"
+            @restart="handleRestart"
+          />
         </view>
-
-        <view class="dev-tools-row">
-          <view
-            v-for="speed in playbackRates"
-            :key="`speed-${speed}`"
-            class="dev-tools-chip"
-            :class="{ active: controller.playbackRate.value === speed }"
-            @click="handlePlaybackRate(speed)"
-          >
-            {{ speed }}x
-          </view>
-        </view>
-
-        <view class="dev-tools-row">
-          <view class="dev-tools-chip" @click="handlePause">
-            暂停
-          </view>
-          <view class="dev-tools-chip" @click="handleResume">
-            继续
-          </view>
-          <view
-            class="dev-tools-chip"
-            :class="{ disabled: !controller.isPaused.value }"
-            @click="controller.isPaused.value && handleStepBackward()"
-          >
-            ←
-          </view>
-          <view
-            class="dev-tools-chip"
-            :class="{ disabled: !controller.isPaused.value }"
-            @click="controller.isPaused.value && handleStepForward()"
-          >
-            →
-          </view>
-          <text class="dev-tools-status">
-            {{ controller.isPaused.value ? 'Paused' : `Running ${controller.playbackRate.value}x` }}
-          </text>
-        </view>
-      </view>
+      </scroll-view>
     </view>
 
-    <!-- Result area: slides in from bottom/right after results shown -->
-    <scroll-view
-      v-if="controller.showResults.value"
-      class="result-zone"
-      :style="controller.resultZoneStyle.value"
-      scroll-y
-      enable-flex
-    >
-      <!-- Loading state -->
-      <view v-if="controller.isReadingLoading.value" class="result-loading">
-        <text class="loading-text">{{ controller.overlayText.revealing }}</text>
-        <view class="thinking-dots">
-          <text class="dot dot-1">.</text>
-          <text class="dot dot-2">.</text>
-          <text class="dot dot-3">.</text>
+    <!-- Action bar: floats at the bottom of the screen, never scrolls with content -->
+    <view class="action-bar">
+      <template v-if="controller.showResults.value">
+        <view class="btn btn-secondary" @click="handleBackHome">{{ controller.overlayText.backHome }}</view>
+        <view class="btn btn-primary" @click="handleRestart">{{ controller.overlayText.restart }}</view>
+      </template>
+
+      <template v-else-if="controller.phase.value === 'revealing'">
+        <view class="revealing-hint font-display">
+          {{ controller.overlayText.revealing }}
+          <view class="thinking-dots">
+            <text class="dot dot-1">.</text>
+            <text class="dot dot-2">.</text>
+            <text class="dot dot-3">.</text>
+          </view>
+        </view>
+      </template>
+
+      <template v-else-if="controller.isReadingFailed.value">
+        <view class="btn btn-primary" @click="handleRetry">{{ '重试' }}</view>
+      </template>
+    </view>
+
+    <!-- Dev Tools -->
+    <view v-if="isDev" class="dev-tools">
+      <text class="dev-tools-title">Dev Tools</text>
+
+      <view class="dev-tools-row">
+        <view
+          v-for="step in phaseStepsForDev"
+          :key="`replay-${step.phase}`"
+          class="dev-tools-chip"
+          @click="handleReplay(step.phase)"
+        >
+          {{ step.label }}
         </view>
       </view>
 
-      <!-- Error state -->
-      <view v-else-if="controller.isReadingFailed.value" class="result-error">
-        <text class="error-text">{{ controller.readingErrorMessage.value }}</text>
-        <view class="btn btn-primary" @click="handleRetry">{{ '重试' }}</view>
+      <view class="dev-tools-row">
+        <view
+          v-for="speed in playbackRates"
+          :key="`speed-${speed}`"
+          class="dev-tools-chip"
+          :class="{ active: controller.playbackRate.value === speed }"
+          @click="handlePlaybackRate(speed)"
+        >
+          {{ speed }}x
+        </view>
       </view>
 
-      <!-- Success state -->
-      <ResultPanel
-        v-else-if="tarotStore.readingResult"
-        :reading-result="tarotStore.readingResult"
-        :question="tarotStore.currentQuestion"
-        @restart="handleRestart"
-      />
-    </scroll-view>
+      <view class="dev-tools-row">
+        <view class="dev-tools-chip" @click="handlePause">
+          暂停
+        </view>
+        <view class="dev-tools-chip" @click="handleResume">
+          继续
+        </view>
+        <view
+          class="dev-tools-chip"
+          :class="{ disabled: !controller.isPaused.value }"
+          @click="controller.isPaused.value && handleStepBackward()"
+        >
+          ←
+        </view>
+        <view
+          class="dev-tools-chip"
+          :class="{ disabled: !controller.isPaused.value }"
+          @click="controller.isPaused.value && handleStepForward()"
+        >
+          →
+        </view>
+        <text class="dev-tools-status">
+          {{ controller.isPaused.value ? 'Paused' : `Running ${controller.playbackRate.value}x` }}
+        </text>
+      </view>
+    </view>
   </view>
 </template>
 
-<!--
-  File purpose: Full-screen divination overlay component
-  - Includes shuffle / cut / draw three-phase animation
-  - Displays tarot interpretation result (ResultPanel) after three phases
-  - Supports responsive layout for wide (>=768px) and narrow screens
-
-  Cross-platform compatibility (H5 & WeChat Mini Program):
-  - Avoid window.innerWidth/innerHeight, use uni.getWindowInfo() instead
-  - Avoid window.addEventListener/removeEventListener, use uni.onWindowResize/offWindowResize
-  - Avoid getBoundingClientRect/offsetWidth/offsetHeight, calculate from window dimensions
-  - GSAP cannot directly manipulate DOM elements, use "plain JS state object + onUpdate -> Vue ref<string> :style binding" pattern:
-      1. Define plain JS state objects (e.g., _bg, _initials[], _draws[])
-      2. GSAP tweens operate on state objects, refresh functions called in onUpdate
-      3. Refresh functions serialize state objects to CSS style strings, written to Vue refs
-      4. Template binds with :style="xxxStyle", Vue handles final DOM updates
--->
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import { useTarotStore } from '../stores/tarot'
@@ -233,10 +227,10 @@ import { useOverlayController } from '../composables/use_overlay_controller'
 import { getPhaseStep, PHASE_STEPS } from '../utils/overlay_phase_registry'
 import type { OverlayPhase } from '../utils/overlay_animations/types'
 
-// Emits definition
 const emit = defineEmits<{
   (event: 'complete'): void
   (event: 'restart'): void
+  (event: 'backHome'): void
 }>()
 
 const tarotStore = useTarotStore()
@@ -244,19 +238,14 @@ const themeStore = useThemeStore()
 const isDev = import.meta.env.DEV
 const playbackRates = [0.25, 0.5, 1, 2] as const
 
-// Wide screen detection ref
 const isWide = ref(false)
-
-// Runtime card count from store spread kind
 const cardCount = computed(() => getSpreadCardCount(tarotStore.spreadKind))
 
-// Phase steps for dev tools
 const phaseStepsForDev = PHASE_STEPS.map(s => ({
   phase: s.phase,
   label: s.label,
 }))
 
-// Initialize controller
 const controller = useOverlayController({
   tarotStore,
   themeStore,
@@ -265,33 +254,22 @@ const controller = useOverlayController({
   emit,
 })
 
-function handlePlaybackRate(rate: number) {
-  controller.setPlaybackRate(rate)
-}
+function handlePlaybackRate(rate: number) { controller.setPlaybackRate(rate) }
+function handlePause() { controller.pauseAnimations() }
+function handleResume() { controller.resumeAnimations() }
+function handleStepBackward() { controller.stepBackward() }
+function handleStepForward() { controller.stepForward() }
+function handleReplay(targetPhase: OverlayPhase) { controller.replayFromPhase(targetPhase) }
 
-function handlePause() {
-  controller.pauseAnimations()
-}
-
-function handleResume() {
-  controller.resumeAnimations()
-}
-
-function handleStepBackward() {
-  controller.stepBackward()
-}
-
-function handleStepForward() {
-  controller.stepForward()
-}
-
-function handleReplay(targetPhase: OverlayPhase) {
-  controller.replayFromPhase(targetPhase)
-}
-
+// "再占一次" — restart the divination flow without unmounting the overlay.
+// Stays in the divination view; does not return to the home page.
 function handleRestart() {
   controller.restart()
-  emit('restart')
+}
+
+// "回到首页" — clear store state so the parent page returns to its idle state.
+function handleBackHome() {
+  emit('backHome')
 }
 
 function handleRetry() {
@@ -303,6 +281,7 @@ function handleRetry() {
 .divination-overlay {
   --card-width: 172px;
   --card-height: calc(var(--card-width) * 1.6);
+  --card-focus-scale: 1;
 
   position: fixed;
   top: 0;
@@ -313,8 +292,6 @@ function handleRetry() {
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  /* Layout transition */
-  transition: flex-direction 0.4s ease;
 }
 
 /* #ifdef H5 */
@@ -336,76 +313,77 @@ function handleRetry() {
   bottom: 0;
   left: 0;
   z-index: -1;
-  /* Dark mystical background; opacity driven by GSAP fade-in */
   background: rgba(242, 232, 208, 0.97);
 }
 
-/* Post-result container deformation */
+/* Main flex region — flows column on narrow / row on wide once results show. */
+.overlay-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.is-wide.show-results .overlay-main {
+  flex-direction: row;
+}
+
 .stage-container {
   position: relative;
   display: flex;
   flex-direction: column;
-  flex-shrink: 0;
-  /* Default fills all vertical space */
-  height: 100vh;
+  flex: 1;
+  min-height: 0;
+  transition: flex 0.4s ease, height 0.4s ease;
 }
 
-/* Wide screen: after results shown, animation area becomes left column */
-.is-wide.show-results {
-  flex-direction: row;
+/* Narrow + results: stage shrinks to make room for the reading; CSS-driven, no JS height calc. */
+.show-results .stage-container {
+  flex: 0 0 36vh;
+  height: 36vh;
 }
 
 .is-wide.show-results .stage-container {
   flex: 0 0 44%;
-  height: 100vh;
   width: 44%;
+  height: 100%;
 }
 
 .result-zone {
   flex: 1;
-  overflow-y: auto;
-  animation: result-slide-in 0.5s cubic-bezier(0.4, 0, 0.2, 1) both;
+  min-height: 0;
   background: rgba(242, 232, 208, 0.92);
   border-top: 1px solid var(--color-border);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+  animation: result-slide-in 0.5s cubic-bezier(0.4, 0, 0.2, 1) both;
 }
 
 .is-wide .result-zone {
   border-top: none;
   border-left: 1px solid var(--color-border);
-}
-
-@keyframes result-slide-in {
-  from {
-    opacity: 0;
-    transform: translateY(32px);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes result-slide-in-right {
-  from {
-    opacity: 0;
-    transform: translateX(32px);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
-}
-
-.is-wide .result-zone {
   animation-name: result-slide-in-right;
 }
 
-/* Progress header position */
+/* Inner wrapper lets ResultPanel flow at its natural height; scroll-view only scrolls
+   when this content exceeds the result-zone height. */
+.result-zone-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  padding-bottom: 24rpx;
+}
+
+@keyframes result-slide-in {
+  from { opacity: 0; transform: translateY(32px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes result-slide-in-right {
+  from { opacity: 0; transform: translateX(32px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
 .progress-header {
   display: flex;
   flex-direction: column;
@@ -450,12 +428,11 @@ function handleRetry() {
 
 /* #ifdef MP-WEIXIN */
 .progress-header {
-  /* Mini program needs larger top margin to avoid notch(44px) + capsule button(32px) + extra spacing */
   margin-top: calc(env(safe-area-inset-top, 44px) + 140rpx);
 }
 
 .show-results .progress-header {
-  margin-top: calc(env(safe-area-inset-top, 44px) + 80rpx);
+  margin-top: calc(env(safe-area-inset-top, 44px) + 60rpx);
 }
 /* #endif */
 
@@ -512,9 +489,48 @@ function handleRetry() {
   pointer-events: none;
 }
 
+/* Cut pile: a stage-positioned wrapper that holds cardsPerPile stacked cards. */
+.cut-pile {
+  width: var(--card-width);
+  height: var(--card-height);
+}
+
+.cut-pile .pile-card {
+  position: absolute;
+  width: var(--card-width);
+  height: var(--card-height);
+  border-radius: 8rpx;
+  border: 1px solid var(--color-border);
+  box-shadow: 0 2rpx 8rpx rgba(30, 15, 6, 0.3);
+}
+
 .draw-wrapper {
   perspective: 1200px;
   position: absolute;
+}
+
+/* Focus frame: pure CSS scale that enlarges drawn cards after deal+flip and shrinks
+   them once the reading text arrives. No JS scale tweens. */
+.card-focus-frame {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  transform: scale(var(--card-focus-scale, 1));
+  transform-origin: center center;
+  transition: transform 0.55s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.cards-focused {
+  --card-focus-scale: 1.42;
+}
+
+.cards-docked {
+  --card-focus-scale: 1;
+}
+
+/* Wide screens have less vertical room — keep the focus boost slightly tamer. */
+.is-wide.cards-focused {
+  --card-focus-scale: 1.2;
 }
 
 .card-3d-inner {
@@ -543,7 +559,6 @@ function handleRetry() {
   object-fit: cover;
 }
 
-/* Upright/Reversed badge */
 .position-badge {
   position: absolute;
   top: -12rpx;
@@ -574,37 +589,29 @@ function handleRetry() {
 }
 
 @keyframes badge-pop-in {
-  from {
-    opacity: 0;
-    transform: scale(0.4);
-  }
-
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
+  from { opacity: 0; transform: scale(0.4); }
+  to   { opacity: 1; transform: scale(1); }
 }
 
-.action-footer {
-  margin-top: auto;
-  padding: 40rpx 20rpx calc(env(safe-area-inset-bottom, 0px) + 60rpx);
+/* Action bar — fixed at the bottom of the overlay, never scrolls with the result panel */
+.action-bar {
+  flex-shrink: 0;
   display: flex;
-  justify-content: center;
-  position: relative;
-  z-index: 20;
-}
-
-.actions {
-  display: flex;
-  gap: 30rpx;
+  gap: 24rpx;
   align-items: center;
+  justify-content: center;
+  padding: 24rpx 24rpx calc(env(safe-area-inset-bottom, 0px) + 24rpx);
+  background: linear-gradient(to top, rgba(242, 232, 208, 0.96), rgba(242, 232, 208, 0));
+  z-index: 60;
+  position: relative;
+  min-height: 96rpx;
 }
 
 .dev-tools {
   position: absolute;
   right: 24rpx;
-  bottom: calc(env(safe-area-inset-bottom, 0px) + 24rpx);
-  z-index: 40;
+  bottom: calc(env(safe-area-inset-bottom, 0px) + 160rpx);
+  z-index: 80;
   width: 420rpx;
   max-width: calc(100vw - 48rpx);
   display: flex;
@@ -679,6 +686,12 @@ function handleRetry() {
   font-weight: bold;
 }
 
+.btn-secondary {
+  background: rgba(255, 255, 255, 0.6);
+  border: 1px solid var(--color-border-strong, #b8943e);
+  color: var(--color-text-primary);
+}
+
 .revealing-hint {
   color: var(--color-accent);
   letter-spacing: 0.1em;
@@ -696,20 +709,14 @@ function handleRetry() {
   animation: dot-pulse 1.4s infinite;
 }
 
-.thinking-dots .dot-2 {
-  animation-delay: 0.2s;
-}
-
-.thinking-dots .dot-3 {
-  animation-delay: 0.4s;
-}
+.thinking-dots .dot-2 { animation-delay: 0.2s; }
+.thinking-dots .dot-3 { animation-delay: 0.4s; }
 
 @keyframes dot-pulse {
   0%, 80%, 100% { opacity: 0.2; transform: translateY(0); }
   40% { opacity: 1; transform: translateY(-4rpx); }
 }
 
-/* Result zone states */
 .result-loading,
 .result-error {
   display: flex;
@@ -742,17 +749,4 @@ function handleRetry() {
   }
 }
 /* #endif */
-
-@keyframes oracle-breathe {
-  0%,
-  100% {
-    transform: scale(1);
-    box-shadow: 0 0 0 rgba(184, 148, 62, 0.16);
-  }
-
-  50% {
-    transform: scale(1.03);
-    box-shadow: 0 0 18rpx rgba(184, 148, 62, 0.2);
-  }
-}
 </style>

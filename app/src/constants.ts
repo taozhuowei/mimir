@@ -4,14 +4,13 @@
  * API base URL is defined in app/src/api/client.ts via VITE_API_BASE_URL.
  * Production mini program: configure VITE_API_BASE_URL in .env.production.
  *
- * Fallback values used before theme loads. Theme store overrides these.
+ * The card-back and settings icon are bundled into the package so they always
+ * render — even on a real device that cannot reach the dev server. Themed
+ * overrides from the theme store still take precedence when available.
  */
 
-import { API_BASE } from './api/client'
-const THEME_BASE = `${API_BASE}/static/themes/golden_dawn`
+/** Bundled card back image — always loads regardless of network state. */
+export const CARD_BACK_IMAGE = '/static/card_back.jpeg'
 
-/** Fallback card back image used during shuffle / cut / draw animations */
-export const CARD_BACK_IMAGE = `${THEME_BASE}/tarot/card_back.jpeg`
-
-/** Settings icon URL - network path for mini program compatibility */
-export const SETTINGS_ICON_URL = `${THEME_BASE}/ui/icon-settings.svg`
+/** Bundled settings icon — always loads regardless of network state. */
+export const SETTINGS_ICON_URL = '/static/icon-settings.svg'

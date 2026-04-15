@@ -12,7 +12,6 @@ import type { OverlaySceneLayout } from '../overlay_layout'
 export interface RevealAnimationConfig {
   cardCount: number
   drawLayout: OverlaySceneLayout
-  focusScale: number
 }
 
 export interface RevealAnimationContext {
@@ -36,7 +35,7 @@ export function buildRevealTimeline(
   onComplete: () => void,
 ): gsap.core.Timeline {
   const { stage, draws, inners, drawsVisible, initials } = context
-  const { cardCount, drawLayout, focusScale } = config
+  const { cardCount, drawLayout } = config
   const targetX = drawLayout.cards.map((c) => c.x)
   const targetY = drawLayout.cards.map((c) => c.y)
 
@@ -63,7 +62,7 @@ export function buildRevealTimeline(
           x: targetX[index],
           y: targetY[index],
           rotation: 0,
-          scale: focusScale,
+          scale: 1,
           opacity: 1,
           zIndex: 20 - index,
         })
@@ -112,7 +111,7 @@ export function setupRevealInitialState(
   config: RevealAnimationConfig,
 ): void {
   const { stage, draws, inners, drawsVisible, initials } = context
-  const { cardCount, drawLayout, focusScale } = config
+  const { cardCount, drawLayout } = config
   const targetX = drawLayout.cards.map((c) => c.x)
   const targetY = drawLayout.cards.map((c) => c.y)
 
@@ -129,7 +128,7 @@ export function setupRevealInitialState(
         x: targetX[index],
         y: targetY[index],
         rotation: 0,
-        scale: focusScale,
+        scale: 1,
         opacity: 1,
         zIndex: 20 - index,
       })

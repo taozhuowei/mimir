@@ -6,10 +6,12 @@
  */
 
 import { computed, nextTick, onMounted, onUnmounted, ref, type Ref } from 'vue'
+import { storeToRefs } from 'pinia'
 import gsap from 'gsap'
 import { useTarotStore } from '../stores/tarot'
 import { useThemeStore } from '../stores/theme'
 import { CARD_BACK_IMAGE } from '../constants'
+import overlayConfig from '../config.json'
 import type { OverlayPhase } from '../utils/overlay_animations/types'
 import {
   createShuffleInitialStates,
@@ -19,7 +21,6 @@ import {
   buildCutTimeline,
   buildDrawTimeline,
   buildRevealTimeline,
-  setupRevealInitialState,
   type ShuffleAnimationContext,
   type CutAnimationContext,
   type DrawAnimationContext,
@@ -30,25 +31,37 @@ import { presentProgressHeader, presentFooter, DEFAULT_OVERLAY_TEXT } from '../u
 import { createTimelineOrchestrator, killAnimationTargets } from '../utils/overlay_timeline'
 import {
   resolveOverlaySceneLayout,
-  resolveOverlayCutLayout,
-  resolveOverlayRevealMotion,
   type OverlaySceneLayout,
 } from '../utils/overlay_layout'
 import { resolveOverlayViewport, type OverlayViewportMetrics } from '../utils/overlay_viewport'
+import { resolveOverlayMotionMetrics, type OverlayMotionMetrics } from '../utils/overlay_motion_metrics'
 import { OfflineReadingProvider } from '../utils/reading/offline_reading_provider'
 import { createReadingOrchestrator } from '../utils/reading/reading_orchestrator'
 import type { ReadingRequest } from '../utils/reading/reading_provider'
 
-const MAX_CARD_COUNT = 5
+const MAX_CARD_COUNT = 10
+const MAX_CUT_PILES = 8
 const AUTO_REVEAL_DELAY_MS = 800
 const ENTRY_TO_SHUFFLE_DELAY_MS = 300
+
+const DECK_COUNT: number = (overlayConfig as { deckCount?: number }).deckCount ?? 12
+const CUT_PILE_COUNT: number = Math.min(
+  MAX_CUT_PILES,
+  Math.max(1, (overlayConfig as { cutPileCount?: number }).cutPileCount ?? 3),
+)
+// Each cut pile shows this many stacked cards so the user sees real "stacks", not single cards.
+const CARDS_PER_PILE: number = Math.max(1, Math.floor(DECK_COUNT / CUT_PILE_COUNT))
+// How many cards split into the shuffle's left/right halves (mirrors deck size).
+const SHUFFLE_HALF_COUNT: number = Math.max(1, Math.floor(DECK_COUNT / 2))
 
 export interface UseOverlayControllerDeps {
   tarotStore: ReturnType<typeof useTarotStore>
   themeStore: ReturnType<typeof useThemeStore>
   isWide: Ref<boolean>
   cardCount: Ref<number>
-  emit: ((event: 'complete') => void) & ((event: 'restart') => void)
+  emit: ((event: 'complete') => void) &
+    ((event: 'restart') => void) &
+    ((event: 'backHome') => void)
 }
 
 export function useOverlayController(deps: UseOverlayControllerDeps) {
@@ -64,16 +77,16 @@ export function useOverlayController(deps: UseOverlayControllerDeps) {
   // Progress model
   const progressModel = createProgressModel('shuffling')
 
-  // Reading orchestrator
+  // Reading orchestrator — bind result back to the Pinia store so the overlay's
+  // `tarotStore.readingResult` and `isResultVisible` updates reactively.
   const readingStatus = ref<'idle' | 'loading' | 'success' | 'error'>('idle')
-  const readingResult = ref(deps.tarotStore.readingResult)
-  const readingError = ref<string | null>(null)
+  const { readingResult: storeReadingResult, readingError: storeReadingError } = storeToRefs(deps.tarotStore)
 
   const readingOrchestrator = createReadingOrchestrator({
     provider: new OfflineReadingProvider(),
     statusRef: readingStatus,
-    resultRef: readingResult,
-    errorRef: readingError,
+    resultRef: storeReadingResult,
+    errorRef: storeReadingError,
     errorMessage: '解读暂时不可用，请稍后重试',
   })
 
@@ -87,16 +100,14 @@ export function useOverlayController(deps: UseOverlayControllerDeps) {
   const _footer = { y: 60, opacity: 0 }
   const _deckCtn = { x: 0 }
 
-  const { initials: _initials, lefts: _lefts, rights: _rights } = createShuffleInitialStates()
-  const { cutTop: _cutTop, cutMid: _cutMid, cutBot: _cutBot } = createCutInitialStates()
+  const { initials: _initials, lefts: _lefts, rights: _rights } = createShuffleInitialStates(DECK_COUNT, SHUFFLE_HALF_COUNT)
+  const { piles: _piles } = createCutInitialStates(MAX_CUT_PILES)
   const { draws: _draws, inners: _inners } = createDrawInitialStates(MAX_CARD_COUNT)
 
   // Visible flags
   const leftsVisible = ref(false)
   const rightsVisible = ref(false)
-  const cutTopVisible = ref(false)
-  const cutMidVisible = ref(false)
-  const cutBotVisible = ref(false)
+  const pilesVisible = ref<boolean[]>(Array(MAX_CUT_PILES).fill(false))
   const drawsVisible = ref<boolean[]>(Array(MAX_CARD_COUNT).fill(false))
 
   // Style refs
@@ -106,35 +117,18 @@ export function useOverlayController(deps: UseOverlayControllerDeps) {
   const footerStyle = ref('transform: translateY(60px); opacity: 0')
   const deckCtnStyle = ref('')
   const initialsStyle = ref<string[]>(_initials.map((_, i) => `transform: translateY(${-i * 0.8}px)`))
-  const leftsStyle = ref<string[]>(Array.from({ length: 6 }, () => ''))
-  const rightsStyle = ref<string[]>(Array.from({ length: 6 }, () => ''))
-  const cutTopStyle = ref('')
-  const cutMidStyle = ref('')
-  const cutBotStyle = ref('')
+  const leftsStyle = ref<string[]>(Array.from({ length: SHUFFLE_HALF_COUNT }, () => ''))
+  const rightsStyle = ref<string[]>(Array.from({ length: SHUFFLE_HALF_COUNT }, () => ''))
+  const pilesStyle = ref<string[]>(Array(MAX_CUT_PILES).fill(''))
   const drawsStyle = ref<string[]>(Array(MAX_CARD_COUNT).fill(''))
   const drawsSizeStyle = ref<{ width: string; height: string }[]>(
     Array.from({ length: MAX_CARD_COUNT }, () => ({ width: '', height: '' })),
   )
   const innersStyle = ref<string[]>(Array(MAX_CARD_COUNT).fill(''))
 
-  // Container sizing
-  const stageContainerHeightPx = ref(uni.getWindowInfo().windowHeight)
-  const stageContainerStyle = computed(() => {
-    if (deps.isWide.value || !showResults.value) {
-      return 'height: 100vh'
-    }
-    return `height: ${stageContainerHeightPx.value}px`
-  })
-
-  const resultZoneStyle = computed(() => {
-    if (!showResults.value) return ''
-    const { windowHeight } = uni.getWindowInfo()
-    if (deps.isWide.value) {
-      return `height: ${windowHeight}px`
-    }
-    return `height: ${Math.max(windowHeight - stageContainerHeightPx.value, 0)}px`
-  })
-
+  // Container sizing — overlay layout now relies on CSS classes (.show-results, .is-wide)
+  // for the stage / result split. Card sizes are still resolved by the envelope so
+  // positions and animations stay in sync with the visible card dimensions.
   const overlayVarsStyle = computed(() =>
     `--card-width: ${layoutCardWidth.value}px; --card-height: ${layoutCardHeight.value}px`,
   )
@@ -145,6 +139,18 @@ export function useOverlayController(deps: UseOverlayControllerDeps) {
   const readingErrorMessage = computed(() => readingOrchestrator.state.error || '')
   const isReadingFailed = computed(() => readingOrchestrator.state.status === 'error')
   const isReadingLoading = computed(() => readingOrchestrator.state.status === 'loading')
+
+  // Card focus / dock state — driven by CSS class transitions (no JS scale tween).
+  // Cards stay at their normal size all the way through the deal animation, then
+  // enlarge ("focused") only after the timeline transitions into 'revealing' (cards
+  // flipped + visible). Once the reading text actually arrives they "dock" back.
+  const cardsFocused = computed(() => {
+    if (!showResults.value) {
+      return phase.value === 'revealing'
+    }
+    return readingOrchestrator.state.status !== 'success'
+  })
+  const cardsDocked = computed(() => showResults.value && readingOrchestrator.state.status === 'success')
 
   // Progress presentation
   const progressHeaderPresentation = computed(() =>
@@ -192,10 +198,7 @@ export function useOverlayController(deps: UseOverlayControllerDeps) {
   const refreshInitials = () => { initialsStyle.value = _initials.map(_cardStyleStr) }
   const refreshLefts = () => { leftsStyle.value = _lefts.map(_cardStyleStr) }
   const refreshRights = () => { rightsStyle.value = _rights.map(_cardStyleStr) }
-  const refreshCutTop = () => { cutTopStyle.value = _centerStyleStr(_cutTop) }
-  const refreshCutMid = () => { cutMidStyle.value = _centerStyleStr(_cutMid) }
-  const refreshCutBot = () => { cutBotStyle.value = _centerStyleStr(_cutBot) }
-  const refreshCuts = () => { refreshCutTop(); refreshCutMid(); refreshCutBot() }
+  const refreshPiles = () => { pilesStyle.value = _piles.map(_centerStyleStr) }
   const refreshDraws = () => { drawsStyle.value = _draws.map(_centerStyleStr) }
   const refreshInners = () => { innersStyle.value = _inners.map(_innerStyleStr) }
 
@@ -233,6 +236,31 @@ export function useOverlayController(deps: UseOverlayControllerDeps) {
     })
   }
 
+  /**
+   * Resolve the unified motion metrics for the current scene.
+   * Card sizes, gaps, shuffle spread, cut pile spacing and safe half-spans all
+   * come from this single source so animations and layouts can never disagree.
+   */
+  function getMotionMetrics(scene: 'draw_stage' | 'result_stage' = 'draw_stage'): OverlayMotionMetrics {
+    const viewport = getViewportMetrics(scene === 'result_stage')
+    // The safe frame width/height the spread uses (mirrors overlay_layout.resolveOverlaySafeFrame).
+    const sideInset = scene === 'result_stage' ? 20 : 24
+    const topInset = Math.max(0, viewport.headerBottom - viewport.topBarHeight) + (scene === 'result_stage' ? 8 : 12)
+    const bottomInset = Math.min(
+      viewport.footerReserve,
+      Math.max(scene === 'result_stage' ? 44 : 56, viewport.stageHeight * (scene === 'result_stage' ? 0.16 : 0.2)),
+    )
+    return resolveOverlayMotionMetrics({
+      safeWidth: Math.max(0, viewport.stageWidth - sideInset * 2),
+      safeHeight: Math.max(0, viewport.stageHeight - topInset - bottomInset),
+      cardAspectRatio: 1.6,
+      spreadKind: deps.tarotStore.spreadKind,
+      isWide: deps.isWide.value,
+      cutPileCount: CUT_PILE_COUNT,
+      deckCount: DECK_COUNT,
+    })
+  }
+
   function setDrawCardSizes(layout: OverlaySceneLayout) {
     drawsSizeStyle.value = Array.from({ length: MAX_CARD_COUNT }, (_, index) => {
       const card = layout.cards[index]
@@ -258,11 +286,7 @@ export function useOverlayController(deps: UseOverlayControllerDeps) {
       isWide: deps.isWide.value,
       cardAspectRatio: 1.6,
     })
-    const revealMotion = resolveOverlayRevealMotion({
-      drawCardWidth: drawLayout.cardWidth,
-      resultCardWidth: resultLayout.cardWidth,
-    })
-    return { drawViewport, drawLayout, resultLayout, revealMotion }
+    return { drawViewport, drawLayout, resultLayout }
   }
 
   function getCardImg(index: number): string {
@@ -312,13 +336,11 @@ export function useOverlayController(deps: UseOverlayControllerDeps) {
   }
 
   function resetCutVisualState() {
-    cutTopVisible.value = false
-    cutMidVisible.value = false
-    cutBotVisible.value = false
-    Object.assign(_cutTop, { x: 0, y: 0, rotation: 0, scale: 1, opacity: 0, zIndex: 10 })
-    Object.assign(_cutMid, { x: 0, y: 0, rotation: 0, scale: 1, opacity: 0, zIndex: 10 })
-    Object.assign(_cutBot, { x: 0, y: 0, rotation: 0, scale: 1, opacity: 0, zIndex: 10 })
-    refreshCuts()
+    pilesVisible.value = Array(MAX_CUT_PILES).fill(false)
+    _piles.forEach((state, index) => {
+      Object.assign(state, { x: 0, y: 0, rotation: 0, scale: 1, opacity: 0, zIndex: 10 + index })
+    })
+    refreshPiles()
   }
 
   function resetDrawVisualState() {
@@ -339,9 +361,7 @@ export function useOverlayController(deps: UseOverlayControllerDeps) {
   }
 
   function resetOverlayScene() {
-    const { windowHeight } = uni.getWindowInfo()
     showResults.value = false
-    stageContainerHeightPx.value = windowHeight
     readingOrchestrator.reset()
 
     _bg.opacity = 1
@@ -375,7 +395,7 @@ export function useOverlayController(deps: UseOverlayControllerDeps) {
     killAnimationTargets([
       _bg, _stage, _header, _footer, _deckCtn,
       ..._initials, ..._lefts, ..._rights,
-      _cutTop, _cutMid, _cutBot, ..._draws, ..._inners,
+      ..._piles, ..._draws, ..._inners,
     ])
   }
 
@@ -413,9 +433,12 @@ export function useOverlayController(deps: UseOverlayControllerDeps) {
       refreshRights,
     }
 
+    // Spread amount is sourced from the unified motion metrics so that wider
+    // viewports actually push the two halves further apart.
+    const metrics = getMotionMetrics('draw_stage')
     const timeline = buildShuffleTimeline(
       shuffleContext,
-      { layoutCardWidth: layoutCardWidth.value },
+      { spreadX: metrics.shuffleSpreadX },
       () => playCut(),
     )
 
@@ -427,27 +450,22 @@ export function useOverlayController(deps: UseOverlayControllerDeps) {
     progressModel.transitionTo('cutting')
     deps.tarotStore.setPhase('cutting')
 
-    const viewport = getViewportMetrics(false)
-    const cutLayout = resolveOverlayCutLayout({
-      viewport,
-      isWide: deps.isWide.value,
-      cardWidth: layoutCardWidth.value,
-      cardHeight: layoutCardHeight.value,
-    })
-
     const cutContext: CutAnimationContext = {
-      cutTop: _cutTop,
-      cutMid: _cutMid,
-      cutBot: _cutBot,
-      cutTopVisible,
-      cutMidVisible,
-      cutBotVisible,
-      refreshCuts,
+      piles: _piles,
+      pilesVisible,
+      refreshPiles,
     }
 
+    const metrics = getMotionMetrics('draw_stage')
     const timeline = buildCutTimeline(
       cutContext,
-      { layout: cutLayout },
+      {
+        pileCount: CUT_PILE_COUNT,
+        pileSpacing: metrics.cutPileSpacing,
+        axis: metrics.cutAxis,
+        cutLeadingOffset: metrics.cutLeadingOffset,
+        cutTrailingOffset: metrics.cutTrailingOffset,
+      },
       () => playDraw(),
     )
 
@@ -460,7 +478,7 @@ export function useOverlayController(deps: UseOverlayControllerDeps) {
     deps.tarotStore.setPhase('drawing')
     deps.tarotStore.drawCards()
 
-    const { drawViewport, drawLayout, resultLayout, revealMotion } = getOverlayLayouts()
+    const { drawViewport, drawLayout, resultLayout } = getOverlayLayouts()
     setDrawCardSizes(drawLayout)
 
     const drawContext: DrawAnimationContext = {
@@ -491,10 +509,9 @@ export function useOverlayController(deps: UseOverlayControllerDeps) {
         liftY: drawLayout.stageShiftY,
         targetX: drawLayout.cards.map((c) => c.x),
         targetY: drawLayout.cards.map((c) => c.y),
-        focusScale: revealMotion.focusScale,
         autoRevealDelayMs: AUTO_REVEAL_DELAY_MS,
       },
-      () => finish(revealMotion.dockScale, resultLayout),
+      () => finish(resultLayout),
     )
 
     // Schedule reading request
@@ -519,7 +536,7 @@ export function useOverlayController(deps: UseOverlayControllerDeps) {
       deps.tarotStore.drawCards()
     }
 
-    const { drawLayout, resultLayout, revealMotion } = getOverlayLayouts()
+    const { drawLayout, resultLayout } = getOverlayLayouts()
     setDrawCardSizes(drawLayout)
 
     const revealContext: RevealAnimationContext = {
@@ -539,9 +556,8 @@ export function useOverlayController(deps: UseOverlayControllerDeps) {
       {
         cardCount: deps.cardCount.value,
         drawLayout,
-        focusScale: revealMotion.focusScale,
       },
-      () => finish(revealMotion.dockScale, resultLayout),
+      () => finish(resultLayout),
     )
 
     // Schedule reading request
@@ -615,28 +631,17 @@ export function useOverlayController(deps: UseOverlayControllerDeps) {
 
   function openResultPanel() {
     if (showResults.value) return
-
-    const targetViewport = getViewportMetrics(true)
     showResults.value = true
-
-    if (!deps.isWide.value) {
-      const heightObj = { value: stageContainerHeightPx.value }
-      gsap.to(heightObj, {
-        value: targetViewport.stageContainerHeight,
-        duration: 0.6,
-        ease: 'power2.inOut',
-        onUpdate: () => { stageContainerHeightPx.value = heightObj.value },
-      })
-    }
-
+    // Stage shrink is now driven by the .show-results CSS class on the overlay.
     nextTick(() => updateLayout())
   }
 
-  async function finish(dockScale: number, _resultLayout: OverlaySceneLayout) {
+  async function finish(_resultLayout: OverlaySceneLayout) {
     openResultPanel()
+    // Card focus → dock visual change is handled by CSS class on the overlay.
     _draws.forEach((draw, index) => {
       if (index < deps.cardCount.value) {
-        draw.scale = dockScale
+        draw.scale = 1
       }
     })
     refreshDraws()
@@ -741,8 +746,9 @@ export function useOverlayController(deps: UseOverlayControllerDeps) {
     timelineOrchestrator.clear()
     timelineOrchestrator.seek(0)
     showResults.value = false
-    stageContainerHeightPx.value = uni.getWindowInfo().windowHeight
     resetOverlayScene()
+    // Re-seed the store's draw state so the next run grabs fresh cards.
+    deps.tarotStore.startDivination(deps.tarotStore.currentQuestion)
     progressModel.reset()
     phase.value = 'shuffling'
     start()
@@ -788,14 +794,12 @@ export function useOverlayController(deps: UseOverlayControllerDeps) {
     killAnimationTargets([
       _bg, _stage, _header, _footer, _deckCtn,
       ..._initials, ..._lefts, ..._rights,
-      _cutTop, _cutMid, _cutBot, ..._draws, ..._inners,
+      ..._piles, ..._draws, ..._inners,
     ])
   })
 
   return {
     // Styles
-    stageContainerStyle,
-    resultZoneStyle,
     bgStyle,
     stageStyle,
     headerStyle,
@@ -806,17 +810,19 @@ export function useOverlayController(deps: UseOverlayControllerDeps) {
     rightsStyle,
     leftsVisible,
     rightsVisible,
-    cutTopStyle,
-    cutMidStyle,
-    cutBotStyle,
-    cutTopVisible,
-    cutMidVisible,
-    cutBotVisible,
+    pilesStyle,
+    pilesVisible,
     drawsStyle,
     drawsSizeStyle,
     innersStyle,
     drawsVisible,
     overlayVarsStyle,
+
+    // Configuration exposed to the template
+    deckCount: DECK_COUNT,
+    shuffleHalfCount: SHUFFLE_HALF_COUNT,
+    cutPileCount: CUT_PILE_COUNT,
+    cardsPerPile: CARDS_PER_PILE,
 
     // State
     showResults,
@@ -832,6 +838,8 @@ export function useOverlayController(deps: UseOverlayControllerDeps) {
     readingErrorMessage,
     isReadingFailed,
     isReadingLoading,
+    cardsFocused,
+    cardsDocked,
 
     // Progress
     progressHeaderPresentation,
