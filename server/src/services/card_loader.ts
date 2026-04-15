@@ -11,17 +11,17 @@ import pentaclesData from '../data/tarot-pentacles.json'
 import swordsData from '../data/tarot-swords.json'
 import wandsData from '../data/tarot-wands.json'
 
+import { config } from '../config'
 import { getDefaultTheme } from './theme_loader'
 
-// Derive tarot image base from default theme; fallback to hardcoded path
+// Derive tarot image base from default theme; fallback to staticBaseUrl
 function getThemeTarotBase(): string {
   const theme = getDefaultTheme()
   if (theme) {
     // card_back is like http://host/static/themes/golden_dawn/tarot/card_back.jpeg
     return theme.images.card_back.replace(/\/[^/]+$/, '')
   }
-  const base = process.env.STATIC_BASE_URL ?? 'http://localhost:3000'
-  return `${base}/static/themes/golden_dawn/tarot`
+  return `${config.staticBaseUrl}/static/themes/golden_dawn/tarot`
 }
 
 export interface TarotCardMeaning {

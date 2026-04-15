@@ -56,16 +56,22 @@ npm test -w test
 
 ## 生产构建
 
-生产构建：
+H5 + 服务端（推荐，本项目当前只做 H5 发布）：
+
+```bash
+npm run build:h5
+```
+
+H5 + 微信小程序 + 服务端：
 
 ```bash
 npm run build
 ```
 
-`build` 会执行：
+`build:h5` 会执行：
 
 1. 前后端类型检查
-2. H5 与微信小程序生产构建
+2. H5 Vite 生产构建
 3. `server/src` 编译到 `server/dist`
 
 当前生产构建策略：
@@ -77,16 +83,39 @@ npm run build
 - 关闭生产 sourcemap
 - 输出可直接运行的 `server/dist/server.js`
 
-运行生产构建产物：
+运行生产构建产物（开发机 smoke-test）：
 
 ```bash
-npm run start:prod
+NODE_ENV=production npm run start:prod
 ```
 
 默认访问：
 
 - H5: `http://localhost:3000`
-- Health Check: `http://localhost:3000/api/health`
+- Liveness: `http://localhost:3000/api/healthz`
+- Readiness: `http://localhost:3000/api/readyz`
+
+## 部署到服务器
+
+单机部署采用 **host nginx + systemd 托管 Node** 的标准组合，nginx 端外服务 TLS 与静态资源，Node 只监听 `127.0.0.1:3000` 处理 `/api/*`。完整步骤见 [deploy/README.md](deploy/README.md)，示例配置见：
+
+- [deploy/nginx.conf.example](deploy/nginx.conf.example)
+- [deploy/systemd/scales-tarot.service.example](deploy/systemd/scales-tarot.service.example)
+
+## 运行时配置
+
+所有服务端行为由环境变量驱动，集中在 [server/src/config.ts](server/src/config.ts)。本地使用复制 `.env.example` 为 `.env`；生产使用放入 `/etc/scales-tarot.env` 并由 systemd `EnvironmentFile` 加载。
+
+关键变量：
+
+| 变量 | 默认（prod / dev） | 说明 |
+|---|---|---|
+| `NODE_ENV` | `production` / `development` | 运行模式 |
+| `HOST` | `127.0.0.1` / `0.0.0.0` | 绑定地址；prod 默认仅本机，反代后安全 |
+| `PORT` | `3000` | 监听端口 |
+| `CORS_ORIGIN` | 空 → 同源 | 逗号分隔白名单；`*` 表示宽松（仅 dev） |
+| `LOG_LEVEL` | `info` / `debug` | pino 日志级别 |
+| `STATIC_BASE_URL` | `http://localhost:3000` | 后端拼接图片 URL 的基准；prod 设为 HTTPS 域 |
 
 ## 当前交互特性
 

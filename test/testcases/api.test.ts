@@ -14,15 +14,32 @@ import request from 'supertest'
 import app from '../../server/src/app'
 
 // ---------------------------------------------------------------------------
-// Health check
+// Health checks
 // ---------------------------------------------------------------------------
 
-describe('GET /api/health', () => {
+describe('GET /api/health (legacy synonym)', () => {
   it('returns 200 with status ok', async () => {
     const res = await request(app).get('/api/health')
     expect(res.status).toBe(200)
     expect(res.body.status).toBe('ok')
     expect(typeof res.body.timestamp).toBe('string')
+  })
+})
+
+describe('GET /api/healthz (liveness)', () => {
+  it('returns 200 with status ok', async () => {
+    const res = await request(app).get('/api/healthz')
+    expect(res.status).toBe(200)
+    expect(res.body.status).toBe('ok')
+  })
+})
+
+describe('GET /api/readyz (readiness)', () => {
+  it('returns 200 with card count when assets load', async () => {
+    const res = await request(app).get('/api/readyz')
+    expect(res.status).toBe(200)
+    expect(res.body.status).toBe('ready')
+    expect(res.body.cards).toBe(78)
   })
 })
 

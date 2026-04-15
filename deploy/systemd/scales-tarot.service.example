@@ -1,0 +1,69 @@
+# Scales Tarot — systemd unit example
+# ----------------------------------------------------------------------------
+# Copy to /etc/systemd/system/scales-tarot.service, then:
+#   sudo systemctl daemon-reload
+#   sudo systemctl enable --now scales-tarot
+#   sudo systemctl status scales-tarot
+#   sudo journalctl -u scales-tarot -f
+#
+# Prerequisites on the host:
+#   - Node >= 20 installed at /usr/bin/node (check: `which node`)
+#   - A dedicated unix user `tarot` with read access to /opt/scales-tarot
+#   - /etc/scales-tarot.env populated from repo's .env.example
+#     (chmod 600, owner root:tarot)
+
+[Unit]
+Description=Scales Tarot API
+Documentation=https://github.com/your-org/scales-tarot
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=tarot
+Group=tarot
+WorkingDirectory=/opt/scales-tarot
+
+# Env file is the authoritative source for PORT/HOST/CORS_ORIGIN/...
+# Keep deployment secrets OUT of this unit file; keep them in the env file
+# and restrict its permissions to 0600 root:tarot.
+EnvironmentFile=/etc/scales-tarot.env
+
+ExecStart=/usr/bin/node server/dist/server.js
+
+# Restart policy: pick up after transient crashes, but don't loop forever
+# if the app is fundamentally broken.
+Restart=on-failure
+RestartSec=3s
+StartLimitBurst=5
+StartLimitIntervalSec=60
+
+# Graceful shutdown — server.ts handles SIGTERM with a 10s internal timeout.
+# Give systemd the same headroom plus a small buffer before escalating.
+KillSignal=SIGTERM
+TimeoutStopSec=15s
+
+# Logging — stdout/stderr to journald, queryable via `journalctl -u`.
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=scales-tarot
+
+# Hardening — limit what a compromised process can touch.
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/opt/scales-tarot
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+RestrictSUIDSGID=true
+LockPersonality=true
+MemoryDenyWriteExecute=true
+
+# Resource caps — tune for the host; 512 MB is generous for this workload.
+MemoryMax=512M
+LimitNOFILE=4096
+
+[Install]
+WantedBy=multi-user.target

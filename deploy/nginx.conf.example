@@ -1,0 +1,119 @@
+# Scales Tarot — nginx site configuration example
+# ----------------------------------------------------------------------------
+# Copy this file to /etc/nginx/sites-available/scales-tarot.conf, adjust
+# `server_name` and the two `root`/`alias` paths to match your install
+# location, symlink into sites-enabled, then `nginx -t && systemctl reload
+# nginx`. Run `certbot --nginx -d your-domain.com` after the initial
+# HTTP-only deploy to provision TLS.
+#
+# Node listens on 127.0.0.1:3000 (see deploy/systemd/scales-tarot.service.example)
+# and is NOT exposed to the public internet.
+
+# Optional rate-limit zone shared across requests. Adjust rate as needed.
+limit_req_zone $binary_remote_addr zone=tarot_api:10m rate=20r/s;
+
+# ---- HTTP → HTTPS redirect ------------------------------------------------
+server {
+    listen 80;
+    listen [::]:80;
+    server_name your-domain.com;
+
+    # Let's Encrypt http-01 challenge; certbot manages this automatically.
+    location /.well-known/acme-challenge/ {
+        root /var/www/letsencrypt;
+    }
+
+    location / {
+        return 301 https://$host$request_uri;
+    }
+}
+
+# ---- HTTPS ----------------------------------------------------------------
+server {
+    listen 443 ssl;
+    listen [::]:443 ssl;
+    http2 on;
+    server_name your-domain.com;
+
+    # TLS — certbot populates these after `certbot --nginx -d your-domain.com`
+    ssl_certificate     /etc/letsencrypt/live/your-domain.com/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/your-domain.com/privkey.pem;
+    ssl_protocols       TLSv1.2 TLSv1.3;
+    ssl_ciphers         HIGH:!aNULL:!MD5;
+    ssl_prefer_server_ciphers on;
+
+    # Reasonable defaults for a small site
+    client_max_body_size 1m;
+    server_tokens off;
+
+    # ---- Compression ------------------------------------------------------
+    gzip on;
+    gzip_vary on;
+    gzip_min_length 1024;
+    gzip_types
+        text/plain text/css text/xml application/json application/javascript
+        application/xml+rss application/atom+xml image/svg+xml;
+
+    # ---- Static roots -----------------------------------------------------
+    # SPA build output (vite/uni-app H5 production bundle)
+    root /opt/scales-tarot/dist/build/h5;
+    index index.html;
+
+    # ---- Hashed SPA assets — long immutable cache -------------------------
+    location /assets/ {
+        expires 1y;
+        add_header Cache-Control "public, immutable";
+        try_files $uri =404;
+        access_log off;
+    }
+
+    # ---- Tarot images / fonts / theme assets ------------------------------
+    # Served directly from the server workspace's public dir; nginx reads
+    # the files, Node never handles these requests in prod.
+    location /static/ {
+        alias /opt/scales-tarot/server/public/static/;
+        expires 30d;
+        add_header Cache-Control "public, immutable";
+        access_log off;
+        try_files $uri =404;
+    }
+
+    # ---- API — reverse proxy to Node --------------------------------------
+    location /api/ {
+        limit_req zone=tarot_api burst=40 nodelay;
+
+        proxy_pass http://127.0.0.1:3000;
+        proxy_http_version 1.1;
+
+        proxy_set_header Host              $host;
+        proxy_set_header X-Real-IP         $remote_addr;
+        proxy_set_header X-Forwarded-For   $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+
+        # Keep connections alive to Node for lower latency.
+        proxy_set_header Connection "";
+
+        proxy_connect_timeout 5s;
+        proxy_read_timeout    30s;
+        proxy_send_timeout    30s;
+    }
+
+    # ---- SPA fallback -----------------------------------------------------
+    # Everything else: serve a static file if it exists, else index.html.
+    # index.html must NOT be cached so deploys take effect immediately.
+    location = /index.html {
+        add_header Cache-Control "no-cache";
+        try_files $uri =404;
+    }
+
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
+
+    # ---- Security headers -------------------------------------------------
+    # Adjust CSP connect-src if you plan to call any external origin.
+    add_header X-Content-Type-Options "nosniff" always;
+    add_header X-Frame-Options        "SAMEORIGIN" always;
+    add_header Referrer-Policy        "strict-origin-when-cross-origin" always;
+    add_header Permissions-Policy     "camera=(), microphone=(), geolocation=()" always;
+}

@@ -6,9 +6,10 @@
 
 import * as fs from 'fs'
 import * as path from 'path'
+import { config } from '../config'
 
-// Base URL for static assets
-const STATIC_BASE = process.env.STATIC_BASE_URL ?? 'http://localhost:3000'
+// Base URL for static assets — resolved from central config
+const STATIC_BASE = config.staticBaseUrl
 
 // Theme directory path (relative to server/src/services)
 const THEMES_DIR = path.join(__dirname, '..', '..', 'public', 'static', 'themes')
