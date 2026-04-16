@@ -11,10 +11,8 @@ import gsap from 'gsap'
 import { useTarotStore } from '../stores/tarot'
 import { useThemeStore } from '../stores/theme'
 import overlayConfig from '../config.json'
+import { useAnimationState } from './use_animation_state'
 import {
-  createShuffleInitialStates,
-  createCutInitialStates,
-  createDrawInitialStates,
   createTimelineOrchestrator,
   killAnimationTargets,
   createPhasePipeline,
@@ -79,8 +77,6 @@ export function useOverlayController(deps: UseOverlayControllerDeps) {
   const entryAnimationComplete = ref(false)
   const isPaused = ref(false)
   const playbackRate = ref(1)
-  const layoutCardWidth = ref(172)
-  const layoutCardHeight = ref(275)
 
   // Progress model
   const progressModel = createProgressModel('shuffling')
@@ -97,45 +93,32 @@ export function useOverlayController(deps: UseOverlayControllerDeps) {
     errorMessage: '解读暂时不可用，请稍后重试',
   })
 
+  let _readingPromise: ReturnType<typeof readingOrchestrator.start> | null = null
+
   // Timeline orchestrator
   const timelineOrchestrator = createTimelineOrchestrator(false)
 
-  // Animation state objects
-  const _bg = { opacity: 0 }
-  const _stage = { y: 0 }
-  const _header = { y: 60, opacity: 0 }
-  const _footer = { y: 60, opacity: 0 }
-  const _deckCtn = { x: 0 }
-
-  const { initials: _initials, lefts: _lefts, rights: _rights } = createShuffleInitialStates(DECK_COUNT, SHUFFLE_HALF_COUNT)
-  const { piles: _piles } = createCutInitialStates(MAX_CUT_PILES)
-  const { draws: _draws, inners: _inners } = createDrawInitialStates(MAX_CARD_COUNT)
-
-  // Visible flags
-  const leftsVisible = ref(false)
-  const rightsVisible = ref(false)
-  const pilesVisible = ref<boolean[]>(Array(MAX_CUT_PILES).fill(false))
-  const drawsVisible = ref<boolean[]>(Array(MAX_CARD_COUNT).fill(false))
-
-  // Style refs
-  const bgStyle = ref('opacity: 0')
-  const stageStyle = ref('')
-  const headerStyle = ref('transform: translateY(60px); opacity: 0')
-  const footerStyle = ref('transform: translateY(60px); opacity: 0')
-  const deckCtnStyle = ref('')
-  const initialsStyle = ref<string[]>(_initials.map((_, i) => `transform: translateY(${-i * 0.8}px)`))
-  const leftsStyle = ref<string[]>(Array.from({ length: SHUFFLE_HALF_COUNT }, () => ''))
-  const rightsStyle = ref<string[]>(Array.from({ length: SHUFFLE_HALF_COUNT }, () => ''))
-  const pilesStyle = ref<string[]>(Array(MAX_CUT_PILES).fill(''))
-  const drawsStyle = ref<string[]>(Array(MAX_CARD_COUNT).fill(''))
-  const drawsSizeStyle = ref<{ width: string; height: string }[]>(
-    Array.from({ length: MAX_CARD_COUNT }, () => ({ width: '', height: '' })),
-  )
-  const innersStyle = ref<string[]>(Array(MAX_CARD_COUNT).fill(''))
-
-  const overlayVarsStyle = computed(() =>
-    `--card-width: ${layoutCardWidth.value}px; --card-height: ${layoutCardHeight.value}px`,
-  )
+  const animState = useAnimationState({
+    deckCount: DECK_COUNT,
+    shuffleHalfCount: SHUFFLE_HALF_COUNT,
+    maxCutPiles: MAX_CUT_PILES,
+    maxCardCount: MAX_CARD_COUNT,
+  })
+  const {
+    _bg, _stage, _header, _footer, _deckCtn,
+    _initials, _lefts, _rights, _piles, _draws, _inners,
+    leftsVisible, rightsVisible, pilesVisible, drawsVisible,
+    layoutCardWidth, layoutCardHeight,
+    bgStyle, stageStyle, headerStyle, footerStyle, deckCtnStyle,
+    initialsStyle, leftsStyle, rightsStyle, pilesStyle,
+    drawsStyle, drawsSizeStyle, innersStyle,
+    overlayVarsStyle,
+    refreshBg, refreshStage, refreshHeader, refreshFooter, refreshDeckCtn,
+    refreshInitials, refreshLefts, refreshRights, refreshPiles, refreshDraws, refreshInners,
+    resetShuffleVisualState, resetCutVisualState, resetDrawVisualState, resetInitialDeckState,
+    setDrawCardSizes,
+    getAllTargets,
+  } = animState
 
   const cardBack = computed(() => deps.themeStore.cardBackImage)
   const readingPanelState = computed(() => readingOrchestrator.state.status)
@@ -162,43 +145,6 @@ export function useOverlayController(deps: UseOverlayControllerDeps) {
 
   const phaseSteps = computed(() => calculatePhaseProgress(phase.value))
   const activePhaseIndex = computed(() => phaseSteps.value.findIndex((s) => s.isActive))
-
-  // Refresh functions
-  function _cardStyleStr(state: { x: number; y: number; rotation: number; scale: number; scaleY: number; opacity: number }): string {
-    const scaleY = state.scaleY !== 1 ? ` scaleY(${state.scaleY})` : ''
-    return (
-      `transform: translateX(${state.x}px) translateY(${state.y}px) rotate(${state.rotation}deg) scale(${state.scale})${scaleY};` +
-      ` opacity: ${state.opacity}; will-change: transform`
-    )
-  }
-
-  function _centerStyleStr(state: { x: number; y: number; rotation: number; scale: number; opacity: number; zIndex: number }): string {
-    return (
-      `transform: translateX(calc(-50% + ${state.x}px)) translateY(calc(-50% + ${state.y}px))` +
-      ` rotate(${state.rotation}deg) scale(${state.scale});` +
-      ` opacity: ${state.opacity}; z-index: ${state.zIndex}; will-change: transform`
-    )
-  }
-
-  function _cardSizeStyleStr(width: number, height: number): { width: string; height: string } {
-    return { width: `${width}px`, height: `${height}px` }
-  }
-
-  function _innerStyleStr(state: { rotationY: number }): string {
-    return `transform: rotateY(${state.rotationY}deg)`
-  }
-
-  const refreshBg = () => { bgStyle.value = `opacity: ${_bg.opacity}` }
-  const refreshStage = () => { stageStyle.value = `transform: translateY(${_stage.y}px)` }
-  const refreshHeader = () => { headerStyle.value = `transform: translateY(${_header.y}px); opacity: ${_header.opacity}` }
-  const refreshFooter = () => { footerStyle.value = `transform: translateY(${_footer.y}px); opacity: ${_footer.opacity}` }
-  const refreshDeckCtn = () => { deckCtnStyle.value = `transform: translateX(${_deckCtn.x}px)` }
-  const refreshInitials = () => { initialsStyle.value = _initials.map(_cardStyleStr) }
-  const refreshLefts = () => { leftsStyle.value = _lefts.map(_cardStyleStr) }
-  const refreshRights = () => { rightsStyle.value = _rights.map(_cardStyleStr) }
-  const refreshPiles = () => { pilesStyle.value = _piles.map(_centerStyleStr) }
-  const refreshDraws = () => { drawsStyle.value = _draws.map(_centerStyleStr) }
-  const refreshInners = () => { innersStyle.value = _inners.map(_innerStyleStr) }
 
   // Layout helpers
   function getMenuButtonRect() {
@@ -262,15 +208,6 @@ export function useOverlayController(deps: UseOverlayControllerDeps) {
     })
   }
 
-  function setDrawCardSizes(layout: SceneLayoutResult) {
-    drawsSizeStyle.value = Array.from({ length: MAX_CARD_COUNT }, (_, index) => {
-      const card = layout.cards[index]
-      return _cardSizeStyleStr(card?.width ?? layout.cardWidth, card?.height ?? layout.cardHeight)
-    })
-    layoutCardWidth.value = layout.cardWidth
-    layoutCardHeight.value = layout.cardHeight
-  }
-
   function getCardImg(index: number): string {
     return deps.tarotStore.drawnCards[index]?.card.image || cardBack.value
   }
@@ -301,45 +238,6 @@ export function useOverlayController(deps: UseOverlayControllerDeps) {
 
   function seek(position: number | string) {
     timelineOrchestrator.seek(position)
-  }
-
-  // State reset
-  function resetShuffleVisualState() {
-    leftsVisible.value = false
-    rightsVisible.value = false
-    _lefts.forEach((state) => {
-      Object.assign(state, { x: 0, y: 0, rotation: 0, scale: 1, scaleY: 1, opacity: 0 })
-    })
-    _rights.forEach((state) => {
-      Object.assign(state, { x: 0, y: 0, rotation: 0, scale: 1, scaleY: 1, opacity: 0 })
-    })
-    refreshLefts()
-    refreshRights()
-  }
-
-  function resetCutVisualState() {
-    pilesVisible.value = Array(MAX_CUT_PILES).fill(false)
-    _piles.forEach((state, index) => {
-      Object.assign(state, { x: 0, y: 0, rotation: 0, scale: 1, opacity: 0, zIndex: 10 + index })
-    })
-    refreshPiles()
-  }
-
-  function resetDrawVisualState() {
-    drawsVisible.value = Array(MAX_CARD_COUNT).fill(false)
-    _draws.forEach((state, index) => {
-      Object.assign(state, { x: 0, y: 0, rotation: 0, scale: 1, opacity: 0, zIndex: 20 - index })
-    })
-    _inners.forEach((state) => { state.rotationY = 0 })
-    refreshDraws()
-    refreshInners()
-  }
-
-  function resetInitialDeckState() {
-    _initials.forEach((state, index) => {
-      Object.assign(state, { x: 0, y: -(index * 0.8), rotation: 0, scale: 1, scaleY: 1, opacity: 1 })
-    })
-    refreshInitials()
   }
 
   function resetOverlayScene() {
@@ -374,11 +272,7 @@ export function useOverlayController(deps: UseOverlayControllerDeps) {
     resumeAnimations()
     timelineOrchestrator.clear()
 
-    killAnimationTargets([
-      _bg, _stage, _header, _footer, _deckCtn,
-      ..._initials, ..._lefts, ..._rights,
-      ..._piles, ..._draws, ..._inners,
-    ])
+    killAnimationTargets(getAllTargets())
   }
 
   function settleEntryAnimation() {
@@ -558,9 +452,7 @@ export function useOverlayController(deps: UseOverlayControllerDeps) {
             question: deps.tarotStore.currentQuestion,
             spreadKind: deps.tarotStore.spreadKind,
           }
-          setTimeout(() => {
-            void readingOrchestrator.start(request)
-          }, 0)
+          _readingPromise = readingOrchestrator.start(request)
         }
       },
       onPipelineComplete: () => {
@@ -637,24 +529,12 @@ export function useOverlayController(deps: UseOverlayControllerDeps) {
     })
     refreshDraws()
 
-    const checkResult = () => {
-      if (readingOrchestrator.state.status === 'success' && readingOrchestrator.state.result) {
-        deps.tarotStore.revealResult()
-        deps.emit('complete')
-        return true
-      }
-      if (readingOrchestrator.state.status === 'error') {
-        return true
-      }
-      return false
-    }
+    await (_readingPromise ?? Promise.resolve(null))
+    _readingPromise = null
 
-    if (!checkResult()) {
-      const interval = setInterval(() => {
-        if (checkResult()) {
-          clearInterval(interval)
-        }
-      }, 100)
+    if (readingOrchestrator.state.status === 'success' && readingOrchestrator.state.result) {
+      deps.tarotStore.revealResult()
+      deps.emit('complete')
     }
   }
 
@@ -780,11 +660,7 @@ export function useOverlayController(deps: UseOverlayControllerDeps) {
     }
     timelineOrchestrator.clear()
     timelineOrchestrator.kill()
-    killAnimationTargets([
-      _bg, _stage, _header, _footer, _deckCtn,
-      ..._initials, ..._lefts, ..._rights,
-      ..._piles, ..._draws, ..._inners,
-    ])
+    killAnimationTargets(getAllTargets())
   })
 
   return {
