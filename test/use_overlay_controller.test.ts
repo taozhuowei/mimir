@@ -3,7 +3,26 @@
 import { mount } from '@vue/test-utils'
 import { defineComponent, h, nextTick, ref } from 'vue'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { createPinia, setActivePinia } from 'pinia'
 import type { ReadingResult, TarotCardInfo } from '../app/src/utils/tarotReading'
+
+// Post-d4cd310 the controller calls storeToRefs(tarotStore), which requires
+// a real Pinia store. Mock the cards/readings APIs the store imports at
+// module load so useTarotStore() is constructible without hitting the
+// network, then use setActivePinia in beforeEach.
+const mockFetchAllCards = vi.hoisted(() => vi.fn().mockResolvedValue([]))
+const mockFetchReading = vi.hoisted(() => vi.fn().mockResolvedValue({
+  result: 'positive',
+  score: 3,
+  cardDetails: [],
+}))
+
+vi.mock('../app/src/api/cards', () => ({
+  fetchAllCards: mockFetchAllCards,
+}))
+vi.mock('../app/src/api/readings', () => ({
+  fetchReading: mockFetchReading,
+}))
 
 // Track all mock function calls
 const pauseSpy = vi.fn()
@@ -109,14 +128,6 @@ vi.mock('../app/src/utils/spread_layout', () => ({
   resolveSpreadLayout: mockResolveSpreadLayout,
 }))
 
-vi.mock('../app/src/api/readings', () => ({
-  fetchReading: vi.fn().mockResolvedValue({
-    result: 'positive',
-    score: 3,
-    cardDetails: [],
-  }),
-}))
-
 function makeCard(): TarotCardInfo {
   return {
     id: 'test_card',
@@ -154,6 +165,7 @@ function makeReadingResult(): ReadingResult {
 
 describe('use_overlay_controller', () => {
   beforeEach(() => {
+    setActivePinia(createPinia())
     vi.useFakeTimers()
     lastTimeline = null
     pauseSpy.mockClear()
@@ -191,16 +203,19 @@ describe('use_overlay_controller', () => {
 
   async function mountHarness() {
     const { useOverlayController } = await import('../app/src/composables/use_overlay_controller')
+    const { useTarotStore } = await import('../app/src/stores/tarot')
 
-    const tarotStore = {
-      spreadKind: 'single_card' as const,
-      drawnCards: [{ card: makeCard(), position: 'upright' as const }],
-      readingResult: null as ReadingResult | null,
-      drawCards: vi.fn(),
-      setPhase: vi.fn(),
-      revealResult: vi.fn(),
-      currentQuestion: 'Test question',
-    }
+    // Real Pinia store so storeToRefs() works; seed the state the controller
+    // reads, then spy on the methods the controller may call during tests
+    // that exercise the flow. These spies are safe because the tests here
+    // don't assert on store side-effects — only on controller outputs.
+    const tarotStore = useTarotStore()
+    tarotStore.spreadKind = 'single_card'
+    tarotStore.drawnCards = [{ card: makeCard(), position: 'upright' }]
+    tarotStore.currentQuestion = 'Test question'
+    tarotStore.drawCards = vi.fn() as never
+    tarotStore.setPhase = vi.fn() as never
+    tarotStore.revealResult = vi.fn() as never
 
     const themeStore = {
       cardBackImage: '',
@@ -237,10 +252,12 @@ describe('use_overlay_controller', () => {
   it('provides controller with required properties', async () => {
     const { controller } = await mountHarness()
 
-    // Styles
-    expect(controller.stageContainerStyle).toBeDefined()
+    // Styles (stageContainerStyle was folded into stageStyle + overlayVarsStyle
+    // as part of d4cd310's layout refinement; the controller no longer exposes
+    // a single composed wrapper style.)
     expect(controller.bgStyle).toBeDefined()
     expect(controller.stageStyle).toBeDefined()
+    expect(controller.overlayVarsStyle).toBeDefined()
     expect(controller.phase).toBeDefined()
     expect(controller.showResults).toBeDefined()
 

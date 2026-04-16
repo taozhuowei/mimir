@@ -684,13 +684,17 @@ describe('headerHeight support', () => {
     expect(result.cards[0].y).toBe(25) // headerHeight / 2
   })
 
-  it('three_card narrow result_stage containerHeight=600 headerHeight=50 => present.y === 25', () => {
-    // Use taller container so headerHeight/2 center is achievable
+  it('three_card narrow result_stage containerHeight=1100 headerHeight=50 => present.y === 25', () => {
+    // Container must be tall enough that the three-card envelope leaves
+    // clamp headroom for headerHeight/2 offset. Post-d4cd310 envelope sizing
+    // fills a 600px container at max stretch (clamp range collapses to 0),
+    // so we use 1100px — sweep shows it's the first value where the 25px
+    // offset is actually realized.
     const result = resolveSpreadLayout({
       spreadKind: 'three_card',
       scene: 'result_stage',
       containerWidth: 390,
-      containerHeight: 600,
+      containerHeight: 1100,
       isWide: false,
       cardAspectRatio: 1.6,
       headerHeight: 50,

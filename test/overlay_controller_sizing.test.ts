@@ -3,7 +3,24 @@
 import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest'
 import { mount } from '@vue/test-utils'
 import { defineComponent, h, nextTick, ref } from 'vue'
-import type { ReadingResult, TarotCardInfo } from '../app/src/utils/tarotReading'
+import { createPinia, setActivePinia } from 'pinia'
+import type { TarotCardInfo } from '../app/src/utils/tarotReading'
+
+// Post-d4cd310 the controller calls storeToRefs(tarotStore); mock the
+// store's API dependencies so useTarotStore() is constructible.
+const mockFetchAllCards = vi.hoisted(() => vi.fn().mockResolvedValue([]))
+const mockFetchReading = vi.hoisted(() => vi.fn().mockResolvedValue({
+  result: 'positive',
+  score: 3,
+  cardDetails: [],
+}))
+
+vi.mock('../app/src/api/cards', () => ({
+  fetchAllCards: mockFetchAllCards,
+}))
+vi.mock('../app/src/api/readings', () => ({
+  fetchReading: mockFetchReading,
+}))
 
 vi.mock('gsap', () => ({
   default: {
@@ -49,14 +66,6 @@ vi.mock('../app/src/utils/spread_layout', () => ({
   })),
 }))
 
-vi.mock('../app/src/api/readings', () => ({
-  fetchReading: vi.fn().mockResolvedValue({
-    result: 'positive',
-    score: 3,
-    cardDetails: [],
-  }),
-}))
-
 function makeCard(): TarotCardInfo {
   return {
     id: 'test_card',
@@ -78,25 +87,12 @@ function makeCard(): TarotCardInfo {
   }
 }
 
-function makeReadingResult(): ReadingResult {
-  return {
-    result: 'positive',
-    score: 3,
-    cardDetails: [
-      {
-        card: makeCard(),
-        position: 'upright',
-        meaning: 'Test meaning',
-      },
-    ],
-  }
-}
-
 describe('use_overlay_controller result-zone sizing', () => {
   const windowHeight = 844
   const windowWidth = 390
 
   beforeEach(() => {
+    setActivePinia(createPinia())
     vi.useFakeTimers()
     vi.stubGlobal('uni', {
       getWindowInfo: () => ({
@@ -119,16 +115,15 @@ describe('use_overlay_controller result-zone sizing', () => {
 
   async function mountHarness(isWide = false) {
     const { useOverlayController } = await import('../app/src/composables/use_overlay_controller')
+    const { useTarotStore } = await import('../app/src/stores/tarot')
 
-    const tarotStore = {
-      spreadKind: 'single_card' as const,
-      drawnCards: [{ card: makeCard(), position: 'upright' as const }],
-      readingResult: null as ReadingResult | null,
-      drawCards: vi.fn(),
-      setPhase: vi.fn(),
-      revealResult: vi.fn(),
-      currentQuestion: 'Test question',
-    }
+    const tarotStore = useTarotStore()
+    tarotStore.spreadKind = 'single_card'
+    tarotStore.drawnCards = [{ card: makeCard(), position: 'upright' }]
+    tarotStore.currentQuestion = 'Test question'
+    tarotStore.drawCards = vi.fn() as never
+    tarotStore.setPhase = vi.fn() as never
+    tarotStore.revealResult = vi.fn() as never
 
     const themeStore = {
       cardBackImage: '',
@@ -161,31 +156,10 @@ describe('use_overlay_controller result-zone sizing', () => {
     }
   }
 
-  it('returns empty resultZoneStyle when results not shown', async () => {
-    const { controller } = await mountHarness()
-    
-    expect(controller.showResults.value).toBe(false)
-    expect(controller.resultZoneStyle.value).toBe('')
-  })
-
-  it('provides resultZoneStyle when showResults is true', async () => {
-    const { controller } = await mountHarness()
-    
-    // Simulate showing results
-    controller.showResults.value = true
-    await nextTick()
-    
-    // Result zone style should be computed with height
-    expect(controller.resultZoneStyle.value).toContain('height:')
-  })
-
-  it('provides stageContainerStyle', async () => {
-    const { controller } = await mountHarness()
-    
-    // Should provide stage container style
-    expect(controller.stageContainerStyle.value).toBeDefined()
-    expect(controller.stageContainerStyle.value).toContain('height:')
-  })
+  // resultZoneStyle and stageContainerStyle were removed in d4cd310 when the
+  // overlay flow stopped composing explicit sizing styles in the controller
+  // (DivinationOverlay.vue now derives them from individual refs). Assertions
+  // for those properties were dropped; remaining tests cover state/API surface.
 
   it('exposes reading error states through controller', async () => {
     const { controller } = await mountHarness()
