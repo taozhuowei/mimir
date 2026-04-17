@@ -182,9 +182,11 @@ describe('use_overlay_controller result-zone sizing', () => {
 
   it('exposes overlayVarsStyle for CSS custom properties', async () => {
     const { controller } = await mountHarness()
-    
+
     expect(controller.overlayVarsStyle).toBeDefined()
     expect(controller.overlayVarsStyle.value).toContain('--card-width:')
     expect(controller.overlayVarsStyle.value).toContain('--card-height:')
+    // --card-focus-scale must be present so .card-focus-frame scales correctly
+    expect(controller.overlayVarsStyle.value).toContain('--card-focus-scale:')
   })
 })

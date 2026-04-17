@@ -505,6 +505,9 @@ function handleRetry() {
 .draw-wrapper {
   perspective: 1200px;
   position: absolute;
+  /* CSS-driven size transition: JS sets draw/result sizes; CSS animates between them. */
+  transition: width 0.65s cubic-bezier(0.4, 0, 0.2, 1),
+              height 0.65s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* Focus frame: pure CSS scale that enlarges drawn cards after deal+flip and shrinks
@@ -523,6 +526,9 @@ function handleRetry() {
 .card-3d-inner {
   transform-style: preserve-3d;
   position: relative;
+  /* CSS-driven size transition (only width/height; transform is GSAP-controlled). */
+  transition: width 0.65s cubic-bezier(0.4, 0, 0.2, 1),
+              height 0.65s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .face-back,

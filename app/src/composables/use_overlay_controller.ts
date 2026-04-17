@@ -112,7 +112,7 @@ export function useOverlayController(deps: UseOverlayControllerDeps) {
     bgStyle, stageStyle, headerStyle, footerStyle, deckCtnStyle,
     initialsStyle, leftsStyle, rightsStyle, pilesStyle,
     drawsStyle, drawsSizeStyle, innersStyle,
-    overlayVarsStyle,
+    overlayVarsStyle: _rawOverlayVarsStyle,
     refreshBg, refreshStage, refreshHeader, refreshFooter, refreshDeckCtn,
     refreshInitials, refreshLefts, refreshRights, refreshPiles, refreshDraws, refreshInners,
     resetShuffleVisualState, resetCutVisualState, resetDrawVisualState, resetInitialDeckState,
@@ -134,6 +134,21 @@ export function useOverlayController(deps: UseOverlayControllerDeps) {
   })
   const cardsDocked = computed(() => showResults.value && readingOrchestrator.state.status === 'success')
   const focusScale = computed(() => getFocusScale(deps.isWide.value))
+
+  // CSS --card-focus-scale value: during the revealing phase (before results),
+  // scale cards up to fill the stage; return to 1 when results are visible.
+  // The CSS spring transition on .card-focus-frame animates the change.
+  const cardFocusScaleValue = computed(() => {
+    if (showResults.value) return 1
+    if (phase.value === 'revealing') return getFocusScale(deps.isWide.value)
+    return 1
+  })
+
+  // Enhanced overlay vars style: includes --card-focus-scale so the template's
+  // single :style binding on .divination-overlay propagates it into CSS.
+  const overlayVarsStyle = computed(() =>
+    `${_rawOverlayVarsStyle.value}; --card-focus-scale: ${cardFocusScaleValue.value}`,
+  )
 
   const progressHeaderPresentation = computed(() =>
     presentProgressHeader(phase.value, (name) => deps.themeStore.getUiAsset(name)),
@@ -173,6 +188,11 @@ export function useOverlayController(deps: UseOverlayControllerDeps) {
   /**
    * Resolve the unified scene layout for the current spread and viewport.
    * All layout math is delegated to the overlay_layout public API.
+   *
+   * draw_stage uses the full focusScale so card sizes are pre-shrunk to leave
+   * room for the CSS --card-focus-scale scale-up during the revealing phase.
+   * result_stage uses focusScale=1 so cards fill the smaller stage naturally
+   * (no CSS scale applied in the result view).
    */
   function getSceneLayout(scene: 'draw_stage' | 'result_stage'): SceneLayoutResult {
     const viewport = getViewportMetrics(scene === 'result_stage')
@@ -182,7 +202,7 @@ export function useOverlayController(deps: UseOverlayControllerDeps) {
       viewport,
       isWide: deps.isWide.value,
       cardAspectRatio: 1.6,
-      focusScale: getFocusScale(deps.isWide.value),
+      focusScale: scene === 'draw_stage' ? getFocusScale(deps.isWide.value) : 1,
       badgeOverflowPx: getBadgeOverflowPx(viewport.stageWidth),
     })
   }
@@ -482,42 +502,40 @@ export function useOverlayController(deps: UseOverlayControllerDeps) {
     runPipeline(startIndex)
   }
 
+  /**
+   * Sync card sizes (and positions) to the current scene without a GSAP tween.
+   * Called on viewport resize; CSS transitions on .draw-wrapper/.card-3d-inner
+   * handle any visual size change smoothly.
+   */
   function updateLayout() {
     if (phase.value !== 'revealing' && phase.value !== 'drawing') return
 
     const layout = getSceneLayout(showResults.value ? 'result_stage' : 'draw_stage')
     setDrawCardSizes(layout)
 
-    const targetX = layout.cards.map((c: { x: number }) => c.x)
-    const targetY = layout.cards.map((c: { y: number }) => c.y)
-
-    if (showResults.value) {
-      gsap.to(_stage, {
-        y: 0,
-        duration: 0.6,
-        ease: 'power2.out',
-        onUpdate: refreshStage,
-      })
-    }
-
+    // Snap card positions to match the new layout (important for multi-card spreads
+    // where slot pitches depend on card size).
     _draws.forEach((draw, index) => {
       if (index >= layout.cards.length) return
-      gsap.to(draw, {
-        x: targetX[index],
-        y: targetY[index],
-        scale: 1,
-        duration: 0.6,
-        ease: 'power2.out',
-        overwrite: 'auto',
-        onUpdate: refreshDraws,
-      })
+      draw.x = layout.cards[index].x
+      draw.y = layout.cards[index].y
     })
+    refreshDraws()
   }
 
+  /**
+   * Open the result panel.
+   * 1. showResults → cardFocusScaleValue computed → CSS spring transitions 1.42→1.
+   * 2. nextTick: update drawsSizeStyle to result-stage card sizes; CSS width/height
+   *    transition animates the shrink.  No GSAP needed.
+   */
   function openResultPanel() {
     if (showResults.value) return
     showResults.value = true
-    nextTick(() => updateLayout())
+    nextTick(() => {
+      const resultLayout = getSceneLayout('result_stage')
+      setDrawCardSizes(resultLayout)
+    })
   }
 
   async function finish(_resultLayout: SceneLayoutResult) {
