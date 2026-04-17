@@ -203,8 +203,14 @@
 **目标**：消除视觉与交互层面的粗糙感，提升上线品质。
 
 ### B.2.1 多端尺寸验证
-- [ ] 在 iPhone SE (375×667)、iPhone 14 Pro (393×852)、iPhone 16 Pro Max (440×956)、Pixel 7 (412×915)、iPad mini (768×1024) 的 H5 模拟器上完成完整占卜流程
-- [ ] 记录并修复所有布局错位、文字截断、按钮被遮挡、安全区不适配的问题
+- [x] 在 iPhone SE (375×667)、iPhone 14 Pro (393×852)、iPhone 16 Pro Max (440×956)、Pixel 7 (412×915)、iPad mini (768×1024) 的 H5 模拟器上完成完整占卜流程并截图存档
+- [x] 记录并修复所有布局错位、文字截断、按钮被遮挡、安全区不适配的问题
+  - 修复 index.vue H5 safeAreaTop 读取（原固定 20px → 动态计算）
+  - 修复 MP 宽屏断点固定 188px → clamp(120px, 13vw, 188px)
+  - 修复 MP safe-area-top 回退 44px → 0px
+  - 修复 idle deck fan spread 固定偏移 → 按 winWidth/375 比例缩放
+  - 修复 phase-progress gap 16px → 24rpx
+  - 修复 box-shadow px → rpx
 - [ ] 验证横屏旋转（若允许）或锁定竖屏提示的合理性
 - [x] 修复触控目标小于 44×44 px 的问题（`.phase-step-icon` 40×40、`.keyword-chip` 垂直 padding 不足）（Audit P2）
 

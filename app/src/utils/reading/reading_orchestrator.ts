@@ -34,6 +34,8 @@ export interface ReadingOrchestratorDeps {
   errorMessage: string
 }
 
+const TIMEOUT_MS = 15000
+
 export function createReadingOrchestrator(deps: ReadingOrchestratorDeps): ReadingOrchestrator {
   const { provider, statusRef, resultRef, errorRef, errorMessage } = deps
   let currentRequest: Promise<ReadingResult | null> | null = null
@@ -49,6 +51,27 @@ export function createReadingOrchestrator(deps: ReadingOrchestratorDeps): Readin
     }
   }
 
+  async function doRequest(request: ReadingRequest, retryCount: number): Promise<ReadingResult | null> {
+    const timeoutPromise = new Promise<never>((_, reject) => {
+      setTimeout(() => reject(new Error('请求超时，请稍后重试')), TIMEOUT_MS)
+    })
+
+    try {
+      const result = await Promise.race([provider.requestReading(request), timeoutPromise])
+      resultRef.value = result
+      statusRef.value = 'success'
+      return result
+    } catch (err: unknown) {
+      if (retryCount < 1) {
+        await new Promise<void>((resolve) => { setTimeout(resolve, 1000) })
+        return doRequest(request, retryCount + 1)
+      }
+      errorRef.value = err instanceof Error ? err.message : errorMessage
+      statusRef.value = 'error'
+      return null
+    }
+  }
+
   async function executeRequest(request: ReadingRequest): Promise<ReadingResult | null> {
     if (currentRequest) {
       return currentRequest
@@ -57,20 +80,9 @@ export function createReadingOrchestrator(deps: ReadingOrchestratorDeps): Readin
     statusRef.value = 'loading'
     errorRef.value = null
 
-    currentRequest = provider.requestReading(request)
-      .then((result) => {
-        resultRef.value = result
-        statusRef.value = 'success'
-        return result
-      })
-      .catch((err: unknown) => {
-        errorRef.value = err instanceof Error ? err.message : errorMessage
-        statusRef.value = 'error'
-        return null
-      })
-      .finally(() => {
-        currentRequest = null
-      })
+    currentRequest = doRequest(request, 0).finally(() => {
+      currentRequest = null
+    })
 
     return currentRequest
   }

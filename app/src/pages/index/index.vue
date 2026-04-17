@@ -7,9 +7,16 @@
           <text class="title font-display">Scales Tarot</text>
           <text class="subtitle">星盘感应受阻</text>
           <text class="guidance-text">请检查网络连接</text>
+          <text v-if="cardsLoadError" class="error-detail">{{ cardsLoadError }}</text>
         </view>
         <view class="error-body">
-          <view class="btn btn-primary" @click="retryLoadCards">重新感应</view>
+          <view
+            class="btn btn-primary"
+            :class="{ disabled: isCardsLoading }"
+            @click="retryLoadCards"
+          >
+            {{ isCardsLoading ? '感应中...' : '重新感应' }}
+          </view>
         </view>
       </view>
       <view v-if="isIdle && !cardsLoadError" class="idle-view">
@@ -90,6 +97,7 @@ const themeStore = useThemeStore()
 const cardBack = computed(() => themeStore.cardBackImage)
 const isIdle = computed(() => tarotStore.isIdle)
 const cardsLoadError = computed(() => tarotStore.cardsLoadError)
+const isCardsLoading = computed(() => tarotStore.isCardsLoading)
 function retryLoadCards() { tarotStore.loadCards() }
 
 const headerPaddingTop = ref(20)
@@ -382,6 +390,21 @@ onUnmounted(() => {
   font-size: 22rpx;
   color: var(--color-text-tertiary);
   letter-spacing: 0.08em;
+}
+
+.error-detail {
+  margin-top: 8rpx;
+  font-size: 20rpx;
+  color: var(--color-no);
+  letter-spacing: 0.04em;
+  max-width: 80%;
+  text-align: center;
+  word-break: break-word;
+}
+
+.btn.disabled {
+  opacity: 0.5;
+  pointer-events: none;
 }
 
 /* =========================================

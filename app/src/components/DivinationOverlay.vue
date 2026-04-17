@@ -123,7 +123,10 @@
     >
       <view class="result-zone-inner">
         <view v-if="controller.isReadingLoading.value" class="result-loading">
-          <text class="loading-text">{{ controller.overlayText.revealing }}</text>
+          <view class="loading-row">
+            <view class="loading-spinner"></view>
+            <text class="loading-text">{{ controller.overlayText.revealing }}</text>
+          </view>
           <view class="thinking-dots">
             <text class="dot dot-1">.</text>
             <text class="dot dot-2">.</text>
@@ -132,7 +135,10 @@
         </view>
 
         <view v-else-if="controller.isReadingFailed.value" class="result-error">
-          <text class="error-text">{{ controller.readingErrorMessage.value }}</text>
+          <view class="error-box">
+            <text class="error-icon">⚠️</text>
+            <text class="error-text">{{ controller.readingErrorMessage.value }}</text>
+          </view>
           <view class="btn btn-primary" @click="handleRetry">{{ '重试' }}</view>
         </view>
 
@@ -837,6 +843,47 @@ function handleRetry() {
   font-size: var(--text-base);
   color: var(--color-text-secondary);
   text-align: center;
+}
+
+.loading-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+}
+
+.loading-spinner {
+  width: 24rpx;
+  height: 24rpx;
+  border: 2rpx solid var(--color-border);
+  border-top-color: var(--color-accent);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  flex-shrink: 0;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.error-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-3);
+  background: var(--color-no-bg);
+  border-radius: 12rpx;
+  padding: var(--space-4);
+}
+
+.error-icon {
+  font-size: 40rpx;
+  line-height: 1;
+}
+
+.error-text {
+  color: var(--color-no);
+  font-weight: 500;
 }
 
 /* #ifdef H5 */

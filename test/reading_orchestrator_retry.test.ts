@@ -146,11 +146,12 @@ describe('reading_orchestrator retry', () => {
   })
 
   it('retries from error state and handles repeated failures', async () => {
-    // First call fails, second call succeeds
+    // First two calls fail (original + one auto-retry), third call (manual retry) succeeds
     const successResult = makeReadingResult()
     const provider = makeMockProvider()
     const requestMock = vi.fn()
       .mockRejectedValueOnce(new Error('First failure'))
+      .mockRejectedValueOnce(new Error('Second failure'))
       .mockResolvedValueOnce(successResult)
     provider.requestReading = requestMock
 
@@ -163,17 +164,19 @@ describe('reading_orchestrator retry', () => {
     })
 
     const request = makeRequest()
-    
-    // First attempt fails
+
+    // First attempt fails after auto-retry also fails
     const firstResult = await orchestrator.start(request)
     expect(firstResult).toBeNull()
     expect(statusRef.value).toBe('error')
-    expect(errorRef.value).toBe('First failure')
+    expect(errorRef.value).toBe('Second failure')
+    expect(provider.requestReading).toHaveBeenCalledTimes(2)
 
-    // Retry succeeds
+    // Manual retry succeeds
     const retryResult = await orchestrator.retry()
     expect(retryResult).toStrictEqual(successResult)
     expect(statusRef.value).toBe('success')
     expect(errorRef.value).toBeNull()
+    expect(provider.requestReading).toHaveBeenCalledTimes(3)
   })
 })

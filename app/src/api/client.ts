@@ -52,7 +52,10 @@ export function request<TResponse>(path: string, options: RequestOptions = {}): 
         if (res.statusCode >= 200 && res.statusCode < 300) {
           resolve(res.data as TResponse)
         } else {
-          reject(new Error(`API ${res.statusCode}: ${path}`))
+          const data = res.data as Record<string, unknown> | undefined
+          const serverError = typeof data?.error === 'string' ? data.error : typeof data?.message === 'string' ? data.message : undefined
+          const message = serverError || `API ${res.statusCode}: ${path}`
+          reject(new Error(message))
         }
       },
       fail(err) {
