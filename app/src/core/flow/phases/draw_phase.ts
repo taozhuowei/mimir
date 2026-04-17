@@ -202,7 +202,7 @@ export function buildDrawPhaseRunner(config: DrawPhaseConfig): PhaseRunner {
         rotationY: 180,
         duration: flipPerCardDuration,
         stagger: flipStagger,
-        ease: 'back.out(1.1)',
+        ease: 'power3.out',
       }, alignTime + 1.2)
 
       // Phase change

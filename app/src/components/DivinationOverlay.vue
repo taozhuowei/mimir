@@ -39,6 +39,7 @@
               :src="controller.cardBack.value"
               :style="controller.initialsStyle.value[i-1]"
               alt="塔罗牌背面"
+              lazy-load
             />
             <image
               v-for="i in controller.shuffleHalfCount"
@@ -48,6 +49,7 @@
               :src="controller.cardBack.value"
               :style="controller.leftsStyle.value[i-1]"
               alt="塔罗牌背面"
+              lazy-load
             />
             <image
               v-for="i in controller.shuffleHalfCount"
@@ -57,6 +59,7 @@
               :src="controller.cardBack.value"
               :style="controller.rightsStyle.value[i-1]"
               alt="塔罗牌背面"
+              lazy-load
             />
           </view>
 
@@ -75,6 +78,7 @@
               :src="controller.cardBack.value"
               :style="`top: ${-(cIdx - 1) * 2.5}px; left: ${(cIdx - 1) * 0.8}px; z-index: ${cIdx};`"
               alt="切牌堆"
+              lazy-load
             />
           </view>
 
@@ -90,7 +94,7 @@
                 <view class="card-3d-inner stage-pointer" :style="[controller.innersStyle.value[idx], controller.drawsSizeStyle.value[idx]]">
                   <image class="tarot-card face-back" :src="controller.cardBack.value" alt="塔罗牌背面" />
                   <view class="tarot-card face-front">
-                    <image class="front-img" :src="controller.getCardImg(idx)" :alt="controller.getCardImgName(idx) ?? '塔罗牌'" />
+                    <image class="front-img" :src="controller.getCardImg(idx)" :alt="controller.getCardImgName(idx) ?? '塔罗牌'" lazy-load />
                   </view>
                 </view>
 
@@ -366,6 +370,14 @@ function handleRetry() {
   --card-width: 172px;
   --card-height: calc(var(--card-width) * 1.6);
   --card-focus-scale: 1;
+  --color-overlay-bg: rgba(242, 232, 208, 0.97);
+  --color-overlay-bg-fade: rgba(242, 232, 208, 0.96);
+  --color-overlay-bg-transparent: rgba(242, 232, 208, 0);
+  --color-btn-primary-from: #2b302a;
+  --color-btn-primary-to: #1a1e19;
+  --color-btn-primary-text: #cca957;
+  --color-badge-reversed-from: #8b6f5e;
+  --color-badge-reversed-to: #5c3d2e;
 
   position: fixed;
   top: 0;
@@ -397,7 +409,7 @@ function handleRetry() {
   bottom: 0;
   left: 0;
   z-index: -1;
-  background: rgba(242, 232, 208, 0.97);
+  background: var(--color-overlay-bg);
 }
 
 /* Main flex region — stage always fills the full height; result sheet is overlaid. */
@@ -426,7 +438,7 @@ function handleRetry() {
   bottom: 0;
   height: 30vh;
   z-index: 55;
-  background: rgba(242, 232, 208, 0.97);
+  background: var(--color-overlay-bg);
   border-top: 1px solid var(--color-border);
   border-radius: 32rpx 32rpx 0 0;
   box-shadow: 0 -8rpx 48rpx rgba(30, 15, 6, 0.1);
@@ -486,6 +498,9 @@ function handleRetry() {
   display: flex;
   align-items: center;
   justify-content: center;
+  min-width: 44px;
+  min-height: 44px;
+  padding: 2px;
 }
 
 .phase-step-icon {
@@ -563,7 +578,7 @@ function handleRetry() {
   left: 0;
   pointer-events: none;
   transform: translateY(0);
-  transition: transform 0.55s cubic-bezier(0.34, 1.56, 0.64, 1);
+  transition: transform 0.55s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .show-results .draw-container {
@@ -598,7 +613,7 @@ function handleRetry() {
   position: relative;
   transform: scale(var(--card-focus-scale, 1));
   transform-origin: center center;
-  transition: transform 0.55s cubic-bezier(0.34, 1.56, 0.64, 1);
+  transition: transform 0.55s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 
@@ -641,7 +656,7 @@ function handleRetry() {
   justify-content: center;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
   z-index: 30;
-  animation: badge-pop-in 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  animation: badge-pop-in 0.3s cubic-bezier(0.4, 0, 0.2, 1) both;
 }
 
 .position-badge.upright {
@@ -649,7 +664,7 @@ function handleRetry() {
 }
 
 .position-badge.reversed {
-  background: linear-gradient(145deg, #8b6f5e, #5c3d2e);
+  background: linear-gradient(145deg, var(--color-badge-reversed-from), var(--color-badge-reversed-to));
 }
 
 .badge-label {
@@ -674,7 +689,7 @@ function handleRetry() {
   align-items: center;
   justify-content: center;
   padding: 24rpx 24rpx calc(env(safe-area-inset-bottom, 0px) + 24rpx);
-  background: linear-gradient(to top, rgba(242, 232, 208, 0.96), rgba(242, 232, 208, 0));
+  background: linear-gradient(to top, var(--color-overlay-bg-fade), var(--color-overlay-bg-transparent));
   z-index: 70;
   min-height: 96rpx;
   pointer-events: none;
@@ -696,10 +711,9 @@ function handleRetry() {
   gap: 12rpx;
   padding: 18rpx;
   border-radius: 20rpx;
-  background: rgba(247, 240, 224, 0.9);
+  background: rgba(247, 240, 224, 1);
   border: 1rpx solid var(--color-border-strong);
   box-shadow: 0 12rpx 36rpx rgba(30, 15, 6, 0.16);
-  backdrop-filter: blur(12px);
 }
 
 .dev-tools-header {
@@ -734,7 +748,7 @@ function handleRetry() {
   min-width: 68rpx;
   padding: 10rpx 18rpx;
   border-radius: 999rpx;
-  background: rgba(242, 232, 208, 0.96);
+  background: var(--color-overlay-bg-fade);
   border: 1rpx solid var(--color-border);
   color: var(--color-text-primary);
   font-size: 22rpx;
@@ -770,10 +784,10 @@ function handleRetry() {
 }
 
 .btn-primary {
-  background: linear-gradient(to bottom, #2b302a, #1a1e19);
+  background: linear-gradient(to bottom, var(--color-btn-primary-from), var(--color-btn-primary-to));
   border-radius: 40rpx;
   border: none;
-  color: #cca957;
+  color: var(--color-btn-primary-text);
   font-weight: bold;
 }
 

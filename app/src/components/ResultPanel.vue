@@ -147,7 +147,7 @@ const heroQuestionTiming = {
   gap: var(--space-4);
   align-items: center;
   text-align: center;
-  animation: rise-in 600ms cubic-bezier(0.34, 1.56, 0.64, 1);
+  animation: rise-in 600ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .eyebrow {
@@ -174,7 +174,7 @@ const heroQuestionTiming = {
   display: flex;
   flex-direction: column;
   gap: var(--space-5);
-  animation: rise-in 600ms cubic-bezier(0.34, 1.56, 0.64, 1) 150ms both;
+  animation: rise-in 600ms cubic-bezier(0.4, 0, 0.2, 1) 150ms both;
 }
 
 .meaning-item {
@@ -240,7 +240,7 @@ const heroQuestionTiming = {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 4rpx 16rpx;
+  padding: 12rpx 16rpx;
   border-radius: 20rpx;
   background: var(--result-tone-bg);
   border: 1rpx solid var(--color-border);

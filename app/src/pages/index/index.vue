@@ -42,6 +42,7 @@
               :src="cardBack"
               :style="cardsStyle[i-1]"
               alt="塔罗牌背面"
+              lazy-load
             />
           </view>
         </view>
@@ -153,9 +154,9 @@ function initEntranceAnimation() {
   // Animate header text elements using DOM-free pattern (WeChat Mini Program compatible)
   const headerTimeline = gsap.timeline()
   headerTimeline
-    .to(_title, { y: 0, opacity: 1, duration: 0.6, ease: 'back.out(1.2)', onUpdate: updateHeaderStyles })
-    .to(_subtitle, { y: 0, opacity: 1, duration: 0.6, ease: 'back.out(1.2)', onUpdate: updateHeaderStyles }, 0.08)
-    .to(_guidance, { y: 0, opacity: 1, duration: 0.6, ease: 'back.out(1.2)', onUpdate: updateHeaderStyles }, 0.16)
+    .to(_title, { y: 0, opacity: 1, duration: 0.6, ease: 'power3.out', onUpdate: updateHeaderStyles })
+    .to(_subtitle, { y: 0, opacity: 1, duration: 0.6, ease: 'power3.out', onUpdate: updateHeaderStyles }, 0.08)
+    .to(_guidance, { y: 0, opacity: 1, duration: 0.6, ease: 'power3.out', onUpdate: updateHeaderStyles }, 0.16)
 
   // Animate touch hint - already uses correct DOM-free pattern
   const _hint = { opacity: 0 }
