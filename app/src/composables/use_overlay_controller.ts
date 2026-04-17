@@ -319,8 +319,7 @@ export function useOverlayController(deps: UseOverlayControllerDeps) {
   function getOverlayLayouts() {
     const drawViewport = getViewportMetrics(false)
     const drawLayout = getSceneLayout('draw_stage')
-    const resultLayout = getSceneLayout('result_stage')
-    return { drawViewport, drawLayout, resultLayout }
+    return { drawViewport, drawLayout }
   }
 
   function transitionPhase(nextPhase: OverlayPhase) {
@@ -479,8 +478,7 @@ export function useOverlayController(deps: UseOverlayControllerDeps) {
         }
       },
       onPipelineComplete: () => {
-        const { resultLayout } = getOverlayLayouts()
-        void finish(resultLayout)
+        void finish()
       },
     })
 
@@ -509,11 +507,12 @@ export function useOverlayController(deps: UseOverlayControllerDeps) {
    * Sync card sizes (and positions) to the current scene without a GSAP tween.
    * Called on viewport resize; CSS transitions on .draw-wrapper/.card-3d-inner
    * handle any visual size change smoothly.
+   * Cards always use draw_stage layout — the result sheet overlays without affecting the stage.
    */
   function updateLayout() {
     if (phase.value !== 'revealing' && phase.value !== 'drawing') return
 
-    const layout = getSceneLayout(showResults.value ? 'result_stage' : 'draw_stage')
+    const layout = getSceneLayout('draw_stage')
     setDrawCardSizes(layout)
 
     // Snap card positions to match the new layout (important for multi-card spreads
@@ -527,21 +526,16 @@ export function useOverlayController(deps: UseOverlayControllerDeps) {
   }
 
   /**
-   * Open the result panel.
-   * 1. showResults → cardFocusScaleValue computed → CSS spring transitions 1.42→1.
-   * 2. nextTick: update drawsSizeStyle to result-stage card sizes; CSS width/height
-   *    transition animates the shrink.  No GSAP needed.
+   * Open the result sheet.
+   * showResults → result-zone bottom sheet slides in via CSS animation.
+   * Cards stay at draw_stage size; no repositioning needed.
    */
   function openResultPanel() {
     if (showResults.value) return
     showResults.value = true
-    nextTick(() => {
-      const resultLayout = getSceneLayout('result_stage')
-      setDrawCardSizes(resultLayout)
-    })
   }
 
-  async function finish(_resultLayout: SceneLayoutResult) {
+  async function finish() {
     openResultPanel()
     _draws.forEach((draw, index) => {
       if (index < deps.cardCount.value) {

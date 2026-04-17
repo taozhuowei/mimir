@@ -103,38 +103,38 @@
           </view>
         </view>
       </view>
-
-      <!-- Result area: scrolls only when content overflows; sized to fit naturally otherwise. -->
-      <scroll-view
-        v-if="controller.showResults.value"
-        class="result-zone"
-        scroll-y
-        enable-flex
-      >
-        <view class="result-zone-inner">
-          <view v-if="controller.isReadingLoading.value" class="result-loading">
-            <text class="loading-text">{{ controller.overlayText.revealing }}</text>
-            <view class="thinking-dots">
-              <text class="dot dot-1">.</text>
-              <text class="dot dot-2">.</text>
-              <text class="dot dot-3">.</text>
-            </view>
-          </view>
-
-          <view v-else-if="controller.isReadingFailed.value" class="result-error">
-            <text class="error-text">{{ controller.readingErrorMessage.value }}</text>
-            <view class="btn btn-primary" @click="handleRetry">{{ '重试' }}</view>
-          </view>
-
-          <ResultPanel
-            v-else-if="tarotStore.readingResult"
-            :reading-result="tarotStore.readingResult"
-            :question="tarotStore.currentQuestion"
-            @restart="handleRestart"
-          />
-        </view>
-      </scroll-view>
     </view>
+
+    <!-- Result sheet: absolute bottom sheet, slides up over the card stage -->
+    <scroll-view
+      v-if="controller.showResults.value"
+      class="result-zone"
+      scroll-y
+      enable-flex
+    >
+      <view class="result-zone-inner">
+        <view v-if="controller.isReadingLoading.value" class="result-loading">
+          <text class="loading-text">{{ controller.overlayText.revealing }}</text>
+          <view class="thinking-dots">
+            <text class="dot dot-1">.</text>
+            <text class="dot dot-2">.</text>
+            <text class="dot dot-3">.</text>
+          </view>
+        </view>
+
+        <view v-else-if="controller.isReadingFailed.value" class="result-error">
+          <text class="error-text">{{ controller.readingErrorMessage.value }}</text>
+          <view class="btn btn-primary" @click="handleRetry">{{ '重试' }}</view>
+        </view>
+
+        <ResultPanel
+          v-else-if="tarotStore.readingResult"
+          :reading-result="tarotStore.readingResult"
+          :question="tarotStore.currentQuestion"
+          @restart="handleRestart"
+        />
+      </view>
+    </scroll-view>
 
     <!-- Action bar: floats at the bottom of the screen, never scrolls with content -->
     <view class="action-bar">
@@ -320,7 +320,7 @@ function handleRetry() {
   background: rgba(242, 232, 208, 0.97);
 }
 
-/* Main flex region — flows column on narrow / row on wide once results show. */
+/* Main flex region — stage always fills the full height; result sheet is overlaid. */
 .overlay-main {
   flex: 1;
   display: flex;
@@ -329,63 +329,62 @@ function handleRetry() {
   overflow: hidden;
 }
 
-.is-wide.show-results .overlay-main {
-  flex-direction: row;
-}
-
 .stage-container {
   position: relative;
   display: flex;
   flex-direction: column;
   flex: 1;
   min-height: 0;
-  transition: flex 0.4s ease, height 0.4s ease;
 }
 
-/* Narrow + results: stage shrinks to make room for the reading; CSS-driven, no JS height calc. */
-.show-results .stage-container {
-  flex: 0 0 36vh;
-  height: 36vh;
-}
-
-.is-wide.show-results .stage-container {
-  flex: 0 0 44%;
-  width: 44%;
-  height: 100%;
-}
-
+/* Result sheet: absolute bottom sheet that slides up over the cards.
+   Cards are never repositioned or resized — the sheet overlays them. */
 .result-zone {
-  flex: 1;
-  min-height: 0;
-  background: rgba(242, 232, 208, 0.92);
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 65vh;
+  z-index: 55;
+  background: rgba(242, 232, 208, 0.97);
   border-top: 1px solid var(--color-border);
-  animation: result-slide-in 0.5s cubic-bezier(0.4, 0, 0.2, 1) both;
+  border-radius: 32rpx 32rpx 0 0;
+  box-shadow: 0 -8rpx 48rpx rgba(30, 15, 6, 0.1);
+  animation: result-sheet-in 0.52s cubic-bezier(0.32, 0.72, 0, 1) both;
 }
 
+/* Wide screens: side panel slides in from the right instead of a bottom sheet. */
 .is-wide .result-zone {
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: auto;
+  width: 46%;
+  height: 100%;
   border-top: none;
   border-left: 1px solid var(--color-border);
-  animation-name: result-slide-in-right;
+  border-radius: 0;
+  box-shadow: -8rpx 0 48rpx rgba(30, 15, 6, 0.08);
+  animation-name: result-sheet-in-right;
 }
 
-/* Inner wrapper lets ResultPanel flow at its natural height; scroll-view only scrolls
-   when this content exceeds the result-zone height. */
+/* Inner wrapper: natural-height content; bottom padding clears the action bar. */
 .result-zone-inner {
   display: flex;
   flex-direction: column;
   align-items: center;
   width: 100%;
-  padding-bottom: 24rpx;
+  padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 120rpx);
 }
 
-@keyframes result-slide-in {
-  from { opacity: 0; transform: translateY(32px); }
-  to   { opacity: 1; transform: translateY(0); }
+@keyframes result-sheet-in {
+  from { transform: translateY(100%); }
+  to   { transform: translateY(0); }
 }
 
-@keyframes result-slide-in-right {
-  from { opacity: 0; transform: translateX(32px); }
-  to   { opacity: 1; transform: translateX(0); }
+@keyframes result-sheet-in-right {
+  from { transform: translateX(100%); }
+  to   { transform: translateX(0); }
 }
 
 .progress-header {
@@ -424,19 +423,11 @@ function handleRetry() {
 .progress-header {
   margin-top: calc(env(safe-area-inset-top, 0px) + 60rpx);
 }
-
-.show-results .progress-header {
-  margin-top: calc(env(safe-area-inset-top, 0px) + 20rpx);
-}
 /* #endif */
 
 /* #ifdef MP-WEIXIN */
 .progress-header {
   margin-top: calc(env(safe-area-inset-top, 44px) + 140rpx);
-}
-
-.show-results .progress-header {
-  margin-top: calc(env(safe-area-inset-top, 44px) + 60rpx);
 }
 /* #endif */
 
@@ -592,18 +583,25 @@ function handleRetry() {
   to   { opacity: 1; transform: scale(1); }
 }
 
-/* Action bar — fixed at the bottom of the overlay, never scrolls with the result panel */
+/* Action bar — floats above both the stage and the result sheet. */
 .action-bar {
-  flex-shrink: 0;
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
   display: flex;
   gap: 24rpx;
   align-items: center;
   justify-content: center;
   padding: 24rpx 24rpx calc(env(safe-area-inset-bottom, 0px) + 24rpx);
   background: linear-gradient(to top, rgba(242, 232, 208, 0.96), rgba(242, 232, 208, 0));
-  z-index: 60;
-  position: relative;
+  z-index: 70;
   min-height: 96rpx;
+  pointer-events: none;
+}
+
+.action-bar > * {
+  pointer-events: auto;
 }
 
 .dev-tools {
