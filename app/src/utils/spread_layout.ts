@@ -1,26 +1,23 @@
 /**
- * Name: spread_layout
- * Purpose: public API that delegates to the foldered layout system.
+ * TEMPORARY test adapter for spread layout.
+ * This file exists solely to keep spread_layout.test.ts green during the A.1 -> A.5 migration.
+ * It will be removed in A.5 when tests are rewritten to use core layout resolvers directly.
  */
 
-import { resolveSpreadLayout as resolveSpreadLayoutCore } from './overlay_layout/spread_solver'
-import { resolveCardSize } from './overlay_layout/card_size_solver'
-import type { SceneLayoutResult } from './overlay_layout/scene_layout'
-import { getSpreadCardCount } from './overlay_layout/spread_registry'
+import type { SafeFrame } from '../core/viewport/types'
+import { resolveCardSize } from '../core/sizing/card_size_solver'
+import { resolveDrawLayout } from '../core/layout/draw_layout_resolver'
+import { resolveResultLayout } from '../core/layout/result_layout_resolver'
+import { resolveSpreadSpec, getSpreadSlots } from '../core/layout/spread_registry'
+import { resolveSpreadSlots } from '../core/layout/spread_layout_calculator'
 import { getBuiltInEnvelopeRequirement } from './overlay_layout/spread_spec'
-import type {
-  SpreadCardLayout,
-  SpreadLayoutResult,
-  SpreadId as SpreadKind,
-  SpreadScene,
-} from './overlay_layout/spread_spec'
+import { getSpreadCardCount } from '../core/layout/spread_registry'
 
-export type { SpreadCardLayout, SpreadLayoutResult, SpreadScene }
-export type { SpreadKind }
+export { getSpreadCardCount }
 
 export interface SpreadLayoutInput {
   spreadKind: string
-  scene: SpreadScene
+  scene: 'draw_stage' | 'result_stage'
   containerWidth: number
   containerHeight: number
   isWide: boolean
@@ -28,78 +25,54 @@ export interface SpreadLayoutInput {
   headerHeight?: number
 }
 
-export interface SpreadLayoutResultWithEnvelope extends SpreadLayoutResult {
-  envelope: {
-    cardWidth: number
-    cardHeight: number
-    gap: number
-    horizontalSlots: number
-    verticalSlots: number
-    slotPitchX: number
-    slotPitchY: number
-    halfSpanX: number
-    halfSpanY: number
-    fullSpanX: number
-    fullSpanY: number
-  }
+export interface SpreadLayoutResult {
+  cards: {
+    slotId: string
+    x: number
+    y: number
+    width: number
+    height: number
+    rotateDeg: number
+    zIndex: number
+  }[]
+  cardWidth: number
+  cardHeight: number
+  stageShiftY: number
 }
 
-export { getSpreadCardCount }
-
-/**
- * Resolve spread layout for given input parameters.
- * Delegates directly to the spread solver (no safe-frame insets) to preserve
- * legacy behavior where draw_stage and result_stage yield identical card sizes.
- */
-export function resolveSpreadLayout(input: SpreadLayoutInput): SpreadLayoutResultWithEnvelope {
-  const {
-    spreadKind,
-    scene,
-    containerWidth,
-    containerHeight,
-    isWide,
-    cardAspectRatio,
-    headerHeight,
-  } = input
-
-  const envelope = resolveCardSize({
-    safeWidth: containerWidth,
-    safeHeight: containerHeight,
-    cardAspectRatio,
-    ...getBuiltInEnvelopeRequirement(spreadKind, isWide),
-  })
-
-  const result = resolveSpreadLayoutCore({
-    spreadId: spreadKind,
-    scene,
-    containerWidth,
-    containerHeight,
-    isWide,
-    envelope,
-    headerHeight,
-  })
-
-  return {
-    cardWidth: result.cardWidth,
-    cardHeight: result.cardHeight,
-    stageShiftY: result.stageShiftY,
-    cards: result.cards,
-    envelope: envelopeFromCardSize(envelope),
+export function resolveSpreadLayout(input: SpreadLayoutInput): SpreadLayoutResult {
+  const safeFrame: SafeFrame = {
+    x: 0,
+    y: 0,
+    width: input.containerWidth,
+    height: input.containerHeight,
+    centerX: 0,
+    centerY: 0,
+    bottomInset: 0,
   }
-}
 
-function envelopeFromCardSize(size: SceneLayoutResult['envelope']): SpreadLayoutResultWithEnvelope['envelope'] {
+  const cardSize = resolveCardSize({
+    safeFrame,
+    cardAspectRatio: input.cardAspectRatio,
+    requirement: getBuiltInEnvelopeRequirement(input.spreadKind, input.isWide),
+  })
+
+  const spec = resolveSpreadSpec(input.spreadKind, input.isWide)
+  const slotDefs = getSpreadSlots(input.spreadKind, input.isWide)
+  const slots = resolveSpreadSlots(
+    { ...spec, slots: slotDefs, wideSlots: input.isWide ? slotDefs : spec.wideSlots },
+    input.isWide,
+    cardSize,
+  )
+
+  const spread = input.scene === 'draw_stage'
+    ? resolveDrawLayout(input.spreadKind, slots, safeFrame, cardSize, spec.zIndexes)
+    : resolveResultLayout(input.spreadKind, slots, safeFrame, cardSize, input.headerHeight, spec.zIndexes)
+
   return {
-    cardWidth: size.cardWidth,
-    cardHeight: size.cardHeight,
-    gap: size.gap,
-    horizontalSlots: size.horizontalSlots,
-    verticalSlots: size.verticalSlots,
-    slotPitchX: size.slotPitchX,
-    slotPitchY: size.slotPitchY,
-    halfSpanX: size.halfSpanX,
-    halfSpanY: size.halfSpanY,
-    fullSpanX: size.fullSpanX,
-    fullSpanY: size.fullSpanY,
+    cards: spread.cards,
+    cardWidth: cardSize.width,
+    cardHeight: cardSize.height,
+    stageShiftY: spread.stageShiftY,
   }
 }

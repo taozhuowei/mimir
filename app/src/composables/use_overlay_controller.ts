@@ -12,6 +12,7 @@ import { useTarotStore } from '../stores/tarot'
 import { useThemeStore } from '../stores/theme'
 import overlayConfig from '../config.json'
 import { useAnimationState } from './use_animation_state'
+import { useOverlayLayout } from './useOverlayLayout'
 import {
   createTimelineOrchestrator,
   killAnimationTargets,
@@ -26,15 +27,8 @@ import {
   presentFooter,
   DEFAULT_OVERLAY_TEXT,
 } from '../utils/overlay_progress'
-import {
-  resolveSceneLayout,
-  resolveOverlayViewport,
-  resolveMotionMetrics,
-  resolveOverlaySafeFrame,
-  getFocusScale,
-  getBadgeOverflowPx,
-  type SceneLayoutResult,
-} from '../utils/overlay_layout/index'
+import type { SceneLayoutResult } from '../core/layout/scene_layout'
+import { buildOverlaySafeFrame, getFocusScale } from '../utils/overlay_layout/index'
 import { OfflineReadingProvider } from '../utils/reading/offline_reading_provider'
 import { createReadingOrchestrator } from '../utils/reading/reading_orchestrator'
 import type { ReadingRequest } from '../utils/reading/reading_provider'
@@ -45,7 +39,7 @@ import { buildDrawPhaseRunner } from '../core/flow/phases/draw_phase'
 import { buildRevealPhaseRunner } from '../core/flow/phases/reveal_phase'
 import { resolveDeckGeometry } from '../core/deck/deck_calculator'
 import type { CardLayout } from '../core/layout/types'
-import type { SafeFrame } from '../core/viewport/types'
+
 
 const MAX_CARD_COUNT = 10
 const MAX_CUT_PILES = 8
@@ -99,6 +93,13 @@ export function useOverlayController(deps: UseOverlayControllerDeps) {
 
   // Timeline orchestrator
   const timelineOrchestrator = createTimelineOrchestrator(false)
+
+  const layoutApi = useOverlayLayout({
+    isWide: deps.isWide,
+    spreadKind: deps.tarotStore.spreadKind,
+    cutPileCount: CUT_PILE_COUNT,
+    deckCount: DECK_COUNT,
+  })
 
   const animState = useAnimationState({
     deckCount: DECK_COUNT,
@@ -163,75 +164,15 @@ export function useOverlayController(deps: UseOverlayControllerDeps) {
   const phaseSteps = computed(() => calculatePhaseProgress(phase.value))
   const activePhaseIndex = computed(() => phaseSteps.value.findIndex((s) => s.isActive))
 
-  // Layout helpers
-  function getMenuButtonRect() {
-    // #ifdef MP-WEIXIN
-    try {
-      const { top, height } = uni.getMenuButtonBoundingClientRect()
-      return { top, height }
-    } catch {
-      return { top: 44, height: 32 }
-    }
-    // #endif
-    return null
-  }
-
-  function getViewportMetrics(nextShowResults: boolean = showResults.value) {
-    const { windowWidth, windowHeight } = uni.getWindowInfo()
-    return resolveOverlayViewport({
-      windowWidth,
-      windowHeight,
-      isWide: deps.isWide.value,
-      showResults: nextShowResults,
-      menuButtonRect: getMenuButtonRect(),
-    })
-  }
-
-  /**
-   * Resolve the unified scene layout for the current spread and viewport.
-   * All layout math is delegated to the overlay_layout public API.
-   *
-   * draw_stage uses the full focusScale so card sizes are pre-shrunk to leave
-   * room for the CSS --card-focus-scale scale-up during the revealing phase.
-   * result_stage uses focusScale=1 so cards fill the smaller stage naturally
-   * (no CSS scale applied in the result view).
-   */
-  function getSceneLayout(scene: 'draw_stage' | 'result_stage'): SceneLayoutResult {
-    const viewport = getViewportMetrics(scene === 'result_stage')
-    return resolveSceneLayout({
-      spreadId: deps.tarotStore.spreadKind,
-      scene,
-      viewport,
-      isWide: deps.isWide.value,
-      cardAspectRatio: 1.6,
-      focusScale: scene === 'draw_stage' ? getFocusScale(deps.isWide.value) : 1,
-      badgeOverflowPx: getBadgeOverflowPx(viewport.stageWidth),
-      resultSheetFraction: scene === 'draw_stage' ? RESULT_SHEET_FRACTION : undefined,
-    })
-  }
-
-  /**
-   * Resolve the unified motion metrics for the current scene.
-   * All motion bounds come from the same safe-frame/card-size source.
-   * Safe frame is computed once and shared with layout.
-   */
-  function getMotionMetrics(scene: 'draw_stage' | 'result_stage' = 'draw_stage') {
-    const viewport = getViewportMetrics(scene === 'result_stage')
-    const safeFrame = resolveOverlaySafeFrame(scene, viewport, {
-      resultSheetFraction: scene === 'draw_stage' ? RESULT_SHEET_FRACTION : undefined,
-    })
-
-    return resolveMotionMetrics({
-      safeFrame,
-      cardAspectRatio: 1.6,
-      spreadId: deps.tarotStore.spreadKind,
-      isWide: deps.isWide.value,
-      cutPileCount: CUT_PILE_COUNT,
-      deckCount: DECK_COUNT,
-      focusScale: getFocusScale(deps.isWide.value),
-      badgeOverflowPx: getBadgeOverflowPx(viewport.stageWidth),
-    })
-  }
+  // Layout helpers delegated to useOverlayLayout
+  const {
+    getSceneLayout,
+    getMotionMetrics,
+    getOverlayLayouts,
+    getViewportMetrics,
+    RESULT_SHEET_FRACTION,
+    checkWidth,
+  } = layoutApi
 
   function getCardImg(index: number): string {
     return deps.tarotStore.drawnCards[index]?.card.image || cardBack.value
@@ -320,12 +261,6 @@ export function useOverlayController(deps: UseOverlayControllerDeps) {
     entryAnimationComplete.value = true
   }
 
-  function getOverlayLayouts() {
-    const drawViewport = getViewportMetrics(false)
-    const drawLayout = getSceneLayout('draw_stage')
-    return { drawViewport, drawLayout }
-  }
-
   function transitionPhase(nextPhase: OverlayPhase) {
     phase.value = nextPhase
     progressModel.transitionTo(nextPhase)
@@ -334,18 +269,11 @@ export function useOverlayController(deps: UseOverlayControllerDeps) {
 
   function createPhaseContext(): PhaseContext {
     const drawViewport = getViewportMetrics(false)
-    const overlaySafeFrame = resolveOverlaySafeFrame('draw_stage', drawViewport, {
-      resultSheetFraction: RESULT_SHEET_FRACTION,
-    })
-    const safeFrame: SafeFrame = {
-      x: overlaySafeFrame.sideInset,
-      y: overlaySafeFrame.topInset,
-      width: overlaySafeFrame.width,
-      height: overlaySafeFrame.height,
-      centerX: overlaySafeFrame.stageCenterX,
-      centerY: overlaySafeFrame.stageCenterY,
-      bottomInset: overlaySafeFrame.bottomInset,
-    }
+    const safeFrame = buildOverlaySafeFrame(
+      'draw_stage',
+      drawViewport,
+      RESULT_SHEET_FRACTION,
+    )
 
     return {
       deckGeometry: resolveDeckGeometry(safeFrame, DECK_COUNT),
@@ -376,19 +304,6 @@ export function useOverlayController(deps: UseOverlayControllerDeps) {
         rights: rightsVisible,
         piles: pilesVisible,
         draws: drawsVisible,
-      },
-      refresh: {
-        initials: refreshInitials,
-        lefts: refreshLefts,
-        rights: refreshRights,
-        piles: refreshPiles,
-        draws: refreshDraws,
-        inners: refreshInners,
-        stage: refreshStage,
-        deckCtn: refreshDeckCtn,
-        bg: refreshBg,
-        header: refreshHeader,
-        footer: refreshFooter,
       },
       onPhaseChange: (p: OverlayPhase) => {
         phase.value = p
@@ -521,6 +436,9 @@ export function useOverlayController(deps: UseOverlayControllerDeps) {
     const layout = getSceneLayout('draw_stage')
     setDrawCardSizes(layout)
 
+    // Prevent running tweens from fighting manual position updates during resize.
+    gsap.killTweensOf(_draws)
+
     // Snap card positions to match the new layout (important for multi-card spreads
     // where slot pitches depend on card size).
     _draws.forEach((draw, index) => {
@@ -647,10 +565,8 @@ export function useOverlayController(deps: UseOverlayControllerDeps) {
   // Resize handling
   let resizeHandler: ((res: UniApp.WindowResizeResult) => void) | null = null
 
-  function checkWidth(windowWidth: number) {
-    const wasWide = deps.isWide.value
-    deps.isWide.value = windowWidth >= 768
-    if (wasWide !== deps.isWide.value && (showResults.value || phase.value === 'drawing' || phase.value === 'revealing')) {
+  function checkHeight(windowHeight: number) {
+    if (showResults.value || phase.value === 'drawing' || phase.value === 'revealing') {
       nextTick(() => updateLayout())
     }
   }
@@ -666,7 +582,13 @@ export function useOverlayController(deps: UseOverlayControllerDeps) {
     const drawLayout = getSceneLayout('draw_stage')
     setDrawCardSizes(drawLayout)
 
-    resizeHandler = (res) => checkWidth(res.size.windowWidth)
+    resizeHandler = (res) => {
+      const widthChanged = checkWidth(res.size.windowWidth)
+      if (widthChanged && (showResults.value || phase.value === 'drawing' || phase.value === 'revealing')) {
+        nextTick(() => updateLayout())
+      }
+      checkHeight(res.size.windowHeight)
+    }
     uni.onWindowResize(resizeHandler)
 
     start()

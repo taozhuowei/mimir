@@ -34,19 +34,6 @@ export interface PhaseContext {
     piles: { value: boolean[] }
     draws: { value: boolean[] }
   }
-  refresh: {
-    initials: () => void
-    lefts: () => void
-    rights: () => void
-    piles: () => void
-    draws: () => void
-    inners: () => void
-    stage: () => void
-    deckCtn: () => void
-    bg: () => void
-    header: () => void
-    footer: () => void
-  }
   onPhaseChange: (phase: OverlayPhase) => void
 }
 

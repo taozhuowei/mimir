@@ -5,15 +5,15 @@
  * Data flow: safe frame + spread id + config flow in; concrete distances flow out.
  */
 
-import type { OverlaySafeFrame } from './overlay_safe_frame'
+import type { SafeFrame } from '../../core/viewport/types'
 import type { CardEnvelope, SpreadId } from './spread_spec'
 import { getBuiltInEnvelopeRequirement } from './spread_spec'
-import { resolveCardSize } from './card_size_solver'
+import { resolveCardSize } from '../../core/sizing/card_size_solver'
 
 export type CutAxis = 'horizontal' | 'vertical'
 
 export interface MotionMetricsInput {
-  safeFrame: OverlaySafeFrame
+  safeFrame: SafeFrame
   cardAspectRatio: number
   spreadId: SpreadId
   isWide: boolean
@@ -55,16 +55,19 @@ export function resolveMotionMetrics(input: MotionMetricsInput): MotionMetrics {
   const cutVerticalSlots = cutAxis === 'vertical' ? Math.max(cutPileCount, 1) : 1
 
   const envelope = resolveCardSize({
-    safeWidth,
-    safeHeight,
+    safeFrame,
     cardAspectRatio,
-    horizontalSlots: Math.max(spreadRequirement.horizontalSlots, cutHorizontalSlots),
-    verticalSlots: Math.max(spreadRequirement.verticalSlots, cutVerticalSlots),
+    requirement: {
+      horizontalSlots: Math.max(spreadRequirement.horizontalSlots, cutHorizontalSlots),
+      verticalSlots: Math.max(spreadRequirement.verticalSlots, cutVerticalSlots),
+    },
     focusScale,
     badgeOverflowPx,
   })
 
-  const { cardWidth, cardHeight, gap, slotPitchX, slotPitchY } = envelope
+  const { width: cardWidth, height: cardHeight, gap } = envelope
+  const slotPitchX = cardWidth + gap
+  const slotPitchY = cardHeight + gap
   const safeHalfWidth = safeWidth / 2
   const safeHalfHeight = safeHeight / 2
 
@@ -100,7 +103,19 @@ export function resolveMotionMetrics(input: MotionMetricsInput): MotionMetrics {
   const cardsPerPile = Math.max(1, Math.floor(Math.max(1, deckCount) / pilesAlongAxis))
 
   return {
-    envelope,
+    envelope: {
+      cardWidth,
+      cardHeight,
+      gap,
+      horizontalSlots: Math.max(spreadRequirement.horizontalSlots, cutHorizontalSlots),
+      verticalSlots: Math.max(spreadRequirement.verticalSlots, cutVerticalSlots),
+      slotPitchX,
+      slotPitchY,
+      halfSpanX: ((Math.max(spreadRequirement.horizontalSlots, cutHorizontalSlots) - 1) * slotPitchX) / 2,
+      halfSpanY: ((Math.max(spreadRequirement.verticalSlots, cutVerticalSlots) - 1) * slotPitchY) / 2,
+      fullSpanX: Math.max(spreadRequirement.horizontalSlots, cutHorizontalSlots) * cardWidth + (Math.max(spreadRequirement.horizontalSlots, cutHorizontalSlots) - 1) * gap,
+      fullSpanY: Math.max(spreadRequirement.verticalSlots, cutVerticalSlots) * cardHeight + (Math.max(spreadRequirement.verticalSlots, cutVerticalSlots) - 1) * gap,
+    },
     cardWidth,
     cardHeight,
     gap,

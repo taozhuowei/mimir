@@ -7,7 +7,7 @@
 import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
 import { drawCards as drawCardsUtil, type DrawnResult, type ReadingResult, type TarotCardInfo } from '../utils/tarotReading'
-import { getSpreadCardCount, type SpreadKind } from '../utils/spread_layout'
+import { getSpreadCardCount, type SpreadKind } from '../core/layout/spread_registry'
 
 // Spread kind is fixed to single_card. Extension point: make this reactive when
 // multi-spread selection UI is reintroduced.

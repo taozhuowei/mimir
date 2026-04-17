@@ -28,13 +28,16 @@ export function resolveViewportMetrics(): ViewportMetrics {
   try {
     const info = uni.getSystemInfoSync()
     const safeAreaBottomRaw = info.safeArea?.bottom
+    const screenHeight = info.screenHeight ?? info.windowHeight ?? 0
+    const safeAreaBottom = safeAreaBottomRaw && safeAreaBottomRaw > 0 && screenHeight > 0
+      ? Math.max(0, screenHeight - safeAreaBottomRaw)
+      : 0
+
     return {
       width: info.windowWidth ?? info.screenWidth ?? 0,
       height: info.windowHeight ?? info.screenHeight ?? 0,
       safeAreaTop: info.safeArea?.top ?? 0,
-      safeAreaBottom: safeAreaBottomRaw && safeAreaBottomRaw > 0
-        ? (info.screenHeight ?? 0) - safeAreaBottomRaw
-        : 0,
+      safeAreaBottom,
       dpr: info.pixelRatio ?? 1,
     }
   } catch {

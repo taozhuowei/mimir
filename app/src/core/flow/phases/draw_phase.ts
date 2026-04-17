@@ -26,11 +26,6 @@ export function buildDrawPhaseRunner(config: DrawPhaseConfig): PhaseRunner {
     run(context: PhaseContext, onComplete: () => void): AnimationTimeline {
       const { initials, draws, inners, stage, deckCtn } = context.cardElements
       const { draws: drawsVisible } = context.visible
-      const refreshInitials = context.refresh.initials
-      const refreshDraws = context.refresh.draws
-      const refreshInners = context.refresh.inners
-      const refreshStage = context.refresh.stage
-      const refreshDeckCtn = context.refresh.deckCtn
       const {
         cardCount,
         cardHeight,
@@ -77,15 +72,7 @@ export function buildDrawPhaseRunner(config: DrawPhaseConfig): PhaseRunner {
 
       const preRotations = Array.from({ length: cardCount }, () => (Math.random() - 0.5) * 15)
 
-      const timeline = gsap.timeline({
-        onUpdate: () => {
-          refreshDeckCtn()
-          refreshStage()
-          refreshInitials()
-          refreshDraws()
-          refreshInners()
-        },
-      })
+      const timeline = gsap.timeline()
 
       // Stage lift
       timeline
@@ -127,7 +114,6 @@ export function buildDrawPhaseRunner(config: DrawPhaseConfig): PhaseRunner {
           const visible = [...drawsVisible.value]
           visible[i] = true
           drawsVisible.value = visible
-          refreshDraws()
         }, cardTime)
 
         timeline.to(draws[i], {

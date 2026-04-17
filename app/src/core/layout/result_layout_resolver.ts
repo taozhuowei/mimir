@@ -21,29 +21,49 @@ export function resolveResultLayout(
   safeFrame: SafeFrame,
   cardSize: CardSize,
   headerHeight: number = 0,
+  zIndexes?: Record<string, number>,
 ): ResultLayoutResult {
   switch (spreadId) {
     case 'single_card':
-      return resolveSingleCardResult(slots, safeFrame, cardSize, headerHeight)
+      return resolveSingleCardResult(slots, safeFrame, cardSize, headerHeight, zIndexes)
     case 'three_card':
-      return resolveThreeCardResult(slots, safeFrame, cardSize, headerHeight)
+      return resolveThreeCardResult(slots, safeFrame, cardSize, headerHeight, zIndexes)
     case 'cross_spread':
-      return resolveCrossSpreadResult(slots, safeFrame, cardSize, headerHeight)
+      return resolveCrossSpreadResult(slots, safeFrame, cardSize, headerHeight, zIndexes)
     default:
-      return resolveGenericResult(slots, cardSize)
+      return resolveGenericResult(slots, safeFrame, cardSize, headerHeight, zIndexes)
   }
 }
 
-function resolveGenericResult(slots: SpreadSlot[], cardSize: CardSize): ResultLayoutResult {
+function resolveGenericResult(
+  slots: SpreadSlot[],
+  safeFrame: SafeFrame,
+  cardSize: CardSize,
+  headerHeight: number,
+  zIndexes?: Record<string, number>,
+): ResultLayoutResult {
+  const { height: containerHeight } = safeFrame
+  const { width: cardWidth, height: cardHeight, gap } = cardSize
+
+  const maxSlotY = Math.max(...slots.map(s => s.y), 0)
+  const minSlotY = Math.min(...slots.map(s => s.y), 0)
+  const halfLayoutHeight = (maxSlotY - minSlotY) / 2 + cardHeight / 2
+
+  const vMargin = Math.max(cardHeight * 0.08, 12)
+  const minCenterY = -containerHeight / 2 + halfLayoutHeight + vMargin
+  const maxCenterY = containerHeight / 2 - halfLayoutHeight - vMargin
+  const targetCenterY = headerHeight / 2
+  const centerY = clamp(targetCenterY, minCenterY, maxCenterY)
+
   return {
     cards: slots.map((slot, index) => ({
       slotId: slot.slotId,
       x: slot.x,
-      y: slot.y,
-      width: cardSize.width,
-      height: cardSize.height,
+      y: slot.y + centerY,
+      width: cardWidth,
+      height: cardHeight,
       rotateDeg: 0,
-      zIndex: 20 + index,
+      zIndex: zIndexes?.[slot.slotId] ?? (20 + index),
     })),
     stageShiftY: 0,
   }
@@ -54,6 +74,7 @@ function resolveSingleCardResult(
   _safeFrame: SafeFrame,
   cardSize: CardSize,
   headerHeight: number,
+  zIndexes?: Record<string, number>,
 ): ResultLayoutResult {
   return {
     cards: [{
@@ -63,7 +84,7 @@ function resolveSingleCardResult(
       width: cardSize.width,
       height: cardSize.height,
       rotateDeg: 0,
-      zIndex: 20,
+      zIndex: zIndexes?.center ?? 20,
     }],
     stageShiftY: 0,
   }
@@ -74,6 +95,7 @@ function resolveThreeCardResult(
   safeFrame: SafeFrame,
   cardSize: CardSize,
   headerHeight: number,
+  zIndexes?: Record<string, number>,
 ): ResultLayoutResult {
   const { width: containerWidth, height: containerHeight } = safeFrame
   const { width: cardWidth, height: cardHeight } = cardSize
@@ -92,9 +114,9 @@ function resolveThreeCardResult(
 
     return {
       cards: [
-        { slotId: 'past', x: -sideOffset, y: centeredRowY, width: cardWidth, height: cardHeight, rotateDeg: 0, zIndex: 20 },
-        { slotId: 'present', x: 0, y: centeredRowY, width: cardWidth, height: cardHeight, rotateDeg: 0, zIndex: 21 },
-        { slotId: 'future', x: sideOffset, y: centeredRowY, width: cardWidth, height: cardHeight, rotateDeg: 0, zIndex: 22 },
+        { slotId: 'past', x: -sideOffset, y: centeredRowY, width: cardWidth, height: cardHeight, rotateDeg: 0, zIndex: zIndexes?.past ?? 20 },
+        { slotId: 'present', x: 0, y: centeredRowY, width: cardWidth, height: cardHeight, rotateDeg: 0, zIndex: zIndexes?.present ?? 21 },
+        { slotId: 'future', x: sideOffset, y: centeredRowY, width: cardWidth, height: cardHeight, rotateDeg: 0, zIndex: zIndexes?.future ?? 22 },
       ],
       stageShiftY: 0,
     }
@@ -107,9 +129,9 @@ function resolveThreeCardResult(
 
   return {
     cards: [
-      { slotId: 'past', x: 0, y: mobileCenterY + verticalSpread, width: cardWidth, height: cardHeight, rotateDeg: 0, zIndex: 20 },
-      { slotId: 'present', x: 0, y: mobileCenterY, width: cardWidth, height: cardHeight, rotateDeg: 0, zIndex: 21 },
-      { slotId: 'future', x: 0, y: mobileCenterY - verticalSpread, width: cardWidth, height: cardHeight, rotateDeg: 0, zIndex: 22 },
+      { slotId: 'past', x: 0, y: mobileCenterY + verticalSpread, width: cardWidth, height: cardHeight, rotateDeg: 0, zIndex: zIndexes?.past ?? 20 },
+      { slotId: 'present', x: 0, y: mobileCenterY, width: cardWidth, height: cardHeight, rotateDeg: 0, zIndex: zIndexes?.present ?? 21 },
+      { slotId: 'future', x: 0, y: mobileCenterY - verticalSpread, width: cardWidth, height: cardHeight, rotateDeg: 0, zIndex: zIndexes?.future ?? 22 },
     ],
     stageShiftY: 0,
   }
@@ -120,6 +142,7 @@ function resolveCrossSpreadResult(
   safeFrame: SafeFrame,
   cardSize: CardSize,
   headerHeight: number,
+  zIndexes?: Record<string, number>,
 ): ResultLayoutResult {
   const { height: containerHeight } = safeFrame
   const { width: cardWidth, height: cardHeight } = cardSize
@@ -131,11 +154,11 @@ function resolveCrossSpreadResult(
 
   return {
     cards: [
-      { slotId: 'center', x: 0, y: centerY, width: cardWidth, height: cardHeight, rotateDeg: 0, zIndex: 25 },
-      { slotId: 'north', x: 0, y: centerY - vOffset, width: cardWidth, height: cardHeight, rotateDeg: 0, zIndex: 24 },
-      { slotId: 'south', x: 0, y: centerY + vOffset, width: cardWidth, height: cardHeight, rotateDeg: 0, zIndex: 24 },
-      { slotId: 'west', x: -hOffset, y: centerY, width: cardWidth, height: cardHeight, rotateDeg: 0, zIndex: 24 },
-      { slotId: 'east', x: hOffset, y: centerY, width: cardWidth, height: cardHeight, rotateDeg: 0, zIndex: 24 },
+      { slotId: 'center', x: 0, y: centerY, width: cardWidth, height: cardHeight, rotateDeg: 0, zIndex: zIndexes?.center ?? 25 },
+      { slotId: 'north', x: 0, y: centerY - vOffset, width: cardWidth, height: cardHeight, rotateDeg: 0, zIndex: zIndexes?.north ?? 24 },
+      { slotId: 'south', x: 0, y: centerY + vOffset, width: cardWidth, height: cardHeight, rotateDeg: 0, zIndex: zIndexes?.south ?? 24 },
+      { slotId: 'west', x: -hOffset, y: centerY, width: cardWidth, height: cardHeight, rotateDeg: 0, zIndex: zIndexes?.west ?? 24 },
+      { slotId: 'east', x: hOffset, y: centerY, width: cardWidth, height: cardHeight, rotateDeg: 0, zIndex: zIndexes?.east ?? 24 },
     ],
     stageShiftY: 0,
   }

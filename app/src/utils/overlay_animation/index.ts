@@ -5,7 +5,7 @@
  */
 
 // Types
-export type { OverlayPhase } from './types'
+export type { OverlayPhase } from '../../core/flow/types'
 export type {
   CardState,
   CenterCardState,
@@ -35,16 +35,12 @@ export {
   type TimelineOrchestrator,
 } from './timeline_orchestrator'
 
-// Phase builders
+// Initial state factories
 export {
   createShuffleInitialStates,
-  type ShufflePhaseConfig,
-} from './phases/shuffle_phase'
-export {
   createCutInitialStates,
-  type CutPhaseConfig,
-} from './phases/cut_phase'
-export {
   createDrawInitialStates,
-  type DrawPhaseConfig,
-} from './phases/draw_phase'
+  type ShuffleInitialStates,
+  type CutInitialStates,
+  type DrawInitialStates,
+} from './initial_states'

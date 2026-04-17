@@ -122,11 +122,36 @@ vi.mock('gsap', () => {
   }
 })
 
-const mockResolveSpreadLayout = vi.hoisted(() => vi.fn())
+const mockResolveSceneLayout = vi.hoisted(() => vi.fn(() => ({
+  cardWidth: 172,
+  cardHeight: 275,
+  stageShiftY: 48,
+  cards: [{ x: 0, y: 0, width: 172, height: 275 }],
+  safeTopInset: 0,
+  safeBottomInset: 0,
+  safeSideInset: 0,
+  envelope: {
+    cardWidth: 172,
+    cardHeight: 275,
+    gap: 16,
+    horizontalSlots: 1,
+    verticalSlots: 1,
+    slotPitchX: 188,
+    slotPitchY: 291,
+    halfSpanX: 0,
+    halfSpanY: 0,
+    fullSpanX: 172,
+    fullSpanY: 275,
+  },
+})))
 
-vi.mock('../app/src/utils/spread_layout', () => ({
-  resolveSpreadLayout: mockResolveSpreadLayout,
-}))
+vi.mock('../app/src/utils/overlay_layout/index', async (importOriginal) => {
+  const mod = await importOriginal<typeof import('../app/src/utils/overlay_layout/index')>()
+  return {
+    ...mod,
+    resolveSceneLayout: mockResolveSceneLayout,
+  }
+})
 
 function makeCard(): TarotCardInfo {
   return {
@@ -174,11 +199,27 @@ describe('use_overlay_controller', () => {
     timeSpy.mockClear()
     seekSpy.mockClear()
 
-    mockResolveSpreadLayout.mockImplementation(() => ({
+    mockResolveSceneLayout.mockImplementation(() => ({
       cardWidth: 172,
       cardHeight: 275,
       stageShiftY: 48,
       cards: [{ x: 0, y: 0, width: 172, height: 275 }],
+      safeTopInset: 0,
+      safeBottomInset: 0,
+      safeSideInset: 0,
+      envelope: {
+        cardWidth: 172,
+        cardHeight: 275,
+        gap: 16,
+        horizontalSlots: 1,
+        verticalSlots: 1,
+        slotPitchX: 188,
+        slotPitchY: 291,
+        halfSpanX: 0,
+        halfSpanY: 0,
+        fullSpanX: 172,
+        fullSpanY: 275,
+      },
     }))
 
     vi.stubGlobal('uni', {

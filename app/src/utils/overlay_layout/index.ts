@@ -5,14 +5,6 @@
  */
 
 export type {
-  OverlaySafeFrame,
-} from './overlay_safe_frame'
-
-export {
-  resolveOverlaySafeFrame,
-} from './overlay_safe_frame'
-
-export type {
   SpreadId,
   SpreadScene,
   SpreadSlotSpec,
@@ -45,8 +37,7 @@ export type {
   SceneLayoutResult as SceneLayout,
   CutLayoutResult,
   RevealMotionPlan,
-} from './scene_layout'
-export type { OverlayViewportMetrics } from '../overlay_viewport'
+} from '../../core/layout/scene_layout'
 
 export {
   resolveSceneLayout,
@@ -54,30 +45,19 @@ export {
   resolveRevealMotion,
   getFocusScale,
   getBadgeOverflowPx,
-} from './scene_layout'
-export { resolveOverlayViewport } from '../overlay_viewport'
+  resolveOverlayViewport,
+  buildOverlaySafeFrame,
+} from '../../core/layout/scene_layout'
+
+export {
+  getSpreadCardCount,
+} from '../../core/layout/scene_layout'
 
 export type {
   CardSizeInput,
-} from './card_size_solver'
+} from '../../core/sizing/card_size_solver'
 
 export {
-  resolveCardSize,
+  resolveCardSize as resolveCoreCardSize,
   DEFAULT_ENVELOPE_GAP,
-} from './card_size_solver'
-
-export type {
-  SpreadSolverInput,
-} from './spread_solver'
-
-export {
-  resolveSpreadLayout,
-} from './spread_solver'
-
-export {
-  BUILT_IN_SPREADS,
-  getSpreadSpec,
-  registerSpread,
-  getSpreadCardCount,
-  getSpreadSlots,
-} from './spread_registry'
+} from '../../core/sizing/card_size_solver'

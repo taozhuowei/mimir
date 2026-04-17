@@ -46,4 +46,6 @@ export interface SpreadSpec {
   slots: SpreadSlotDef[]
   wideSlots?: SpreadSlotDef[]
   slotResolver?: string
+  /** Optional z-index override per slotId. If omitted, defaults to 20 + index. */
+  zIndexes?: Record<string, number>
 }

@@ -5,8 +5,8 @@
  * Data flow: phase configuration flows out to progress model and timeline orchestrator.
  */
 
-import type { OverlayPhase } from './types'
-export type { OverlayPhase } from './types'
+import type { OverlayPhase } from '../../core/flow/types'
+export type { OverlayPhase } from '../../core/flow/types'
 
 export interface PhaseStep {
   phase: OverlayPhase

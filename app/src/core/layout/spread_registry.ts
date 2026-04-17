@@ -16,6 +16,7 @@ export const BUILT_IN_SPREADS: SpreadSpec[] = [
     verticalSlots: 1,
     slots: [{ slotId: 'center', rx: 0, ry: 0 }],
     slotResolver: 'single_card',
+    zIndexes: { center: 20 },
   },
   {
     id: 'three_card',
@@ -34,6 +35,7 @@ export const BUILT_IN_SPREADS: SpreadSpec[] = [
       { slotId: 'future', rx: 1, ry: 0 },
     ],
     slotResolver: 'three_card',
+    zIndexes: { past: 20, present: 21, future: 22 },
   },
   {
     id: 'cross_spread',
@@ -49,6 +51,7 @@ export const BUILT_IN_SPREADS: SpreadSpec[] = [
       { slotId: 'east', rx: 1, ry: 0 },
     ],
     slotResolver: 'cross_spread',
+    zIndexes: { center: 25, north: 24, south: 24, west: 24, east: 24 },
   },
 ]
 
@@ -75,6 +78,8 @@ export function getSpreadSlots(spreadId: string, isWide: boolean): SpreadSlotDef
   const spec = resolveSpreadSpec(spreadId, isWide)
   return (isWide && spec.wideSlots?.length) ? spec.wideSlots : spec.slots
 }
+
+export type SpreadKind = 'single_card' | 'three_card' | 'cross_spread'
 
 export function getSpreadCardCount(spreadId: string): number {
   const spec = SPREAD_REGISTRY.get(spreadId)

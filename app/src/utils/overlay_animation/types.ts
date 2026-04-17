@@ -47,5 +47,3 @@ export interface FooterState {
 export interface DeckContainerState {
   x: number
 }
-
-export type OverlayPhase = 'shuffling' | 'cutting' | 'drawing' | 'revealing'

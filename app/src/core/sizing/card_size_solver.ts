@@ -7,9 +7,9 @@
 import type { CardSize, SpreadEnvelopeRequirement } from './types'
 import type { SafeFrame } from '../viewport/types'
 
-export const DEFAULT_ENVELOPE_GAP = 16
-const DEFAULT_MIN_CARD_WIDTH = 64
-const DEFAULT_MAX_CARD_WIDTH = 188
+import { DEFAULT_ENVELOPE_GAP, MIN_CARD_WIDTH, MAX_CARD_WIDTH } from '../config/layout_constants'
+
+export { DEFAULT_ENVELOPE_GAP }
 
 function constrainedWidth(
   safeSize: number,
@@ -60,8 +60,8 @@ export function resolveCardSize(input: CardSizeInput): CardSize {
     cardAspectRatio,
     requirement,
     gap = DEFAULT_ENVELOPE_GAP,
-    minCardWidth = DEFAULT_MIN_CARD_WIDTH,
-    maxCardWidth = DEFAULT_MAX_CARD_WIDTH,
+    minCardWidth = MIN_CARD_WIDTH,
+    maxCardWidth = MAX_CARD_WIDTH,
     focusScale = 1,
     badgeOverflowPx = 0,
   } = input

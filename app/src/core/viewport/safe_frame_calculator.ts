@@ -5,6 +5,7 @@
  */
 
 import type { ViewportMetrics, SafeFrame, UiInsetsConfig } from './types'
+import * as LC from '../config/layout_constants'
 
 export interface StageMetrics {
   topBarHeight: number
@@ -28,6 +29,26 @@ export interface SafeFrameState {
     StageMetrics,
     'stageWidth' | 'stageHeight' | 'headerBottom' | 'footerReserve'
   >
+}
+
+export function getDefaultInsets(windowWidth: number, isMiniProgram: boolean = false): UiInsetsConfig {
+  return {
+    topBarHeight: isMiniProgram ? 44 : 0,
+    headerIconSize: LC.HEADER_ICON_SIZE,
+    headerMarginRpx: isMiniProgram ? LC.HEADER_MARGIN_RPX_MP : LC.HEADER_MARGIN_RPX_H5,
+    footerReserveRpx: isMiniProgram ? LC.FOOTER_RESERVE_RPX_MP : LC.FOOTER_RESERVE_RPX_H5,
+    footerReserveMinPx: LC.FOOTER_RESERVE_MIN_PX,
+    resultStageWidthRatio: LC.RESULT_WIDE_WIDTH_FRACTION,
+    resultStageHeightRatio: LC.RESULT_NARROW_HEIGHT_FRACTION,
+    sideInsetDraw: LC.SIDE_INSET_DRAW,
+    sideInsetResult: LC.SIDE_INSET_RESULT,
+    topExtraDraw: LC.TOP_EXTRA_DRAW,
+    topExtraResult: LC.TOP_EXTRA_RESULT,
+    bottomMinDraw: LC.BOTTOM_MIN_DRAW,
+    bottomMinResult: LC.BOTTOM_MIN_RESULT,
+    bottomRatioDraw: LC.BOTTOM_RATIO_DRAW,
+    bottomRatioResult: LC.BOTTOM_RATIO_RESULT,
+  }
 }
 
 /**
@@ -85,6 +106,9 @@ export function resolveStageMetrics(
  * Resolve the overlay safe frame for a given viewport, insets, and layout state.
  * This merges the legacy safe-frame logic (from overlay_safe_frame.ts) with the
  * stage-size logic migrated from overlay_viewport.ts.
+ *
+ * Device safe areas (safeAreaTop / safeAreaBottom) are now incorporated into the
+ * top and bottom insets so notches and gesture bars are respected.
  */
 export function resolveSafeFrame(
   metrics: ViewportMetrics,
@@ -101,14 +125,16 @@ export function resolveSafeFrame(
   const sideInset = isResult ? insets.sideInsetResult : insets.sideInsetDraw
   const topInset =
     Math.max(0, stage.headerBottom - state.topBarHeight) +
-    (isResult ? insets.topExtraResult : insets.topExtraDraw)
+    (isResult ? insets.topExtraResult : insets.topExtraDraw) +
+    metrics.safeAreaTop
+
   const bottomInset = Math.min(
     stage.footerReserve,
     Math.max(
       isResult ? insets.bottomMinResult : insets.bottomMinDraw,
       stage.stageHeight * (isResult ? insets.bottomRatioResult : insets.bottomRatioDraw),
     ),
-  )
+  ) + metrics.safeAreaBottom
 
   const width = Math.max(0, stage.stageWidth - sideInset * 2)
   const height = Math.max(0, stage.stageHeight - topInset - bottomInset)

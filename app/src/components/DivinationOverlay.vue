@@ -225,10 +225,10 @@ import { computed, ref } from 'vue'
 import { useTarotStore } from '../stores/tarot'
 import { useThemeStore } from '../stores/theme'
 import ResultPanel from './ResultPanel.vue'
-import { getSpreadCardCount } from '../utils/spread_layout'
+import { getSpreadCardCount } from '../core/layout/spread_registry'
 import { useOverlayController } from '../composables/use_overlay_controller'
 import { getPhaseStep, PHASE_STEPS } from '../utils/overlay_animation/phase_registry'
-import type { OverlayPhase } from '../utils/overlay_animations/types'
+import type { OverlayPhase } from '../core/flow/types'
 
 const emit = defineEmits<{
   (event: 'complete'): void

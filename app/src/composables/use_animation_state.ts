@@ -5,13 +5,13 @@
  * Data flow: receives layout results and options; returns reactive styles, states, and helpers.
  */
 
-import { computed, ref } from 'vue'
+import { computed, ref, watch, reactive } from 'vue'
 import {
   createShuffleInitialStates,
   createCutInitialStates,
   createDrawInitialStates,
 } from '../utils/overlay_animation'
-import type { SceneLayoutResult } from '../utils/overlay_layout/scene_layout'
+import type { SceneLayoutResult } from '../core/layout/scene_layout'
 
 export function useAnimationState(opts: {
   deckCount: number
@@ -19,16 +19,23 @@ export function useAnimationState(opts: {
   maxCutPiles: number
   maxCardCount: number
 }) {
-  // Animation state objects
-  const _bg = { opacity: 0 }
-  const _stage = { y: 0 }
-  const _header = { y: 60, opacity: 0 }
-  const _footer = { y: 60, opacity: 0 }
-  const _deckCtn = { x: 0 }
+  // Animation state objects (reactive so Vue watch can observe deep mutations)
+  const _bg = reactive({ opacity: 0 })
+  const _stage = reactive({ y: 0 })
+  const _header = reactive({ y: 60, opacity: 0 })
+  const _footer = reactive({ y: 60, opacity: 0 })
+  const _deckCtn = reactive({ x: 0 })
 
-  const { initials: _initials, lefts: _lefts, rights: _rights } = createShuffleInitialStates(opts.deckCount, opts.shuffleHalfCount)
-  const { piles: _piles } = createCutInitialStates(opts.maxCutPiles)
-  const { draws: _draws, inners: _inners } = createDrawInitialStates(opts.maxCardCount)
+  const { initials: rawInitials, lefts: rawLefts, rights: rawRights } = createShuffleInitialStates(opts.deckCount, opts.shuffleHalfCount)
+  const { piles: rawPiles } = createCutInitialStates(opts.maxCutPiles)
+  const { draws: rawDraws, inners: rawInners } = createDrawInitialStates(opts.maxCardCount)
+
+  const _initials = reactive(rawInitials)
+  const _lefts = reactive(rawLefts)
+  const _rights = reactive(rawRights)
+  const _piles = reactive(rawPiles)
+  const _draws = reactive(rawDraws)
+  const _inners = reactive(rawInners)
 
   // Visible flags
   const leftsVisible = ref(false)
@@ -65,7 +72,7 @@ export function useAnimationState(opts: {
     const scaleY = state.scaleY !== 1 ? ` scaleY(${state.scaleY})` : ''
     return (
       `transform: translateX(${state.x}px) translateY(${state.y}px) rotate(${state.rotation}deg) scale(${state.scale})${scaleY};` +
-      ` opacity: ${state.opacity}; will-change: transform`
+      ` opacity: ${state.opacity}`
     )
   }
 
@@ -73,7 +80,7 @@ export function useAnimationState(opts: {
     return (
       `transform: translateX(calc(-50% + ${state.x}px)) translateY(calc(-50% + ${state.y}px))` +
       ` rotate(${state.rotation}deg) scale(${state.scale});` +
-      ` opacity: ${state.opacity}; z-index: ${state.zIndex}; will-change: transform`
+      ` opacity: ${state.opacity}; z-index: ${state.zIndex}`
     )
   }
 
@@ -143,6 +150,20 @@ export function useAnimationState(opts: {
     })
     refreshInitials()
   }
+
+  // Automatic style refresh: when GSAP mutates the plain state objects,
+  // Vue watch(deep: true) tracks property mutations and triggers the corresponding refresh callbacks.
+  watch(() => _bg, refreshBg, { deep: true, immediate: true })
+  watch(() => _stage, refreshStage, { deep: true, immediate: true })
+  watch(() => _header, refreshHeader, { deep: true, immediate: true })
+  watch(() => _footer, refreshFooter, { deep: true, immediate: true })
+  watch(() => _deckCtn, refreshDeckCtn, { deep: true, immediate: true })
+  watch(() => _initials, refreshInitials, { deep: true, immediate: true })
+  watch(() => _lefts, refreshLefts, { deep: true, immediate: true })
+  watch(() => _rights, refreshRights, { deep: true, immediate: true })
+  watch(() => _piles, refreshPiles, { deep: true, immediate: true })
+  watch(() => _draws, refreshDraws, { deep: true, immediate: true })
+  watch(() => _inners, refreshInners, { deep: true, immediate: true })
 
   function getAllTargets() {
     return [

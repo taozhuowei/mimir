@@ -15,6 +15,7 @@ vi.mock('gsap', () => {
     clear: vi.fn(),
     kill: vi.fn(),
     add: vi.fn(function(this: unknown) { return this }),
+    getChildren: vi.fn(() => []),
   }
 
   const killTweensOfMock = vi.fn()

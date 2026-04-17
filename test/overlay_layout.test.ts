@@ -2,22 +2,20 @@
 
 import { describe, expect, it } from 'vitest'
 import { resolveSceneLayout } from '../app/src/utils/overlay_layout/index'
-import { resolveCardSize } from '../app/src/utils/overlay_layout/card_size_solver'
-import type { OverlayViewportMetrics } from '../app/src/utils/overlay_viewport'
+import { resolveCardSize } from '../app/src/core/sizing/card_size_solver'
+import type { ViewportMetrics } from '../app/src/core/viewport/types'
 
 function makeViewport(
   windowWidth: number,
   windowHeight: number,
-  isWide: boolean,
-): OverlayViewportMetrics {
+  _isWide: boolean,
+): ViewportMetrics {
   return {
-    topBarHeight: isWide ? 0 : 44,
-    headerBottom: isWide ? 60 : 140,
-    footerReserve: isWide ? 80 : 120,
-    stageWidth: windowWidth,
-    stageHeight: windowHeight,
-    stageContainerHeight: windowHeight,
-    resultHeight: 0,
+    width: windowWidth,
+    height: windowHeight,
+    safeAreaTop: 0,
+    safeAreaBottom: 0,
+    dpr: 1,
   }
 }
 
@@ -67,78 +65,72 @@ describe('overlay_layout scene bounds', () => {
 
     expect(layout.cards).toHaveLength(1)
     const card = layout.cards[0]
-    expect(Math.abs(card.x) + card.width / 2).toBeLessThanOrEqual(layout.envelope.fullSpanX / 2 + 1)
-    expect(Math.abs(card.y) + card.height / 2).toBeLessThanOrEqual(layout.envelope.fullSpanY / 2 + 1)
+    // Card must fit inside the stage dimensions
+    expect(Math.abs(card.x) + card.width / 2).toBeLessThanOrEqual(160)
+    expect(Math.abs(card.y) + card.height / 2).toBeLessThanOrEqual(284)
   })
 })
 
 describe('overlay_layout focus-scale + badge margin', () => {
   it('shrinks card width when focus scale is applied', () => {
+    const safeFrame = { x: 0, y: 0, width: 500, height: 800, centerX: 0, centerY: 0, bottomInset: 0 }
     const base = resolveCardSize({
-      safeWidth: 500,
-      safeHeight: 800,
+      safeFrame,
       cardAspectRatio: 1.6,
-      horizontalSlots: 3,
-      verticalSlots: 1,
+      requirement: { horizontalSlots: 3, verticalSlots: 1 },
       focusScale: 1,
       badgeOverflowPx: 0,
     })
 
     const focused = resolveCardSize({
-      safeWidth: 500,
-      safeHeight: 800,
+      safeFrame,
       cardAspectRatio: 1.6,
-      horizontalSlots: 3,
-      verticalSlots: 1,
+      requirement: { horizontalSlots: 3, verticalSlots: 1 },
       focusScale: 1.42,
       badgeOverflowPx: 0,
     })
 
-    expect(focused.cardWidth).toBeLessThan(base.cardWidth)
+    expect(focused.width).toBeLessThan(base.width)
   })
 
   it('shrinks card width when badge overflow is applied', () => {
+    const safeFrame = { x: 0, y: 0, width: 400, height: 800, centerX: 0, centerY: 0, bottomInset: 0 }
     const base = resolveCardSize({
-      safeWidth: 400,
-      safeHeight: 800,
+      safeFrame,
       cardAspectRatio: 1.6,
-      horizontalSlots: 3,
-      verticalSlots: 1,
+      requirement: { horizontalSlots: 3, verticalSlots: 1 },
       focusScale: 1,
       badgeOverflowPx: 0,
     })
 
     const withBadge = resolveCardSize({
-      safeWidth: 400,
-      safeHeight: 800,
+      safeFrame,
       cardAspectRatio: 1.6,
-      horizontalSlots: 3,
-      verticalSlots: 1,
+      requirement: { horizontalSlots: 3, verticalSlots: 1 },
       focusScale: 1,
       badgeOverflowPx: 12,
     })
 
-    expect(withBadge.cardWidth).toBeLessThanOrEqual(base.cardWidth)
+    expect(withBadge.width).toBeLessThanOrEqual(base.width)
   })
 
   it('keeps focused card + badge within safe width for a 3-slot horizontal spread', () => {
     const safeWidth = 390
     const badgeOverflowPx = 6
     const focusScale = 1.42
+    const safeFrame = { x: 0, y: 0, width: safeWidth, height: 800, centerX: 0, centerY: 0, bottomInset: 0 }
 
     const envelope = resolveCardSize({
-      safeWidth,
-      safeHeight: 800,
+      safeFrame,
       cardAspectRatio: 1.6,
-      horizontalSlots: 3,
-      verticalSlots: 1,
+      requirement: { horizontalSlots: 3, verticalSlots: 1 },
       focusScale,
       badgeOverflowPx,
     })
 
     // The outer edge of a focused card plus badge must not exceed safe half-width
-    const halfSpan = envelope.halfSpanX
-    const outerEdge = envelope.cardWidth / 2 + badgeOverflowPx
+    const halfSpan = ((3 - 1) * (envelope.width + envelope.gap)) / 2
+    const outerEdge = envelope.width / 2 + badgeOverflowPx
     const focusedOuterEdge = outerEdge * focusScale
 
     expect(halfSpan + focusedOuterEdge).toBeLessThanOrEqual(safeWidth / 2 + 1)
@@ -148,19 +140,18 @@ describe('overlay_layout focus-scale + badge margin', () => {
     const safeHeight = 600
     const badgeOverflowPx = 6
     const focusScale = 1.2
+    const safeFrame = { x: 0, y: 0, width: 400, height: safeHeight, centerX: 0, centerY: 0, bottomInset: 0 }
 
     const envelope = resolveCardSize({
-      safeWidth: 400,
-      safeHeight,
+      safeFrame,
       cardAspectRatio: 1.6,
-      horizontalSlots: 1,
-      verticalSlots: 3,
+      requirement: { horizontalSlots: 1, verticalSlots: 3 },
       focusScale,
       badgeOverflowPx,
     })
 
-    const halfSpan = envelope.halfSpanY
-    const outerEdge = envelope.cardHeight / 2 + badgeOverflowPx
+    const halfSpan = ((3 - 1) * (envelope.height + envelope.gap)) / 2
+    const outerEdge = envelope.height / 2 + badgeOverflowPx
     const focusedOuterEdge = outerEdge * focusScale
 
     expect(halfSpan + focusedOuterEdge).toBeLessThanOrEqual(safeHeight / 2 + 1)

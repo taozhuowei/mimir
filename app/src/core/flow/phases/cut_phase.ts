@@ -32,7 +32,6 @@ export function buildCutPhaseRunner(config: CutPhaseConfig): PhaseRunner {
     run(context: PhaseContext, onComplete: () => void): AnimationTimeline {
       const { piles } = context.cardElements
       const { piles: pilesVisible } = context.visible
-      const refreshPiles = context.refresh.piles
       const N = Math.max(1, config.pileCount)
 
       const restPositions = Array.from({ length: N }, (_, i) =>
@@ -41,7 +40,6 @@ export function buildCutPhaseRunner(config: CutPhaseConfig): PhaseRunner {
 
       const timeline = gsap.timeline({
         onComplete,
-        onUpdate: () => refreshPiles(),
       })
 
       timeline.add(() => {
@@ -50,7 +48,6 @@ export function buildCutPhaseRunner(config: CutPhaseConfig): PhaseRunner {
         }
         const visible = Array.from({ length: piles.length }, (_, i) => i < N)
         pilesVisible.value = visible
-        refreshPiles()
       })
 
       timeline.to(piles.slice(0, N), {
@@ -89,7 +86,6 @@ export function buildCutPhaseRunner(config: CutPhaseConfig): PhaseRunner {
 
       timeline.add(() => {
         pilesVisible.value = piles.map(() => false)
-        refreshPiles()
       })
 
       return timeline as unknown as AnimationTimeline

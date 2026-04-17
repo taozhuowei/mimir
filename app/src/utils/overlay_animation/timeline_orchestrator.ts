@@ -6,7 +6,7 @@
  */
 
 import gsap from 'gsap'
-import type { OverlayPhase } from './types'
+import type { OverlayPhase } from '../../core/flow/types'
 
 export interface TimelineOrchestrator {
   readonly timeline: gsap.core.Timeline
@@ -59,16 +59,26 @@ export function createTimelineOrchestrator(
     },
     stepForward() {
       const currentTime = masterTimeline.time()
-      masterTimeline.time(currentTime + 1 / 60)
+      const step = (1 / 60) / Math.max(0.0001, currentPlaybackRate)
+      masterTimeline.time(currentTime + step)
     },
     stepBackward() {
       const currentTime = masterTimeline.time()
-      masterTimeline.time(Math.max(0, currentTime - 1 / 60))
+      const step = (1 / 60) / Math.max(0.0001, currentPlaybackRate)
+      masterTimeline.time(Math.max(0, currentTime - step))
     },
     seek(position: number | string) {
       masterTimeline.seek(position)
     },
     clear() {
+      // Recursively kill child timelines and tweens before clearing to prevent
+      // orphaned onUpdate callbacks from leaking memory.
+      const children = masterTimeline.getChildren(true, true, true)
+      children.forEach((child) => {
+        if (typeof (child as gsap.core.Timeline).kill === 'function') {
+          ;(child as gsap.core.Timeline).kill()
+        }
+      })
       masterTimeline.clear()
       masterTimeline.time(0)
     },

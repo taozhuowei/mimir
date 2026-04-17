@@ -30,8 +30,6 @@ export function buildRevealPhaseRunner(config: RevealPhaseConfig): PhaseRunner {
     run(context: PhaseContext, onComplete: () => void): AnimationTimeline {
       const { draws, inners } = context.cardElements
       const { draws: drawsVisible } = context.visible
-      const refreshDraws = context.refresh.draws
-      const refreshInners = context.refresh.inners
       const { cardCount, drawLayout } = config
       const targetX = drawLayout.cards.map((c) => c.x)
       const targetY = drawLayout.cards.map((c) => c.y)
@@ -61,8 +59,6 @@ export function buildRevealPhaseRunner(config: RevealPhaseConfig): PhaseRunner {
           }
         })
         drawsVisible.value = visible
-        refreshDraws()
-        refreshInners()
       })
 
       // Wait for the CSS --card-focus-scale spring to settle before signalling

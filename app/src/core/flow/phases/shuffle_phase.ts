@@ -25,22 +25,13 @@ export function buildShufflePhaseRunner(config?: Partial<ShufflePhaseConfig>): P
       const { initials, lefts, rights } = context.cardElements
       const leftsVisible = context.visible.lefts
       const rightsVisible = context.visible.rights
-      const refreshInitials = context.refresh.initials
-      const refreshLefts = context.refresh.lefts
-      const refreshRights = context.refresh.rights
 
       const timeline = gsap.timeline({
         onComplete,
-        onUpdate: () => {
-          refreshInitials()
-          refreshLefts()
-          refreshRights()
-        },
       })
 
       timeline.add(() => {
         initials.forEach((state) => { state.opacity = 0 })
-        refreshInitials()
 
         lefts.forEach((state, index) => {
           state.opacity = 1
@@ -62,8 +53,6 @@ export function buildShufflePhaseRunner(config?: Partial<ShufflePhaseConfig>): P
 
         leftsVisible.value = true
         rightsVisible.value = true
-        refreshLefts()
-        refreshRights()
       }, 0)
 
       timeline
@@ -102,11 +91,8 @@ export function buildShufflePhaseRunner(config?: Partial<ShufflePhaseConfig>): P
           rights.forEach((state) => { state.opacity = 0 })
           leftsVisible.value = false
           rightsVisible.value = false
-          refreshLefts()
-          refreshRights()
 
           initials.forEach((state) => { state.opacity = 1; state.scaleY = 0.9 })
-          refreshInitials()
         })
         .to(initials, {
           scaleY: 1,
