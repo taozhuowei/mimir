@@ -23,9 +23,36 @@
 - **关键目录**：
   - `app/` — 前端源码与构建配置
   - `server/` — 后端源码与 API
-  - `test/` — Vitest 单测与集成测试
+  - `test/` — Vitest 单测与集成测试（281 tests green）
   - `dist/` / `server/dist/` — 构建产物
-- **当前阶段**：阶段 A — H5 端架构重构与性能治理（详见 `TODO.md`）
+- **当前阶段**：阶段 B — 功能修复与体验打磨（已完成），准备进入阶段 C（MVP 部署与工程规范）
+
+### 阶段 B 完成摘要（2026-04-17）
+
+**Audit 结果**：10/20（Acceptable → 修复后提升至 Good 区间）
+- P0 问题：0 项
+- P1 问题：5 项 — 全部修复并通过独立审计
+- P2 问题：6 项 — 全部修复并通过独立审计
+- P3 问题：1 项 — 已验证并文档化
+
+**关键修复**：
+1. **可访问性**：所有 `<image>` 添加 `alt`，交互元素添加 ARIA + 键盘支持，`prefers-reduced-motion` 覆盖所有动画
+2. **性能**：移除 `width`/`height` CSS 过渡（改由 JS 驱动），GSAP 弹跳缓动统一替换为 `power3.out`
+3. **主题化**：硬编码羊皮纸色值收归 CSS 自定义属性（`--color-overlay-bg` 等），移除毛玻璃效果
+4. **后端**：`readings.ts` 全面 Zod 化，统一错误格式 `{ error, code }`
+5. **网络**：API client 提取服务器错误体，reading orchestrator 增加 15s 超时 + 1 次自动重试
+6. **多端**：H5 safeAreaTop 动态计算，MP 宽屏断点使用 `clamp`，idle deck fan 按视口比例缩放
+7. **端到端测试**：`test/e2e_divination_flow.sh`（正常路径）、`test/e2e_network_error.sh`（错误路径）
+
+**多端验证截图**：
+- iPhone SE (375×667)、iPhone 14 Pro (393×852)、Pixel 7 (412×915)、iPhone 16 Pro Max (440×956)、iPad mini (768×1024)
+- 全部通过，无布局错位、遮挡、跳变
+
+**尚待处理（阶段 B 遗留）**：
+- B.2.3 中 entry animation 时长与洗牌/切牌阶段冗长性评估 — 主观体验优化，非阻塞
+- B.3.1 中 DevTools 回归测试 — 仅在 DEV 模式显示，需手动验证
+- B.3.1 中暗色/浅色模式 — 项目当前仅支持单一主题，如需支持需在阶段 D 规划
+- B.3.2 中 CHANGELOG.md 更新 — 待阶段 B 全部结束后统一撰写
 
 ---
 
