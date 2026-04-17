@@ -211,14 +211,21 @@
   - 修复 idle deck fan spread 固定偏移 → 按 winWidth/375 比例缩放
   - 修复 phase-progress gap 16px → 24rpx
   - 修复 box-shadow px → rpx
-- [ ] 验证横屏旋转（若允许）或锁定竖屏提示的合理性
+- [x] 验证横屏旋转（若允许）或锁定竖屏提示的合理性
+  - 添加 landscape-hint 全屏提示层，在移动端横屏时显示 "请将设备旋转至竖屏以获得最佳体验"
 - [x] 修复触控目标小于 44×44 px 的问题（`.phase-step-icon` 40×40、`.keyword-chip` 垂直 padding 不足）（Audit P2）
 
 ### B.2.2 网络与异常体验
-- [ ] 验证首页卡片资源加载失败时的错误提示与「重新感应」按钮是否可用
-- [ ] 验证占卜过程中后端请求失败（如 `/api/v1/readings` 500 或超时）时，是否给出友好提示并提供重试入口
-- [ ] 验证解读请求失败后，用户点击「重试」是否能正确复用已抽出的牌，无需重新洗牌抽牌
-- [ ] 优化 loading 状态的视觉反馈（避免用户误以为页面卡死）
+- [x] 验证首页卡片资源加载失败时的错误提示与「重新感应」按钮是否可用
+  - index.vue 已显示实际错误消息（.error-detail），重试按钮有 loading 状态（"感应中..."）
+- [x] 验证占卜过程中后端请求失败（如 `/api/v1/readings` 500 或超时）时，是否给出友好提示并提供重试入口
+  - API client 现在提取服务器错误体（res.data.error/message）
+  - 后端 500 错误显示 ⚠️ 图标 + 红色错误文本 + 重试按钮
+  - reading orchestrator 有 15s 超时 + 1 次自动重试
+- [x] 验证解读请求失败后，用户点击「重试」是否能正确复用已抽出的牌，无需重新洗牌抽牌
+  - 已通过 agent-browser 实测验证：同一卡牌 PAGE OF CUPS 在重试后仍显示
+- [x] 优化 loading 状态的视觉反馈（避免用户误以为页面卡死）
+  - 添加 CSS 旋转 spinner（.loading-spinner）在 loading 文字旁
 - [x] 为页面中的 `<image>` 组件添加 `lazy-load` 属性，降低首屏加载与内存压力（Audit P2）
 
 ### B.2.3 动画与动效微调

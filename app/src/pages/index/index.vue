@@ -74,6 +74,11 @@
       @restart="restartDivination"
       @back-home="restartDivination"
     />
+
+    <view class="landscape-hint">
+      <text class="landscape-hint-text">请将设备旋转至竖屏</text>
+      <text class="landscape-hint-text">以获得最佳体验</text>
+    </view>
   </view>
 </template>
 
@@ -520,6 +525,32 @@ onUnmounted(() => {
   .touch-hint {
     transition: none !important;
     animation: none !important;
+  }
+}
+
+.landscape-hint {
+  display: none;
+}
+
+@media (orientation: landscape) and (max-width: 1023px) {
+  .landscape-hint {
+    display: flex;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(242, 232, 208, 0.98);
+    z-index: 9999;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 24rpx;
+  }
+  .landscape-hint-text {
+    font-size: 32rpx;
+    color: var(--color-text-primary);
+    text-align: center;
   }
 }
 

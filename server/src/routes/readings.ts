@@ -56,7 +56,8 @@ router.post('/', (req: Request, res: Response) => {
   }
 
   try {
-    res.json(generateReading(parseResult.data.cards))
+    const cards = parseResult.data!.cards
+    res.json(generateReading(cards))
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Reading failed'
     res.status(500).json({ error: message, code: 'READING_GENERATION_FAILED' })
