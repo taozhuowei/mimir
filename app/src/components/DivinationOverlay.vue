@@ -161,55 +161,60 @@
 
     <!-- Dev Tools -->
     <view v-if="isDev" class="dev-tools">
-      <text class="dev-tools-title">Dev Tools</text>
-
-      <view class="dev-tools-row">
-        <view
-          v-for="step in phaseStepsForDev"
-          :key="`replay-${step.phase}`"
-          class="dev-tools-chip"
-          @click="handleReplay(step.phase)"
-        >
-          {{ step.label }}
-        </view>
+      <view class="dev-tools-header" @click="isDevExpanded = !isDevExpanded">
+        <text class="dev-tools-title">Dev Tools</text>
+        <text class="dev-tools-toggle">{{ isDevExpanded ? '▲' : '▼' }}</text>
       </view>
 
-      <view class="dev-tools-row">
-        <view
-          v-for="speed in playbackRates"
-          :key="`speed-${speed}`"
-          class="dev-tools-chip"
-          :class="{ active: controller.playbackRate.value === speed }"
-          @click="handlePlaybackRate(speed)"
-        >
-          {{ speed }}x
+      <view v-show="isDevExpanded">
+        <view class="dev-tools-row">
+          <view
+            v-for="step in phaseStepsForDev"
+            :key="`replay-${step.phase}`"
+            class="dev-tools-chip"
+            @click="handleReplay(step.phase)"
+          >
+            {{ step.label }}
+          </view>
         </view>
-      </view>
 
-      <view class="dev-tools-row">
-        <view class="dev-tools-chip" @click="handlePause">
-          暂停
+        <view class="dev-tools-row">
+          <view
+            v-for="speed in playbackRates"
+            :key="`speed-${speed}`"
+            class="dev-tools-chip"
+            :class="{ active: controller.playbackRate.value === speed }"
+            @click="handlePlaybackRate(speed)"
+          >
+            {{ speed }}x
+          </view>
         </view>
-        <view class="dev-tools-chip" @click="handleResume">
-          继续
+
+        <view class="dev-tools-row">
+          <view class="dev-tools-chip" @click="handlePause">
+            暂停
+          </view>
+          <view class="dev-tools-chip" @click="handleResume">
+            继续
+          </view>
+          <view
+            class="dev-tools-chip"
+            :class="{ disabled: !controller.isPaused.value }"
+            @click="controller.isPaused.value && handleStepBackward()"
+          >
+            ←
+          </view>
+          <view
+            class="dev-tools-chip"
+            :class="{ disabled: !controller.isPaused.value }"
+            @click="controller.isPaused.value && handleStepForward()"
+          >
+            →
+          </view>
+          <text class="dev-tools-status">
+            {{ controller.isPaused.value ? 'Paused' : `Running ${controller.playbackRate.value}x` }}
+          </text>
         </view>
-        <view
-          class="dev-tools-chip"
-          :class="{ disabled: !controller.isPaused.value }"
-          @click="controller.isPaused.value && handleStepBackward()"
-        >
-          ←
-        </view>
-        <view
-          class="dev-tools-chip"
-          :class="{ disabled: !controller.isPaused.value }"
-          @click="controller.isPaused.value && handleStepForward()"
-        >
-          →
-        </view>
-        <text class="dev-tools-status">
-          {{ controller.isPaused.value ? 'Paused' : `Running ${controller.playbackRate.value}x` }}
-        </text>
       </view>
     </view>
   </view>
@@ -234,6 +239,7 @@ const emit = defineEmits<{
 const tarotStore = useTarotStore()
 const themeStore = useThemeStore()
 const isDev = import.meta.env.DEV
+const isDevExpanded = ref(true)
 const playbackRates = [0.25, 0.5, 1, 2] as const
 
 const isWide = ref(false)
@@ -618,11 +624,25 @@ function handleRetry() {
   backdrop-filter: blur(12px);
 }
 
+.dev-tools-header {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+}
+
 .dev-tools-title {
   font-size: 22rpx;
   letter-spacing: 0.16em;
   color: var(--color-text-secondary);
   text-transform: uppercase;
+}
+
+.dev-tools-toggle {
+  font-size: 18rpx;
+  color: var(--color-text-secondary);
+  line-height: 1;
 }
 
 .dev-tools-row {

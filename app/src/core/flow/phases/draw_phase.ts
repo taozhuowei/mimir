@@ -16,6 +16,8 @@ export interface DrawPhaseConfig {
   targetX: number[]
   targetY: number[]
   autoRevealDelayMs: number
+  /** Called when the last card finishes settling at its final position. */
+  onCardsLanded?: () => void
 }
 
 export function buildDrawPhaseRunner(config: DrawPhaseConfig): PhaseRunner {
@@ -37,6 +39,7 @@ export function buildDrawPhaseRunner(config: DrawPhaseConfig): PhaseRunner {
         targetX,
         targetY,
         autoRevealDelayMs,
+        onCardsLanded,
       } = config
 
       const drawStartTime = 0.88
@@ -158,6 +161,11 @@ export function buildDrawPhaseRunner(config: DrawPhaseConfig): PhaseRunner {
           duration: settleDuration,
           ease: 'power3.out',
         }, '>')
+      }
+
+      // Notify when last card settles — used to trigger CSS focus-scale early
+      if (onCardsLanded) {
+        timeline.add(() => { onCardsLanded() }, lastCardLandingTime)
       }
 
       // Alignment

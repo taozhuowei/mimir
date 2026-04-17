@@ -77,6 +77,7 @@ export function useOverlayController(deps: UseOverlayControllerDeps) {
   const entryAnimationComplete = ref(false)
   const isPaused = ref(false)
   const playbackRate = ref(1)
+  const cardsLanded = ref(false)
 
   // Progress model
   const progressModel = createProgressModel('shuffling')
@@ -128,19 +129,19 @@ export function useOverlayController(deps: UseOverlayControllerDeps) {
 
   const cardsFocused = computed(() => {
     if (!showResults.value) {
-      return phase.value === 'revealing'
+      return cardsLanded.value
     }
     return readingOrchestrator.state.status !== 'success'
   })
   const cardsDocked = computed(() => showResults.value && readingOrchestrator.state.status === 'success')
   const focusScale = computed(() => getFocusScale(deps.isWide.value))
 
-  // CSS --card-focus-scale value: during the revealing phase (before results),
-  // scale cards up to fill the stage; return to 1 when results are visible.
+  // CSS --card-focus-scale value: once the last card lands (cardsLanded),
+  // scale cards up immediately; return to 1 when results become visible.
   // The CSS spring transition on .card-focus-frame animates the change.
   const cardFocusScaleValue = computed(() => {
     if (showResults.value) return 1
-    if (phase.value === 'revealing') return getFocusScale(deps.isWide.value)
+    if (cardsLanded.value) return getFocusScale(deps.isWide.value)
     return 1
   })
 
@@ -262,6 +263,7 @@ export function useOverlayController(deps: UseOverlayControllerDeps) {
 
   function resetOverlayScene() {
     showResults.value = false
+    cardsLanded.value = false
     readingOrchestrator.reset()
 
     _bg.opacity = 1
@@ -417,6 +419,7 @@ export function useOverlayController(deps: UseOverlayControllerDeps) {
             targetX: drawLayout.cards.map((c) => c.x),
             targetY: drawLayout.cards.map((c) => c.y),
             autoRevealDelayMs: AUTO_REVEAL_DELAY_MS,
+            onCardsLanded: () => { cardsLanded.value = true },
           })
           return runner.run(context, onComplete)
         },
