@@ -4,6 +4,11 @@
 
 set -e
 
+if ! command -v agent-browser >/dev/null 2>&1; then
+  echo "Error: agent-browser is not installed. Install it first."
+  exit 1
+fi
+
 SESSION="tarot-e2e"
 BASE_URL="http://localhost:3000"
 

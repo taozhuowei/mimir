@@ -35,6 +35,7 @@ export interface ReadingOrchestratorDeps {
 }
 
 const TIMEOUT_MS = 15000
+const RETRY_BACKOFF_MS = 1000
 
 export function createReadingOrchestrator(deps: ReadingOrchestratorDeps): ReadingOrchestrator {
   const { provider, statusRef, resultRef, errorRef, errorMessage } = deps
@@ -63,7 +64,7 @@ export function createReadingOrchestrator(deps: ReadingOrchestratorDeps): Readin
       return result
     } catch (err: unknown) {
       if (retryCount < 1) {
-        await new Promise<void>((resolve) => { setTimeout(resolve, 1000) })
+        await new Promise<void>((resolve) => { setTimeout(resolve, RETRY_BACKOFF_MS) })
         return doRequest(request, retryCount + 1)
       }
       errorRef.value = err instanceof Error ? err.message : errorMessage

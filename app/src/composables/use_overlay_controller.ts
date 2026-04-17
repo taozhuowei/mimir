@@ -52,6 +52,8 @@ const AUTO_REVEAL_DELAY_MS = 800
 const ENTRY_TO_SHUFFLE_DELAY_MS = 300
 
 const RESULT_SHEET_FRACTION = 0.30
+const RESULT_LIFT_MARGIN_PX = 16
+const RESULT_LIFT_MAX_FRACTION = 0.28
 const DECK_COUNT: number = (overlayConfig as { deckCount?: number }).deckCount ?? 12
 const CUT_PILE_COUNT: number = Math.min(
   MAX_CUT_PILES,
@@ -161,11 +163,10 @@ export function useOverlayController(deps: UseOverlayControllerDeps) {
       const resultLayout = getSceneLayout('result_stage')
       const drawBottom = Math.max(...drawLayout.cards.map(c => c.y + c.height / 2))
       const resultBottom = Math.max(...resultLayout.cards.map(c => c.y + c.height / 2))
-      const margin = 16
-      const lift = drawBottom - resultBottom + margin
+      const lift = drawBottom - resultBottom + RESULT_LIFT_MARGIN_PX
       // Cap the lift so we never shove cards up past the progress header.
       const { windowHeight } = uni.getWindowInfo()
-      const maxLift = Math.max(0, windowHeight * 0.28)
+      const maxLift = Math.max(0, windowHeight * RESULT_LIFT_MAX_FRACTION)
       return Math.max(0, Math.min(lift, maxLift))
     } catch {
       return 0

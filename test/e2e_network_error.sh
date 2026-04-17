@@ -4,6 +4,11 @@
 
 set -e
 
+if ! command -v agent-browser >/dev/null 2>&1; then
+  echo "Error: agent-browser is not installed. Install it first."
+  exit 1
+fi
+
 SESSION="tarot-error-$(date +%s)"
 BASE_URL="http://localhost:3000"
 PROJECT="/home/tzw/projects/scales-tarot"
@@ -13,6 +18,19 @@ echo "=== E2E Network Error + Retry Test ==="
 # Step 1: Temporarily inject backend error
 echo "Step 1: Inject backend 500 error"
 cp "$PROJECT/server/src/routes/readings.ts" "$PROJECT/server/src/routes/readings.ts.e2e-bak"
+
+cleanup() {
+  if [ -f "$PROJECT/server/src/routes/readings.ts.e2e-bak" ]; then
+    cp "$PROJECT/server/src/routes/readings.ts.e2e-bak" "$PROJECT/server/src/routes/readings.ts"
+    rm -f "$PROJECT/server/src/routes/readings.ts.e2e-bak"
+    cd "$PROJECT" && npm run build:server >/dev/null 2>&1
+    kill $(lsof -ti:3000) 2>/dev/null || true
+    sleep 1
+    node "$PROJECT/server/dist/server.js" > /tmp/dev_server.log 2>&1 &
+  fi
+}
+trap cleanup EXIT
+
 sed -i 's/const cards = parseResult.data!.cards/const cards = parseResult.data!.cards\n    \/\/ E2E: simulate error\n    throw new Error("模拟服务器内部错误")/' "$PROJECT/server/src/routes/readings.ts"
 cd "$PROJECT" && npm run build:server 2>&1 | tail -n 3
 kill $(lsof -ti:3000) 2>/dev/null || true
@@ -55,15 +73,8 @@ VERIFY=$(agent-browser --session-name "$SESSION" eval '
 ' 2>&1)
 echo "Verify result: $VERIFY"
 
-# Step 5: Cleanup - restore backend
-echo "Step 5: Restore backend"
+# Step 5: Cleanup
+echo "Step 5: Cleanup"
 agent-browser --session-name "$SESSION" close
-cp "$PROJECT/server/src/routes/readings.ts.e2e-bak" "$PROJECT/server/src/routes/readings.ts"
-rm -f "$PROJECT/server/src/routes/readings.ts.e2e-bak"
-cd "$PROJECT" && npm run build:server 2>&1 | tail -n 3
-kill $(lsof -ti:3000) 2>/dev/null || true
-sleep 1
-node "$PROJECT/server/dist/server.js" > /tmp/dev_server.log 2>&1 &
-sleep 3
 
 echo "=== Network Error E2E test completed ==="

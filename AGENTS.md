@@ -23,7 +23,7 @@
 - **关键目录**：
   - `app/` — 前端源码与构建配置
   - `server/` — 后端源码与 API
-  - `test/` — Vitest 单测与集成测试（281 tests green）
+  - `test/` — Vitest 单测与集成测试（在 `test/` 目录下运行 `npx vitest run` 时 281 tests green；根目录直接运行会因缺少 Vue 插件配置而失败）
   - `dist/` / `server/dist/` — 构建产物
 - **当前阶段**：阶段 B — 功能修复与体验打磨（已完成），准备进入阶段 C（MVP 部署与工程规范）
 

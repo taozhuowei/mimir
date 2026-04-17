@@ -41,6 +41,14 @@ interface RequestOptions<T = Record<string, unknown>> {
   data?: T
 }
 
+interface ApiErrorBody {
+  error?: string
+  message?: string
+}
+function isApiErrorBody(val: unknown): val is ApiErrorBody {
+  return typeof val === 'object' && val !== null && ('error' in val || 'message' in val)
+}
+
 export function request<TResponse>(path: string, options: RequestOptions = {}): Promise<TResponse> {
   return new Promise((resolve, reject) => {
     uni.request({
@@ -52,8 +60,9 @@ export function request<TResponse>(path: string, options: RequestOptions = {}): 
         if (res.statusCode >= 200 && res.statusCode < 300) {
           resolve(res.data as TResponse)
         } else {
-          const data = res.data as Record<string, unknown> | undefined
-          const serverError = typeof data?.error === 'string' ? data.error : typeof data?.message === 'string' ? data.message : undefined
+          const serverError = isApiErrorBody(res.data)
+            ? (typeof res.data.error === 'string' ? res.data.error : typeof res.data.message === 'string' ? res.data.message : undefined)
+            : undefined
           const message = serverError || `API ${res.statusCode}: ${path}`
           reject(new Error(message))
         }

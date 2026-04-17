@@ -94,6 +94,9 @@ import { useTarotStore } from '../../stores/tarot'
 import { useThemeStore } from '../../stores/theme'
 import { prefersReducedMotion } from '../../utils/accessibility'
 
+const DECK_CLICK_SAFETY_MS = 2000
+const DECK_CLICK_RELEASE_MS = 300
+
 const tarotStore = useTarotStore()
 const themeStore = useThemeStore()
 
@@ -262,14 +265,14 @@ function handleDeckClick() {
   // Safety release: ensure the lock is always cleared even if animations are interrupted.
   const safetyTimer = setTimeout(() => {
     isStartingDivination.value = false
-  }, 2000)
+  }, DECK_CLICK_SAFETY_MS)
 
   // Auto-release lock after animations settle to prevent stale state
   const releaseLock = () => {
     clearTimeout(safetyTimer)
     setTimeout(() => {
       isStartingDivination.value = false
-    }, 300)
+    }, DECK_CLICK_RELEASE_MS)
   }
 
   // Start divination immediately - don't wait for animations
