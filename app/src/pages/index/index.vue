@@ -119,6 +119,8 @@ const _cards = Array(12).fill(0).map(() => ({ x: 0, y: 0, rotation: 0, scale: 1 
 let idleTimeline: gsap.core.Timeline | null = null
 
 let winHeight = 667
+let winWidth = 375
+let spreadFactor = 1
 
 function updateCardsStyle() {
   cardsStyle.value = _cards.map(c => `transform: translate3d(${c.x}px, ${c.y}px, 0) rotate(${c.rotation}deg) scale(${c.scale});`)
@@ -128,6 +130,11 @@ function calculateLayout() {
   try {
     const winInfo = uni.getWindowInfo()
     winHeight = winInfo.windowHeight
+    winWidth = winInfo.windowWidth
+    spreadFactor = winWidth / 375
+    // #ifdef H5
+    headerPaddingTop.value = Math.max(20, winInfo.safeArea?.top || 20)
+    // #endif
     // #ifdef MP-WEIXIN
     const menuButtonRect = uni.getMenuButtonBoundingClientRect()
     headerPaddingTop.value = menuButtonRect.bottom + 8
@@ -200,12 +207,12 @@ function startDeckAnimation() {
     x: (i) => {
       // 计算：假设中心牌 (索引 5 或 6) x 为 0，向左向右散开
       const offset = i - 5.5
-      return offset * 15 // 每张牌横向间隔 15px
+      return offset * 15 * spreadFactor // 每张牌横向间隔按比例缩放
     },
     y: (i) => {
       // 形成一个略微的拱形
       const offset = i - 5.5
-      return Math.abs(offset) * 4 // 两侧的牌略微下沉
+      return Math.abs(offset) * 4 * spreadFactor // 两侧的牌略微下沉，按比例缩放
     },
     rotation: (i) => {
       // 扇形旋转，中心牌 0 度，两侧对称旋转

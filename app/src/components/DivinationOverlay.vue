@@ -491,7 +491,7 @@ function handleRetry() {
   flex-direction: row;
   align-items: center;
   justify-content: center;
-  gap: 16px;
+  gap: 24rpx;
 }
 
 .phase-step {
@@ -522,7 +522,7 @@ function handleRetry() {
 
 /* #ifdef MP-WEIXIN */
 .progress-header {
-  margin-top: calc(env(safe-area-inset-top, 44px) + 140rpx);
+  margin-top: calc(env(safe-area-inset-top, 0px) + 140rpx);
 }
 /* #endif */
 
@@ -654,7 +654,7 @@ function handleRetry() {
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+  box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.25);
   z-index: 30;
   animation: badge-pop-in 0.3s cubic-bezier(0.4, 0, 0.2, 1) both;
 }
@@ -780,7 +780,7 @@ function handleRetry() {
   background: var(--color-card-bg);
   border: 1px solid var(--color-border);
   color: var(--color-text-primary);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.1);
 }
 
 .btn-primary {
@@ -850,7 +850,7 @@ function handleRetry() {
 /* #ifdef MP-WEIXIN */
 @media (min-width: 768px) {
   .divination-overlay {
-    --card-width: 188px;
+    --card-width: clamp(120px, 13vw, 188px);
   }
 }
 /* #endif */
