@@ -24,6 +24,7 @@
                 :class="{ 'phase-step-icon-compensated': idx < 2 }"
                 :src="getPhaseStepIconSrc(step)"
                 mode="aspectFit"
+                :alt="`${step.phase} 阶段`"
               />
             </view>
           </view>
@@ -37,6 +38,7 @@
               class="tarot-card stack-card initial-deck"
               :src="controller.cardBack.value"
               :style="controller.initialsStyle.value[i-1]"
+              alt="塔罗牌背面"
             />
             <image
               v-for="i in controller.shuffleHalfCount"
@@ -45,6 +47,7 @@
               class="tarot-card stack-card"
               :src="controller.cardBack.value"
               :style="controller.leftsStyle.value[i-1]"
+              alt="塔罗牌背面"
             />
             <image
               v-for="i in controller.shuffleHalfCount"
@@ -53,6 +56,7 @@
               class="tarot-card stack-card"
               :src="controller.cardBack.value"
               :style="controller.rightsStyle.value[i-1]"
+              alt="塔罗牌背面"
             />
           </view>
 
@@ -70,6 +74,7 @@
               class="tarot-card pile-card"
               :src="controller.cardBack.value"
               :style="`top: ${-(cIdx - 1) * 2.5}px; left: ${(cIdx - 1) * 0.8}px; z-index: ${cIdx};`"
+              alt="切牌堆"
             />
           </view>
 
@@ -83,9 +88,9 @@
             >
               <view class="card-focus-frame">
                 <view class="card-3d-inner stage-pointer" :style="[controller.innersStyle.value[idx], controller.drawsSizeStyle.value[idx]]">
-                  <image class="tarot-card face-back" :src="controller.cardBack.value" />
+                  <image class="tarot-card face-back" :src="controller.cardBack.value" alt="塔罗牌背面" />
                   <view class="tarot-card face-front">
-                    <image class="front-img" :src="controller.getCardImg(idx)" />
+                    <image class="front-img" :src="controller.getCardImg(idx)" :alt="controller.getCardImgName(idx) ?? '塔罗牌'" />
                   </view>
                 </view>
 
@@ -139,8 +144,24 @@
     <!-- Action bar: floats at the bottom of the screen, never scrolls with content -->
     <view class="action-bar">
       <template v-if="controller.showResults.value">
-        <view class="btn btn-secondary" @click="handleBackHome">{{ controller.overlayText.backHome }}</view>
-        <view class="btn btn-primary" @click="handleRestart">{{ controller.overlayText.restart }}</view>
+        <view
+          class="btn btn-secondary"
+          role="button"
+          tabindex="0"
+          aria-label="回到首页"
+          @click="handleBackHome"
+          @keydown.enter="handleBackHome"
+          @keydown.space.prevent="handleBackHome"
+        >{{ controller.overlayText.backHome }}</view>
+        <view
+          class="btn btn-primary"
+          role="button"
+          tabindex="0"
+          aria-label="再占一次"
+          @click="handleRestart"
+          @keydown.enter="handleRestart"
+          @keydown.space.prevent="handleRestart"
+        >{{ controller.overlayText.restart }}</view>
       </template>
 
       <template v-else-if="controller.phase.value === 'revealing'">
@@ -155,7 +176,15 @@
       </template>
 
       <template v-else-if="controller.isReadingFailed.value">
-        <view class="btn btn-primary" @click="handleRetry">{{ '重试' }}</view>
+        <view
+          class="btn btn-primary"
+          role="button"
+          tabindex="0"
+          aria-label="重试"
+          @click="handleRetry"
+          @keydown.enter="handleRetry"
+          @keydown.space.prevent="handleRetry"
+        >{{ '重试' }}</view>
       </template>
     </view>
 
@@ -172,7 +201,12 @@
             v-for="step in phaseStepsForDev"
             :key="`replay-${step.phase}`"
             class="dev-tools-chip"
+            role="button"
+            tabindex="0"
+            :aria-label="`重播 ${step.label}`"
             @click="handleReplay(step.phase)"
+            @keydown.enter="handleReplay(step.phase)"
+            @keydown.space.prevent="handleReplay(step.phase)"
           >
             {{ step.label }}
           </view>
@@ -184,30 +218,61 @@
             :key="`speed-${speed}`"
             class="dev-tools-chip"
             :class="{ active: controller.playbackRate.value === speed }"
+            role="button"
+            tabindex="0"
+            :aria-label="`播放速度 ${speed}x`"
             @click="handlePlaybackRate(speed)"
+            @keydown.enter="handlePlaybackRate(speed)"
+            @keydown.space.prevent="handlePlaybackRate(speed)"
           >
             {{ speed }}x
           </view>
         </view>
 
         <view class="dev-tools-row">
-          <view class="dev-tools-chip" @click="handlePause">
+          <view
+            class="dev-tools-chip"
+            role="button"
+            tabindex="0"
+            aria-label="暂停"
+            @click="handlePause"
+            @keydown.enter="handlePause"
+            @keydown.space.prevent="handlePause"
+          >
             暂停
           </view>
-          <view class="dev-tools-chip" @click="handleResume">
+          <view
+            class="dev-tools-chip"
+            role="button"
+            tabindex="0"
+            aria-label="继续"
+            @click="handleResume"
+            @keydown.enter="handleResume"
+            @keydown.space.prevent="handleResume"
+          >
             继续
           </view>
           <view
             class="dev-tools-chip"
             :class="{ disabled: !controller.isPaused.value }"
+            role="button"
+            tabindex="0"
+            aria-label="后退一步"
             @click="controller.isPaused.value && handleStepBackward()"
+            @keydown.enter="controller.isPaused.value && handleStepBackward()"
+            @keydown.space.prevent="controller.isPaused.value && handleStepBackward()"
           >
             ←
           </view>
           <view
             class="dev-tools-chip"
             :class="{ disabled: !controller.isPaused.value }"
+            role="button"
+            tabindex="0"
+            aria-label="前进一步"
             @click="controller.isPaused.value && handleStepForward()"
+            @keydown.enter="controller.isPaused.value && handleStepForward()"
+            @keydown.space.prevent="controller.isPaused.value && handleStepForward()"
           >
             →
           </view>
@@ -523,9 +588,6 @@ function handleRetry() {
 .draw-wrapper {
   perspective: 1200px;
   position: absolute;
-  /* CSS-driven size transition: JS sets draw/result sizes; CSS animates between them. */
-  transition: width 0.65s cubic-bezier(0.4, 0, 0.2, 1),
-              height 0.65s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* Focus frame: pure CSS scale that enlarges drawn cards after deal+flip and shrinks
@@ -544,9 +606,6 @@ function handleRetry() {
 .card-3d-inner {
   transform-style: preserve-3d;
   position: relative;
-  /* CSS-driven size transition (only width/height; transform is GSAP-controlled). */
-  transition: width 0.65s cubic-bezier(0.4, 0, 0.2, 1),
-              height 0.65s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .face-back,
@@ -781,4 +840,15 @@ function handleRetry() {
   }
 }
 /* #endif */
+
+@media (prefers-reduced-motion: reduce) {
+  .card-focus-frame,
+  .result-zone,
+  .result-hero,
+  .meaning-list,
+  .position-badge {
+    transition: none !important;
+    animation: none !important;
+  }
+}
 </style>

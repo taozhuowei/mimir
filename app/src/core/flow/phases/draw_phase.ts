@@ -7,6 +7,7 @@
 import gsap from 'gsap'
 import type { AnimationTimeline } from '../../animation/types'
 import type { OverlayPhase, PhaseContext, PhaseRunner } from '../types'
+import { prefersReducedMotion } from '../../../utils/accessibility'
 
 export interface DrawPhaseConfig {
   cardCount: number
@@ -36,6 +37,39 @@ export function buildDrawPhaseRunner(config: DrawPhaseConfig): PhaseRunner {
         autoRevealDelayMs,
         onCardsLanded,
       } = config
+
+      if (prefersReducedMotion()) {
+        const timeline = gsap.timeline()
+        timeline.add(() => {
+          stage.y = -liftY
+          Object.assign(deckCtn, { x: 0 })
+          initials.forEach((state, index) => {
+            Object.assign(state, { opacity: 0, y: -cardHeight * 1.12 - index * 1.6, scale: 0.74 })
+          })
+          const visible = [...drawsVisible.value]
+          for (let i = 0; i < cardCount; i++) {
+            Object.assign(draws[i], {
+              x: targetX[i],
+              y: targetY[i],
+              rotation: 0,
+              scale: 1,
+              opacity: 1,
+              zIndex: 20 - i,
+            })
+            Object.assign(inners[i], { rotationY: 180 })
+            visible[i] = true
+          }
+          drawsVisible.value = visible
+          if (onCardsLanded) onCardsLanded()
+        }, 0)
+        timeline.add(() => {
+          context.onPhaseChange('revealing')
+        }, 0.1)
+        timeline.add(() => {
+          onComplete()
+        }, 0.1)
+        return timeline as unknown as AnimationTimeline
+      }
 
       const drawStartTime = 0.88
       const pullDuration = 0.18

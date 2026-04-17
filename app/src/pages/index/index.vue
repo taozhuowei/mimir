@@ -21,7 +21,15 @@
         </view>
 
         <!-- 手拨牌堆空闲区域 -->
-        <view class="idle-deck-container" @click="handleDeckClick">
+        <view
+          class="idle-deck-container"
+          role="button"
+          tabindex="0"
+          aria-label="开始占卜"
+          @click="handleDeckClick"
+          @keydown.enter="handleDeckClick"
+          @keydown.space.prevent="handleDeckClick"
+        >
           <!-- 魔法阵底纹（保持微弱氛围） -->
           <view class="magic-runes-ring"></view>
           
@@ -33,6 +41,7 @@
               class="tarot-card idle-card"
               :src="cardBack"
               :style="cardsStyle[i-1]"
+              alt="塔罗牌背面"
             />
           </view>
         </view>
@@ -66,6 +75,7 @@ import { gsap } from 'gsap'
 import DivinationOverlay from '../../components/DivinationOverlay.vue'
 import { useTarotStore } from '../../stores/tarot'
 import { useThemeStore } from '../../stores/theme'
+import { prefersReducedMotion } from '../../utils/accessibility'
 
 const tarotStore = useTarotStore()
 const themeStore = useThemeStore()
@@ -128,14 +138,25 @@ function initEntranceAnimation() {
   _subtitle.y = 20; _subtitle.opacity = 0
   _guidance.y = 20; _guidance.opacity = 0
   updateHeaderStyles()
-  
+
+  if (prefersReducedMotion()) {
+    _title.y = 0; _title.opacity = 1
+    _subtitle.y = 0; _subtitle.opacity = 1
+    _guidance.y = 0; _guidance.opacity = 1
+    updateHeaderStyles()
+    hintOpacity.value = 0.6
+    sceneStyle.value = ''
+    startDeckAnimation()
+    return
+  }
+
   // Animate header text elements using DOM-free pattern (WeChat Mini Program compatible)
   const headerTimeline = gsap.timeline()
   headerTimeline
     .to(_title, { y: 0, opacity: 1, duration: 0.6, ease: 'back.out(1.2)', onUpdate: updateHeaderStyles })
     .to(_subtitle, { y: 0, opacity: 1, duration: 0.6, ease: 'back.out(1.2)', onUpdate: updateHeaderStyles }, 0.08)
     .to(_guidance, { y: 0, opacity: 1, duration: 0.6, ease: 'back.out(1.2)', onUpdate: updateHeaderStyles }, 0.16)
-  
+
   // Animate touch hint - already uses correct DOM-free pattern
   const _hint = { opacity: 0 }
   gsap.to(_hint, {
@@ -144,7 +165,7 @@ function initEntranceAnimation() {
     delay: 0.6,
     onUpdate: () => { hintOpacity.value = _hint.opacity }
   })
-  
+
   sceneStyle.value = '' // Reset camera shift
   startDeckAnimation()
 }
@@ -153,13 +174,17 @@ function startDeckAnimation() {
   if (idleTimeline) idleTimeline.kill()
 
   // 初始状态，所有牌居中成一叠
-  _cards.forEach(c => { 
-    c.x = 0; 
-    c.y = 0; 
-    c.rotation = 0; 
-    c.scale = 1 
+  _cards.forEach(c => {
+    c.x = 0;
+    c.y = 0;
+    c.rotation = 0;
+    c.scale = 1
   })
   updateCardsStyle()
+
+  if (prefersReducedMotion()) {
+    return
+  }
 
   idleTimeline = gsap.timeline({ repeat: -1 })
 
@@ -231,6 +256,12 @@ function handleDeckClick() {
   }
 
   // Animations run in parallel without blocking startDivination
+  if (prefersReducedMotion()) {
+    sceneStyle.value = 'opacity: 0;'
+    releaseLock()
+    return
+  }
+
   gsap.to(_cards, {
     duration: 0.3,
     ease: 'power2.out',
@@ -445,6 +476,16 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .idle-card,
+  .corner-decoration,
+  .magic-runes-ring,
+  .touch-hint {
+    transition: none !important;
+    animation: none !important;
+  }
 }
 
 </style>

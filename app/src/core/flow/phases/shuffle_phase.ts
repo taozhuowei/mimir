@@ -7,6 +7,7 @@
 import gsap from 'gsap'
 import type { AnimationTimeline } from '../../animation/types'
 import type { OverlayPhase, PhaseContext, PhaseRunner } from '../types'
+import { prefersReducedMotion } from '../../../utils/accessibility'
 
 export interface ShufflePhaseConfig {
   spreadX: number
@@ -25,6 +26,19 @@ export function buildShufflePhaseRunner(config?: Partial<ShufflePhaseConfig>): P
       const { initials, lefts, rights } = context.cardElements
       const leftsVisible = context.visible.lefts
       const rightsVisible = context.visible.rights
+
+      if (prefersReducedMotion()) {
+        const timeline = gsap.timeline({ onComplete })
+        timeline.add(() => {
+          initials.forEach((state) => { state.opacity = 0 })
+          lefts.forEach((state) => { state.opacity = 0 })
+          rights.forEach((state) => { state.opacity = 0 })
+          leftsVisible.value = false
+          rightsVisible.value = false
+        }, 0)
+        timeline.to({}, { duration: 0.1 })
+        return timeline as unknown as AnimationTimeline
+      }
 
       const timeline = gsap.timeline({
         onComplete,

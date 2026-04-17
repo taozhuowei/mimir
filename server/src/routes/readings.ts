@@ -5,11 +5,10 @@
  */
 
 import { Router, type Request, type Response } from 'express'
+import { z } from 'zod'
 import { generateReading, type DrawnInput } from '../services/tarot_reading'
 
 const router = Router()
-
-const VALID_POSITIONS = new Set(['upright', 'reversed'])
 
 const SPREAD_CARD_COUNTS: Record<string, number> = {
   single_card: 1,
@@ -17,64 +16,47 @@ const SPREAD_CARD_COUNTS: Record<string, number> = {
   cross_spread: 5,
 }
 
-interface ValidationError {
-  error: string
-  code?: string
-}
+const cardSchema = z.object({
+  cardId: z.string().min(1, 'cardId must be a non-empty string'),
+  position: z.enum(['upright', 'reversed'], {
+    message: "position must be 'upright' or 'reversed'",
+  }),
+})
 
-function validateReadingBody(body: unknown): { valid: false; error: ValidationError } | { valid: true; data: { cards: DrawnInput[]; spreadKind: string } } {
-  if (typeof body !== 'object' || body === null) {
-    return { valid: false, error: { error: 'Request body must be an object', code: 'INVALID_BODY' } }
-  }
-
-  const b = body as Record<string, unknown>
-
-  if (!Array.isArray(b.cards) || b.cards.length === 0) {
-    return { valid: false, error: { error: 'cards array is required and must not be empty', code: 'MISSING_CARDS' } }
-  }
-
-  if (typeof b.spreadKind !== 'string' || b.spreadKind.length === 0) {
-    return { valid: false, error: { error: 'spreadKind is required and must be a non-empty string', code: 'MISSING_SPREAD_KIND' } }
-  }
-
-  const expectedCount = SPREAD_CARD_COUNTS[b.spreadKind]
+const readingBodySchema = z.object({
+  cards: z.array(cardSchema).min(1, 'cards array is required and must not be empty'),
+  spreadKind: z.string().min(1, 'spreadKind is required and must be a non-empty string'),
+}).superRefine((data, ctx) => {
+  const expectedCount = SPREAD_CARD_COUNTS[data.spreadKind]
   if (expectedCount === undefined) {
-    return { valid: false, error: { error: `Unknown spreadKind: ${b.spreadKind}`, code: 'UNKNOWN_SPREAD_KIND' } }
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: `Unknown spreadKind: ${data.spreadKind}`,
+      path: ['spreadKind'],
+    })
+    return
   }
-
-  if (b.cards.length !== expectedCount) {
-    return { valid: false, error: { error: `spreadKind '${b.spreadKind}' requires exactly ${expectedCount} cards, but received ${b.cards.length}`, code: 'CARD_COUNT_MISMATCH' } }
+  if (data.cards.length !== expectedCount) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: `spreadKind '${data.spreadKind}' requires exactly ${expectedCount} cards, but received ${data.cards.length}`,
+      path: ['cards'],
+    })
   }
-
-  const cards: DrawnInput[] = []
-  for (let i = 0; i < b.cards.length; i++) {
-    const item = b.cards[i]
-    if (typeof item !== 'object' || item === null) {
-      return { valid: false, error: { error: `cards[${i}] must be an object`, code: 'INVALID_CARD_SHAPE' } }
-    }
-    const c = item as Record<string, unknown>
-    if (typeof c.cardId !== 'string' || c.cardId.length === 0) {
-      return { valid: false, error: { error: `cards[${i}].cardId must be a non-empty string`, code: 'INVALID_CARD_ID' } }
-    }
-    if (typeof c.position !== 'string' || !VALID_POSITIONS.has(c.position)) {
-      return { valid: false, error: { error: `cards[${i}].position must be 'upright' or 'reversed'`, code: 'INVALID_CARD_POSITION' } }
-    }
-    cards.push({ cardId: c.cardId, position: c.position as 'upright' | 'reversed' })
-  }
-
-  return { valid: true, data: { cards, spreadKind: b.spreadKind } }
-}
+})
 
 router.post('/', (req: Request, res: Response) => {
-  const validation = validateReadingBody(req.body)
+  const parseResult = readingBodySchema.safeParse(req.body)
 
-  if (!validation.valid) {
-    res.status(400).json(validation.error)
+  if (!parseResult.success) {
+    const firstError = parseResult.error.errors[0]
+    const code = firstError.path.join('.') || 'INVALID_BODY'
+    res.status(400).json({ error: firstError.message, code })
     return
   }
 
   try {
-    res.json(generateReading(validation.data.cards))
+    res.json(generateReading(parseResult.data.cards))
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Reading failed'
     res.status(422).json({ error: message, code: 'READING_GENERATION_FAILED' })

@@ -39,6 +39,7 @@ import { buildDrawPhaseRunner } from '../core/flow/phases/draw_phase'
 import { buildRevealPhaseRunner } from '../core/flow/phases/reveal_phase'
 import { resolveDeckGeometry } from '../core/deck/deck_calculator'
 import type { CardLayout } from '../core/layout/types'
+import { prefersReducedMotion } from '../utils/accessibility'
 
 
 const MAX_CARD_COUNT = 10
@@ -196,6 +197,10 @@ export function useOverlayController(deps: UseOverlayControllerDeps) {
 
   function getCardImg(index: number): string {
     return deps.tarotStore.drawnCards[index]?.card.image || cardBack.value
+  }
+
+  function getCardImgName(index: number): string | undefined {
+    return deps.tarotStore.drawnCards[index]?.card.name
   }
 
   // Animation control
@@ -517,8 +522,27 @@ export function useOverlayController(deps: UseOverlayControllerDeps) {
   // Entry animation
   function start() {
     nextTick(() => {
-      const entryDrop = layoutCardHeight.value * 4
       entryAnimationComplete.value = false
+
+      if (prefersReducedMotion()) {
+        _bg.opacity = 1
+        _initials.forEach((state, index) => {
+          Object.assign(state, { x: 0, y: -(index * 0.8), rotation: 0, scale: 1, scaleY: 1, opacity: 1 })
+        })
+        _header.y = 0
+        _header.opacity = 1
+        _footer.y = 0
+        _footer.opacity = 1
+        refreshBg()
+        refreshInitials()
+        refreshHeader()
+        refreshFooter()
+        entryAnimationComplete.value = true
+        runPipeline(0)
+        return
+      }
+
+      const entryDrop = layoutCardHeight.value * 4
 
       const entryTimeline = gsap.timeline({
         onComplete: () => {
@@ -679,6 +703,7 @@ export function useOverlayController(deps: UseOverlayControllerDeps) {
     // Content
     cardBack,
     getCardImg,
+    getCardImgName,
     overlayText: DEFAULT_OVERLAY_TEXT,
 
     // Controls

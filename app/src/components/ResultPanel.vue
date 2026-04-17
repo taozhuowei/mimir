@@ -270,4 +270,11 @@ const heroQuestionTiming = {
     transform: translateY(0);
   }
 }
+
+@media (prefers-reduced-motion: reduce) {
+  .result-hero,
+  .meaning-list {
+    animation: none !important;
+  }
+}
 </style>

@@ -7,6 +7,7 @@
 import gsap from 'gsap'
 import type { AnimationTimeline } from '../../animation/types'
 import type { OverlayPhase, PhaseContext, PhaseRunner } from '../types'
+import { prefersReducedMotion } from '../../../utils/accessibility'
 
 export interface CutPhaseConfig {
   pileCount: number
@@ -37,6 +38,22 @@ export function buildCutPhaseRunner(config: CutPhaseConfig): PhaseRunner {
       const restPositions = Array.from({ length: N }, (_, i) =>
         getCutPileRestPosition(i, N, config.pileSpacing, config.axis),
       )
+
+      if (prefersReducedMotion()) {
+        const timeline = gsap.timeline({ onComplete })
+        timeline.add(() => {
+          for (let i = 0; i < N; i++) {
+            Object.assign(piles[i], { x: 0, y: 0, rotation: 0, scale: 1, opacity: 1, zIndex: 10 + i })
+          }
+          const visible = Array.from({ length: piles.length }, (_, i) => i < N)
+          pilesVisible.value = visible
+        }, 0)
+        timeline.to({}, { duration: 0.1 })
+        timeline.add(() => {
+          pilesVisible.value = piles.map(() => false)
+        })
+        return timeline as unknown as AnimationTimeline
+      }
 
       const timeline = gsap.timeline({
         onComplete,

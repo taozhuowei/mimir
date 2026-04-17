@@ -10,6 +10,7 @@
 import gsap from 'gsap'
 import type { AnimationTimeline } from '../../animation/types'
 import type { OverlayPhase, PhaseContext, PhaseRunner } from '../types'
+import { prefersReducedMotion } from '../../../utils/accessibility'
 
 export interface RevealPhaseConfig {
   cardCount: number
@@ -60,6 +61,13 @@ export function buildRevealPhaseRunner(config: RevealPhaseConfig): PhaseRunner {
         })
         drawsVisible.value = visible
       })
+
+      if (prefersReducedMotion()) {
+        timeline.add(() => {
+          onComplete()
+        }, 0.1)
+        return timeline as unknown as AnimationTimeline
+      }
 
       // Wait for the CSS --card-focus-scale spring to settle before signalling
       // completion, which triggers openResultPanel().

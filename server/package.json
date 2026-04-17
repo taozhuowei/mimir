@@ -1,5 +1,8 @@
 {
   "name": "scales-tarot-server",
   "version": "1.0.0",
-  "private": true
+  "private": true,
+  "dependencies": {
+    "zod": "^3.25.76"
+  }
 }
