@@ -85,6 +85,90 @@
 
 ---
 
+## 关键操作命令
+
+### 测试
+```bash
+# 单元/集成测试（必须在 test/ 目录下运行，否则 Vue 组件测试会失败）
+cd test && npx vitest run
+
+# 前端 H5 构建（含类型检查）
+npm run build:h5
+
+# 后端构建
+npm run build:server
+```
+
+### 开发服务器
+```bash
+# 启动 Express 开发服务器（提供 API + 静态 H5 构建产物）
+node server/dist/server.js
+# 默认端口 3000，API 前缀 /api/v1/*
+```
+
+### 端到端测试
+```bash
+# 正常路径：首页 → 占卜 → 结果 → 回到首页
+bash test/e2e_divination_flow.sh
+
+# 错误路径：后端 500 → 错误 UI → 卡牌复用验证
+bash test/e2e_network_error.sh
+
+# 前置条件：agent-browser 已安装，dev server 运行在 localhost:3000
+```
+
+---
+
+## 关键架构决策
+
+### GSAP 动画
+- 使用 `gsap-core.js`（通过 Vite alias），排除 CSSPlugin，避免 DOM-only API 在小程序中不可用
+- 不引入额外插件，核心方法（`gsap.to`、`gsap.timeline`、`gsap.killTweensOf`）已覆盖全部需求
+- 已验证 `gsap-core.js`（172KB）是最小粒度，无可进一步 tree-shake 空间
+
+### 布局系统
+- `draw_stage` 与 `result_stage` 使用独立的布局计算（`resolveSceneLayout`）
+- `resultCardLiftY` 在 narrow 模式下自动上移卡牌，避免结果面板遮挡
+- 所有卡牌尺寸通过 `clamp()` + `rpx` 响应式适配，宽屏断点 768px
+
+### 主题系统
+- 当前仅支持 `golden_dawn` 单一主题
+- CSS 自定义属性集中在 `.divination-overlay` scoped style 中（`--color-overlay-bg` 等）
+- `theme.ts` store 已存在但未完全消费所有令牌，主题切换功能需在阶段 D 规划
+
+### 后端 API
+- `POST /api/v1/readings` — Zod 校验，`spreadKind` + 卡牌数量匹配校验
+- 错误格式统一：`{ error: string, code?: string }`
+- 内部错误返回 500，校验错误返回 400
+
+---
+
+## 已知限制
+
+| 限制 | 说明 | 建议处理阶段 |
+|------|------|------------|
+| 无暗色/浅色模式 | 仅 `golden_dawn` 主题 | 阶段 D |
+| DevTools 无自动化测试 | 仅在 `import.meta.env.DEV` 显示 | 开发环境手动验证 |
+| entry animation 时长未调优 | 当前约 1.5s，可能偏长 | 阶段 D 或用户反馈后 |
+| 洗牌/切牌阶段时长固定 | 未按牌阵复杂度自适应 | 阶段 D |
+| 小程序适配未开始 | H5 优先，MP 在阶段 E | 阶段 E |
+
+---
+
+## 审计循环工作流程（已验证）
+
+本阶段 B 采用 **开发 → 审计 → 修复 → 再审计** 的闭环模式：
+
+1. **开发 agent**（coder）执行修复任务
+2. **独立审计 agent**（explore）只读验证，报告 PASS/FAIL + 具体证据
+3. 若审计 FAIL，开发 agent 修复残留问题
+4. 审计 agent 再次验证，直至 ALL PASS
+5. 提交代码，更新 TODO.md
+
+**规则**：禁止跳过审计、禁止自己审计自己、禁止遗留 P0/P1 问题。
+
+---
+
 ## 代码审查 Checklist（强制自检）
 
 任何文件修改完成后，执行方应在提交前自检以下 8 项：
@@ -96,4 +180,4 @@
 5. 测试是否覆盖正向与至少一个边界场景？
 6. 安全区/视口/响应式是否在多尺寸下验证？
 7. 后端路由是否有输入校验与异常处理？
-8. `TODO.md` / `README.md` / `CONTRIBUTING.md` 是否同步更新？
+8. `TODO.md` / `README.md` / `CONTRIBUTING.md` / `AGENTS.md` 是否同步更新？
