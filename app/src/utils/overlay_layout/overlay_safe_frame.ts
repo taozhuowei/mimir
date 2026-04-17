@@ -61,10 +61,11 @@ function getDefaultInsets(): UiInsetsConfig {
 export function resolveOverlaySafeFrame(
   scene: SpreadScene,
   viewport: OverlayViewportMetrics,
+  options?: { resultSheetFraction?: number },
 ): OverlaySafeFrame {
   const insets = getDefaultInsets()
   const metrics = toViewportMetrics(viewport)
-  const safeFrame = resolveSafeFrame(metrics, insets, {
+  const rawFrame = resolveSafeFrame(metrics, insets, {
     scene,
     topBarHeight: viewport.topBarHeight,
     precomputedStage: {
@@ -75,14 +76,38 @@ export function resolveOverlaySafeFrame(
     },
   })
 
+  const resultSheetBottomInset =
+    (options?.resultSheetFraction ?? 0) * viewport.windowHeight
+  const bottomInset = Math.max(rawFrame.bottomInset, resultSheetBottomInset)
+
+  if (bottomInset > rawFrame.bottomInset) {
+    const topInset = rawFrame.y
+    const newHeight = Math.max(0, viewport.stageHeight - topInset - bottomInset)
+    const isResult = scene === 'result_stage'
+    const newCenterY = isResult
+      ? (topInset - bottomInset) / 2
+      : (topInset - bottomInset) / 2 + viewport.footerReserve / 2
+
+    return {
+      width: rawFrame.width,
+      height: newHeight,
+      centerYOffset: newCenterY,
+      topInset,
+      bottomInset,
+      sideInset: rawFrame.x,
+      stageCenterX: rawFrame.centerX,
+      stageCenterY: newCenterY,
+    }
+  }
+
   return {
-    width: safeFrame.width,
-    height: safeFrame.height,
-    centerYOffset: safeFrame.centerY,
-    topInset: safeFrame.y,
-    bottomInset: safeFrame.bottomInset,
-    sideInset: safeFrame.x,
-    stageCenterX: safeFrame.centerX,
-    stageCenterY: safeFrame.centerY,
+    width: rawFrame.width,
+    height: rawFrame.height,
+    centerYOffset: rawFrame.centerY,
+    topInset: rawFrame.y,
+    bottomInset: rawFrame.bottomInset,
+    sideInset: rawFrame.x,
+    stageCenterX: rawFrame.centerX,
+    stageCenterY: rawFrame.centerY,
   }
 }

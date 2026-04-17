@@ -26,7 +26,9 @@ export interface OverlayViewportInput {
   menuButtonRect?: OverlayMenuButtonRect | null
 }
 
-export interface OverlayViewportMetrics extends StageMetrics {}
+export interface OverlayViewportMetrics extends StageMetrics {
+  windowHeight: number
+}
 
 const HEADER_ICON_SIZE_PX = 44
 const STAGE_WIDTH_RATIO_WIDE = 0.44
@@ -72,9 +74,11 @@ export function resolveOverlayViewport(input: OverlayViewportInput): OverlayView
 
   const insets = getDefaultInsets(windowWidth, isMiniProgram, showResults)
 
-  return resolveStageMetrics(metrics, insets, {
+  const stageMetrics = resolveStageMetrics(metrics, insets, {
     isWide,
     showResults,
     topBarHeight,
   })
+
+  return { ...stageMetrics, windowHeight }
 }

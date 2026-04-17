@@ -344,7 +344,7 @@ function handleRetry() {
   left: 0;
   right: 0;
   bottom: 0;
-  height: 65vh;
+  height: 30vh;
   z-index: 55;
   background: rgba(242, 232, 208, 0.97);
   border-top: 1px solid var(--color-border);

@@ -52,6 +52,7 @@ const MAX_CUT_PILES = 8
 const AUTO_REVEAL_DELAY_MS = 800
 const ENTRY_TO_SHUFFLE_DELAY_MS = 300
 
+const RESULT_SHEET_FRACTION = 0.30
 const DECK_COUNT: number = (overlayConfig as { deckCount?: number }).deckCount ?? 12
 const CUT_PILE_COUNT: number = Math.min(
   MAX_CUT_PILES,
@@ -205,6 +206,7 @@ export function useOverlayController(deps: UseOverlayControllerDeps) {
       cardAspectRatio: 1.6,
       focusScale: scene === 'draw_stage' ? getFocusScale(deps.isWide.value) : 1,
       badgeOverflowPx: getBadgeOverflowPx(viewport.stageWidth),
+      resultSheetFraction: scene === 'draw_stage' ? RESULT_SHEET_FRACTION : undefined,
     })
   }
 
@@ -215,7 +217,9 @@ export function useOverlayController(deps: UseOverlayControllerDeps) {
    */
   function getMotionMetrics(scene: 'draw_stage' | 'result_stage' = 'draw_stage') {
     const viewport = getViewportMetrics(scene === 'result_stage')
-    const safeFrame = resolveOverlaySafeFrame(scene, viewport)
+    const safeFrame = resolveOverlaySafeFrame(scene, viewport, {
+      resultSheetFraction: scene === 'draw_stage' ? RESULT_SHEET_FRACTION : undefined,
+    })
 
     return resolveMotionMetrics({
       safeFrame,
@@ -330,7 +334,9 @@ export function useOverlayController(deps: UseOverlayControllerDeps) {
 
   function createPhaseContext(): PhaseContext {
     const drawViewport = getViewportMetrics(false)
-    const overlaySafeFrame = resolveOverlaySafeFrame('draw_stage', drawViewport)
+    const overlaySafeFrame = resolveOverlaySafeFrame('draw_stage', drawViewport, {
+      resultSheetFraction: RESULT_SHEET_FRACTION,
+    })
     const safeFrame: SafeFrame = {
       x: overlaySafeFrame.sideInset,
       y: overlaySafeFrame.topInset,

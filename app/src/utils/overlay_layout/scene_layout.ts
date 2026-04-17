@@ -23,6 +23,7 @@ export interface SceneLayoutInput {
   focusScale?: number
   badgeOverflowPx?: number
   headerHeight?: number
+  resultSheetFraction?: number
 }
 
 export interface SceneLayoutResult extends SpreadLayoutResult {
@@ -52,7 +53,7 @@ export interface RevealMotionPlan {
  */
 export function resolveSceneLayout(input: SceneLayoutInput): SceneLayoutResult {
   const { spreadId, scene, viewport, isWide, cardAspectRatio, focusScale, badgeOverflowPx, headerHeight } = input
-  const safeFrame = resolveOverlaySafeFrame(scene, viewport)
+  const safeFrame = resolveOverlaySafeFrame(scene, viewport, { resultSheetFraction: input.resultSheetFraction })
 
   const envelope = resolveCardSize({
     safeWidth: safeFrame.width,
