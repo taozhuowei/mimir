@@ -5,7 +5,7 @@
 
 // Result stage ratios
 export const RESULT_NARROW_HEIGHT_FRACTION = 0.42
-export const RESULT_WIDE_WIDTH_FRACTION = 0.44
+export const RESULT_WIDE_WIDTH_FRACTION = 0.40
 export const RESULT_SHEET_FRACTION = 0.30
 
 // Card visual constants
