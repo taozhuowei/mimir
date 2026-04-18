@@ -22,7 +22,7 @@ const baseInsets: UiInsetsConfig = {
   headerMarginRpx: 20,
   footerReserveRpx: 164,
   footerReserveMinPx: 48,
-  resultStageWidthRatio: 0.40,
+  resultStageWidthRatio: 0.44,
   resultStageHeightRatio: 0.42,
   sideInsetDraw: 24,
   sideInsetResult: 20,
@@ -81,13 +81,13 @@ describe('safe_frame_calculator', () => {
       expect(metrics.resultHeight).toBe(844 - metrics.stageHeight) // 490
     })
 
-    it('result_stage wide: stageWidth = width * 0.60, stageHeight = full height', () => {
+    it('result_stage wide: stageWidth = width * 0.44, stageHeight = full height', () => {
       const metrics = resolveStageMetrics(baseViewport, baseInsets, {
         isWide: true,
         showResults: true,
         topBarHeight: 0,
       })
-      expect(metrics.stageWidth).toBe(Math.round(390 * 0.60)) // 234
+      expect(metrics.stageWidth).toBe(Math.round(390 * 0.44)) // 172
       expect(metrics.stageHeight).toBe(844)
       // Current implementation returns height for resultHeight in wide mode
       expect(metrics.resultHeight).toBe(844)

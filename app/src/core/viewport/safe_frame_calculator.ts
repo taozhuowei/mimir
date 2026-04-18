@@ -65,7 +65,7 @@ export function resolveStageMetrics(
 
   const stageWidth =
     showResults && isWide
-      ? Math.round(width * (1 - insets.resultStageWidthRatio))
+      ? Math.round(width * insets.resultStageWidthRatio)
       : width
 
   const stageHeight = showResults

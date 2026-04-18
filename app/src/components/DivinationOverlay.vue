@@ -396,10 +396,6 @@ function handleRetry() {
   overflow: hidden;
 }
 
-.divination-overlay.is-wide {
-  flex-direction: row;
-}
-
 /* #ifdef H5 */
 .divination-overlay {
   --card-width: clamp(108px, 26vw, 172px);
@@ -422,19 +418,13 @@ function handleRetry() {
   background: var(--color-overlay-bg);
 }
 
-/* Main flex region — stage fills full height on narrow; shares row with result on wide. */
+/* Main flex region — stage always fills the full height; result sheet is overlaid. */
 .overlay-main {
   flex: 1;
   display: flex;
   flex-direction: column;
   min-height: 0;
   overflow: hidden;
-}
-
-.is-wide .overlay-main {
-  flex: none;
-  width: 60%;
-  height: 100%;
 }
 
 .stage-container {
@@ -461,13 +451,13 @@ function handleRetry() {
   animation: result-sheet-in 0.52s cubic-bezier(0.32, 0.72, 0, 1) both;
 }
 
-/* Wide screens: side panel as a flex item on the right, stage on the left (60/40). */
+/* Wide screens: side panel slides in from the right instead of a bottom sheet. */
 .is-wide .result-zone {
-  position: relative;
+  top: 0;
+  right: 0;
+  bottom: 0;
   left: auto;
-  right: auto;
-  bottom: auto;
-  width: 40%;
+  width: 46%;
   height: 100%;
   border-top: none;
   border-left: 1px solid var(--color-border);
@@ -709,11 +699,6 @@ function handleRetry() {
   z-index: 70;
   min-height: 96rpx;
   pointer-events: none;
-}
-
-.is-wide .action-bar {
-  right: auto;
-  width: 60%;
 }
 
 .action-bar > * {
