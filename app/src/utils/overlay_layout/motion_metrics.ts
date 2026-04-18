@@ -80,17 +80,10 @@ export function resolveMotionMetrics(input: MotionMetricsInput): MotionMetrics {
 
   // Cut pile spacing
   const pilesAlongAxis = Math.max(1, cutPileCount)
-  const cutAxisAvailable = cutAxis === 'horizontal' ? safeWidth : safeHeight
   const cutAxisCardSize = cutAxis === 'horizontal' ? cardWidth : cardHeight
-  const minPileSpacing = cutAxis === 'horizontal' ? slotPitchX : slotPitchY
-  const cutAxisSlackEachSide = (cutAxisAvailable - cutAxisCardSize) / 2
-  const maxPileSpacing = pilesAlongAxis > 1
-    ? Math.max(minPileSpacing, (cutAxisAvailable - cutAxisCardSize) / (pilesAlongAxis - 1) - 4)
-    : minPileSpacing
-  const targetPileSpacing = pilesAlongAxis > 1
-    ? (cutAxisAvailable - cutAxisCardSize) / (pilesAlongAxis - 1) * 0.85
-    : cutAxisCardSize + gap
-  const cutPileSpacing = clamp(targetPileSpacing, minPileSpacing, maxPileSpacing)
+  
+  // 固定间距：无论屏幕多大，移动距离仅为牌的尺寸 + 卡牌间距常量 (gap)
+  const cutPileSpacing = cutAxisCardSize + gap
 
   const halfRange = ((pilesAlongAxis - 1) / 2) * cutPileSpacing
   const cutLeadingOffset = cutAxis === 'horizontal'

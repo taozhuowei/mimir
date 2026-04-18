@@ -5,7 +5,7 @@
 
 // Result stage ratios
 export const RESULT_NARROW_HEIGHT_FRACTION = 0.42
-export const RESULT_WIDE_WIDTH_FRACTION = 0.44
+export const RESULT_WIDE_WIDTH_FRACTION = 0.54
 export const RESULT_SHEET_FRACTION = 0.30
 
 // Card visual constants
@@ -15,8 +15,8 @@ export const CARD_ASPECT_RATIO = 1.6
 
 // Viewport / safe-frame insets (px unless noted)
 export const HEADER_ICON_SIZE = 44
-export const HEADER_MARGIN_RPX_H5 = 20
-export const HEADER_MARGIN_RPX_MP = 80
+export const HEADER_MARGIN_RPX_H5 = 60
+export const HEADER_MARGIN_RPX_MP = 140
 export const FOOTER_RESERVE_RPX_H5 = 164
 export const FOOTER_RESERVE_RPX_MP = 196
 export const FOOTER_RESERVE_MIN_PX = 48
@@ -32,8 +32,8 @@ export const BOTTOM_RATIO_RESULT = 0.16
 
 // Rounding / clamping
 export const MIN_CARD_WIDTH = 64
-export const MAX_CARD_WIDTH = 188
-export const DEFAULT_ENVELOPE_GAP = 16
+export const MAX_CARD_WIDTH = 512 // 移除188px的人为限制，充分利用安全区宽度
+export const DEFAULT_ENVELOPE_GAP = 16 // 固定卡牌间距常量
 
 // Responsive breakpoint
 export const WIDE_BREAKPOINT = 768

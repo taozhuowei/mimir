@@ -17,16 +17,16 @@ function makeSafeFrame(w: number, h: number): SafeFrame {
 }
 
 describe('card_size_solver', () => {
-  it('resolves a 1x1 envelope and clamps to default maxCardWidth=188', () => {
-    const safeFrame = makeSafeFrame(200, 320)
+  it('resolves a 1x1 envelope and clamps to default maxCardWidth=512', () => {
+    const safeFrame = makeSafeFrame(600, 1000)
     const size = resolveCardSize({
       safeFrame,
       cardAspectRatio: 1.6,
       requirement: { horizontalSlots: 1, verticalSlots: 1 },
     })
-    // unconstrained width would be 200, but default MAX_CARD_WIDTH=188 clamps it
-    expect(size.width).toBe(188)
-    expect(size.height).toBeCloseTo(188 * 1.6, 5)
+    // unconstrained width would be 600, but default MAX_CARD_WIDTH=512 clamps it
+    expect(size.width).toBe(512)
+    expect(size.height).toBeCloseTo(512 * 1.6, 5)
     expect(size.gap).toBe(16)
   })
 

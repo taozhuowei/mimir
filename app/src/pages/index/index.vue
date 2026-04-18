@@ -37,9 +37,6 @@
           @keydown.enter="handleDeckClick"
           @keydown.space.prevent="handleDeckClick"
         >
-          <!-- 魔法阵底纹（保持微弱氛围） -->
-          <view class="magic-runes-ring"></view>
-          
           <!-- 空闲牌堆 -->
           <view class="idle-deck">
             <image
@@ -48,7 +45,8 @@
               class="tarot-card idle-card"
               :src="cardBack"
               :style="cardsStyle[i-1]"
-              alt="塔罗牌背面"
+              role="img"
+              aria-label="塔罗牌背面"
               lazy-load
             />
           </view>
@@ -223,12 +221,12 @@ function startDeckAnimation() {
     x: (i) => {
       // 计算：假设中心牌 (索引 5 或 6) x 为 0，向左向右散开
       const offset = i - 5.5
-      return offset * 15 * spreadFactor // 每张牌横向间隔按比例缩放
+      return offset * 10 // 每张牌横向间隔保持固定，不再随屏幕宽度缩放
     },
     y: (i) => {
       // 形成一个略微的拱形
       const offset = i - 5.5
-      return Math.abs(offset) * 4 * spreadFactor // 两侧的牌略微下沉，按比例缩放
+      return Math.abs(offset) * 2.5 // 两侧的牌略微下沉，保持固定
     },
     rotation: (i) => {
       // 扇形旋转，中心牌 0 度，两侧对称旋转
@@ -457,21 +455,6 @@ onUnmounted(() => {
 }
 /* #endif */
 
-/* 魔法阵底纹（保持极其微弱的质感） */
-.magic-runes-ring {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 580rpx;
-  height: 580rpx;
-  transform: translate(-50%, -50%);
-  border-radius: 50%;
-  border: 2rpx solid var(--color-border);
-  box-shadow: inset 0 0 60rpx var(--color-bg-sunken), 0 0 60rpx var(--color-bg-sunken);
-  pointer-events: none;
-  opacity: 0.3;
-}
-
 /* =========================================
    UI 装饰与交互提示
    ========================================= */
@@ -524,7 +507,6 @@ onUnmounted(() => {
 @media (prefers-reduced-motion: reduce) {
   .idle-card,
   .corner-decoration,
-  .magic-runes-ring,
   .touch-hint {
     transition: none !important;
     animation: none !important;

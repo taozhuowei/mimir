@@ -621,7 +621,7 @@ describe('cross-device card sizing', () => {
       cardAspectRatio: 1.6,
     })
     expect(result.cardWidth).toBeGreaterThanOrEqual(88)
-    expect(result.cardWidth).toBeLessThanOrEqual(300) // sanity upper bound
+    expect(result.cardWidth).toBeLessThanOrEqual(512) // sanity upper bound
     expect(result.cardHeight).toBeCloseTo(result.cardWidth * 1.6, 1)
   })
 

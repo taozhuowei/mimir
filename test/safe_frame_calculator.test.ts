@@ -22,7 +22,7 @@ const baseInsets: UiInsetsConfig = {
   headerMarginRpx: 20,
   footerReserveRpx: 164,
   footerReserveMinPx: 48,
-  resultStageWidthRatio: 0.44,
+  resultStageWidthRatio: 0.54,
   resultStageHeightRatio: 0.42,
   sideInsetDraw: 24,
   sideInsetResult: 20,
@@ -38,13 +38,13 @@ describe('safe_frame_calculator', () => {
   describe('getDefaultInsets', () => {
     it('returns H5 defaults when isMiniProgram=false', () => {
       const insets = getDefaultInsets(390, false)
-      expect(insets.headerMarginRpx).toBe(20)
+      expect(insets.headerMarginRpx).toBe(60)
       expect(insets.footerReserveRpx).toBe(164)
     })
 
     it('returns mini-program defaults when isMiniProgram=true', () => {
       const insets = getDefaultInsets(390, true)
-      expect(insets.headerMarginRpx).toBe(80)
+      expect(insets.headerMarginRpx).toBe(140)
       expect(insets.footerReserveRpx).toBe(196)
     })
   })
@@ -81,13 +81,13 @@ describe('safe_frame_calculator', () => {
       expect(metrics.resultHeight).toBe(844 - metrics.stageHeight) // 490
     })
 
-    it('result_stage wide: stageWidth = width * 0.44, stageHeight = full height', () => {
+    it('result_stage wide: stageWidth = width * 0.54, stageHeight = full height', () => {
       const metrics = resolveStageMetrics(baseViewport, baseInsets, {
         isWide: true,
         showResults: true,
         topBarHeight: 0,
       })
-      expect(metrics.stageWidth).toBe(Math.round(390 * 0.44)) // 172
+      expect(metrics.stageWidth).toBe(Math.round(390 * 0.54))
       expect(metrics.stageHeight).toBe(844)
       // Current implementation returns height for resultHeight in wide mode
       expect(metrics.resultHeight).toBe(844)

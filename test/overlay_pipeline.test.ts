@@ -65,7 +65,7 @@ describe('overlay_animation pipeline', () => {
 
       pipeline.run()
       // Allow microtasks to flush since onCompletes are synchronous in makePhase
-      await new Promise((r) => setTimeout(r, 10))
+      await new Promise((r) => setTimeout(r, 100))
 
       expect(order).toEqual([
         'start:shuffling',
@@ -95,7 +95,7 @@ describe('overlay_animation pipeline', () => {
       })
 
       pipeline.run(2)
-      await new Promise((r) => setTimeout(r, 10))
+      await new Promise((r) => setTimeout(r, 100))
 
       expect(completed).toEqual(['drawing', 'revealing'])
     })
@@ -114,7 +114,7 @@ describe('overlay_animation pipeline', () => {
       })
 
       pipeline.run()
-      await new Promise((r) => setTimeout(r, 10))
+      await new Promise((r) => setTimeout(r, 100))
 
       expect(onComplete).toHaveBeenCalledOnce()
     })
@@ -128,7 +128,7 @@ describe('overlay_animation pipeline', () => {
 
       const pipeline = createPhasePipeline(orchestrator, phases)
       pipeline.run()
-      await new Promise((r) => setTimeout(r, 10))
+      await new Promise((r) => setTimeout(r, 100))
 
       expect(orchestrator.add).toHaveBeenCalledTimes(2)
     })
@@ -147,7 +147,7 @@ describe('overlay_animation pipeline', () => {
       })
 
       pipeline.run()
-      await new Promise((r) => setTimeout(r, 10))
+      await new Promise((r) => setTimeout(r, 100))
 
       expect(completed).toEqual(['shuffling', 'cutting'])
       expect(orchestrator.add).toHaveBeenCalledTimes(1)

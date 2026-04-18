@@ -7,43 +7,35 @@
 import type { ViewportMetrics } from './types'
 
 /**
- * Resolve the current viewport metrics.
- * H5: uses window.innerWidth / innerHeight.
- * Mini-program: falls back to uni.getSystemInfoSync() when window globals are absent.
+ * Returns the raw viewport dimensions and device pixel ratio.
+ * This abstracts away the uni-app / browser API differences.
  */
 export function resolveViewportMetrics(): ViewportMetrics {
-  // #ifdef H5
-  if (typeof window !== 'undefined') {
-    return {
-      width: window.innerWidth,
-      height: window.innerHeight,
-      safeAreaTop: 0,
-      safeAreaBottom: 0,
-      dpr: window.devicePixelRatio || 1,
-    }
-  }
-  // #endif
-
-  // #ifndef H5
   try {
     const info = uni.getSystemInfoSync()
-    const safeAreaBottomRaw = info.safeArea?.bottom
     const screenHeight = info.screenHeight ?? info.windowHeight ?? 0
-    const safeAreaBottom = safeAreaBottomRaw && safeAreaBottomRaw > 0 && screenHeight > 0
-      ? Math.max(0, screenHeight - safeAreaBottomRaw)
-      : 0
+    const safeAreaBottomRaw = info.safeAreaInsets?.bottom ?? (info.safeArea ? screenHeight - info.safeArea.bottom : 0)
+    const safeAreaTopRaw = info.safeAreaInsets?.top ?? info.safeArea?.top ?? 0
 
     return {
-      width: info.windowWidth ?? info.screenWidth ?? 0,
-      height: info.windowHeight ?? info.screenHeight ?? 0,
-      safeAreaTop: info.safeArea?.top ?? 0,
-      safeAreaBottom,
+      width: info.windowWidth ?? info.screenWidth ?? 375,
+      height: info.windowHeight ?? info.screenHeight ?? 812,
+      safeAreaTop: safeAreaTopRaw,
+      safeAreaBottom: safeAreaBottomRaw,
       dpr: info.pixelRatio ?? 1,
     }
   } catch {
+    // #ifdef H5
+    if (typeof window !== 'undefined') {
+      return {
+        width: window.innerWidth,
+        height: window.innerHeight,
+        safeAreaTop: 0,
+        safeAreaBottom: 0,
+        dpr: window.devicePixelRatio || 1,
+      }
+    }
+    // #endif
     return { width: 375, height: 812, safeAreaTop: 0, safeAreaBottom: 0, dpr: 2 }
   }
-  // #endif
-
-  return { width: 375, height: 812, safeAreaTop: 0, safeAreaBottom: 0, dpr: 2 }
 }

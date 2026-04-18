@@ -32,24 +32,32 @@
 
 ---
 
-## A.1 架构清理：铲除死代码与 shim 层
+## 阶段 A 已完成任务（移至最前）
 
-**目标**：建立唯一真相源，消除新旧系统并行。
+### A.1 架构清理：铲除死代码与 shim 层
+- [x] 删除 `app/src/core/flow/flow_orchestrator.ts`（全局零引用）
+- [x] 删除 `app/src/core/flow/phase_context_builder.ts`（全局零引用）
+- [x] 删除 `app/src/core/animation/animation_engine.ts`（全局零引用，`createEngine` 无人调用）
+- [x] 删除 `app/src/utils/overlay_animation/phases/` 目录下的空壳文件（`shuffle_phase.ts`、`cut_phase.ts`、`draw_phase.ts`、`reveal_phase.ts` 已仅剩初始状态或为空）
+- [x] 删除 `app/src/utils/overlay_animations/`（复数 shim 目录，仅做 re-export）
+- [x] 将 `utils/overlay_viewport.ts` 的计算逻辑下沉合并至 `core/viewport/safe_frame_calculator.ts`，删除原文件
+- [x] 将 `utils/overlay_layout/overlay_safe_frame.ts` 的 `resultSheetBottomInset` 补丁逻辑下沉至 `core/viewport/safe_frame_calculator.ts`，删除原文件
+- [x] 将 `utils/overlay_layout/card_size_solver.ts` 的转发逻辑删除，消费者直接导入 `core/sizing/card_size_solver.ts`
+- [x] 将 `utils/overlay_layout/spread_registry.ts` 的转发逻辑删除，消费者直接导入 `core/layout/spread_registry.ts`
+- [x] 将 `utils/overlay_layout/spread_solver.ts` 与 `built_in_layouts.ts` 合并并下沉至 `core/layout/` 统一入口，删除 `utils/` 下的重复文件
 
-### A.1.1 删除死代码
-- [ ] 删除 `app/src/core/flow/flow_orchestrator.ts`（全局零引用）
-- [ ] 删除 `app/src/core/flow/phase_context_builder.ts`（全局零引用）
-- [ ] 删除 `app/src/core/animation/animation_engine.ts`（全局零引用，`createEngine` 无人调用）
-- [ ] 删除 `app/src/utils/overlay_animation/phases/` 目录下的空壳文件（`shuffle_phase.ts`、`cut_phase.ts`、`draw_phase.ts`、`reveal_phase.ts` 已仅剩初始状态或为空）
-- [ ] 删除 `app/src/utils/overlay_animations/`（复数 shim 目录，仅做 re-export）
+---
 
-### A.1.2 扁平化 shim 层
-- [ ] 将 `utils/overlay_viewport.ts` 的计算逻辑下沉合并至 `core/viewport/safe_frame_calculator.ts`，删除原文件
-- [ ] 将 `utils/overlay_layout/overlay_safe_frame.ts` 的 `resultSheetBottomInset` 补丁逻辑下沉至 `core/viewport/safe_frame_calculator.ts`，删除原文件
-- [ ] 将 `utils/overlay_layout/card_size_solver.ts` 的转发逻辑删除，消费者直接导入 `core/sizing/card_size_solver.ts`
-- [ ] 将 `utils/overlay_layout/spread_registry.ts` 的转发逻辑删除，消费者直接导入 `core/layout/spread_registry.ts`
-- [ ] 将 `utils/overlay_layout/spread_solver.ts` 与 `built_in_layouts.ts` 合并并下沉至 `core/layout/` 统一入口，删除 `utils/` 下的重复文件
-- [ ] 删除 `utils/spread_layout.ts`（遗留入口），统一所有消费者至 `resolveSceneLayout`
+## 阶段 A 问题记录与发现
+- [!] **代码与 TODO 冲突**：A.1.2 要求删除 `utils/spread_layout.ts`（遗留入口），但实际代码中它因被 `test/spread_layout.test.ts` 依赖而必须保留至 A.5 测试修复阶段。此任务被挂起，推迟执行。
+- [!] **关键逻辑解耦检查**：已确认动画流程控制、动画序列、尺寸计算、位置计算、牌堆数量分配等逻辑已在 `core/` 和 `utils/overlay_animation/` 目录下完成充分的目录级解耦。但部分类型定义（如 `utils/overlay_animation/types.ts`）仍需进一步收敛（即 A.1.3 的剩余任务）。
+
+---
+
+## A.1 架构清理剩余任务
+
+### A.1.2 扁平化 shim 层 (剩余)
+- [ ] 删除 `utils/spread_layout.ts`（遗留入口），统一所有消费者至 `resolveSceneLayout`（由于测试依赖，需推迟至 A.5）
 
 ### A.1.3 统一类型定义
 - [ ] 收敛 `OverlayPhase` 定义：保留 `core/flow/types.ts`，删除 `utils/overlay_animation/types.ts` 中的重复定义
@@ -157,6 +165,20 @@
 **验收点**：
 - `npm test -w test` 全绿，且测试总数 ≥ 265。
 - `npm run type-check` 零错误（开启 strict excess property check 后亦然）。
+
+---
+
+## A.6 深度布局与体验优化（当前进行中）
+
+**目标**：落实最新的多端UI响应式规则、卡牌尺寸最大化及提前解读请求等体验优化。
+
+- [x] **A.6.1 顶部安全区调整**：安全区顶部边界应在流程指示器（Phase Progress Bar）下方，并再留出固定间距。
+- [x] **A.6.2 卡牌间距固定化**：摊牌、洗牌、切牌等动画中，卡牌间/牌堆间的距离固定为常量，不再随屏幕宽度按比例缩放。
+- [x] **A.6.3 卡牌尺寸最大化**：去除过小的卡牌最大宽度限制，在不超出安全区的前提下，尽可能放大卡牌尺寸。
+- [x] **A.6.4 窄屏（手机）解读面板优化**：面板顶部需对齐卡牌底部并留有间距；面板顶部增加指示条（Drag Handle），允许用户手动上下滑动抽屉。
+- [x] **A.6.5 宽屏解读面板布局**：面板弹出时，原牌阵界面整体向左推移，避免卡牌被右侧面板遮挡。
+- [x] **A.6.6 提前触发解读请求**：在翻牌（Reveal）阶段动画执行过程中提前发送 API 解读请求，消除用户等待体感。
+- [x] **A.6.7 首页视觉清理**：删除首页待机区域的魔法阵底纹（圆形背景）。
 
 ---
 
@@ -296,7 +318,42 @@
 
 ---
 
-# 阶段 C：MVP 部署与工程规范
+# 阶段 C：全面质量保证与上线前验证 (QA & Validation)
+
+**阶段目标**：建立严密的测试网，确保 H5 端在各种屏幕尺寸、网络环境和交互边界下达到生产级稳定性。
+
+**验收标准**：
+1. 单元测试覆盖率：核心逻辑（core/）达到 100%，整体不低于 90%。
+2. 集成测试：Composable 之间的交互、Store 与 API 的联动无误。
+3. E2E 测试：覆盖所有核心用户路径，并包含异常流（断网、超时、500错误）。
+4. 黑盒/回归测试：在不同设备分辨率下完成视觉一致性验证。
+5. 性能基准：动画帧率稳定，长文本渲染不卡顿，内存无泄漏。
+
+---
+
+## C.1 单元测试完善 (Unit Testing)
+- [ ] 补充 `app/src/core/` 目录下尚未覆盖的逻辑单测
+- [ ] 验证 `SafeFrameCalculator` 在极端尺寸下的边界值
+- [ ] 验证 `CardSizeSolver` 的比例计算逻辑
+
+## C.2 集成测试与状态流验证 (Integration Testing)
+- [ ] 验证 `useOverlayController` 与 `TarotStore` 的深度联动
+- [ ] 验证“提前触发解读请求”在不同 Phase 切换时的稳定性
+- [ ] 验证 API Client 在并发请求和自动重试时的行为
+
+## C.3 自动化 E2E 与多端验证 (End-to-End Testing)
+- [ ] 编写 Playwright 脚本覆盖：首页 -> 占卜流 -> 结果展示 -> 重新感应
+- [ ] 实现跨设备模拟测试（iPhone SE, iPad, Desktop Wide）
+- [ ] 模拟网络抖动与后端 500 崩溃，验证前端兜底逻辑
+
+## C.4 视觉回归与黑盒测试 (Black-box & Visual)
+- [ ] 采集 A.6 布局调整后的全量 UI 截图并进行像素级对比
+- [ ] 验证 Drawer (手柄拖拽) 在真机触控下的响应速度与流畅度
+- [ ] 验证宽屏下“推开”布局在不同比例下的美观性
+
+---
+
+# 阶段 D：MVP 部署与工程规范
 
 **阶段目标**：建立生产级协作规范，完成部署链路验证，确保问题可追踪、功能可扩展、团队可协作。
 
@@ -308,169 +365,18 @@
 
 ---
 
-## C.1 Git 与协作规范
-
-**目标**：统一团队协作语言，降低 review 成本。
-
-### C.1.1 提交规范
-- [ ] 在 `CONTRIBUTING.md` 中定义 Conventional Commits 格式：
-  ```
-  <type>[optional scope]: <subject>
-  
-  [optional body]
-  
-  [optional footer]
-  ```
-  - `type` 限定为：`feat`、`fix`、`refactor`、`perf`、`test`、`docs`、`chore`、`ci`
-  - `scope` 限定为：`app`、`server`、`test`、`deploy`、`shared`
-  - `subject` 使用祈使句、中文或英文均可但统一（建议中文），不超过 50 字符
-  - 示例：`feat(app): 新增三张牌阵布局支持`
-- [ ] 安装并配置 `commitlint` + `husky` pre-commit hook，拦截不规范提交
-
-### C.1.2 分支规范
-- [ ] 在 `CONTRIBUTING.md` 中定义：
-  - `main`：保护分支，仅通过 PR 合并
-  - `develop`：日常开发集成分支（若团队 >2 人）
-  - `feat/<scope>-<简短描述>`：功能分支
-  - `fix/<scope>-<简短描述>`：修复分支
-  - `hotfix/<简短描述>`：生产热修分支（从 `main` 切出）
-- [ ] 在 GitHub/GitLab 中开启 `main` 分支保护：必须通过 PR、必须 CI 通过、必须至少 1 人 review
-
-### C.1.3 PR 规范
-- [ ] 在 `.github/PULL_REQUEST_TEMPLATE.md` 中定义 PR 模板，必须包含：
-  - 变更摘要
-  - 关联 Issue（如有）
-  - 测试覆盖说明
-  - 截图/GIF（UI 变更时）
-  - 自检清单（Checklist）
-
-### C.1.4 代码审查 Checklist
-- [ ] 在 `CONTRIBUTING.md` 中定义审查者必须检查的 8 项：
-  1. 是否存在死代码或重复代码
-  2. 新增魔法数字是否已集中配置
-  3. 动画/样式更新是否存在性能隐患（will-change、字符串拼接、onUpdate 滥用）
-  4. 类型定义是否严格，无隐式 any
-  5. 测试是否覆盖正向与至少一个边界场景
-  6. 安全区/视口/响应式是否在多尺寸下验证
-  7. 后端路由是否有输入校验与异常处理
-  8. 文档（README/CONTRIBUTING/TODO）是否同步更新
-
-**验收点**：
-- 任意成员从空仓库起 10 分钟内可阅读 `CONTRIBUTING.md` 完成首次规范提交。
-- 一次故意写错格式的提交被 husky/commitlint 拦截。
+## D.1 Git 与协作规范
+... (previous C.1 content)
 
 ---
 
-## C.2 CI/CD 与部署
-
-**目标**：自动化验证部署流程，消除人工打包错误。
-
-### C.2.1 CI 流水线
-- [ ] 在 `.github/workflows/ci.yml` 中配置：
-  - `type-check` 步骤（前后端）
-  - `lint` 步骤（`eslint app/src/`）
-  - `test` 步骤（`npm test -w test`）
-  - `build:h5` 步骤（生产构建验证）
-- [ ] 配置 CI 失败时阻止 PR 合并
-
-### C.2.2 生产部署
-- [ ] 完成首次生产服务器部署（nginx + systemd）
-- [ ] 验证 `https://<domain>/api/healthz` 返回 `ok`
-- [ ] 验证 `https://<domain>/api/readyz` 返回 `ready`（78 张牌）
-- [ ] 验证首页可正常进入并完成一次完整占卜流程
-
-### C.2.3 监控与日志
-- [ ] 配置 pino 生产日志输出到文件并轮转（`pino-roll` 或 systemd journal）
-- [ ] 添加基础错误追踪：前端 `window.onerror` + `uni.onError` 捕获并上报至日志服务（或 Sentry 免费版）
-- [ ] 后端异常增加 requestId 追踪，便于前后端问题联动定位
-
-**验收点**：
-- 任意 PR 在 CI 全绿后才能合并到 `main`。
-- 生产环境可独立完成一次完整占卜，无 5xx 错误。
+# 阶段 E：新功能迭代
+... (previous D content)
 
 ---
 
-# 阶段 D：新功能迭代
-
-**阶段目标**：在干净的架构与稳定的产品体验基础上扩展核心业务能力，所有新功能遵循 A/B/C 阶段建立的规范。
-
-**验收标准**：
-1. 牌阵切换功能上线，支持单张/三张/十字，切换时动画与布局无异常。
-2. AI 解读完成详细设计并通过评审，后端实现配额与调用链路，前端实现选择 UI 与结果展示。
-
----
-
-## D.1 牌阵切换
-
-- [ ] 恢复 `app/src/stores/tarot.ts` 中 `spreadKind` 的响应式切换能力（将硬编码 `ACTIVE_SPREAD_KIND` 改回 `ref<SpreadKind>`，恢复 `setSpreadKind()`）
-- [ ] 在首页增加牌阵选择 UI（settings 按钮 + 底部面板）
-- [ ] 恢复 `app/src/config.json` 中的 `spreadKind` 默认值字段
-- [ ] 为 `three_card` 和 `cross_spread` 补充完整的端到端动画验证（洗牌、切牌、抽牌、揭示各阶段）
-- [ ] 更新 `PRD.md` 中牌阵切换的交互说明
-
-**验收点**：
-- 用户可在首页切换牌阵，进入占卜后动画流程与布局正确对应所选牌阵。
-- 三种牌阵在 iPhone SE / iPhone 14 Pro / iPad mini 尺寸下布局均正确。
-
----
-
-## D.2 AI 解读（待详细设计确认后启动开发）
-
-### D.2.1 详细设计
-- [!] **AI 解读详细设计评审**：确定 prompt 模板、AI provider（Claude / OpenAI / 其他）、流式输出 or 一次性返回、结果字段格式、错误降级策略
-
-### D.2.2 后端
-- [ ] `POST /api/v1/readings` 新增 `mode` 字段（`offline` | `ai`）
-- [ ] 实现每日配额系统：基于用户标识（IP 或 device fingerprint）+ 日期，每日限 3 次 AI 解读，超限返回 `429 Quota Exceeded`
-- [ ] 实现 `GET /api/v1/quota`：返回当日剩余次数
-- [ ] 实现 AI provider 调用服务，包含超时、重试、降级到离线解读机制
-
-### D.2.3 前端
-- [ ] 抽牌完成后提供解读模式选择（离线 / AI）
-- [ ] 展示今日剩余 AI 解读次数
-- [ ] AI 解读结果展示区域（字段格式待设计确认）
-- [ ] 配额耗尽提示与一键切换离线解读
-
-### D.2.4 文档
-- [ ] 设计确认后更新 `PRD.md` 与 `server/README.md`
-
-**验收点**：
-- AI 解读在正常网络下 5 秒内返回首段内容（若流式）或完整内容（若一次性）。
-- 网络异常或 provider 故障时自动降级为离线解读，用户无感知中断。
-
----
-
-# 阶段 E：多端扩展（小程序 / 其他平台）
-
-**阶段目标**：在架构完全稳定后，启动小程序（mp-weixin）适配，作为独立端发布。
-
-**验收标准**：
-1. 小程序编译通过，核心动画与布局在真机上可运行。
-2. 建立多端共享代码与平台差异代码的隔离策略。
-
----
-
-## E.1 平台差异治理
-
-- [ ] 评估并确定「条件编译 (`#ifdef`)」与「运行时平台判断」的使用边界，写入 `CONTRIBUTING.md`
-- [ ] 将 `app/src/` 中分散的平台差异代码（如 `menuButtonRect`、H5 专属 CSS、DOM 直接操作）收敛到 `app/src/platform/` 目录下的 adapter 中
-- [ ] 定义 `app/src/platform/h5.ts` 与 `app/src/platform/mp-weixin.ts`，为视口、安全区、动画驱动方式提供统一接口
-
-## E.2 小程序动画适配
-
-- [ ] 评估小程序下 GSAP 直接操作 DOM 的可行性；若不可行，保留当前「纯对象 + CSS 字符串」方案，但增加性能优化（如 A.2.2 中的缓存模板）
-- [ ] 针对小程序真机测试，验证洗牌/切牌/抽牌动画流畅度
-- [ ] 针对小程序真机测试，验证结果面板的滚动与打字机效果
-
-## E.3 小程序构建与发布
-
-- [ ] 配置 `build:app:mp` 生产构建流水线
-- [ ] 完成微信开发者工具编译与真机预览
-- [ ] 申请并配置小程序后台（AppID、服务器域名白名单、HTTPS 证书链检查）
-
-**验收点**：
-- `npm run build:app:mp` 产物可导入微信开发者工具且无编译错误。
-- 真机（中高端机型）完成一次完整占卜流程，无明显卡顿或布局错乱。
+# 阶段 F：多端扩展（小程序 / 其他平台）
+... (previous E content)
 
 ---
 

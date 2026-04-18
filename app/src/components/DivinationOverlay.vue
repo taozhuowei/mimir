@@ -118,9 +118,13 @@
     <scroll-view
       v-if="controller.showResults.value"
       class="result-zone"
+      :style="!isWide ? `height: ${resultSheetHeight}vh;` : ''"
       scroll-y
       enable-flex
     >
+      <view v-if="!isWide" class="drag-handle-container" @touchstart.stop="onDrawerTouchStart" @touchmove.stop.prevent="onDrawerTouchMove">
+        <view class="drag-handle"></view>
+      </view>
       <view class="result-zone-inner">
         <view v-if="controller.isReadingLoading.value" class="result-loading">
           <view class="loading-row">
@@ -296,7 +300,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { useTarotStore } from '../stores/tarot'
 import { useThemeStore } from '../stores/theme'
 import ResultPanel from './ResultPanel.vue'
@@ -319,6 +323,14 @@ const playbackRates = [0.25, 0.5, 1, 2] as const
 
 const isWide = ref(false)
 const cardCount = computed(() => getSpreadCardCount(tarotStore.spreadKind))
+
+function updateIsWide() {
+  const { windowWidth } = uni.getWindowInfo()
+  isWide.value = windowWidth >= 768
+}
+
+updateIsWide()
+uni.onWindowResize(updateIsWide)
 
 interface PhaseStepPresentation {
   phase: OverlayPhase
@@ -348,6 +360,26 @@ const controller = useOverlayController({
   emit,
 })
 
+const resultSheetHeight = ref(58) // Default to 58vh (100 - 42) to align with stage bottom
+
+let drawerStartY = 0
+let drawerStartHeight = 58
+
+function onDrawerTouchStart(e: TouchEvent) {
+  drawerStartY = e.touches[0].clientY
+  drawerStartHeight = resultSheetHeight.value
+}
+
+function onDrawerTouchMove(e: TouchEvent) {
+  const deltaY = e.touches[0].clientY - drawerStartY
+  const { windowHeight } = uni.getWindowInfo()
+  const vhDelta = -(deltaY / windowHeight) * 100
+  let newHeight = drawerStartHeight + vhDelta
+  if (newHeight < 30) newHeight = 30
+  if (newHeight > 92) newHeight = 92
+  resultSheetHeight.value = newHeight
+}
+
 function handlePlaybackRate(rate: number) { controller.setPlaybackRate(rate) }
 function handlePause() { controller.pauseAnimations() }
 function handleResume() { controller.resumeAnimations() }
@@ -373,8 +405,6 @@ function handleRetry() {
 
 <style scoped>
 .divination-overlay {
-  --card-width: 172px;
-  --card-height: calc(var(--card-width) * 1.6);
   --card-focus-scale: 1;
   --color-overlay-bg: rgba(242, 232, 208, 0.97);
   --color-overlay-bg-fade: rgba(242, 232, 208, 0.96);
@@ -395,18 +425,6 @@ function handleRetry() {
   flex-direction: column;
   overflow: hidden;
 }
-
-/* #ifdef H5 */
-.divination-overlay {
-  --card-width: clamp(108px, 26vw, 172px);
-}
-/* #endif */
-
-/* #ifdef MP-WEIXIN */
-.divination-overlay {
-  --card-width: clamp(88px, 22vw, 120px);
-}
-/* #endif */
 
 .overlay-bg {
   position: absolute;
@@ -433,6 +451,12 @@ function handleRetry() {
   flex-direction: column;
   flex: 1;
   min-height: 0;
+  width: 100%;
+  transition: width 0.52s cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+.is-wide.show-results .stage-container {
+  width: 54%;
 }
 
 /* Result sheet: absolute bottom sheet that slides up over the cards.
@@ -442,13 +466,35 @@ function handleRetry() {
   left: 0;
   right: 0;
   bottom: 0;
-  height: 30vh;
+  /* height is dynamically set via inline style for narrow screens */
   z-index: 55;
   background: var(--color-overlay-bg);
   border-top: 1px solid var(--color-border);
   border-radius: 32rpx 32rpx 0 0;
   box-shadow: 0 -8rpx 48rpx rgba(30, 15, 6, 0.1);
   animation: result-sheet-in 0.52s cubic-bezier(0.32, 0.72, 0, 1) both;
+  transition: height 0.1s ease-out; /* smooth dragging */
+}
+
+.drag-handle-container {
+  width: 100%;
+  height: 48rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: sticky;
+  top: 0;
+  z-index: 60;
+  background: var(--color-overlay-bg);
+  border-radius: 32rpx 32rpx 0 0;
+}
+
+.drag-handle {
+  width: 80rpx;
+  height: 8rpx;
+  background-color: var(--color-border-strong);
+  border-radius: 4rpx;
+  opacity: 0.5;
 }
 
 /* Wide screens: side panel slides in from the right instead of a bottom sheet. */
@@ -886,21 +932,7 @@ function handleRetry() {
   font-weight: 500;
 }
 
-/* #ifdef H5 */
-@media (min-width: 768px) {
-  .divination-overlay {
-    --card-width: clamp(120px, 13vw, 188px);
-  }
-}
-/* #endif */
 
-/* #ifdef MP-WEIXIN */
-@media (min-width: 768px) {
-  .divination-overlay {
-    --card-width: clamp(120px, 13vw, 188px);
-  }
-}
-/* #endif */
 
 @media (prefers-reduced-motion: reduce) {
   .card-focus-frame,

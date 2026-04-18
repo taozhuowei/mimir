@@ -416,6 +416,9 @@ export function useOverlayController(deps: UseOverlayControllerDeps) {
         if (startedPhase === 'shuffling') {
           settleEntryAnimation()
         }
+        if (startedPhase === 'revealing') {
+          openResultPanel()
+        }
       },
       onPhaseComplete: (completedPhase) => {
         // Pipeline step complete — if we just finished drawing, schedule reading.
@@ -710,6 +713,7 @@ export function useOverlayController(deps: UseOverlayControllerDeps) {
     getCardImg,
     getCardImgName,
     overlayText: DEFAULT_OVERLAY_TEXT,
+    getSceneLayout,
 
     // Controls
     setPlaybackRate,
