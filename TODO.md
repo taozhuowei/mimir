@@ -1,110 +1,429 @@
 # TODO — Scales Tarot
 
-> 文档更新日期：2026-04-18  
-> 当前发布范围：H5 单页塔罗体验  
-> 当前主线：先建立文档与工程基线，再推进架构收敛与上线治理
+> 文档更新日期：2026-04-18
+> 当前主线：A 阶段审计 → B 阶段整改 → C 阶段测试 → D 阶段部署 → E 阶段演进
 
 ---
 
-## 状态定义
+## 📌 状态标记与更新规则
 
-| 状态 | 标记 | 含义 |
+### 状态标记
+
+| 标记 | 含义 | 流转 |
 |---|---|---|
-| 待开始 | `[ ]` | 已确认要做，但尚未进入执行 |
-| 进行中 | `[~]` | 当前主线任务，正在推进 |
-| 待确认 | `[!]` | 需要额外决策或外部条件才能继续 |
-| 已完成 | `[x]` | 已完成并有对应验证证据 |
+| `[ ]` | 待开始 | 初始状态 |
+| `[~]` | 进行中 | 任务开始时立即标记 |
+| `[?]` | 待验收 | 实现完成、等待独立审计验证 |
+| `[x]` | 已完成 | 审计验证通过 |
+| `[!]` | 阻塞/待确认 | 遇到阻塞、依赖外部条件或方案待评审 |
+
+流转规则：`[ ]` → `[~]` → `[?]` → `[x]`，任何阶段均可转为 `[!]` 并注明原因。
+
+### TODO 即时更新规则
+
+1. **开始即标记**：任务开始时，立即将 `[ ]` 改为 `[~]`，禁止事后补标。
+2. **完成即更新**：任务完成或取得阶段性进展时，立即更新状态，禁止批量延迟到对话末尾统一更新。
+3. **阻塞即记录**：遇到阻塞转为 `[!]` 时，必须在条目后注明阻塞原因和依赖方。
+4. **验收即闭环**：标记 `[x]` 必须对应可验证的证据（测试通过、构建成功、截图或日志）。
+5. **单一事实源**：TODO.md 是执行状态的唯一事实源，所有状态以本文件为准。
 
 ---
 
-## 维护原则
+## 📋 阶段 A：全面审计（Multi-Agent Audit）
 
-1. 只记录真实主线，不在这里维护大段历史复盘。
-2. 产品范围以 `PRD.md` 为准，技术约束以 `docs/technical_architecture.md` 为准。
-3. 当前只把 H5 作为交付目标，小程序适配不进入当前主线。
-4. 每个阶段都必须有明确的验收证据：命令结果、截图、脚本、构建或文档。
+> 目标：用 10 个 Agent 分 4 组，对项目前后端进行全面审计，经交叉审查后产出可信的 P0/P1/P2 分级结论，为阶段 B 整改提供输入。
+>
+> 流程：A0 基线准备 → A1 专项审计（4 组并行）→ A2 交叉审计（组间互审）→ A3 汇总定级
+>
+> 核心规则：
+> - **禁止单 Agent 独自工作无审计** — 每组至少 2 人，结论经交叉审查
+> - **禁止跳过基线验证** — A0 未通过则阻塞全部审计
+> - **禁止自己审计自己** — 交叉审查由其他组执行
 
 ---
 
-## 阶段 0：文档基线重建
+### A0：基线准备（Gate 0）
 
-**状态**：`[x]`  
-**阶段目标**：把产品、计划、技术和对外说明拆分清楚，建立不依赖特定 AI 工具的项目文档基线。
+> 目标：确认审计前提条件全部满足。此阶段 FAIL 则阻塞后续所有审计。
 
-### 任务计划
-- [x] 重写 `TODO.md`，只保留真实阶段、目标、任务计划和完成标准
-- [x] 重写 `PRD.md`，去掉技术实现细节，保留产品需求与功能设计
-- [x] 重写 `README.md`，明确项目介绍、文档索引、协作方式和使用限制
-- [x] 新增 `docs/technical_architecture.md`，统一技术架构、术语、测试规范与协作边界
-- [x] 同步清理相关过时文档，避免多份文档维护同一套失真信息
+#### A0.1 构建与质量门
+
+- [ ] `npm run type-check` — 0 error
+- [ ] `npm run lint` — 0 error（允许 warn）
+- [ ] `npm test -w test` — 全部 PASS
+- [ ] `npm run build:h5` — 构建成功，产物可访问
+- [ ] `npm run build:server` — 编译成功
+
+> 验收：5 项全部通过方可推进。任一失败标记 `[!]` 并记录具体错误。
+
+#### A0.2 运行环境验证
+
+- [ ] `npm run dev:h5` 启动 — localhost 首页可渲染
+- [ ] 后端 API 验证 — `POST /api/v1/readings` 响应正常
+- [ ] E2E 链路验证 — `test/e2e_divination_flow.sh` 通过
+
+> 验收：核心链路 idle → result 可完整走通。
+
+#### A0.3 截图证据采集
+
+> 执行者：`engineering-frontend-developer`（截图）+ `design-ui-designer`（审核完整性）
+> 产出目录：`docs/audit/screenshots/`
+> 命名规则：`A0_<scene>_<frame>.png`
+
+| 场景 | 帧数 | 涵盖内容 |
+|---|---|---|
+| idle 首页待机 | 3 | 标题、牌堆、牌阵选择器、入场动画 |
+| deck_click 退场 | 2 | 点击牌堆后的退场过渡 |
+| shuffling 洗牌 | 3 | 牌组运动轨迹、视觉反馈 |
+| cutting 切牌 | 3 | pile 分离动画、空间感 |
+| drawing 抽牌 | 5 | 卡牌抽出、spread 布局、悬停 |
+| revealing 揭牌 | 3 | 翻转动画、等待解读的加载态 |
+| result 结果展示 | 4 | panel 滑入、typewriter、完整展示、再占一次入口 |
+| error 错误状态 | 2 | API 失败提示、重试按钮 |
+| wide_screen 宽屏 | 2 | ≥768px 布局、side-by-side |
+| narrow_screen 窄屏 | 2 | <768px 布局、卡牌上移 |
+
+- [ ] 全部 10 场景截图已采集（共 29 帧）
+- [ ] `docs/audit/screenshots_manifest.md` 截图清单已产出
+- [ ] `design-ui-designer` 已确认截图覆盖完整、无空白帧
+
+> 验收：截图清单通过 `design-ui-designer` 审核签字。
+
+#### A0 完成标准
+
+- [ ] A0.1 构建质量门全部 PASS
+- [ ] A0.2 运行环境全部 PASS
+- [ ] A0.3 截图证据已归档并审核
+- [ ] **Gate 0 判定**：全部通过 → 进入 A1；任一 `[!]` → 阻塞并修复后重新验证
+
+---
+
+### A1：专项审计（4 组并行）
+
+> 目标：4 个审计组按职责完成独立审计。
+> 发现项格式：编号 + 一句话标题 + 文件:行号 + 现象 + 影响 + 修复建议 + P0/P1/P2 定级。
+> 所有发现在 A3 汇总后直接写入阶段 B 的 TODO 条目。
+
+#### 组 1：体验与交互审计
+
+| 角色 | Agent | 职责 |
+|---|---|---|
+| 主审 | `design-ux-architect` | 布局架构、响应式断点、safe frame 体系 |
+| 副审 | `design-ux-researcher` | 用户旅程完整性、交互反馈、认知负荷 |
+| 副审 | `design-ui-designer` | 主题一致性、CSS 变量消费、视觉层级 |
+
+**审计输入文件**：
+
+| 文件 | 审查重点 |
+|---|---|
+| `app/src/core/layout/scene_layout.ts` | resolveSceneLayout 逻辑、断点行为 |
+| `app/src/core/layout/draw_layout_resolver.ts` | draw 阶段卡牌定位 |
+| `app/src/core/layout/result_layout_resolver.ts` | result 阶段布局与遮挡 |
+| `app/src/core/viewport/safe_frame_calculator.ts` | 安全区计算对齐真实设备 |
+| `app/src/composables/useOverlayLayout.ts` | isWide 判定、响应式切换一致性 |
+| `app/src/stores/theme.ts` | golden_dawn 主题令牌消费完整性 |
+| `app/src/components/DivinationOverlay.vue` | CSS 变量映射、scoped style 隔离 |
+| `app/src/styles/global.css` | 全局样式与组件样式冲突风险 |
+
+**引用截图**：idle / result / wide_screen / narrow_screen（至少 5 张）
+
+- [ ] 审计执行完成
+- [?] 验收：所有发现关联到文件路径+行号，每个 P0 有复现步骤
+
+---
+
+#### 组 2：动画与性能审计
+
+| 角色 | Agent | 职责 |
+|---|---|---|
+| 主审 | `engineering-frontend-developer` | GSAP 时序链路、CSS 动画清理、动画 lifecycle |
+| 副审 | `testing-performance-benchmarker` | idle CPU、内存泄漏、重排频率、GSAP 实例回收 |
+
+**审计输入文件**：
+
+| 文件 | 审查重点 |
+|---|---|
+| `app/src/core/flow/phases/shuffle_phase.ts` | timeline 创建与回收 |
+| `app/src/core/flow/phases/cut_phase.ts` | timeline 创建与回收 |
+| `app/src/core/flow/phases/draw_phase.ts` | timeline 创建与回收 |
+| `app/src/core/flow/phases/reveal_phase.ts` | timeline 创建与回收 |
+| `app/src/core/animation/types.ts` | 动画类型定义 |
+| `app/src/composables/use_animation_state.ts` | 动画状态机生命周期 |
+| `app/src/composables/use_overlay_controller.ts` | killTweensOf 调用时机、卸载清理 |
+| `app/src/components/TypewriterText.vue` | typewriter 残留 timer |
+| `app/src/utils/overlay_animation/` | 动画工具函数性能特征 |
+
+**性能红线检查项**（参照 AGENTS.md §性能红线）：
+
+- [ ] 无无条件永久挂载的 `will-change` → PASS/FAIL
+- [ ] 无 GSAP `onUpdate` 中的大量字符串拼接 → PASS/FAIL
+- [ ] resize 不会与运行中 tween 冲突 → PASS/FAIL
+- [ ] `gsap.killTweensOf()` 在组件卸载时均被调用 → PASS/FAIL
+- [ ] 无 orphan timer / interval / requestAnimationFrame → PASS/FAIL
+
+**引用截图**：shuffling / cutting / drawing / revealing
+
+- [ ] 审计执行完成
+- [ ] 性能红线 5 项逐条给出 PASS/FAIL + 证据
+- [?] 验收：所有 GSAP timeline 实例列出创建/销毁配对
+
+---
+
+#### 组 3：架构与代码质量审计
+
+| 角色 | Agent | 职责 |
+|---|---|---|
+| 主审 | `engineering-software-architect` | Pinia/Controller/Orchestrator 分层边界、命名一致性 |
+| 副审 | `engineering-code-reviewer` | 类型严格性、Magic Number、死代码、边界条件 |
+| 副审 | `engineering-security-engineer` | Math.random 安全性、API 输入校验、XSS/注入、依赖漏洞 |
+
+**审计输入文件**：
+
+| 文件 | 审查重点 |
+|---|---|
+| `app/src/stores/tarot.ts` | store 边界、状态暴露范围 |
+| `app/src/stores/theme.ts` | store 职责单一性 |
+| `app/src/composables/` 全部 | controller 与 store 职责切分 |
+| `app/src/utils/` 全部 | reading/orchestrator/presenter 层级关系 |
+| `app/src/core/` 全部 | 纯计算模块是否真正无框架依赖 |
+| `app/src/api/` 全部 | 前端 API 层错误抽象充分性 |
+| `app/src/core/config/layout_constants.ts` | 常量集中度（参照 AGENTS.md §魔法数字） |
+| `server/src/app.ts` | Express 装配、中间件顺序 |
+| `server/src/routes/` 全部 | 路由输入校验、Zod 覆盖度 |
+| `server/src/services/` 全部 | 服务层职责边界、错误格式一致性 |
+| `server/src/config.ts` | 后端配置集中度 |
+
+**代码质量 Checklist**（参照 AGENTS.md §代码审查 Checklist）：
+
+- [ ] 是否存在死代码或重复代码？ → 列出位置
+- [ ] 魔法数字是否已集中配置？ → 列出散落位置
+- [ ] 类型定义是否严格，无隐式 `any`？ → 列出 `as any` 位置
+- [ ] 后端路由是否有输入校验与异常处理？ → 逐路由检查
+- [ ] 前端 API 层是否有统一错误处理？ → 检查 `client.ts`
+- [ ] `npm audit --omit=dev --audit-level=high` → 列出漏洞
+
+- [ ] 审计执行完成
+- [ ] 模块依赖关系描述已产出
+- [?] 验收：安全审计覆盖 npm audit 结果，所有发现关联到文件路径
+
+---
+
+#### 组 4：兼容性与可访问性审计
+
+| 角色 | Agent | 职责 |
+|---|---|---|
+| 主审 | `testing-accessibility-auditor` | prefers-reduced-motion、aria、键盘导航、色彩对比度 |
+| 副审 | `engineering-wechat-mini-program-developer` | uni-app 条件编译、rpx 兼容、safeArea API、横屏提示 |
+
+**审计输入文件**：
+
+| 文件 | 审查重点 |
+|---|---|
+| `app/src/components/DivinationOverlay.vue` | aria-label / role / tabindex |
+| `app/src/components/ResultPanel.vue` | 结果区无障碍可读性 |
+| `app/src/styles/global.css` | `@media (prefers-reduced-motion)` 降级 |
+| `app/src/utils/accessibility.ts` | 现有工具函数覆盖面 |
+| `app/src/core/viewport/viewport_metrics.ts` | 多端视口适配 |
+| `app/vite.config.ts` | uni-app 条件编译配置 |
+| `app/src/manifest.json` | 小程序配置字段完整性 |
+
+**无障碍检查项**（至少 8 项）：
+
+- [ ] 关键交互元素有 aria-label → PASS/FAIL
+- [ ] 动态内容有 aria-live 通告 → PASS/FAIL
+- [ ] 全流程可纯键盘完成 → PASS/FAIL
+- [ ] 焦点管理合理（overlay 打开/关闭时） → PASS/FAIL
+- [ ] 色彩对比度 ≥ 4.5:1（正文）/ ≥ 3:1（大字） → PASS/FAIL
+- [ ] prefers-reduced-motion 下动画降级 → PASS/FAIL
+- [ ] 触控目标 ≥ 44×44px → PASS/FAIL
+- [ ] 图片/图标有 alt 或 aria-hidden → PASS/FAIL
+
+**小程序兼容分类**：
+
+- [ ] 按「阻塞 H5」vs「仅影响 MP」分类所有兼容问题
+
+- [ ] 审计执行完成
+- [?] 验收：无障碍 8 项逐条 PASS/FAIL，小程序问题已分类
+
+#### A1 完成标准
+
+- [ ] 4 组审计全部完成
+- [ ] 每组发现含编号、文件路径、截图引用
+- [ ] **Gate 1 判定**：4 组审计齐备 → 进入 A2
+
+---
+
+### A2：交叉审计（组间互审）
+
+> 目标：每组审计结论由另一组 Agent 复核，校准严重度、补充盲区。
+>
+> 核心规则：禁止自审。每份交叉审查至少 3 条实质性点评（含认同/异议/补充发现）。
+
+| 被审组 | 交叉审查者 | 审查焦点 |
+|---|---|---|
+| 组1 体验交互 | 组2 `engineering-frontend-developer` | 体验问题是否有技术根因？严重度是否合理？ |
+| 组2 动画性能 | 组3 `engineering-software-architect` | 性能问题是否源于架构缺陷？ |
+| 组3 架构质量 | 组1 `design-ux-architect` | 架构建议是否破坏用户体验？ |
+| 组4 兼容可访问性 | 组2 `testing-performance-benchmarker` | 无障碍降级是否引入性能问题？ |
+
+- [ ] 交叉审查 1：组2 审查组1 结论
+- [ ] 交叉审查 2：组3 审查组2 结论
+- [ ] 交叉审查 3：组1 审查组3 结论
+- [ ] 交叉审查 4：组2 审查组4 结论
+
+#### A2 完成标准
+
+- [ ] 4 份交叉审查全部完成
+- [ ] 每份至少 3 条实质性点评
+- [ ] **Gate 2 判定**：交叉审查齐备 → 进入 A3
+
+---
+
+### A3：汇总定级 → 写入 B 阶段计划
+
+> 目标：合并所有审计发现，统一定级，直接写入阶段 B 的 TODO 条目。
+>
+> 执行者：规划者角色（Claude），非任何审计组 Agent。
+
+#### A3.1 合并去重
+
+- [ ] 合并 4 组审计发现 + 4 份交叉审查意见
+- [ ] 同一问题被多组发现的，合并为一条，保留最严格定级
+- [ ] 交叉审查中有异议的条目，由规划者最终裁定
+
+#### A3.2 定级标准
+
+| 级别 | 定义 | 典型举例 |
+|---|---|---|
+| **P0** | 阻塞发布或破坏核心流程 | 构建失败、核心路径白屏、安全漏洞 |
+| **P1** | 严重影响体验但不阻塞功能 | 动画卡顿、布局跳变、错误路径无恢复 |
+| **P2** | 可改善但不紧急 | 命名不一致、非关键 aria 缺失、代码冗余 |
+
+#### A3.3 写入 B 阶段
+
+- [ ] 按 P0 → P1 → P2 将发现逐条写入下方阶段 B 的对应子节（B1/B2/B3）
+- [ ] 每条格式：`- [ ] [编号] 标题（文件路径）— 修复者 / 验收标准`
+- [ ] 每个 P0 条目必须有明确修复负责方和验收标准
+
+#### 阶段 A 完成标准
+
+- [ ] 4 组审计 + 4 轮交叉审查全部完成
+- [ ] 阶段 B 的 B1/B2/B3 条目已填充
+- [ ] 所有 P0 条目有明确修复方和验收标准
+- [ ] **阶段 A 完成判定**：B 阶段整改计划经用户确认 → 进入阶段 B
+
+---
+
+## 🔧 阶段 B：整改修复（Remediation）
+
+> 目标：根据阶段 A 审计结论，按优先级执行代码修复，完成后统一同步文档。
+>
+> 工作流：P0 修复 → P1 修复 → P2 修复 → 文档同步
+>
+> 规则：
+> - 每个修复项完成后必须由独立 Agent 审计验证（禁止自审）
+> - 修复不得引入新的 P0/P1 问题
+> - 文档更新统一在所有代码修复完成后执行，避免文档反复修改
+
+### B1：P0 阻塞级修复
+
+> 阻塞发布或破坏核心流程的问题。全部关闭方可推进 B2。
+
+<!-- A3 汇总后，将 P0 发现逐条填充到此处 -->
+<!-- 格式：- [ ] [审计编号] 一句话标题（文件路径）— 修复者 / 验收标准 -->
+
+- [ ] A001 npm 依赖安全漏洞：需扫描依赖排查高危项并在 CI 中拦截 — `engineering-security-engineer` / `npm audit --audit-level=high` 报告 0 漏洞
+
+> 验收：每项修复由独立 Agent 验证 PASS。全部 P0 关闭后进入 B2。
+
+### B2：P1 严重级修复
+
+> 严重影响体验但不阻塞功能的问题。
+
+<!-- A3 汇总后，将 P1 发现逐条填充到此处 -->
+
+- [ ] A101 缺失 `prefers-reduced-motion` 降级支持，违背无障碍规范 (`app/src/styles/global.css`) — `testing-accessibility-auditor` / 补全该媒体查询块以屏蔽运动动画
+- [ ] A102 组件中存在无条件挂载的 `will-change: transform`，有内存负担风险 (`app/src/components/DivinationOverlay.vue` 等) — `engineering-frontend-developer` / 将其改为在 GSAP 动画播放前后动态添加与移除
+- [ ] A103 `.btn-icon` 触控目标(44rpx≈22px)过小，未达到WCAG标准限制 (`app/src/styles/global.css`) — `testing-accessibility-auditor` / 修改基础触控区确保物理设备可达 44x44px
+
+> 验收：每项修复由独立 Agent 验证 PASS。
+
+### B3：P2 建议级优化
+
+> 可改善但不紧急的问题，按投入产出比选择性执行。
+
+<!-- A3 汇总后，将 P2 发现逐条填充到此处 -->
+
+- [ ] A201 核心塔罗牌洗牌逻辑使用了不安全的 `Math.random()` (`app/src/utils/tarotReading.ts`) — `engineering-security-engineer` / 替换为 `crypto.getRandomValues()` 实现可证实的真随机
+- [ ] A202 CSS 动画过度使用了影响重排的布局属性如 `top`/`left` (`app/src/styles/global.css`) — `testing-performance-benchmarker` / 替换为 `transform: translate*`。
+
+> 验收：已执行的 P2 项由独立 Agent 验证 PASS。允许将部分 P2 项标记 `[!]` 延后到阶段 E。
+
+### B4：文档审计与同步
+
+> 所有代码修复完成后，审计全部文档并统一更新，确保文档与代码对齐。
+>
+> 依赖：B1 + B2 + B3 全部完成。禁止在代码修复期间零散更新文档。
+
+**文档审计检查项**：
+
+- [ ] `PRD.md` 声明的功能范围 vs 代码实际实现 → 列出偏差并修正（如 three_card/cross_spread 实际落地状态）
+- [ ] `docs/technical_architecture.md` 模块/术语描述 vs 代码结构 → 列出失真项并修正
+- [ ] `README.md` 快速开始命令可执行性 + 文档索引链接有效性 → 验证并修正
+- [ ] `AGENTS.md` 与 `CLAUDE.md` 内容重复/矛盾项 → 合并去重
+- [ ] `TODO.md` — 标记 B 阶段完成状态
+
+> 验收：所有文档链接可访问，命令可执行，描述与代码实际状态一致。无重复、无矛盾。
+
+### B 阶段完成标准
+
+- [ ] P0 项全部关闭
+- [ ] P1 项全部关闭
+- [ ] P2 项已处理（完成或标记延后）
+- [ ] B4 文档同步全部完成
+- [ ] 关键路径回归测试通过（`npm run type-check` + `npm test` + `npm run build:h5`）
+- [ ] **阶段 B 完成判定**：全部关闭 + 文档同步 → 进入阶段 C
+
+---
+
+## 🧪 阶段 C：测试验证（Testing）
+
+> 目标：整改后全链路验证。
+
+- [ ] 全动画流程回归测试（idle → result）
+- [ ] 宽屏 / 窄屏响应式测试
+- [ ] H5 / 小程序多端测试
+- [ ] prefers-reduced-motion 降级测试
+- [ ] 性能基准测试（idle CPU、内存泄漏、重排）
 
 ### 完成标准
-- [x] 仓库内存在明确的产品、技术、执行三类文档入口
-- [x] 文档之间职责清晰，不再混写产品需求与技术实现
+
+- [ ] 全部测试项通过并有截图/日志证据
 
 ---
 
-## 阶段 1：工程质量基线
+## 🚀 阶段 D：部署上线（Deployment）
 
-**状态**：`[~]`  
-**阶段目标**：让仓库具备稳定的本地验证和 CI 质量门，先把“能持续演进”这件事做扎实。
+> 目标：交付到生产环境。
 
-### 任务计划
-- [ ] 修复当前 `npm run lint` 失败项，并把 lint 纳入 CI
-- [ ] 建立依赖安全检查基线，处理或隔离当前 `npm audit` 高危问题
-- [ ] 统一测试口径，确保本地命令、CI 和测试说明一致
-- [ ] 新增 `CHANGELOG.md`，建立最小发布记录机制
+- [ ] 构建验证：`npm run build:h5` + `npm run build:app:mp`
+- [ ] CI 流水线检查（type-check、lint、test、build、audit）
+- [ ] 部署 H5 生产环境
+- [ ] 部署小程序生产环境
+- [ ] 发布 checklist 与回滚方案
 
 ### 完成标准
-- [ ] `npm run type-check`
-- [ ] `npm run lint`
-- [ ] `npm test -w test`
-- [ ] `npm run build:h5`
-- [ ] `npm audit --omit=dev --audit-level=high`
-- [ ] CI 至少覆盖 type-check、lint、test、build、audit
+
+- [ ] 生产环境可访问
+- [ ] smoke test 通过
 
 ---
 
-## 阶段 2：前端架构收敛
+## 🔮 阶段 E：后续演进（Evolution）
 
-**状态**：`[ ]`  
-**阶段目标**：消除当前已知的状态竞争、监听器泄漏、动画性能债和控制器过载问题。
+> 目标：当前不纳入主线，作为后续方向记录。
 
-### 任务计划
-- [ ] 修复 reading orchestrator 的过期请求回写问题，避免旧结果污染新流程
-- [ ] 收口窗口 resize 生命周期，清理重复监听和未释放路径
-- [ ] 去除长期挂载的 `will-change`，补充必要的动画性能验证
-- [ ] 拆分 `use_overlay_controller.ts`，收敛为轻量 facade + 专项模块
-- [ ] 清理剩余兼容层与重复类型定义，统一核心类型入口
-
-### 完成标准
-- [ ] 结果状态不会被过期请求覆盖
-- [ ] 关键组件在挂载/卸载后无残留监听
-- [ ] 动画关键路径无永久 `will-change`
-- [ ] 控制器职责清晰，核心模块边界可说明、可测试
-
----
-
-## 阶段 3：发布与运行治理
-
-**状态**：`[ ]`  
-**阶段目标**：把项目从“可手工部署的 MVP”推进到“具备上线治理基础的交付物”。
-
-### 任务计划
-- [ ] 设计正式部署方案，明确运行拓扑、环境变量、进程托管和静态资源交付方式
-- [ ] 设计 readiness / smoke check，覆盖 API、静态资源和站点入口
-- [ ] 规划最小监控与告警方案，明确日志、健康检查和故障排查入口
-- [ ] 建立发布清单、回滚清单与对应文档模板
-
-### 完成标准
-- [ ] 已形成可执行的部署与回滚文档初稿
-- [ ] 生产构建可完成 smoke test
-- [ ] 发布流程有明确 checklist 和责任边界
-
----
-
-## 当前不纳入主线
-
-- [!] 暗色 / 浅色模式扩展：当前不是交付重点
-- [!] AI 解读能力扩展：当前仍使用本地规则解读
-- [!] 小程序发布：保留编译目标，但不进入当前阶段计划
+- [!] 牌阵扩展：three_card、cross_spread 从注册表落地到 UI
+- [!] 后端解读 API 优化与缓存策略
+- [!] 主题系统扩展：多主题切换、暗色模式
+- [!] 动画系统性能优化：GSAP 对象池、will-change 精细化
