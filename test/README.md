@@ -1,62 +1,34 @@
-# Test Suite
+# Test Workspace
 
-运行全部测试：
+`test/` 是 Scales Tarot 的测试工作区，负责承载前端纯逻辑测试、后端接口契约测试，以及脚本化黑盒验证。
+
+---
+
+## 运行方式
+
+在仓库根目录运行：
 
 ```bash
 npm test -w test
 ```
 
-当前共 `10` 个测试文件，`137` 个测试用例。
+或直接进入测试工作区运行：
 
-## 覆盖范围
+```bash
+cd test && npx vitest run
+```
 
-### 前端逻辑
+---
 
-- [tarotReading.test.ts](/d:/Taozhuowei/Project/scales-tarot/test/tarotReading.test.ts)
-  - `drawCards()` 抽牌数量
-  - 抽牌结果唯一性
-  - 正逆位合法值
+## 测试内容
 
-- [result_panel.test.ts](/d:/Taozhuowei/Project/scales-tarot/test/result_panel.test.ts)
-  - 结果文案映射
-  - 摘要文本拼接
+- 前端纯逻辑：布局、尺寸、动画阶段、presenter、orchestrator
+- 组件与集成：页面、组件、状态协作
+- 后端接口：健康检查、卡牌接口、解读接口、中间件行为
+- 脚本化验证：关键用户路径与异常路径
 
-- [spread_layout.test.ts](/d:/Taozhuowei/Project/scales-tarot/test/spread_layout.test.ts)
-  - 单牌 / 三牌 / 十字牌阵布局
-  - 宽窄屏与结果区布局计算
+---
 
-- [tarot_store.test.ts](/d:/Taozhuowei/Project/scales-tarot/test/tarot_store.test.ts)
-  - 抽牌与读牌请求解耦
-  - stale request 保护
-  - 运行时牌阵切换
+## 规范入口
 
-- [index_page.test.ts](/d:/Taozhuowei/Project/scales-tarot/test/index_page.test.ts)
-  - 首页设置入口
-  - 牌阵切换状态
-
-### 新增组件/动画测试
-
-- [typewriter_text.test.ts](/d:/Taozhuowei/Project/scales-tarot/test/typewriter_text.test.ts)
-  - 打字机逐字输出
-  - `instant` 立即输出
-  - 文本更新后重新开打
-
-- [result_panel_component.test.ts](/d:/Taozhuowei/Project/scales-tarot/test/result_panel_component.test.ts)
-  - `positive / negative` 结果色调类名
-
-- [overlay_animation.test.ts](/d:/Taozhuowei/Project/scales-tarot/test/overlay_animation.test.ts)
-  - 动画慢放 / 快进控制
-  - 暂停 / 继续
-  - `replayFromPhase()`
-  - 抽牌后额外 `800ms` 解读延迟
-
-### 后端与接口
-
-- [backend.test.ts](/d:/Taozhuowei/Project/scales-tarot/test/testcases/backend.test.ts)
-  - 牌库加载
-  - 解读评分与结果生成
-
-- [api.test.ts](/d:/Taozhuowei/Project/scales-tarot/test/testcases/api.test.ts)
-  - `/api/health`
-  - `/api/v1/cards`
-  - `/api/v1/readings`
+测试层次、验证标准和协作规则以 [docs/technical_architecture.md](/home/tzw/projects/scales-tarot/docs/technical_architecture.md) 为准。

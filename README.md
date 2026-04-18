@@ -1,21 +1,32 @@
 # Scales Tarot
 
-Scales Tarot 是一个基于 `Vue 3 + uni-app + TypeScript + Express` 的单页塔罗占卜应用。前端负责仪式化抽牌动画和结果展示，后端负责牌库与解读计算，并同时服务 H5 静态产物与 API。
+Scales Tarot 是一个以 H5 为主要交付形态的单页塔罗体验项目。它强调短路径、仪式感和稳定反馈，让用户在一个页面内完成抽牌、揭示与解读。
 
-> **当前发布范围**：仅 H5 网站。小程序（mp-weixin）编译目标已保留但不发布，待后续单独立项推进。
+当前仓库的目标不只是维护一个可运行页面，还要建立一套清晰、可持续、不过度依赖特定 AI 工具的演进方式。任何新协作者都应该能只依赖仓库内文档理解项目、执行任务和验证结果。
 
-## 项目结构
+---
 
-```text
-app/       # uni-app frontend
-server/    # Express + TypeScript backend
-test/      # Vitest test workspace
-dist/      # frontend build output
-```
+## 当前范围
 
-## 开发命令
+- 当前正式范围：H5 网站
+- 当前主线：文档基线、工程质量基线、架构收敛、发布治理
+- 当前不在主线：小程序发布、账号体系、支付、社交分享、AI 解读扩展
 
-先安装依赖：
+---
+
+## 文档索引
+
+- 产品需求：[PRD.md](/home/tzw/projects/scales-tarot/PRD.md)
+- 执行计划：[TODO.md](/home/tzw/projects/scales-tarot/TODO.md)
+- 技术架构：[docs/technical_architecture.md](/home/tzw/projects/scales-tarot/docs/technical_architecture.md)
+- 测试入口：[test/README.md](/home/tzw/projects/scales-tarot/test/README.md)
+- AI 协作约束：[AGENTS.md](/home/tzw/projects/scales-tarot/AGENTS.md)
+
+---
+
+## 快速开始
+
+安装依赖：
 
 ```bash
 npm install
@@ -24,113 +35,55 @@ npm install
 本地开发：
 
 ```bash
-npm start
+npm run dev:h5
 ```
 
-或：
-
-```bash
-npm run dev
-```
-
-`dev:h5` 会执行这些步骤：
-
-1. 生成 `.env.development.local`，写入当前局域网 API 地址。
-2. 执行前后端 TypeScript 类型检查。
-3. 以开发模式并行启动：
-   - H5 watch 构建（`uni build --watch`）
-   - `tsx server/src/server.ts` 开发服务（同时服务 API 与 H5 静态文件）
-
-## 测试与校验
-
-类型检查：
+基础校验：
 
 ```bash
 npm run type-check
-```
-
-单元测试：
-
-```bash
+npm run lint
 npm test -w test
-```
-
-## 生产构建
-
-H5 + 服务端（推荐，本项目当前只做 H5 发布）：
-
-```bash
 npm run build:h5
 ```
 
-H5 + 微信小程序 + 服务端：
-
-```bash
-npm run build
-```
-
-`build:h5` 会执行：
-
-1. 前后端类型检查
-2. H5 Vite 生产构建
-3. `server/src` 编译到 `server/dist`
-
-当前生产构建策略：
-
-- 前端使用 Vite `production` mode
-- JS 使用 `terser` 压缩
-- 开启 `mangle`
-- 删除 `console` 与 `debugger`
-- 关闭生产 sourcemap
-- 输出可直接运行的 `server/dist/server.js`
-
-运行生产构建产物（开发机 smoke-test）：
+运行生产构建产物：
 
 ```bash
 NODE_ENV=production npm run start:prod
 ```
 
-默认访问：
+---
 
-- H5: `http://localhost:3000`
-- Liveness: `http://localhost:3000/api/healthz`
-- Readiness: `http://localhost:3000/api/readyz`
+## 协作原则
 
-## 部署到服务器
+1. 开始任何任务前，先读 `TODO.md`、`PRD.md` 和 `docs/technical_architecture.md`。
+2. 产品范围变化，先更新 `PRD.md`；技术边界变化，先更新技术架构文档；执行节奏变化，先更新 `TODO.md`。
+3. 所有代码改动都必须附带对应验证证据，至少覆盖类型检查、测试或构建中的必要项。
+4. 项目文档必须能被人类开发者直接理解，AI 只能是辅助工具，不能成为唯一知识入口。
 
-单机部署采用 **host nginx + systemd 托管 Node** 的标准组合，nginx 端外服务 TLS 与静态资源，Node 只监听 `127.0.0.1:3000` 处理 `/api/*`。完整步骤见 [deploy/README.md](deploy/README.md)，示例配置见：
+---
 
-- [deploy/nginx.conf.example](deploy/nginx.conf.example)
-- [deploy/systemd/scales-tarot.service.example](deploy/systemd/scales-tarot.service.example)
+## 使用与授权说明
 
-## 运行时配置
+本仓库**不是开源项目**，默认采用“保留所有权利（All Rights Reserved）”方式管理。
 
-所有服务端行为由环境变量驱动，集中在 [server/src/config.ts](server/src/config.ts)。本地使用复制 `.env.example` 为 `.env`；生产使用放入 `/etc/scales-tarot.env` 并由 systemd `EnvironmentFile` 加载。
+未经项目所有者书面授权，禁止以下行为：
 
-关键变量：
+- 将本项目或其衍生版本用于商业用途
+- 对外提供托管、售卖、转授权或二次分发
+- 公开镜像、公开转载或以开源项目名义再次发布
+- 将项目中的设计、文案、素材或实现整体挪作其他商业产品
 
-| 变量 | 默认（prod / dev） | 说明 |
-|---|---|---|
-| `NODE_ENV` | `production` / `development` | 运行模式 |
-| `HOST` | `127.0.0.1` / `0.0.0.0` | 绑定地址；prod 默认仅本机，反代后安全 |
-| `PORT` | `3000` | 监听端口 |
-| `CORS_ORIGIN` | 空 → 同源 | 逗号分隔白名单；`*` 表示宽松（仅 dev） |
-| `LOG_LEVEL` | `info` / `debug` | pino 日志级别 |
-| `STATIC_BASE_URL` | `http://localhost:3000` | 后端拼接图片 URL 的基准；prod 设为 HTTPS 域 |
+允许的范围仅限于经授权的内部协作、评审、学习和受控开发活动。
 
-## 当前交互特性
+---
 
-- 覆盖层动画流程：洗牌 → 切牌 → 抽牌 → 解读
-- 抽牌完成后自动进入解读，无需额外点击
-- 结果区全量文本打字机动效
-- `positive / negative` 结果着色
-- 仅开发模式显示悬浮 Dev Tools：
-  - 快速回到指定阶段重放
-  - `0.5x / 1x / 2x`
-  - 暂停 / 继续
+## 项目结构
 
-## 注意事项
-
-- 服务启动前会检测端口占用，优先尝试 `3000`
-- `server/dist/`、`dist/` 已在 `.gitignore`
-- 生产模式不会渲染 Dev Tools
+```text
+app/      前端应用
+server/   后端服务
+test/     测试工作区
+docs/     技术文档
+```
