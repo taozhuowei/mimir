@@ -603,7 +603,6 @@ function handleRetry() {
 }
 
 .tarot-card {
-  will-change: transform;
 }
 
 .deck-layer {

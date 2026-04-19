@@ -329,10 +329,10 @@
 
 > 阻塞发布或破坏核心流程的问题。全部关闭方可推进 B2。
 
-<!-- A3 汇总后，将 P0 发现逐条填充到此处 -->
-<!-- 格式：- [ ] [审计编号] 一句话标题（文件路径）— 修复者 / 验收标准 -->
-
-- [ ] A001 npm 依赖安全漏洞：需扫描依赖排查高危项并在 CI 中拦截 — `engineering-security-engineer` / `npm audit --audit-level=high` 报告 0 漏洞
+- [x] A001 npm 依赖安全漏洞：@intlify/core-base 原型链污染 + XSS（GHSA-p2ph-7g93-hw3m, GHSA-x8qh-wqqm-57ph），esbuild 开发服务器请求劫持（GHSA-67mh-4wv8-2f99）— engineering-security-engineer / 升级 @intlify 包至 9.14.5+ 或锁定无漏洞版本；esbuild 升级至 0.25+；CI 添加 npm audit --omit=dev --audit-level=high 拦截
+- [x] A002 lint 15 个 error 未修复，包含小程序兼容性违规（window 全局变量 6 处、TouchEvent 未定义 2 处、vue/no-unused-vars 1 处）— engineering-frontend-developer / 修复所有 lint error 至 0；viewport_metrics.ts 和 accessibility.ts 中 window 使用需用 uni-app API 替换或加条件编译保护
+- [x] A003 index.vue onUnmounted 未清理 handleDeckClick 中 gsap.to(_cards) 和 gsap.to(_scene) 的运行中 tween，可能导致组件卸载后回调执行 — engineering-frontend-developer / 在 onUnmounted 中添加 gsap.killTweensOf(_cards) 和对 _scene tween 的清理
+- [x] A004 index.vue onUpdate 回调中存在字符串模板拼接（sceneStyle.value 拼接 transform/opacity），高频触发时产生大量临时字符串 — engineering-frontend-developer / 改用 ref 对象驱动样式，或使用与 overlay controller 一致的 refresh 函数模式
 
 > 验收：每项修复由独立 Agent 验证 PASS。全部 P0 关闭后进入 B2。
 
@@ -340,11 +340,14 @@
 
 > 严重影响体验但不阻塞功能的问题。
 
-<!-- A3 汇总后，将 P1 发现逐条填充到此处 -->
-
-- [ ] A101 缺失 `prefers-reduced-motion` 降级支持，违背无障碍规范 (`app/src/styles/global.css`) — `testing-accessibility-auditor` / 补全该媒体查询块以屏蔽运动动画
-- [ ] A102 组件中存在无条件挂载的 `will-change: transform`，有内存负担风险 (`app/src/components/DivinationOverlay.vue` 等) — `engineering-frontend-developer` / 将其改为在 GSAP 动画播放前后动态添加与移除
-- [ ] A103 `.btn-icon` 触控目标(44rpx≈22px)过小，未达到WCAG标准限制 (`app/src/styles/global.css`) — `testing-accessibility-auditor` / 修改基础触控区确保物理设备可达 44x44px
+- [ ] A101 global.css 缺失 prefers-reduced-motion 降级块，全局动画工具类（animate-pulse-glow、animate-breathe、animate-spin）无运动降级 — testing-accessibility-auditor / 在 global.css 底部添加 @media (prefers-reduced-motion: reduce) 块，禁用所有无限循环动画
+- [ ] A102 will-change: transform 在 3 处无条件永久挂载（index.vue .scene-container L358、.tarot-card L441；DivinationOverlay.vue .tarot-card L606），造成持续 GPU 合成层内存开销 — engineering-frontend-developer / 改为 GSAP 动画 onStart/onComplete 动态添加/移除 will-change
+- [ ] A103 ResultPanel.vue 无任何 aria 属性（无 aria-live、无 role=region、无 aria-label），屏幕阅读器无法感知结果内容更新 — testing-accessibility-auditor / 添加 aria-live=polite 到结果面板、role=region + aria-label 到各卡牌解读区
+- [ ] A104 DivinationOverlay.vue 无焦点陷阱（focus trap），overlay 打开时 Tab 键可跳出 overlay 到背后页面元素 — testing-accessibility-auditor / 实现 focus trap：overlay 打开时聚焦首个可交互元素，Tab 循环在 overlay 内
+- [ ] A105 prefersReducedMotion() 函数在 accessibility.ts 和 typewriter_model.ts 中重复实现，后者缺少条件编译保护（直接使用 window.matchMedia）— engineering-frontend-developer / 统一为 accessibility.ts 单一实现，typewriter_model.ts 导入复用；加 #ifdef H5 条件编译
+- [ ] A106 reading_orchestrator.ts 超时 setTimeout（L57）未在 reset/cancel 时清理，可能造成组件卸载后 reject 被调用 — engineering-frontend-developer / 在 reset() 中 clearTimeout 超时定时器
+- [ ] A107 16 个 lint warning 包含多处未使用变量（refreshLefts/refreshRights/refreshPiles/refreshInners、getDefaultPhaseOrder、SceneLayoutResult、RESULT_SHEET_FRACTION 等），存在死代码 — engineering-code-reviewer / 清理所有未使用变量和导入，或加 _ 前缀标记有意忽略
+- [ ] A108 manifest.json mp-weixin.appid 已硬编码（wx8968432b8ba12eaa），且 app-plus.android.permissions 包含不必要权限（CAMERA、READ_PHONE_STATE、READ_LOGS）— engineering-wechat-mini-program-developer / appid 改为环境变量注入；移除与塔罗应用无关的 Android 权限声明
 
 > 验收：每项修复由独立 Agent 验证 PASS。
 
@@ -352,12 +355,18 @@
 
 > 可改善但不紧急的问题，按投入产出比选择性执行。
 
-<!-- A3 汇总后，将 P2 发现逐条填充到此处 -->
+- [ ] A201 核心塔罗牌洗牌逻辑使用 Math.random()（tarotReading.ts L50, L55），非密码学安全随机 — engineering-security-engineer / 替换为 crypto.getRandomValues() 实现可证实的真随机
+- [ ] A202 draw_phase.ts L111 使用 Math.random() 生成预旋转角度，非确定性 — engineering-frontend-developer / 使用 seeded random 或配置常量替代
+- [ ] A203 global.css 中动画时长魔法数字散落（2s、3s、20s、100ms-500ms stagger），未收拢到 CSS 变量 — design-ui-designer / 将所有动画时长提取为 --duration-* CSS 变量
+- [ ] A204 use_overlay_controller.ts 中 entry animation 时长散落（0.7、1.05、0.4、0.35、0.3、0.8），未集中到常量文件 — engineering-frontend-developer / 提取到 layout_constants.ts 或新建 animation_constants.ts
+- [ ] A205 theme.ts store 已存在但未完全消费所有令牌，CSS 自定义属性与 store 数据存在双源 — design-ux-architect / 规划主题令牌统一消费路径，消除 CSS 硬编码与 store 不同步风险
+- [ ] A206 DivinationOverlay.vue 中 revealing 阶段仅显示文字提示 + 省略号动画，无进度反馈，用户可能认为卡住 — design-ux-researcher / 添加进度指示或骨架屏
+- [ ] A207 index.vue 中 winHeight/winWidth/spreadFactor 为模块级可变变量，非响应式，resize 后可能不一致 — engineering-frontend-developer / 改用 ref/computed 或确保 calculateLayout 始终同步
+- [ ] A208 ResultPanel.vue 中 heroTitleTiming/heroQuestionTiming 硬编码在组件内（180/38/420/26），未与 typewriter_model 统一 — engineering-code-reviewer / 提取到常量或使用 controller 统一管理
+- [ ] A209 tarot.ts store 暴露 drawCardsAndFetchReading 作为 legacy 兼容方法，内部 catch 吞错误 — engineering-code-reviewer / 评估是否仍需保留，如需保留则至少 log warning
+- [ ] A210 global.css 中 .sr-only 类缺少 :focus-within 变体，跳转链接无法在聚焦时显示 — testing-accessibility-auditor / 添加 .sr-only-focusable 变体
 
-- [ ] A201 核心塔罗牌洗牌逻辑使用了不安全的 `Math.random()` (`app/src/utils/tarotReading.ts`) — `engineering-security-engineer` / 替换为 `crypto.getRandomValues()` 实现可证实的真随机
-- [ ] A202 CSS 动画过度使用了影响重排的布局属性如 `top`/`left` (`app/src/styles/global.css`) — `testing-performance-benchmarker` / 替换为 `transform: translate*`。
-
-> 验收：已执行的 P2 项由独立 Agent 验证 PASS。允许将部分 P2 项标记 `[!]` 延后到阶段 E。
+> 验收：已执行的 P2 项由独立 Agent 验证 PASS。允许将部分 P2 项标记 [!] 延后到阶段 E。
 
 ### B4：文档审计与同步
 

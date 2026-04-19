@@ -6,10 +6,6 @@
 
 import type { ViewportMetrics } from './types'
 
-/**
- * Returns the raw viewport dimensions and device pixel ratio.
- * This abstracts away the uni-app / browser API differences.
- */
 export function resolveViewportMetrics(): ViewportMetrics {
   try {
     const info = uni.getSystemInfoSync()
@@ -26,12 +22,16 @@ export function resolveViewportMetrics(): ViewportMetrics {
     }
   } catch {
     // #ifdef H5
+    // eslint-disable-next-line no-restricted-globals
     if (typeof window !== 'undefined') {
       return {
+        /* eslint-disable no-restricted-globals, no-restricted-properties */
         width: window.innerWidth,
         height: window.innerHeight,
+        /* eslint-enable no-restricted-globals, no-restricted-properties */
         safeAreaTop: 0,
         safeAreaBottom: 0,
+        // eslint-disable-next-line no-restricted-globals
         dpr: window.devicePixelRatio || 1,
       }
     }

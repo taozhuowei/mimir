@@ -108,12 +108,12 @@ function retryLoadCards() { tarotStore.loadCards() }
 
 const headerPaddingTop = ref(20)
 const hintOpacity = ref(0)
-const sceneStyle = ref('')
+const sceneStyle = ref<Record<string, string>>({})
 
 // Header text animation styles - reactive refs bound to :style
-const titleStyle = ref('')
-const subtitleStyle = ref('')
-const guidanceStyle = ref('')
+const titleStyle = ref<Record<string, string>>({})
+const subtitleStyle = ref<Record<string, string>>({})
+const guidanceStyle = ref<Record<string, string>>({})
 
 // Plain JS state objects for GSAP animation (DOM-free for WeChat Mini Program compatibility)
 const _title = { y: 20, opacity: 0 }
@@ -122,22 +122,25 @@ const _guidance = { y: 20, opacity: 0 }
 
 // Serialize animation state to CSS transform strings
 function updateHeaderStyles() {
-  titleStyle.value = `transform: translateY(${_title.y}px); opacity: ${_title.opacity};`
-  subtitleStyle.value = `transform: translateY(${_subtitle.y}px); opacity: ${_subtitle.opacity};`
-  guidanceStyle.value = `transform: translateY(${_guidance.y}px); opacity: ${_guidance.opacity};`
+  titleStyle.value = { transform: `translateY(${_title.y}px)`, opacity: String(_title.opacity) }
+  subtitleStyle.value = { transform: `translateY(${_subtitle.y}px)`, opacity: String(_subtitle.opacity) }
+  guidanceStyle.value = { transform: `translateY(${_guidance.y}px)`, opacity: String(_guidance.opacity) }
 }
 
 // 牌组状态
-const cardsStyle = ref<string[]>(Array(12).fill(''))
+const cardsStyle = ref<Record<string, string>[]>(Array(12).fill({}))
 const _cards = Array(12).fill(0).map(() => ({ x: 0, y: 0, rotation: 0, scale: 1 }))
+let _cardsAnimating = false
 let idleTimeline: gsap.core.Timeline | null = null
+const _scene = { scale: 1, y: 0, opacity: 1 }
+const _hint = { opacity: 0 }
 
 let winHeight = 667
 let winWidth = 375
 let spreadFactor = 1
 
 function updateCardsStyle() {
-  cardsStyle.value = _cards.map(c => `transform: translate3d(${c.x}px, ${c.y}px, 0) rotate(${c.rotation}deg) scale(${c.scale});`)
+  cardsStyle.value = _cards.map(c => ({ transform: `translate3d(${c.x}px, ${c.y}px, 0) rotate(${c.rotation}deg) scale(${c.scale})`, willChange: _cardsAnimating ? "transform" : "auto" }))
 }
 
 function calculateLayout() {
@@ -171,7 +174,7 @@ function initEntranceAnimation() {
     _guidance.y = 0; _guidance.opacity = 1
     updateHeaderStyles()
     hintOpacity.value = 0.6
-    sceneStyle.value = ''
+    sceneStyle.value = {}
     startDeckAnimation()
     return
   }
@@ -184,7 +187,7 @@ function initEntranceAnimation() {
     .to(_guidance, { y: 0, opacity: 1, duration: 0.6, ease: 'power3.out', onUpdate: updateHeaderStyles }, 0.16)
 
   // Animate touch hint - already uses correct DOM-free pattern
-  const _hint = { opacity: 0 }
+  _hint.opacity = 0
   gsap.to(_hint, {
     opacity: 0.6,
     duration: 0.8,
@@ -192,7 +195,7 @@ function initEntranceAnimation() {
     onUpdate: () => { hintOpacity.value = _hint.opacity }
   })
 
-  sceneStyle.value = '' // Reset camera shift
+  sceneStyle.value = {} // Reset camera shift
   startDeckAnimation()
 }
 
@@ -212,6 +215,7 @@ function startDeckAnimation() {
     return
   }
 
+  _cardsAnimating = true
   idleTimeline = gsap.timeline({ repeat: -1 })
 
   // 动画：类似扇形散开
@@ -280,10 +284,12 @@ function handleDeckClick() {
     idleTimeline.kill()
     idleTimeline = null
   }
+  _cardsAnimating = false
+  updateCardsStyle()
 
   // Animations run in parallel without blocking startDivination
   if (prefersReducedMotion()) {
-    sceneStyle.value = 'opacity: 0;'
+    sceneStyle.value = { opacity: '0' }
     releaseLock()
     return
   }
@@ -297,7 +303,7 @@ function handleDeckClick() {
     scale: 1,
     onUpdate: updateCardsStyle,
     onComplete: () => {
-      const _scene = { scale: 1, y: 0, opacity: 1 }
+      _scene.scale = 1; _scene.y = 0; _scene.opacity = 1
       gsap.to(_scene, {
         scale: 1.5,
         y: winHeight * 0.2,
@@ -305,9 +311,9 @@ function handleDeckClick() {
         duration: 0.8,
         ease: 'power2.in',
         onUpdate: () => {
-          sceneStyle.value = `transform: scale(${_scene.scale}) translateY(${_scene.y}px); opacity: ${_scene.opacity};`
+          sceneStyle.value = { transform: `scale(${_scene.scale}) translateY(${_scene.y}px)`, opacity: String(_scene.opacity), willChange: "transform, opacity" }
         },
-        onComplete: releaseLock,
+        onComplete: () => { sceneStyle.value = { ...sceneStyle.value, willChange: "auto" }; releaseLock() },
       })
     },
   })
@@ -318,7 +324,7 @@ function restartDivination() {
   tarotStore.reset()
   nextTick(() => {
     uni.pageScrollTo({ scrollTop: 0, duration: 0 })
-    sceneStyle.value = ''
+    sceneStyle.value = {}
     hintOpacity.value = 0
     setTimeout(initEntranceAnimation, 50)
   })
@@ -334,9 +340,15 @@ onMounted(() => {
 
 onUnmounted(() => {
   uni.offWindowResize(calculateLayout)
+  gsap.killTweensOf(_cards)
+  gsap.killTweensOf(_scene)
+  gsap.killTweensOf(_hint)
   if (idleTimeline) {
     idleTimeline.kill()
+    idleTimeline = null
   }
+  _cardsAnimating = false
+  updateCardsStyle()
 })
 </script>
 
@@ -355,7 +367,6 @@ onUnmounted(() => {
   display: flex;
   flex-direction: column;
   z-index: 10;
-  will-change: transform, opacity;
   transform-origin: center center;
 }
 
@@ -438,7 +449,6 @@ onUnmounted(() => {
   height: 100%;
   border-radius: 8rpx;
   border: 1px solid var(--color-border);
-  will-change: transform;
 }
 
 .idle-card {

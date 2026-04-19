@@ -45,6 +45,8 @@ export default tseslint.config(
       globals: {
         uni: 'readonly',
         UniApp: 'readonly',
+        TouchEvent: 'readonly',
+        Touch: 'readonly',
         setTimeout: 'readonly',
         clearTimeout: 'readonly',
         setInterval: 'readonly',

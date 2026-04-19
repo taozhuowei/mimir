@@ -61,7 +61,7 @@
 
         <view class="keywords-row">
           <view
-            v-for="(keywordItem, keyword_index) in detail.keywordsWithTiming"
+            v-for="(keywordItem) in detail.keywordsWithTiming"
             :key="`${detail.card.id}-${detail.position}-${keywordItem.text}`"
             class="keyword-chip text-sm"
           >

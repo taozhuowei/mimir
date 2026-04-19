@@ -63,11 +63,20 @@
     "pino-pretty": "^11.3.0",
     "supertest": "^7.2.2",
     "tsx": "^4.21.0",
-    "typescript": "^4.9.4",
+    "typescript": "^5.5.0",
     "typescript-eslint": "^8.58.1",
     "vite": "5.2.8",
     "vitest": "^4.1.2",
     "vue-eslint-parser": "^10.4.0",
-    "vue-tsc": "^1.0.24"
+    "vue-tsc": "^2.0.29"
+  },
+  "overrides": {
+    "@intlify/core-base": "9.14.5",
+    "@intlify/message-compiler": "9.14.5",
+    "@intlify/message-resolver": "9.14.5",
+    "@intlify/runtime": "9.14.5",
+    "@intlify/vue-devtools": "9.14.5",
+    "jpeg-js": "^0.4.4",
+    "phin": "^3.7.1"
   }
 }
