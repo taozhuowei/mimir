@@ -89,6 +89,7 @@
 
 <script setup lang="ts">
 import TypewriterText from './TypewriterText.vue'
+import { HERO_TITLE_START_DELAY, HERO_TITLE_CHAR_INTERVAL, HERO_QUESTION_START_DELAY, HERO_QUESTION_CHAR_INTERVAL } from '../core/config/layout_constants'
 import { useResultPanelController } from '../composables/use_result_panel_controller'
 import type { ReadingResult } from '../utils/tarotReading'
 
@@ -109,13 +110,13 @@ const viewModel = useResultPanelController({
 
 // Hero section timing (these are fixed UI timing constants)
 const heroTitleTiming = {
-  startDelay: 180,
-  charInterval: 38,
+  startDelay: HERO_TITLE_START_DELAY,
+  charInterval: HERO_TITLE_CHAR_INTERVAL,
 }
 
 const heroQuestionTiming = {
-  startDelay: 420,
-  charInterval: 26,
+  startDelay: HERO_QUESTION_START_DELAY,
+  charInterval: HERO_QUESTION_CHAR_INTERVAL,
 }
 </script>
 

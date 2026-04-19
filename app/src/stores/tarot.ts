@@ -157,8 +157,8 @@ export const useTarotStore = defineStore('tarot', () => {
    */
   async function drawCardsAndFetchReading(): Promise<DrawnResult[]> {
     const drawn = drawCards()
-    startReadingRequest().catch(() => {
-      // Keep the legacy helper non-throwing for existing callers.
+    startReadingRequest().catch((err) => {
+      console.warn('[tarot] drawCardsAndFetchReading: reading request failed', err)
     })
     return drawn
   }

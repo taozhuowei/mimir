@@ -41,5 +41,11 @@ export const ENTRY_BG_FADE_DURATION = 0.7
 export const ENTRY_CARDS_DROP_DURATION = 1.05
 export const ENTRY_HEADER_SLIDE_DURATION = 0.4
 export const ENTRY_FOOTER_SLIDE_DURATION = 0.35
+
+// Hero section typewriter timing (ms)
+export const HERO_TITLE_START_DELAY = 180
+export const HERO_TITLE_CHAR_INTERVAL = 38
+export const HERO_QUESTION_START_DELAY = 420
+export const HERO_QUESTION_CHAR_INTERVAL = 26
 // Responsive breakpoint
 export const WIDE_BREAKPOINT = 768
