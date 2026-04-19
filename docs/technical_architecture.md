@@ -71,7 +71,8 @@ Browser (H5)
 | `app/src/stores/` | 全局状态 |
 | `app/src/api/` | 前端 API 调用与错误抽象 |
 | `app/src/core/` | 纯计算、布局、动画阶段、尺寸与视口等核心逻辑 |
-| `app/src/utils/` | 面向业务组织的辅助逻辑与 presenter/orchestrator |
+| `app/src/core/config/` | 集中管理的布局常量与动画时长配置 |
+| `app/src/utils/` | 面向业务组织的辅助逻辑、presenter/orchestrator 与安全随机工具 |
 | `app/src/styles/` | 全局样式资源 |
 
 ### 5.2 后端

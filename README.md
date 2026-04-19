@@ -16,11 +16,11 @@ Scales Tarot 是一个以 H5 为主要交付形态的单页塔罗体验项目。
 
 ## 文档索引
 
-- 产品需求：[PRD.md](/home/tzw/projects/scales-tarot/PRD.md)
-- 执行计划：[TODO.md](/home/tzw/projects/scales-tarot/TODO.md)
-- 技术架构：[docs/technical_architecture.md](/home/tzw/projects/scales-tarot/docs/technical_architecture.md)
-- 测试入口：[test/README.md](/home/tzw/projects/scales-tarot/test/README.md)
-- AI 协作约束：[AGENTS.md](/home/tzw/projects/scales-tarot/AGENTS.md)
+- 产品需求：[PRD.md](PRD.md)
+- 执行计划：[TODO.md](TODO.md)
+- 技术架构：[docs/technical_architecture.md](docs/technical_architecture.md)
+- 测试入口：[test/README.md](test/README.md)
+- AI 协作约束：[AGENTS.md](AGENTS.md)
 
 ---
 
