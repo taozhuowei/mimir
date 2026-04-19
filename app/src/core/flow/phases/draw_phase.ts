@@ -12,6 +12,7 @@ import gsap from 'gsap'
 import type { AnimationTimeline } from '../../animation/types'
 import type { OverlayPhase, PhaseContext, PhaseRunner } from '../types'
 import { prefersReducedMotion } from '../../../utils/accessibility'
+import { secureRandomRange } from '../../../utils/secure_random'
 
 export interface DrawPhaseConfig {
   cardCount: number
@@ -108,7 +109,7 @@ export function buildDrawPhaseRunner(config: DrawPhaseConfig): PhaseRunner {
       const revealingStart = alignTime + 1.2 + flipDuration + 0.1 + revealDelay
       const finishTime = revealingStart + 0.3
 
-      const preRotations = Array.from({ length: cardCount }, () => (Math.random() - 0.5) * 15)
+      const preRotations = Array.from({ length: cardCount }, () => secureRandomRange(-7.5, 7.5))
 
       const timeline = gsap.timeline()
 

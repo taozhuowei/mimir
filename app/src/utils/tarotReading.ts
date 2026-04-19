@@ -6,6 +6,8 @@
  *   - drawCards — random card selection and position assignment
  */
 
+import { secureRandomInt, secureRandomBoolean } from './secure_random'
+
 export interface TarotCardMeaning {
   keywords: string[]
   meaning: string
@@ -47,11 +49,11 @@ export interface ReadingResult {
 export function drawCards(all_cards: TarotCardInfo[], count: number): DrawnResult[] {
   const deck = [...all_cards]
   for (let i = 0; i < Math.min(count, deck.length); i++) {
-    const j = i + Math.floor(Math.random() * (deck.length - i))
+    const j = i + secureRandomInt(deck.length - i)
     ;[deck[i], deck[j]] = [deck[j], deck[i]]
   }
   return deck.slice(0, count).map(card => ({
     card,
-    position: Math.random() > 0.5 ? 'upright' : 'reversed'
+    position: secureRandomBoolean() ? 'upright' : 'reversed'
   }))
 }
