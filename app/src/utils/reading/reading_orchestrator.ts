@@ -24,6 +24,7 @@ export interface ReadingOrchestrator {
   start(request: ReadingRequest): Promise<ReadingResult | null>
   retry(request?: ReadingRequest): Promise<ReadingResult | null>
   reset(): void
+  destroy(): void
 }
 
 export interface ReadingOrchestratorDeps {
@@ -41,6 +42,8 @@ export function createReadingOrchestrator(deps: ReadingOrchestratorDeps): Readin
   const { provider, statusRef, resultRef, errorRef, errorMessage } = deps
   let currentRequest: Promise<ReadingResult | null> | null = null
   let lastRequest: ReadingRequest | null = null
+  let destroyed = false
+  const pendingTimers: ReturnType<typeof setTimeout>[] = []
 
   function getState(): ReadingOrchestratorState {
     return {
@@ -116,24 +119,13 @@ export function createReadingOrchestrator(deps: ReadingOrchestratorDeps): Readin
       lastRequest = null
       currentRequest = null
     },
+    destroy() {
+      destroyed = true
+      for (const id of pendingTimers) clearTimeout(id)
+      pendingTimers.length = 0
+      currentRequest = null
+    },
   }
 }
 
-/**
- * Schedule a reading request with optional delay.
- */
-export function scheduleReadingRequest(
-  orchestrator: ReadingOrchestrator,
-  request: ReadingRequest,
-  delayMs: number,
-): () => void {
-  if (orchestrator.state.result) {
-    return () => {}
-  }
 
-  const timer = setTimeout(() => {
-    void orchestrator.start(request)
-  }, delayMs)
-
-  return () => clearTimeout(timer)
-}

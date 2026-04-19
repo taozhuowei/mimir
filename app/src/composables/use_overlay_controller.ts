@@ -265,7 +265,7 @@ export function useOverlayController(deps: UseOverlayControllerDeps) {
   }
 
   function interruptCurrentAnimation() {
-    readingOrchestrator.reset()
+    readingOrchestrator.destroy()
     resumeAnimations()
     timelineOrchestrator.clear()
 
@@ -647,7 +647,7 @@ export function useOverlayController(deps: UseOverlayControllerDeps) {
   })
 
   onUnmounted(() => {
-    readingOrchestrator.reset()
+    readingOrchestrator.destroy()
     resumeAnimations()
     setPlaybackRate(1)
     if (resizeHandler) {
