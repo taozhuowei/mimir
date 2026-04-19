@@ -529,16 +529,16 @@ page {
 .animate-fade-in { animation: fadeIn var(--transition-slow) ease; }
 .animate-slide-up { animation: slideUp var(--transition-slow) ease; }
 .animate-scale-in { animation: scaleIn var(--transition-slow) ease; }
-.animate-pulse-glow { animation: pulseGlow 2s ease-in-out infinite; }
-.animate-breathe { animation: breathe 3s ease-in-out infinite; }
-.animate-spin { animation: spin 20s linear infinite; }
+.animate-pulse-glow { animation: pulseGlow var(--duration-pulse-glow) ease-in-out infinite; }
+.animate-breathe { animation: breathe var(--duration-breathe) ease-in-out infinite; }
+.animate-spin { animation: spin var(--duration-spin) linear infinite; }
 
 /* 交错动画延迟 */
-.stagger-1 { animation-delay: 100ms; }
-.stagger-2 { animation-delay: 200ms; }
-.stagger-3 { animation-delay: 300ms; }
-.stagger-4 { animation-delay: 400ms; }
-.stagger-5 { animation-delay: 500ms; }
+.stagger-1 { animation-delay: calc(var(--stagger-base) * 1); }
+.stagger-2 { animation-delay: calc(var(--stagger-base) * 2); }
+.stagger-3 { animation-delay: calc(var(--stagger-base) * 3); }
+.stagger-4 { animation-delay: calc(var(--stagger-base) * 4); }
+.stagger-5 { animation-delay: calc(var(--stagger-base) * 5); }
 
 /* ========================================
    滚动条

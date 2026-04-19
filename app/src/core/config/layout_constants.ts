@@ -35,5 +35,11 @@ export const MIN_CARD_WIDTH = 64
 export const MAX_CARD_WIDTH = 512 // 移除188px的人为限制，充分利用安全区宽度
 export const DEFAULT_ENVELOPE_GAP = 16 // 固定卡牌间距常量
 
+
+// Entry animation durations (seconds)
+export const ENTRY_BG_FADE_DURATION = 0.7
+export const ENTRY_CARDS_DROP_DURATION = 1.05
+export const ENTRY_HEADER_SLIDE_DURATION = 0.4
+export const ENTRY_FOOTER_SLIDE_DURATION = 0.35
 // Responsive breakpoint
 export const WIDE_BREAKPOINT = 768

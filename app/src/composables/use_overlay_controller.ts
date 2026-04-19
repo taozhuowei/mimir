@@ -43,6 +43,7 @@ import { buildRevealPhaseRunner } from '../core/flow/phases/reveal_phase'
 import { resolveDeckGeometry } from '../core/deck/deck_calculator'
 import type { CardLayout } from '../core/layout/types'
 import { prefersReducedMotion } from '../utils/accessibility'
+import { ENTRY_BG_FADE_DURATION, ENTRY_CARDS_DROP_DURATION, ENTRY_HEADER_SLIDE_DURATION, ENTRY_FOOTER_SLIDE_DURATION } from '../core/config/layout_constants'
 
 
 const MAX_CARD_COUNT = 10
@@ -559,7 +560,7 @@ export function useOverlayController(deps: UseOverlayControllerDeps) {
 
       entryTimeline.fromTo(_bg, { opacity: 0 }, {
         opacity: 1,
-        duration: 0.7,
+        duration: ENTRY_BG_FADE_DURATION,
         onUpdate: refreshBg,
       }, 0)
 
@@ -572,7 +573,7 @@ export function useOverlayController(deps: UseOverlayControllerDeps) {
         y: (index: number) => -(index * 0.8),
         rotation: 0,
         scale: 1,
-        duration: 1.05,
+        duration: ENTRY_CARDS_DROP_DURATION,
         ease: 'power3.out',
         stagger: 0.02,
         onUpdate: refreshInitials,
@@ -581,7 +582,7 @@ export function useOverlayController(deps: UseOverlayControllerDeps) {
       entryTimeline.fromTo(_header, { y: 100, opacity: 0 }, {
         y: 0,
         opacity: 1,
-        duration: 0.4,
+        duration: ENTRY_HEADER_SLIDE_DURATION,
         ease: 'power2.out',
         onUpdate: refreshHeader,
       }, 0.4)
@@ -589,7 +590,7 @@ export function useOverlayController(deps: UseOverlayControllerDeps) {
       entryTimeline.fromTo(_footer, { y: 100, opacity: 0 }, {
         y: 0,
         opacity: 1,
-        duration: 0.35,
+        duration: ENTRY_FOOTER_SLIDE_DURATION,
         ease: 'power2.out',
         onUpdate: refreshFooter,
       }, 0.6)
