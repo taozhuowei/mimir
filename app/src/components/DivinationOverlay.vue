@@ -300,11 +300,12 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
+import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useTarotStore } from '../stores/tarot'
 import { useThemeStore } from '../stores/theme'
 import ResultPanel from './ResultPanel.vue'
 import { getSpreadCardCount } from '../core/layout/spread_registry'
+import { trapFocus, getFocusableElements } from '../utils/accessibility'
 import { useOverlayController } from '../composables/use_overlay_controller'
 import { getPhaseStep, PHASE_STEPS } from '../utils/overlay_animation/phase_registry'
 import type { OverlayPhase } from '../core/flow/types'
@@ -401,6 +402,39 @@ function handleBackHome() {
 function handleRetry() {
   void controller.retryReading()
 }
+
+/* eslint-disable no-undef */
+const overlayRef = ref<HTMLElement | null>(null)
+let previousFocusEl: Element | null = null
+
+function handleOverlayKeydown(e: KeyboardEvent) {
+  /* eslint-enable no-undef */
+  if (!overlayRef.value) return
+  /* eslint-disable no-restricted-globals */
+  trapFocus(overlayRef.value, e)
+  /* eslint-enable no-restricted-globals */
+}
+
+onMounted(() => {
+  /* eslint-disable no-restricted-globals, no-undef */
+  previousFocusEl = document.activeElement
+  /* eslint-enable no-restricted-globals, no-undef */
+  nextTick(() => {
+    /* eslint-disable no-restricted-globals, no-undef */
+    if (overlayRef.value) {
+      const focusable = getFocusableElements(overlayRef.value)
+      if (focusable.length > 0) focusable[0].focus()
+    }
+    /* eslint-enable no-restricted-globals, no-undef */
+  })
+})
+
+onUnmounted(() => {
+  /* eslint-disable no-restricted-globals, no-undef */
+  if (previousFocusEl instanceof HTMLElement) previousFocusEl.focus()
+  /* eslint-enable no-restricted-globals, no-undef */
+})
+
 </script>
 
 <style scoped>
