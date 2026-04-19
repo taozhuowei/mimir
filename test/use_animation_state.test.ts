@@ -26,9 +26,9 @@ describe('useAnimationState', () => {
   it('initializes style refs with correct defaults', () => {
     const state = mountHarness({ deckCount: 12, shuffleHalfCount: 6, maxCutPiles: 3, maxCardCount: 5 })
 
-    expect(state.bgStyle.value).toBe('opacity: 0')
-    expect(state.headerStyle.value).toBe('transform: translateY(60px); opacity: 0')
-    expect(state.footerStyle.value).toBe('transform: translateY(60px); opacity: 0')
+    expect(state.bgStyle.value).toEqual({ opacity: '0' })
+    expect(state.headerStyle.value).toEqual({ transform: 'translateY(60px)', opacity: '0' })
+    expect(state.footerStyle.value).toEqual({ transform: 'translateY(60px)', opacity: '0' })
     expect(state.drawsVisible.value).toEqual([false, false, false, false, false])
   })
 
@@ -71,11 +71,11 @@ describe('useAnimationState', () => {
 
     state._bg.opacity = 0.5
     await nextTick()
-    expect(state.bgStyle.value).toBe('opacity: 0.5')
+    expect(state.bgStyle.value).toEqual({ opacity: '0.5' })
 
     state._bg.opacity = 1
     await nextTick()
-    expect(state.bgStyle.value).toBe('opacity: 1')
+    expect(state.bgStyle.value).toEqual({ opacity: '1' })
   })
 
   it('watchEffect auto-syncs drawsStyle when _draws mutate', async () => {
@@ -84,12 +84,12 @@ describe('useAnimationState', () => {
     Object.assign(state._draws[0], { x: 10, y: 20, rotation: 15, scale: 1.1, opacity: 0.8, zIndex: 25 })
     await nextTick()
 
-    expect(state.drawsStyle.value[0]).toContain('translateX(calc(-50% + 10px))')
-    expect(state.drawsStyle.value[0]).toContain('translateY(calc(-50% + 20px))')
-    expect(state.drawsStyle.value[0]).toContain('rotate(15deg)')
-    expect(state.drawsStyle.value[0]).toContain('scale(1.1)')
-    expect(state.drawsStyle.value[0]).toContain('opacity: 0.8')
-    expect(state.drawsStyle.value[0]).toContain('z-index: 25')
+    expect(state.drawsStyle.value[0].transform).toContain('translateX(calc(-50% + 10px))')
+    expect(state.drawsStyle.value[0].transform).toContain('translateY(calc(-50% + 20px))')
+    expect(state.drawsStyle.value[0].transform).toContain('rotate(15deg)')
+    expect(state.drawsStyle.value[0].transform).toContain('scale(1.1)')
+    expect(state.drawsStyle.value[0].opacity).toBe('0.8')
+    expect(state.drawsStyle.value[0].zIndex).toBe('25')
   })
 
   it('card style string does NOT contain will-change: transform', async () => {
@@ -98,7 +98,7 @@ describe('useAnimationState', () => {
     Object.assign(state._draws[0], { x: 0, y: 0, rotation: 0, scale: 1, opacity: 1, zIndex: 20 })
     await nextTick()
 
-    expect(state.drawsStyle.value[0]).not.toContain('will-change')
+    expect(state.drawsStyle.value[0].willChange).toBeUndefined()
   })
 
   it('resetShuffleVisualState clears lefts and rights', async () => {
@@ -112,8 +112,8 @@ describe('useAnimationState', () => {
     await nextTick()
 
     expect(state.leftsVisible.value).toBe(false)
-    expect(state.leftsStyle.value[0]).toContain('translateX(0px)')
-    expect(state.rightsStyle.value[0]).toContain('opacity: 0')
+    expect(state.leftsStyle.value[0].transform).toContain('translateX(0px)')
+    expect(state.rightsStyle.value[0].opacity).toBe('0')
   })
 
   it('resetDrawVisualState clears draws and inners', async () => {
@@ -127,8 +127,8 @@ describe('useAnimationState', () => {
     await nextTick()
 
     expect(state.drawsVisible.value[0]).toBe(false)
-    expect(state.drawsStyle.value[0]).toContain('translateX(calc(-50% + 0px))')
-    expect(state.innersStyle.value[0]).toBe('transform: rotateY(0deg)')
+    expect(state.drawsStyle.value[0].transform).toContain('translateX(calc(-50% + 0px))')
+    expect(state.innersStyle.value[0]).toEqual({ transform: 'rotateY(0deg)' })
   })
 
   it('getAllTargets returns all animation target objects', () => {

@@ -48,61 +48,61 @@ export function useAnimationState(opts: {
   const layoutCardHeight = ref(275)
 
   // Style refs
-  const bgStyle = ref('opacity: 0')
-  const stageStyle = ref('')
-  const headerStyle = ref('transform: translateY(60px); opacity: 0')
-  const footerStyle = ref('transform: translateY(60px); opacity: 0')
-  const deckCtnStyle = ref('')
-  const initialsStyle = ref<string[]>(_initials.map((_, i) => `transform: translateY(${-i * 0.8}px)`))
-  const leftsStyle = ref<string[]>(Array.from({ length: opts.shuffleHalfCount }, () => ''))
-  const rightsStyle = ref<string[]>(Array.from({ length: opts.shuffleHalfCount }, () => ''))
-  const pilesStyle = ref<string[]>(Array(opts.maxCutPiles).fill(''))
-  const drawsStyle = ref<string[]>(Array(opts.maxCardCount).fill(''))
+  const bgStyle = ref<Record<string, string>>({ opacity: '0' })
+  const stageStyle = ref<Record<string, string>>({})
+  const headerStyle = ref<Record<string, string>>({ transform: 'translateY(60px)', opacity: '0' })
+  const footerStyle = ref<Record<string, string>>({ transform: 'translateY(60px)', opacity: '0' })
+  const deckCtnStyle = ref<Record<string, string>>({})
+  const initialsStyle = ref<Record<string, string>[]>(_initials.map((_, i) => ({ transform: `translateY(${-i * 0.8}px)` })))
+  const leftsStyle = ref<Record<string, string>[]>(Array.from({ length: opts.shuffleHalfCount }, () => ({})))
+  const rightsStyle = ref<Record<string, string>[]>(Array.from({ length: opts.shuffleHalfCount }, () => ({})))
+  const pilesStyle = ref<Record<string, string>[]>(Array(opts.maxCutPiles).fill({}))
+  const drawsStyle = ref<Record<string, string>[]>(Array(opts.maxCardCount).fill({}))
   const drawsSizeStyle = ref<{ width: string; height: string }[]>(
     Array.from({ length: opts.maxCardCount }, () => ({ width: '', height: '' })),
   )
-  const innersStyle = ref<string[]>(Array(opts.maxCardCount).fill(''))
+  const innersStyle = ref<Record<string, string>[]>(Array(opts.maxCardCount).fill({}))
 
   const overlayVarsStyle = computed(() =>
     `--card-width: ${layoutCardWidth.value}px; --card-height: ${layoutCardHeight.value}px`,
   )
 
   // Refresh functions
-  function _cardStyleStr(state: { x: number; y: number; rotation: number; scale: number; scaleY: number; opacity: number }): string {
+  function _cardStyleObj(state: { x: number; y: number; rotation: number; scale: number; scaleY: number; opacity: number }): Record<string, string> {
     const scaleY = state.scaleY !== 1 ? ` scaleY(${state.scaleY})` : ''
-    return (
-      `transform: translateX(${state.x}px) translateY(${state.y}px) rotate(${state.rotation}deg) scale(${state.scale})${scaleY};` +
-      ` opacity: ${state.opacity}`
-    )
+    return {
+      transform: `translateX(${state.x}px) translateY(${state.y}px) rotate(${state.rotation}deg) scale(${state.scale})${scaleY}`,
+      opacity: String(state.opacity),
+    }
   }
 
-  function _centerStyleStr(state: { x: number; y: number; rotation: number; scale: number; opacity: number; zIndex: number }): string {
-    return (
-      `transform: translateX(calc(-50% + ${state.x}px)) translateY(calc(-50% + ${state.y}px))` +
-      ` rotate(${state.rotation}deg) scale(${state.scale});` +
-      ` opacity: ${state.opacity}; z-index: ${state.zIndex}`
-    )
+  function _centerStyleObj(state: { x: number; y: number; rotation: number; scale: number; opacity: number; zIndex: number }): Record<string, string> {
+    return {
+      transform: `translateX(calc(-50% + ${state.x}px)) translateY(calc(-50% + ${state.y}px)) rotate(${state.rotation}deg) scale(${state.scale})`,
+      opacity: String(state.opacity),
+      zIndex: String(state.zIndex),
+    }
   }
 
   function _cardSizeStyleStr(width: number, height: number): { width: string; height: string } {
     return { width: `${width}px`, height: `${height}px` }
   }
 
-  function _innerStyleStr(state: { rotationY: number }): string {
-    return `transform: rotateY(${state.rotationY}deg)`
+  function _innerStyleObj(state: { rotationY: number }): Record<string, string> {
+    return { transform: `rotateY(${state.rotationY}deg)` }
   }
 
-  const refreshBg = () => { bgStyle.value = `opacity: ${_bg.opacity}` }
-  const refreshStage = () => { stageStyle.value = `transform: translateY(${_stage.y}px)` }
-  const refreshHeader = () => { headerStyle.value = `transform: translateY(${_header.y}px); opacity: ${_header.opacity}` }
-  const refreshFooter = () => { footerStyle.value = `transform: translateY(${_footer.y}px); opacity: ${_footer.opacity}` }
-  const refreshDeckCtn = () => { deckCtnStyle.value = `transform: translateX(${_deckCtn.x}px)` }
-  const refreshInitials = () => { initialsStyle.value = _initials.map(_cardStyleStr) }
-  const refreshLefts = () => { leftsStyle.value = _lefts.map(_cardStyleStr) }
-  const refreshRights = () => { rightsStyle.value = _rights.map(_cardStyleStr) }
-  const refreshPiles = () => { pilesStyle.value = _piles.map(_centerStyleStr) }
-  const refreshDraws = () => { drawsStyle.value = _draws.map(_centerStyleStr) }
-  const refreshInners = () => { innersStyle.value = _inners.map(_innerStyleStr) }
+  const refreshBg = () => { bgStyle.value = { opacity: String(_bg.opacity) } }
+  const refreshStage = () => { stageStyle.value = { transform: `translateY(${_stage.y}px)` } }
+  const refreshHeader = () => { headerStyle.value = { transform: `translateY(${_header.y}px)`, opacity: String(_header.opacity) } }
+  const refreshFooter = () => { footerStyle.value = { transform: `translateY(${_footer.y}px)`, opacity: String(_footer.opacity) } }
+  const refreshDeckCtn = () => { deckCtnStyle.value = { transform: `translateX(${_deckCtn.x}px)` } }
+  const refreshInitials = () => { initialsStyle.value = _initials.map(_cardStyleObj) }
+  const refreshLefts = () => { leftsStyle.value = _lefts.map(_cardStyleObj) }
+  const refreshRights = () => { rightsStyle.value = _rights.map(_cardStyleObj) }
+  const refreshPiles = () => { pilesStyle.value = _piles.map(_centerStyleObj) }
+  const refreshDraws = () => { drawsStyle.value = _draws.map(_centerStyleObj) }
+  const refreshInners = () => { innersStyle.value = _inners.map(_innerStyleObj) }
 
   function setDrawCardSizes(layout: SceneLayoutResult) {
     drawsSizeStyle.value = Array.from({ length: opts.maxCardCount }, (_, index) => {
