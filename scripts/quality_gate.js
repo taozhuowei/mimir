@@ -8,7 +8,14 @@ const stepsByMode = {
     { label: 'type-check', command: 'npm', args: ['run', 'quality:type-check'] },
     { label: 'test', command: 'npm', args: ['run', 'quality:test'] },
     { label: 'build:h5', command: 'npm', args: ['run', 'quality:build:h5'] },
-    { label: 'audit', command: 'npm', args: ['run', 'quality:audit'] },
+    {
+      label: 'audit',
+      command: 'npm',
+      args: ['run', 'quality:audit'],
+      // Audit prints known moderate vulnerabilities even on success,
+      // polluting CI logs. Swallow stdout on success; print everything on failure.
+      quietOnSuccess: true,
+    },
     { label: 'arch:check', command: 'npm', args: ['run', 'arch:check'] },
   ],
   staged: [
@@ -34,8 +41,9 @@ for (const step of steps) {
       : step.command
 
   const result = spawnSync(executable, step.args, {
-    stdio: 'inherit',
+    stdio: step.quietOnSuccess ? 'pipe' : 'inherit',
     env: process.env,
+    encoding: 'utf-8',
   })
 
   if (result.error) {
@@ -44,6 +52,16 @@ for (const step of steps) {
   }
 
   if (typeof result.status === 'number' && result.status !== 0) {
+    if (step.quietOnSuccess && result.stdout) {
+      process.stdout.write(result.stdout)
+    }
+    if (step.quietOnSuccess && result.stderr) {
+      process.stderr.write(result.stderr)
+    }
     process.exit(result.status)
+  }
+
+  if (step.quietOnSuccess) {
+    console.log(`[quality] ${step.label} passed`)
   }
 }
