@@ -71,6 +71,49 @@
 - 验收策略：运行 `npm audit --omit=dev` 与 `npm run build:h5`，将当前输出和处置结论写回文档 / 配置。
 - 验收证据：`docs/AUDIT_WAIVER.md` 已建立；`npm run quality:audit` 通过；`npm run quality:audit:info` 可查看 moderate 详情。
 
+## 审查发现的新问题（待规划阶段）
+
+> 来源：G0 阶段代码整体审查（2026-04-21）
+> 原则：P0 必须进入当前阶段；P1/P2 可进 G2 或后续阶段，由规划方确认。
+
+### P0 — 必须立即处理
+
+- [ ] **后端错误处理中间件失效**：`server/src/app.ts` 错误处理器签名缺少 `next` 参数（arity=3），Express 将其识别为普通中间件而非错误处理器，导致未捕获异常跳过自定义日志和分类逻辑。
+- [ ] **主题加载目录遍历**：`server/src/services/theme_loader.ts` 直接将 URL 参数拼接到文件路径，存在 Path Traversal 风险。
+- [ ] **`spreadSlots` 危险类型断言**：`app/src/composables/use_overlay_controller.ts:310` 用 `[] as unknown as CardLayout[]` 伪装空数组，运行时可能静默失败。
+- [ ] **Controller 测试形同虚设**：`use_overlay_controller.test.ts` / `overlay_controller_sizing.test.ts` 只断言属性存在，不验证任何真实行为。
+- [ ] **组件测试验证不存在的 props**：`divination_overlay_a6.test.ts` 传入 `isWide` / `cardCount` props，但组件并不声明这些 props。
+- [ ] **焦点管理零测试覆盖**：`divination_overlay_a6.test.ts` 对 Tab 循环、焦点恢复等完全无测试。
+
+### P1 — 重要
+
+- [ ] **cardId 不存在返回 500**：`routes/readings.ts` 将卡牌不存在视为内部错误返回 500，违反 HTTP 语义且泄露内部信息。
+- [ ] **`prefersReducedMotion()` 重复定义**：`utils/accessibility.ts` 与 `utils/typing/typewriter_model.ts` 各有一份实现，后者 import 了但未使用。
+- [ ] **`clamp()` 重复定义**：`core/layout/card_position_calculator.ts` / `scene_layout.ts` / `utils/overlay_layout/motion_metrics.ts` 三处独立定义。
+- [ ] **魔法数字散落**：`RESULT_LIFT_MARGIN_PX`、`spreadX: 120`、`shuffleEdgeMargin`、`DECK_CLICK_SAFETY_MS` 等未集中管理。
+- [ ] **`drawCardsAndFetchReading` 遗留死代码**：`stores/tarot.ts` 中标记为 Legacy 的方法已无生产调用。
+- [ ] **`destroyed` 标志只写不读**：`reading_orchestrator.ts` 中该标志未生效，竞态/销毁守卫不完整。
+- [ ] **GSAP 类型强转 ×8**：所有 phase runner 返回时都写 `as unknown as AnimationTimeline`，抽象层未隔离 GSAP 细节。
+- [ ] **`resolveSpreadSpec` 静默失败**：未注册牌阵返回空 `slots` 数组，调用方 `map`/`forEach` 产生空结果而非显式错误。
+- [ ] **4xx 错误透传 `err.message`**：`app.ts` 错误处理器对 4xx 返回原始错误消息，未来若中间件附带敏感信息将直接暴露。
+- [ ] **`overlay_pipeline.test.ts` 使用真实 `setTimeout`**：依赖真实时间而非 fake timers，CI 高负载时可能 flaky fail。
+- [ ] **多个核心模块无直接测试**：`useOverlayLayout`、四个 `phase_runner`、`deck_calculator`、`OfflineReadingProvider` 等仅被间接覆盖。
+- [ ] **`TypewriterText.vue` 未响应 `prefers-reduced-motion`**：model 层支持 `instant`，组件层未接入。
+- [ ] **可访问性：overlay 缺少 dialog 语义**：无 `role="dialog"`、`aria-modal="true"`，屏幕阅读器用户无法感知模态层。
+- [ ] **可访问性：阶段变化无实时播报**：洗牌→切牌→抽牌→解读过程，屏幕阅读器用户无法感知当前阶段。
+- [ ] **可访问性：drag-handle 无键盘替代**：仅监听 touch 事件，键盘用户无法调整结果面板高度。
+
+### P2 — 建议
+
+- [ ] **CSP 完全关闭**：`app.ts` 中 `helmet({ contentSecurityPolicy: false })`，应用层无内容安全策略兜底。
+- [ ] **CORS 通配模式缺少 `Vary: Origin`**：共享缓存可能返回错误缓存。
+- [ ] **速率限制阈值偏宽松**：生产 120 req/min，POST /readings 等写接口可单独下调。
+- [ ] **Swagger 依赖未使用**：`swagger-jsdoc` + `swagger-ui-express` 已安装但源码无引用，扩大攻击面。
+- [ ] **后端常量未集中**：`server.ts` 中 `SHUTDOWN_TIMEOUT_MS`、`DEV_PORT_RETRY` 未收拢到 `config.ts`。
+- [ ] **`use_overlay_controller.ts` 职责过重（729 行）**：同时承担动画编排、阅读请求生命周期、布局计算、resize 处理。违反架构约束。需拆分为独立 `useReadingController`。
+
+> 注：**模块职责分离（use_overlay_controller 拆分）** 不在原有 TODO 规划中，是本次代码审查新发现的架构债务。
+
 ## G1 问题修复
 
 ### [ ] G1.1 收敛牌阵口径到当前主线
