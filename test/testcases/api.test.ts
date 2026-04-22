@@ -198,12 +198,13 @@ describe('POST /api/v1/readings', () => {
     expect(res.body.error).toMatch(/requires exactly 3 cards/)
   })
 
-  it('returns 500 when a card id does not exist', async () => {
+  it('returns 400 when a card id does not exist', async () => {
     const res = await request(app)
       .post('/api/v1/readings')
       .send({ spreadKind: 'single_card', cards: [{ cardId: 'not_a_real_card', position: 'upright' }] })
-    expect(res.status).toBe(500)
-    expect(res.body.error).toMatch('not_a_real_card')
+    expect(res.status).toBe(400)
+    expect(res.body.error).toBe('Invalid card ID')
+    expect(res.body.code).toBe('CARD_NOT_FOUND')
   })
 
   it('CORS header is present', async () => {

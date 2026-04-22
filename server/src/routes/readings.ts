@@ -59,8 +59,12 @@ router.post('/', (req: Request, res: Response) => {
     const cards = parseResult.data!.cards
     res.json(generateReading(cards))
   } catch (err) {
-    const message = err instanceof Error ? err.message : 'Reading failed'
-    res.status(500).json({ error: message, code: 'READING_GENERATION_FAILED' })
+    const isCardNotFound = err instanceof Error && err.message.startsWith('Card not found')
+    if (isCardNotFound) {
+      res.status(400).json({ error: 'Invalid card ID', code: 'CARD_NOT_FOUND' })
+      return
+    }
+    res.status(500).json({ error: 'Reading generation failed', code: 'READING_GENERATION_FAILED' })
   }
 })
 

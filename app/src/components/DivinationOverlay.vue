@@ -6,6 +6,12 @@
       'is-wide': isWide,
     }"
     :style="controller.overlayVarsStyle.value"
+    :ref="setOverlayRef"
+    @keydown="handleOverlayKeydown"
+    role="dialog"
+    aria-modal="true"
+    aria-label="占卜 overlay"
+    tabindex="-1"
   >
     <view class="overlay-bg" :style="controller.bgStyle.value" />
 
@@ -407,7 +413,10 @@ function handleRetry() {
 const overlayRef = ref<HTMLElement | null>(null)
 let previousFocusEl: Element | null = null
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
+function setOverlayRef(el: unknown) {
+  overlayRef.value = el as HTMLElement | null
+}
+
 function handleOverlayKeydown(e: KeyboardEvent) {
   /* eslint-enable no-undef */
   if (!overlayRef.value) return

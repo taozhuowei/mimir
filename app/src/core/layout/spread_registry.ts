@@ -62,14 +62,10 @@ const SPREAD_REGISTRY = new Map<string, SpreadSpec>(
 export function resolveSpreadSpec(spreadId: string, _isWide: boolean): SpreadSpec {
   const spec = SPREAD_REGISTRY.get(spreadId)
   if (!spec) {
-    return {
-      id: spreadId,
-      name: spreadId,
-      slotCount: 3,
-      horizontalSlots: 3,
-      verticalSlots: 3,
-      slots: [],
-    }
+    // Unknown spread: fall back to single_card to avoid silent empty-layout failures.
+    // Callers that need strict validation should check against BUILT_IN_SPREADS first.
+    const fallback = SPREAD_REGISTRY.get('single_card')!
+    return fallback
   }
   return spec
 }

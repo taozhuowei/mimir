@@ -59,4 +59,12 @@ export const config = Object.freeze({
     windowMs: 60_000,
     max: IS_PROD ? 120 : 0, // 0 disables the limiter
   },
+
+  // Graceful shutdown: stop accepting new connections, let in-flight requests
+  // finish, then exit. Force-exit after this timeout if any request hangs.
+  shutdownTimeoutMs: 10_000,
+
+  // Dev port fallback: if preferred port is occupied, try up to this many
+  // successive ports before giving up.
+  devPortRetry: 3,
 })

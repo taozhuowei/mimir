@@ -202,7 +202,15 @@ function resolveAssetPaths(
  * @returns ThemeData with resolved URLs, or undefined if theme not found
  * @throws Error if theme.json is missing or invalid
  */
+// Valid theme ID pattern: alphanumeric, hyphens, underscores only
+const VALID_THEME_ID = /^[a-zA-Z0-9_-]+$/
+
 export function getTheme(themeId: string): ThemeData | undefined {
+  // Validate theme ID to prevent path traversal
+  if (!VALID_THEME_ID.test(themeId)) {
+    return undefined
+  }
+
   // Check cache first
   const cached = themeCache.get(themeId)
   if (cached) {

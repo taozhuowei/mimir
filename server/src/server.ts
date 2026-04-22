@@ -18,9 +18,6 @@ import app from './app'
 import { config } from './config'
 import { logger } from './logger'
 
-const SHUTDOWN_TIMEOUT_MS = 10_000
-const DEV_PORT_RETRY = 3
-
 function isPortAvailable(port: number, host: string): Promise<boolean> {
   return new Promise(resolve => {
     const probe = net.createServer()
@@ -31,7 +28,7 @@ function isPortAvailable(port: number, host: string): Promise<boolean> {
 }
 
 async function resolveDevPort(preferred: number, host: string): Promise<number | null> {
-  for (let i = 0; i <= DEV_PORT_RETRY; i++) {
+  for (let i = 0; i <= config.devPortRetry; i++) {
     const port = preferred + i
     if (await isPortAvailable(port, host)) return port
     logger.warn({ port }, 'port occupied, trying next')
@@ -48,9 +45,9 @@ function installShutdownHandlers(server: Server): void {
     logger.info({ signal }, 'shutdown initiated')
 
     const force = setTimeout(() => {
-      logger.error({ timeoutMs: SHUTDOWN_TIMEOUT_MS }, 'shutdown timeout — forcing exit')
+      logger.error({ timeoutMs: config.shutdownTimeoutMs }, 'shutdown timeout — forcing exit')
       process.exit(1)
-    }, SHUTDOWN_TIMEOUT_MS)
+    }, config.shutdownTimeoutMs)
     // Allow the process to exit naturally once the server closes.
     force.unref()
 
@@ -76,7 +73,7 @@ async function start(): Promise<void> {
     const resolved = await resolveDevPort(preferredPort, host)
     if (resolved === null) {
       logger.error(
-        { preferredPort, retries: DEV_PORT_RETRY },
+        { preferredPort, retries: config.devPortRetry },
         'no free port after retries',
       )
       process.exit(1)

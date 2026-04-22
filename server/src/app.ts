@@ -67,6 +67,7 @@ app.use((req, res, next) => {
 
   if (allowed === '*') {
     res.header('Access-Control-Allow-Origin', '*')
+    res.header('Vary', 'Origin')
   } else if (typeof origin === 'string' && allowed.includes(origin)) {
     res.header('Access-Control-Allow-Origin', origin)
     res.header('Vary', 'Origin')
@@ -214,7 +215,8 @@ app.get('*', (_req, res) => {
 // 7. Terminal error handler
 // ---------------------------------------------------------------------------
 
-app.use((err: Error & { status?: number; statusCode?: number }, req: Request, res: Response) => {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+app.use((err: Error & { status?: number; statusCode?: number }, req: Request, res: Response, next: express.NextFunction) => {
   // pino-http attaches a logger to req; fall back to module logger if absent.
   const log = (req as unknown as { log?: typeof logger }).log ?? logger
   // Middleware like body-parser throws HttpError with .status (e.g. 413 for
@@ -224,7 +226,7 @@ app.use((err: Error & { status?: number; statusCode?: number }, req: Request, re
   if (typeof status === 'number' && status >= 400 && status < 500) {
     log.warn({ err, status }, 'client error')
     if (res.headersSent) return
-    res.status(status).json({ error: err.message || 'Bad request' })
+    res.status(status).json({ error: 'Bad request' })
     return
   }
   log.error({ err }, 'unhandled error')
