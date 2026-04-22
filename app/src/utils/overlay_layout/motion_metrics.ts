@@ -38,9 +38,7 @@ export interface MotionMetrics {
   cutTrailingOffset: { x: number; y: number }
 }
 
-function clamp(value: number, min: number, max: number): number {
-  return Math.max(min, Math.min(max, value))
-}
+import { clamp } from '../math'
 
 /**
  * Resolve every distance the overlay's animations need from the single safe frame.
@@ -72,7 +70,7 @@ export function resolveMotionMetrics(input: MotionMetricsInput): MotionMetrics {
   const safeHalfHeight = safeHeight / 2
 
   // Shuffle spread
-  const shuffleEdgeMargin = 12
+  const shuffleEdgeMargin = 12 // TODO: move to layout_constants once config-driven
   const minShuffleSpread = slotPitchX / 2
   const maxShuffleSpread = Math.max(minShuffleSpread, safeHalfWidth - cardWidth / 2 - shuffleEdgeMargin)
   const targetShuffleSpread = cardWidth + gap

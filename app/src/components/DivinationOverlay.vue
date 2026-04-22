@@ -18,23 +18,11 @@
     <!-- Main flex column: stage on top (or left on wide) + result panel below (or right on wide) -->
     <view class="overlay-main">
       <view class="stage-container">
-        <view class="progress-header" :style="controller.headerStyle.value">
-          <view class="phase-progress-bar">
-            <view
-              v-for="(step, idx) in controller.phaseSteps.value"
-              :key="step.phase"
-              class="phase-step"
-            >
-              <image
-                class="phase-step-icon"
-                :class="{ 'phase-step-icon-compensated': idx < 2 }"
-                :src="getPhaseStepIconSrc(step)"
-                mode="aspectFit"
-                :alt="`${step.phase} 阶段`"
-              />
-            </view>
-          </view>
-        </view>
+        <ProgressHeader
+          :header-style="controller.headerStyle.value"
+          :phase-steps="controller.phaseSteps.value"
+          :get-phase-step-icon-src="getPhaseStepIconSrc"
+        />
 
         <view class="stage" :style="controller.stageStyle.value">
           <view class="deck-layer stage-pointer" :style="controller.deckCtnStyle.value">
@@ -120,93 +108,28 @@
       </view>
     </view>
 
-    <!-- Result sheet: absolute bottom sheet, slides up over the card stage -->
-    <scroll-view
-      v-if="controller.showResults.value"
-      class="result-zone"
-      :style="!isWide ? `height: ${resultSheetHeight}vh;` : ''"
-      scroll-y
-      enable-flex
-    >
-      <view v-if="!isWide" class="drag-handle-container" @touchstart.stop="onDrawerTouchStart" @touchmove.stop.prevent="onDrawerTouchMove">
-        <view class="drag-handle"></view>
-      </view>
-      <view class="result-zone-inner">
-        <view v-if="controller.isReadingLoading.value" class="result-loading">
-          <view class="loading-row">
-            <view class="loading-spinner"></view>
-            <text class="loading-text">{{ controller.overlayText.revealing }}</text>
-          </view>
-          <view class="thinking-dots">
-            <text class="dot dot-1">.</text>
-            <text class="dot dot-2">.</text>
-            <text class="dot dot-3">.</text>
-          </view>
-        </view>
+    <ResultZone
+      :show-results="controller.showResults.value"
+      :is-wide="isWide"
+      :is-reading-loading="controller.isReadingLoading.value"
+      :is-reading-failed="controller.isReadingFailed.value"
+      :reading-error-message="controller.readingErrorMessage.value"
+      :overlay-text="controller.overlayText"
+      :reading-result="tarotStore.readingResult"
+      :current-question="tarotStore.currentQuestion"
+      @retry="handleRetry"
+      @restart="handleRestart"
+    />
 
-        <view v-else-if="controller.isReadingFailed.value" class="result-error">
-          <view class="error-box">
-            <text class="error-icon">⚠️</text>
-            <text class="error-text">{{ controller.readingErrorMessage.value }}</text>
-          </view>
-          <view class="btn btn-primary" @click="handleRetry">{{ '重试' }}</view>
-        </view>
-
-        <ResultPanel
-          v-else-if="tarotStore.readingResult"
-          :reading-result="tarotStore.readingResult"
-          :question="tarotStore.currentQuestion"
-          @restart="handleRestart"
-        />
-      </view>
-    </scroll-view>
-
-    <!-- Action bar: floats at the bottom of the screen, never scrolls with content -->
-    <view class="action-bar">
-      <template v-if="controller.showResults.value">
-        <view
-          class="btn btn-secondary"
-          role="button"
-          tabindex="0"
-          aria-label="回到首页"
-          @click="handleBackHome"
-          @keydown.enter="handleBackHome"
-          @keydown.space.prevent="handleBackHome"
-        >{{ controller.overlayText.backHome }}</view>
-        <view
-          class="btn btn-primary"
-          role="button"
-          tabindex="0"
-          aria-label="再占一次"
-          @click="handleRestart"
-          @keydown.enter="handleRestart"
-          @keydown.space.prevent="handleRestart"
-        >{{ controller.overlayText.restart }}</view>
-      </template>
-
-      <template v-else-if="controller.phase.value === 'revealing'">
-        <view class="revealing-hint font-display">
-          {{ controller.overlayText.revealing }}
-          <view class="thinking-dots">
-            <text class="dot dot-1">.</text>
-            <text class="dot dot-2">.</text>
-            <text class="dot dot-3">.</text>
-          </view>
-        </view>
-      </template>
-
-      <template v-else-if="controller.isReadingFailed.value">
-        <view
-          class="btn btn-primary"
-          role="button"
-          tabindex="0"
-          aria-label="重试"
-          @click="handleRetry"
-          @keydown.enter="handleRetry"
-          @keydown.space.prevent="handleRetry"
-        >{{ '重试' }}</view>
-      </template>
-    </view>
+    <ActionBar
+      :show-results="controller.showResults.value"
+      :phase="controller.phase.value"
+      :is-reading-failed="controller.isReadingFailed.value"
+      :overlay-text="controller.overlayText"
+      @back-home="handleBackHome"
+      @restart="handleRestart"
+      @retry="handleRetry"
+    />
 
     <!-- Dev Tools -->
     <view v-if="isDev" class="dev-tools">
@@ -310,6 +233,9 @@ import { computed, nextTick, onMounted, onUnmounted, ref } from 'vue'
 import { useTarotStore } from '../stores/tarot'
 import { useThemeStore } from '../stores/theme'
 import ResultPanel from './ResultPanel.vue'
+import ProgressHeader from './overlay/ProgressHeader.vue'
+import ResultZone from './overlay/ResultZone.vue'
+import ActionBar from './overlay/ActionBar.vue'
 import { getSpreadCardCount } from '../core/layout/spread_registry'
 import { trapFocus, getFocusableElements } from '../utils/accessibility'
 import { useOverlayController } from '../composables/use_overlay_controller'
@@ -366,26 +292,6 @@ const controller = useOverlayController({
   cardCount,
   emit,
 })
-
-const resultSheetHeight = ref(58) // Default to 58vh (100 - 42) to align with stage bottom
-
-let drawerStartY = 0
-let drawerStartHeight = 58
-
-function onDrawerTouchStart(e: TouchEvent) {
-  drawerStartY = e.touches[0].clientY
-  drawerStartHeight = resultSheetHeight.value
-}
-
-function onDrawerTouchMove(e: TouchEvent) {
-  const deltaY = e.touches[0].clientY - drawerStartY
-  const { windowHeight } = uni.getWindowInfo()
-  const vhDelta = -(deltaY / windowHeight) * 100
-  let newHeight = drawerStartHeight + vhDelta
-  if (newHeight < 30) newHeight = 30
-  if (newHeight > 92) newHeight = 92
-  resultSheetHeight.value = newHeight
-}
 
 function handlePlaybackRate(rate: number) { controller.setPlaybackRate(rate) }
 function handlePause() { controller.pauseAnimations() }

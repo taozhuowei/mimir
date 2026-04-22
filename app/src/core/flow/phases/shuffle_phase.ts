@@ -18,7 +18,7 @@ export interface ShufflePhaseConfig {
 }
 
 function createDefaultConfig(): ShufflePhaseConfig {
-  return { spreadX: 120 }
+  return { spreadX: 120 } // TODO: move to layout_constants once config-driven
 }
 
 export function buildShufflePhaseRunner(config?: Partial<ShufflePhaseConfig>): PhaseRunner {

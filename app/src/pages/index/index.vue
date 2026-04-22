@@ -92,7 +92,7 @@ import { useTarotStore } from '../../stores/tarot'
 import { useThemeStore } from '../../stores/theme'
 import { prefersReducedMotion } from '../../utils/accessibility'
 
-const DECK_CLICK_SAFETY_MS = 2000
+const DECK_CLICK_SAFETY_MS = 2000 // TODO: move to layout_constants
 const DECK_CLICK_RELEASE_MS = 300
 
 const tarotStore = useTarotStore()

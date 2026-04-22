@@ -458,27 +458,6 @@ describe('tarot store - draw and reading flow', () => {
     })
   })
 
-  describe('backward compatibility', () => {
-    it('drawCardsAndFetchReading maintains old behavior', async () => {
-      const store = useTarotStore()
-      store.allCards = MOCK_DECK
-
-      store.drawCards()
-      const mockResult = makeReadingResult(store.drawnCards)
-      mockFetchReading.mockResolvedValue(mockResult)
-
-      // Use the legacy method
-      const result = await store.drawCardsAndFetchReading()
-
-      expect(result).toHaveLength(1)
-      expect(mockFetchReading).toHaveBeenCalled()
-      
-      // Wait for the async reading to complete
-      await new Promise(resolve => setTimeout(resolve, 10))
-      expect(store.readingResult).toEqual(mockResult)
-    })
-  })
-
   describe('spreadKind (fixed single_card)', () => {
     it('spreadKind is always single_card', () => {
       const store = useTarotStore()

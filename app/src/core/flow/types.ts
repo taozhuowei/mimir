@@ -12,7 +12,7 @@ export type OverlayPhase = 'shuffling' | 'cutting' | 'drawing' | 'revealing'
 
 export interface PhaseContext {
   deckGeometry: DeckGeometry
-  spreadSlots: CardLayout[]
+  spreadSlots?: CardLayout[]
   getCurrentLayouts: () => { drawLayout: { cardWidth: number; cardHeight: number; stageShiftY: number; cards: CardLayout[] } }
   getTargetLayouts: () => { drawLayout: { cardWidth: number; cardHeight: number; stageShiftY: number; cards: CardLayout[] } }
   cardElements: {

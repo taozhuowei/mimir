@@ -53,9 +53,7 @@ export interface RevealMotionPlan {
   dockScale: number
 }
 
-function clamp(value: number, min: number, max: number): number {
-  return Math.max(min, Math.min(max, value))
-}
+import { clamp } from './card_position_calculator'
 
 export function resolveOverlayViewport(input: {
   windowWidth: number

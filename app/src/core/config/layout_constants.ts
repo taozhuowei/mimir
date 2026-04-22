@@ -49,3 +49,18 @@ export const HERO_QUESTION_START_DELAY = 420
 export const HERO_QUESTION_CHAR_INTERVAL = 26
 // Responsive breakpoint
 export const WIDE_BREAKPOINT = 768
+
+// Overlay controller constants
+export const MAX_CARD_COUNT = 10
+export const MAX_CUT_PILES = 8
+export const AUTO_REVEAL_DELAY_MS = 800
+export const ENTRY_TO_SHUFFLE_DELAY_MS = 300
+export const RESULT_LIFT_MARGIN_PX = 16
+export const RESULT_LIFT_MAX_FRACTION = 0.28
+
+// Shuffle phase constants
+export const SHUFFLE_SPREAD_X = 120
+export const SHUFFLE_EDGE_MARGIN = 12
+
+// Interaction safety
+export const DECK_CLICK_SAFETY_MS = 2000

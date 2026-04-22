@@ -9,6 +9,7 @@ import DivinationOverlay from '../app/src/components/DivinationOverlay.vue'
 // Mock useOverlayController
 const mockController = {
   showResults: ref(true),
+  phase: ref('revealing'),
   isReadingLoading: ref(false),
   isReadingFailed: ref(false),
   readingErrorMessage: ref(''),
@@ -26,10 +27,10 @@ const mockController = {
   phaseSteps: ref([]),
   overlayVarsStyle: ref(''),
   bgStyle: ref(''),
-  headerStyle: ref(''),
-  footerStyle: ref(''),
-  stageStyle: ref(''),
-  deckCtnStyle: ref(''),
+  headerStyle: ref({}),
+  footerStyle: ref({}),
+  stageStyle: ref({}),
+  deckCtnStyle: ref({}),
   initialsStyle: ref([]),
   leftsStyle: ref([]),
   rightsStyle: ref([]),

@@ -38,8 +38,28 @@ const RESULT_LABELS: Record<ReadingResult['result'], string> = {
 }
 
 // Result statement templates
-function getResultStatement(result: ReadingResult['result']): string {
+export function getResultStatement(result: ReadingResult['result']): string {
   return `塔罗牌根据您的问题呈现出${RESULT_LABELS[result]}的指示。`
+}
+
+// Summary lead text
+const SUMMARY_LEAD_MAP: Record<ReadingResult['result'], string> = {
+  positive: '当前牌面传递出积极信号',
+  negative: '当前牌面传递出谨慎信号',
+}
+
+export function getSummaryText(readingResult: ReadingResult): string {
+  const fragments = readingResult.cardDetails
+    .map((detail) => detail.meaning)
+    .map((meaning) => meaning.split(/[。？！]/)[0]?.trim() ?? '')
+    .filter(Boolean)
+    .slice(0, 2)
+
+  if (fragments.length === 0) {
+    return SUMMARY_LEAD_MAP[readingResult.result]
+  }
+
+  return `${SUMMARY_LEAD_MAP[readingResult.result]}，${fragments.join('、')}`
 }
 
 // Tone classes for styling

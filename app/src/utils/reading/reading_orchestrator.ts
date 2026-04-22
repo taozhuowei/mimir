@@ -42,7 +42,6 @@ export function createReadingOrchestrator(deps: ReadingOrchestratorDeps): Readin
   const { provider, statusRef, resultRef, errorRef, errorMessage } = deps
   let currentRequest: Promise<ReadingResult | null> | null = null
   let lastRequest: ReadingRequest | null = null
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   let destroyed = false
   const pendingTimers: ReturnType<typeof setTimeout>[] = []
 
@@ -57,6 +56,7 @@ export function createReadingOrchestrator(deps: ReadingOrchestratorDeps): Readin
   }
 
   async function doRequest(request: ReadingRequest, retryCount: number): Promise<ReadingResult | null> {
+    if (destroyed) return null
     const timeoutPromise = new Promise<never>((_, reject) => {
       setTimeout(() => reject(new Error('请求超时，请稍后重试')), TIMEOUT_MS)
     })
@@ -78,6 +78,7 @@ export function createReadingOrchestrator(deps: ReadingOrchestratorDeps): Readin
   }
 
   async function executeRequest(request: ReadingRequest): Promise<ReadingResult | null> {
+    if (destroyed) return null
     if (currentRequest) {
       return currentRequest
     }

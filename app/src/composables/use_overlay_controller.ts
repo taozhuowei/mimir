@@ -43,16 +43,12 @@ import { buildRevealPhaseRunner } from '../core/flow/phases/reveal_phase'
 import { resolveDeckGeometry } from '../core/deck/deck_calculator'
 import type { CardLayout } from '../core/layout/types'
 import { prefersReducedMotion } from '../utils/accessibility'
-import { ENTRY_BG_FADE_DURATION, ENTRY_CARDS_DROP_DURATION, ENTRY_HEADER_SLIDE_DURATION, ENTRY_FOOTER_SLIDE_DURATION } from '../core/config/layout_constants'
+import {
+  ENTRY_BG_FADE_DURATION, ENTRY_CARDS_DROP_DURATION, ENTRY_HEADER_SLIDE_DURATION, ENTRY_FOOTER_SLIDE_DURATION,
+  MAX_CARD_COUNT, MAX_CUT_PILES, AUTO_REVEAL_DELAY_MS, ENTRY_TO_SHUFFLE_DELAY_MS,
+  RESULT_LIFT_MARGIN_PX, RESULT_LIFT_MAX_FRACTION,
+} from '../core/config/layout_constants'
 
-
-const MAX_CARD_COUNT = 10
-const MAX_CUT_PILES = 8
-const AUTO_REVEAL_DELAY_MS = 800
-const ENTRY_TO_SHUFFLE_DELAY_MS = 300
-
-const RESULT_LIFT_MARGIN_PX = 16
-const RESULT_LIFT_MAX_FRACTION = 0.28
 const DECK_COUNT: number = (overlayConfig as { deckCount?: number }).deckCount ?? 12
 const CUT_PILE_COUNT: number = Math.min(
   MAX_CUT_PILES,
@@ -307,7 +303,7 @@ export function useOverlayController(deps: UseOverlayControllerDeps) {
 
     return {
       deckGeometry: resolveDeckGeometry(safeFrame, DECK_COUNT),
-      spreadSlots: [] as unknown as CardLayout[],
+      spreadSlots: [],
       getCurrentLayouts: () => {
         const { drawLayout } = getOverlayLayouts()
         return { drawLayout }
