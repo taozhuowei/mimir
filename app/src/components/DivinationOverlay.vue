@@ -232,7 +232,6 @@
 import { computed, nextTick, onMounted, onUnmounted, ref } from 'vue'
 import { useTarotStore } from '../stores/tarot'
 import { useThemeStore } from '../stores/theme'
-import ResultPanel from './ResultPanel.vue'
 import ProgressHeader from './overlay/ProgressHeader.vue'
 import ResultZone from './overlay/ResultZone.vue'
 import ActionBar from './overlay/ActionBar.vue'

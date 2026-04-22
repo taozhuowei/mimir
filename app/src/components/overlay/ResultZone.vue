@@ -45,7 +45,7 @@ import { ref } from 'vue'
 import ResultPanel from '../ResultPanel.vue'
 import type { ReadingResult } from '../../utils/tarotReading'
 
-const props = defineProps<{
+defineProps<{
   showResults: boolean
   isWide: boolean
   isReadingLoading: boolean

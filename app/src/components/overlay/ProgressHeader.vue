@@ -27,7 +27,7 @@ interface PhaseStepPresentation {
   isCompleted: boolean
 }
 
-const props = defineProps<{
+defineProps<{
   headerStyle: Record<string, string>
   phaseSteps: PhaseStepPresentation[]
   getPhaseStepIconSrc: (step: PhaseStepPresentation) => string

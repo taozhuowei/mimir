@@ -49,7 +49,7 @@
 <script setup lang="ts">
 import type { OverlayPhase } from '../../core/flow/types'
 
-const props = defineProps<{
+defineProps<{
   showResults: boolean
   phase: OverlayPhase
   isReadingFailed: boolean

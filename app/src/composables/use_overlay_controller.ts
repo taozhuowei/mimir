@@ -41,7 +41,7 @@ import { buildCutPhaseRunner } from '../core/flow/phases/cut_phase'
 import { buildDrawPhaseRunner } from '../core/flow/phases/draw_phase'
 import { buildRevealPhaseRunner } from '../core/flow/phases/reveal_phase'
 import { resolveDeckGeometry } from '../core/deck/deck_calculator'
-import type { CardLayout } from '../core/layout/types'
+
 import { prefersReducedMotion } from '../utils/accessibility'
 import {
   ENTRY_BG_FADE_DURATION, ENTRY_CARDS_DROP_DURATION, ENTRY_HEADER_SLIDE_DURATION, ENTRY_FOOTER_SLIDE_DURATION,
