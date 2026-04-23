@@ -12,7 +12,7 @@
 // gsap-core. Issue mitigated by gsap-core alias.
 import type { gsap } from 'gsap'
 import type { OverlayPhase } from './phase_registry'
-import type { TimelineOrchestrator } from './timeline_orchestrator'
+import type { TimelineOrchestrator } from './timeline_master'
 
 export interface PipelinePhase {
   phase: OverlayPhase

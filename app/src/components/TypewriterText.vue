@@ -5,6 +5,7 @@
 <script setup lang="ts">
 import { onMounted, onUnmounted, ref, watch } from 'vue'
 import { createTypewriterModel } from '../utils/typing/typewriter_model'
+import { prefersReducedMotion } from '../utils/accessibility'
 
 const props = withDefaults(defineProps<{
   text: string
@@ -28,7 +29,7 @@ function createModel() {
       text: props.text,
       startDelay: props.startDelay,
       charInterval: props.charInterval,
-      instant: props.instant,
+      instant: props.instant || prefersReducedMotion(),
     },
     {
       onUpdate: (text) => {

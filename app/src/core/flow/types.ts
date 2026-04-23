@@ -4,7 +4,6 @@
  * Reason: decouple phase execution order from individual phase logic.
  */
 
-import type { AnimationTimeline } from '../animation/types'
 import type { DeckGeometry } from '../deck/types'
 import type { CardLayout } from '../layout/types'
 
@@ -39,7 +38,7 @@ export interface PhaseContext {
 
 export interface PhaseRunner {
   name: OverlayPhase
-  run(context: PhaseContext, onComplete: () => void): AnimationTimeline | null
+  run(context: PhaseContext, onComplete: () => void): unknown
 }
 
 export interface FlowOrchestrator {

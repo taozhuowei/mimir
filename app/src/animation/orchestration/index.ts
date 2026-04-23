@@ -33,7 +33,7 @@ export {
   createTimelineOrchestrator,
   killAnimationTargets,
   type TimelineOrchestrator,
-} from './timeline_orchestrator'
+} from './timeline_master'
 
 // Initial state factories
 export {

@@ -45,10 +45,23 @@ app.disable('x-powered-by')
 // 1. Security + compression + body parsing
 // ---------------------------------------------------------------------------
 
-// helmet defaults; CSP is turned off here because the SPA inlines GSAP-driven
-// styles and nginx can layer a stricter policy per-deployment.
+// helmet defaults; CSP is configured with a baseline policy that allows
+// the SPA's inline scripts/styles and GSAP. Nginx can layer a stricter
+// policy per-deployment if needed.
 app.use(helmet({
-  contentSecurityPolicy: false,
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'"],
+      styleSrc: ["'self'", "'unsafe-inline'"],
+      imgSrc: ["'self'", "data:", "blob:"],
+      fontSrc: ["'self'"],
+      connectSrc: ["'self'"],
+      frameAncestors: ["'none'"],
+      baseUri: ["'self'"],
+      formAction: ["'self'"],
+    },
+  },
   ...(config.isProd ? {} : {
     crossOriginEmbedderPolicy: false,
     crossOriginResourcePolicy: { policy: 'cross-origin' as const },

@@ -1,7 +1,7 @@
 // @vitest-environment node
 
 import { describe, expect, it, vi, beforeEach } from 'vitest'
-import { createTimelineOrchestrator, killAnimationTargets } from '../app/src/utils/overlay_animation/timeline_orchestrator'
+import { createTimelineOrchestrator, killAnimationTargets } from '../app/src/animation/orchestration/timeline_master'
 
 // Mock GSAP
 vi.mock('gsap', () => {

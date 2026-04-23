@@ -12,8 +12,8 @@
 // function exports (to, timeline, killTweensOf) are not available from
 // gsap-core. Issue mitigated by gsap-core alias.
 import gsap from 'gsap'
-import type { AnimationTimeline } from '../../animation/types'
-import type { OverlayPhase, PhaseContext, PhaseRunner } from '../types'
+import type { AnimationTimeline } from '../../../core/animation/types'
+import type { OverlayPhase, PhaseContext, PhaseRunner } from '../../../core/flow/types'
 import { prefersReducedMotion } from '../../../utils/accessibility'
 
 export interface RevealPhaseConfig {
@@ -70,7 +70,7 @@ export function buildRevealPhaseRunner(config: RevealPhaseConfig): PhaseRunner {
         timeline.add(() => {
           onComplete()
         }, 0.1)
-        return timeline as unknown as AnimationTimeline
+        return timeline 
       }
 
       // Wait for the CSS --card-focus-scale spring to settle before signalling
@@ -79,7 +79,7 @@ export function buildRevealPhaseRunner(config: RevealPhaseConfig): PhaseRunner {
         onComplete()
       }, FOCUS_SETTLE_DELAY)
 
-      return timeline as unknown as AnimationTimeline
+      return timeline 
     },
   }
 }

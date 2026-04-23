@@ -15,6 +15,16 @@
   >
     <view class="overlay-bg" :style="controller.bgStyle.value" />
 
+    <!-- Screen-reader announcement for phase changes -->
+    <view
+      class="sr-only"
+      aria-live="polite"
+      aria-atomic="true"
+      role="status"
+    >
+      {{ phaseAnnouncement }}
+    </view>
+
     <!-- Main flex column: stage on top (or left on wide) + result panel below (or right on wide) -->
     <view class="overlay-main">
       <view class="stage-container">
@@ -238,7 +248,7 @@ import ActionBar from './overlay/ActionBar.vue'
 import { getSpreadCardCount } from '../core/layout/spread_registry'
 import { trapFocus, getFocusableElements } from '../utils/accessibility'
 import { useOverlayController } from '../composables/use_overlay_controller'
-import { getPhaseStep, PHASE_STEPS } from '../utils/overlay_animation/phase_registry'
+import { getPhaseStep, PHASE_STEPS } from '../animation/orchestration/phase_registry'
 import type { OverlayPhase } from '../core/flow/types'
 
 const emit = defineEmits<{
@@ -290,6 +300,18 @@ const controller = useOverlayController({
   isWide,
   cardCount,
   emit,
+})
+
+const PHASE_LABELS: Record<string, string> = {
+  shuffling: '正在洗牌',
+  cutting: '正在切牌',
+  drawing: '正在抽牌',
+  revealing: '神谕显现中',
+}
+
+const phaseAnnouncement = computed(() => {
+  const label = PHASE_LABELS[controller.phase.value]
+  return label ? `当前阶段：${label}` : ''
 })
 
 function handlePlaybackRate(rate: number) { controller.setPlaybackRate(rate) }

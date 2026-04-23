@@ -9,8 +9,8 @@
 // function exports (to, timeline, killTweensOf) are not available from
 // gsap-core. Issue mitigated by gsap-core alias.
 import gsap from 'gsap'
-import type { AnimationTimeline } from '../../animation/types'
-import type { OverlayPhase, PhaseContext, PhaseRunner } from '../types'
+import type { AnimationTimeline } from '../../../core/animation/types'
+import type { OverlayPhase, PhaseContext, PhaseRunner } from '../../../core/flow/types'
 import { prefersReducedMotion } from '../../../utils/accessibility'
 import { secureRandomRange } from '../../../utils/secure_random'
 
@@ -73,7 +73,7 @@ export function buildDrawPhaseRunner(config: DrawPhaseConfig): PhaseRunner {
         timeline.add(() => {
           onComplete()
         }, 0.1)
-        return timeline as unknown as AnimationTimeline
+        return timeline 
       }
 
       const drawStartTime = 0.88
@@ -220,7 +220,7 @@ export function buildDrawPhaseRunner(config: DrawPhaseConfig): PhaseRunner {
         onComplete()
       }, finishTime)
 
-      return timeline as unknown as AnimationTimeline
+      return timeline 
     },
   }
 }

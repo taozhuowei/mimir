@@ -1,9 +1,9 @@
 // @vitest-environment node
 
-import { describe, expect, it, vi } from 'vitest'
-import { createPhasePipeline, getDefaultPhaseOrder } from '../app/src/utils/overlay_animation/pipeline'
-import type { PipelinePhase, TimelineOrchestrator } from '../app/src/utils/overlay_animation/pipeline'
-import type { OverlayPhase } from '../app/src/utils/overlay_animation/types'
+import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest'
+import { createPhasePipeline, getDefaultPhaseOrder } from '../app/src/animation/orchestration/pipeline'
+import type { PipelinePhase, TimelineOrchestrator } from '../app/src/animation/orchestration/pipeline'
+import type { OverlayPhase } from '../app/src/animation/orchestration/types'
 
 function createMockOrchestrator(): TimelineOrchestrator {
   const timelines: unknown[] = []
@@ -35,6 +35,14 @@ function makePhase(phase: OverlayPhase, delayMs = 0): PipelinePhase {
 }
 
 describe('overlay_animation pipeline', () => {
+  beforeEach(() => {
+    vi.useFakeTimers({ shouldAdvanceTime: true })
+  })
+
+  afterEach(() => {
+    vi.useRealTimers()
+  })
+
   describe('getDefaultPhaseOrder', () => {
     it('returns shuffling -> cutting -> drawing -> revealing', () => {
       expect(getDefaultPhaseOrder()).toEqual([
@@ -64,8 +72,7 @@ describe('overlay_animation pipeline', () => {
       })
 
       pipeline.run()
-      // Allow microtasks to flush since onCompletes are synchronous in makePhase
-      await new Promise((r) => setTimeout(r, 100))
+      vi.advanceTimersByTime(100)
 
       expect(order).toEqual([
         'start:shuffling',
@@ -95,7 +102,7 @@ describe('overlay_animation pipeline', () => {
       })
 
       pipeline.run(2)
-      await new Promise((r) => setTimeout(r, 100))
+      vi.advanceTimersByTime(100)
 
       expect(completed).toEqual(['drawing', 'revealing'])
     })
@@ -114,7 +121,7 @@ describe('overlay_animation pipeline', () => {
       })
 
       pipeline.run()
-      await new Promise((r) => setTimeout(r, 100))
+      vi.advanceTimersByTime(100)
 
       expect(onComplete).toHaveBeenCalledOnce()
     })
@@ -128,7 +135,7 @@ describe('overlay_animation pipeline', () => {
 
       const pipeline = createPhasePipeline(orchestrator, phases)
       pipeline.run()
-      await new Promise((r) => setTimeout(r, 100))
+      vi.advanceTimersByTime(100)
 
       expect(orchestrator.add).toHaveBeenCalledTimes(2)
     })
@@ -147,7 +154,7 @@ describe('overlay_animation pipeline', () => {
       })
 
       pipeline.run()
-      await new Promise((r) => setTimeout(r, 100))
+      vi.advanceTimersByTime(100)
 
       expect(completed).toEqual(['shuffling', 'cutting'])
       expect(orchestrator.add).toHaveBeenCalledTimes(1)

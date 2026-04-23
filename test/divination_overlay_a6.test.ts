@@ -82,12 +82,7 @@ describe('Stage C.2: Component - DivinationOverlay A.6 features', () => {
   })
 
   it('A.6.4: Drawer handle exists and touch events update height', async () => {
-    const wrapper = mount(DivinationOverlay, {
-      props: {
-        isWide: false,
-        cardCount: 1
-      }
-    })
+    const wrapper = mount(DivinationOverlay)
     await nextTick()
 
     const handle = wrapper.find('.drag-handle-container')

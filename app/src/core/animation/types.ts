@@ -20,6 +20,8 @@ export interface AnimationTimeline {
   add(fn: () => void, position?: number | string): AnimationTimeline
   kill(): void
   clear(): void
+  /** Allow GSAP-specific properties without breaking structural typing. */
+  [key: string]: unknown
 }
 
 export interface AnimationEngine {

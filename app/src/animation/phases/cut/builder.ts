@@ -9,8 +9,8 @@
 // function exports (to, timeline, killTweensOf) are not available from
 // gsap-core. Issue mitigated by gsap-core alias.
 import gsap from 'gsap'
-import type { AnimationTimeline } from '../../animation/types'
-import type { OverlayPhase, PhaseContext, PhaseRunner } from '../types'
+import type { AnimationTimeline } from '../../../core/animation/types'
+import type { OverlayPhase, PhaseContext, PhaseRunner } from '../../../core/flow/types'
 import { prefersReducedMotion } from '../../../utils/accessibility'
 
 export interface CutPhaseConfig {
@@ -56,7 +56,7 @@ export function buildCutPhaseRunner(config: CutPhaseConfig): PhaseRunner {
         timeline.add(() => {
           pilesVisible.value = piles.map(() => false)
         })
-        return timeline as unknown as AnimationTimeline
+        return timeline 
       }
 
       const timeline = gsap.timeline({
@@ -109,7 +109,7 @@ export function buildCutPhaseRunner(config: CutPhaseConfig): PhaseRunner {
         pilesVisible.value = piles.map(() => false)
       })
 
-      return timeline as unknown as AnimationTimeline
+      return timeline 
     },
   }
 }

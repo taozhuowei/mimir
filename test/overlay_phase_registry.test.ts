@@ -7,8 +7,8 @@ import {
   getPhaseStep,
   isValidPhase,
   getNextPhase,
-} from '../app/src/utils/overlay_animation/phase_registry'
-import type { OverlayPhase } from '../app/src/utils/overlay_animations/types'
+} from '../app/src/animation/orchestration/phase_registry'
+import type { OverlayPhase } from '../app/src/animation/orchestration/types'
 
 describe('overlay_animation/phase_registry', () => {
   describe('PHASE_STEPS', () => {

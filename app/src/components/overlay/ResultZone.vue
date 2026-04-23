@@ -6,7 +6,19 @@
     scroll-y
     enable-flex
   >
-    <view v-if="!isWide" class="drag-handle-container" @touchstart.stop="onDrawerTouchStart" @touchmove.stop.prevent="onDrawerTouchMove">
+    <view
+      v-if="!isWide"
+      class="drag-handle-container"
+      tabindex="0"
+      role="slider"
+      aria-label="调整结果面板高度"
+      aria-valuemin="30"
+      aria-valuemax="92"
+      :aria-valuenow="resultSheetHeight"
+      @touchstart.stop="onDrawerTouchStart"
+      @touchmove.stop.prevent="onDrawerTouchMove"
+      @keydown="onDrawerKeydown"
+    >
       <view class="drag-handle"></view>
     </view>
     <view class="result-zone-inner">
@@ -78,5 +90,16 @@ function onDrawerTouchMove(e: TouchEvent) {
   if (newHeight < 30) newHeight = 30
   if (newHeight > 92) newHeight = 92
   resultSheetHeight.value = newHeight
+}
+
+function onDrawerKeydown(e: globalThis.KeyboardEvent) {
+  const step = 5
+  if (e.key === 'ArrowUp') {
+    e.preventDefault()
+    resultSheetHeight.value = Math.min(92, resultSheetHeight.value + step)
+  } else if (e.key === 'ArrowDown') {
+    e.preventDefault()
+    resultSheetHeight.value = Math.max(30, resultSheetHeight.value - step)
+  }
 }
 </script>

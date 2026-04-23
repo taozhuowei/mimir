@@ -69,7 +69,7 @@ agent-browser --session-name "$SESSION" eval '
 echo "Step 8: Click back home"
 BACK_REF=$(agent-browser --session-name "$SESSION" snapshot -i 2>&1 | grep "回到首页" | grep -o 'ref=e[0-9]*' | head -n 1 | cut -d= -f2)
 agent-browser --session-name "$SESSION" click "@$BACK_REF"
-agent-browser --session-name "$SESSION" wait 2000
+agent-browser --session-name "$SESSION" wait 3000
 
 # Verify back on home page
 echo "Step 9: Verify back on home page"

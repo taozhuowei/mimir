@@ -2,7 +2,8 @@
 
 import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest'
 import { mount } from '@vue/test-utils'
-import { defineComponent, h, nextTick, ref } from 'vue'
+import { defineComponent, h, nextTick, ref, isRef } from 'vue'
+import type { Ref } from 'vue'
 import { createPinia, setActivePinia } from 'pinia'
 import type { TarotCardInfo } from '../app/src/utils/tarotReading'
 
@@ -133,7 +134,9 @@ describe('use_overlay_controller result-zone sizing', () => {
     vi.useRealTimers()
   })
 
-  async function mountHarness(isWide = false) {
+  async function mountHarness(isWide: boolean | Ref<boolean> = false) {
+    const isWideRef = isRef(isWide) ? isWide : ref(isWide)
+
     const { useOverlayController } = await import('../app/src/composables/use_overlay_controller')
     const { useTarotStore } = await import('../app/src/stores/tarot')
 
@@ -156,7 +159,7 @@ describe('use_overlay_controller result-zone sizing', () => {
         const controller = useOverlayController({
           tarotStore: tarotStore as never,
           themeStore: themeStore as never,
-          isWide: ref(isWide),
+          isWide: isWideRef as never,
           cardCount: ref(1),
           emit: (() => undefined) as never,
         })
@@ -172,6 +175,7 @@ describe('use_overlay_controller result-zone sizing', () => {
     return {
       wrapper,
       controller: exposedController!,
+      isWideRef,
     }
   }
 
@@ -208,5 +212,72 @@ describe('use_overlay_controller result-zone sizing', () => {
     expect(controller.overlayVarsStyle.value).toContain('--card-height:')
     // --card-focus-scale must be present so .card-focus-frame scales correctly
     expect(controller.overlayVarsStyle.value).toContain('--card-focus-scale:')
+  })
+
+  it('focusScale adapts to viewport width', async () => {
+    const isWideRef = ref(false)
+    const { controller } = await mountHarness(isWideRef)
+
+    // Narrow mode focus scale
+    const narrowFocusScale = controller.focusScale.value
+    expect(narrowFocusScale).toBe(1.42)
+
+    // Switch to wide mode
+    isWideRef.value = true
+    await nextTick()
+
+    expect(controller.focusScale.value).toBe(1.2)
+    expect(controller.focusScale.value).not.toBe(narrowFocusScale)
+  })
+
+  it('overlayVarsStyle reflects focus scale and result state', async () => {
+    const isWideRef = ref(false)
+    const { controller } = await mountHarness(isWideRef)
+
+    // Default: no results, cards not landed -> focus scale is 1
+    const defaultStyle = controller.overlayVarsStyle.value
+    expect(defaultStyle).toContain('--card-focus-scale: 1')
+    expect(defaultStyle).toContain('--result-card-lift-y: 0px')
+
+    // Simulate cards landed (but results not shown) -> focus scale applies
+    controller.showResults.value = false
+    // cardsLanded is internal to animController; we simulate the observable effect
+    // by checking that when showResults becomes true, the style changes accordingly
+    await nextTick()
+
+    // Simulate result phase (showResults = true)
+    controller.showResults.value = true
+    await nextTick()
+
+    // When showResults is true, focus scale should be 1
+    expect(controller.overlayVarsStyle.value).toContain('--card-focus-scale: 1')
+
+    // result-card-lift-y should be present (non-zero in narrow mode with results)
+    expect(controller.overlayVarsStyle.value).toContain('--result-card-lift-y:')
+    const liftMatch = controller.overlayVarsStyle.value.match(/--result-card-lift-y: ([\d.]+)px/)
+    expect(liftMatch).not.toBeNull()
+    const liftY = parseFloat(liftMatch![1])
+    expect(liftY).toBeGreaterThan(0)
+
+    // In wide mode, lift should be 0
+    isWideRef.value = true
+    await nextTick()
+    expect(controller.overlayVarsStyle.value).toContain('--result-card-lift-y: 0px')
+  })
+
+  it('cardsFocused and cardsDocked reflect result state', async () => {
+    const { controller } = await mountHarness()
+
+    // Default state: no results, cards not landed
+    expect(controller.cardsFocused.value).toBe(false)
+    expect(controller.cardsDocked.value).toBe(false)
+
+    // Simulate result phase
+    controller.showResults.value = true
+    await nextTick()
+
+    // When results are shown but reading hasn't succeeded, cards are focused
+    expect(controller.cardsFocused.value).toBe(true)
+    expect(controller.cardsDocked.value).toBe(false)
   })
 })

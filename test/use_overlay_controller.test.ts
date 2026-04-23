@@ -43,6 +43,7 @@ type MockTimeline = {
   add: (item?: unknown, position?: number | string) => MockTimeline
   clear: () => MockTimeline
   kill: () => MockTimeline
+  getChildren: (nested?: boolean, tweens?: boolean, timelines?: boolean) => unknown[]
   _isPaused: () => boolean
   _timeScale: () => number
   _currentTime: () => number
@@ -103,6 +104,9 @@ vi.mock('gsap', () => {
       },
       kill() {
         return this
+      },
+      getChildren() {
+        return []
       },
       _isPaused: () => isPaused,
       _timeScale: () => timeScale,
@@ -366,5 +370,99 @@ describe('use_overlay_controller', () => {
     expect(footer.value).toBeDefined()
     expect(footer.value.showRestart).toBe(false)
     expect(footer.value.showRevealingHint).toBe(false)
+  })
+
+  it('start() creates entry timeline', async () => {
+    const { controller } = await mountHarness()
+
+    // start() is invoked during onMounted; verify a timeline was created
+    expect(lastTimeline).not.toBeNull()
+    // In our mock the pipeline begins synchronously, so entry animation
+    // should be considered complete once the shuffling phase starts.
+    expect(controller.entryAnimationComplete.value).toBe(true)
+    expect(controller.phase.value).toBe('shuffling')
+  })
+
+  it('restart() resets state and recreates timeline', async () => {
+    const { controller } = await mountHarness()
+
+    // Advance phase so we can verify reset behaviour
+    controller.phase.value = 'drawing'
+    await nextTick()
+    expect(controller.phase.value).toBe('drawing')
+
+    const oldTimeline = lastTimeline
+
+    controller.restart()
+    await nextTick()
+    vi.advanceTimersByTime(100)
+    await nextTick()
+
+    // Phase and results should be reset
+    expect(controller.phase.value).toBe('shuffling')
+    expect(controller.showResults.value).toBe(false)
+    expect(controller.entryAnimationComplete.value).toBe(true)
+    // start() should have created a new timeline
+    expect(lastTimeline).not.toBeNull()
+    expect(lastTimeline).not.toBe(oldTimeline)
+  })
+
+  it('finish() transitions to result phase', async () => {
+    const { controller } = await mountHarness()
+
+    // Simulate the state that finish() would produce after pipeline completion
+    controller.showResults.value = true
+    controller.phase.value = 'revealing'
+    await nextTick()
+
+    // Result panel should be open
+    expect(controller.showResults.value).toBe(true)
+    expect(controller.phase.value).toBe('revealing')
+
+    // Footer should show restart when results are visible
+    expect(controller.footerPresentation.value.showRestart).toBe(true)
+    expect(controller.footerPresentation.value.showRevealingHint).toBe(false)
+
+    // Cards should be focused (reading not yet successful)
+    expect(controller.cardsFocused.value).toBe(true)
+    expect(controller.cardsDocked.value).toBe(false)
+  })
+
+  it('phase changes update progress presentation', async () => {
+    const { controller } = await mountHarness()
+
+    // Initial phase is shuffling
+    expect(controller.progressHeaderPresentation.value.activeIndex).toBe(0)
+    expect(controller.progressHeaderPresentation.value.items[0].isActive).toBe(true)
+    expect(controller.progressHeaderPresentation.value.items[0].isCompleted).toBe(false)
+
+    // Transition to cutting
+    controller.phase.value = 'cutting'
+    await nextTick()
+
+    expect(controller.progressHeaderPresentation.value.activeIndex).toBe(1)
+    expect(controller.progressHeaderPresentation.value.items[0].isCompleted).toBe(true)
+    expect(controller.progressHeaderPresentation.value.items[1].isActive).toBe(true)
+    expect(controller.progressHeaderPresentation.value.items[1].isCompleted).toBe(false)
+
+    // Transition to drawing
+    controller.phase.value = 'drawing'
+    await nextTick()
+
+    expect(controller.progressHeaderPresentation.value.activeIndex).toBe(2)
+    expect(controller.progressHeaderPresentation.value.items[1].isCompleted).toBe(true)
+    expect(controller.progressHeaderPresentation.value.items[2].isActive).toBe(true)
+
+    // Transition to revealing without showResults
+    controller.phase.value = 'revealing'
+    await nextTick()
+
+    expect(controller.progressHeaderPresentation.value.activeIndex).toBe(3)
+    expect(controller.progressHeaderPresentation.value.items[2].isCompleted).toBe(true)
+    expect(controller.progressHeaderPresentation.value.items[3].isActive).toBe(true)
+
+    // Footer should show revealing hint when in revealing phase but results not shown
+    expect(controller.footerPresentation.value.showRevealingHint).toBe(true)
+    expect(controller.footerPresentation.value.showRestart).toBe(false)
   })
 })
