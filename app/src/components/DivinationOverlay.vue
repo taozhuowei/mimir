@@ -233,8 +233,26 @@
             {{ controller.isPaused.value ? 'Paused' : `Running ${controller.playbackRate.value}x` }}
           </text>
         </view>
+
+        <view class="dev-tools-row">
+          <view
+            class="dev-tools-chip"
+            :class="{ active: showSafeFrame }"
+            role="button"
+            tabindex="0"
+            aria-label="显示安全区"
+            @click="showSafeFrame = !showSafeFrame"
+            @keydown.enter="showSafeFrame = !showSafeFrame"
+            @keydown.space.prevent="showSafeFrame = !showSafeFrame"
+          >
+            安全区
+          </view>
+        </view>
       </view>
     </view>
+
+    <!-- Safe Frame Debug Overlay -->
+    <view v-if="showSafeFrame" class="safe-frame-debug" :style="safeFrameStyle" />
   </view>
 </template>
 
@@ -261,6 +279,7 @@ const tarotStore = useTarotStore()
 const themeStore = useThemeStore()
 const isDev = import.meta.env.DEV
 const isDevExpanded = ref(true)
+const showSafeFrame = ref(false)
 const playbackRates = [0.25, 0.5, 1, 2] as const
 
 const isWide = ref(false)
@@ -308,6 +327,23 @@ const PHASE_LABELS: Record<string, string> = {
   drawing: '正在抽牌',
   revealing: '神谕显现中',
 }
+
+const safeFrameStyle = computed(() => {
+  if (!showSafeFrame.value) return {}
+  const layout = controller.getSceneLayout?.('draw_stage')
+  if (!layout) return {}
+  return {
+    position: 'absolute',
+    left: `${layout.safeSideInset}px`,
+    top: `${layout.safeTopInset}px`,
+    width: `calc(100% - ${layout.safeSideInset * 2}px)`,
+    height: `calc(100% - ${layout.safeTopInset + layout.safeBottomInset}px)`,
+    border: '2px dashed red',
+    pointerEvents: 'none',
+    zIndex: '9999',
+    boxSizing: 'border-box',
+  } as Record<string, string>
+})
 
 const phaseAnnouncement = computed(() => {
   const label = PHASE_LABELS[controller.phase.value]
@@ -870,7 +906,12 @@ onUnmounted(() => {
   font-weight: 500;
 }
 
-
+.safe-frame-debug {
+  position: absolute;
+  border: 2px dashed red;
+  pointer-events: none;
+  z-index: 9999;
+}
 
 @media (prefers-reduced-motion: reduce) {
   .card-focus-frame,
