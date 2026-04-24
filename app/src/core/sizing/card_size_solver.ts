@@ -38,18 +38,19 @@ export function resolveCardSize(input: CardSizeInput): CardSize {
   const hSlots = Math.max(1, Math.floor(requirement.horizontalSlots))
   const vSlots = Math.max(1, Math.floor(requirement.verticalSlots))
 
-  const isPortrait = safeFrame.width <= safeFrame.height
+  // Dual-axis constraint: compute card width from both dimensions, take the smaller.
+  // Width constraint: cardWidth * hSlots + gap * (hSlots - 1) <= safeFrame.width * fillRatio
+  const widthConstrained =
+    ((Math.max(0, safeFrame.width) - (hSlots - 1) * gap) / hSlots) * CARD_SIZE_FILL_RATIO
 
-  let cardWidth: number
+  // Height constraint: cardHeight * vSlots + gap * (vSlots - 1) <= safeFrame.height * fillRatio
+  // cardHeight = cardWidth * aspectRatio  →  cardWidth = constrainedHeight / aspectRatio
+  const heightConstrainedCardHeight =
+    ((Math.max(0, safeFrame.height) - (vSlots - 1) * gap) / vSlots) * CARD_SIZE_FILL_RATIO
+  const heightConstrained = heightConstrainedCardHeight / Math.max(cardAspectRatio, 0.0001)
 
-  if (isPortrait) {
-    // Fit to width: cardWidth * hSlots + gap * (hSlots - 1) = safeFrame.width * fillRatio
-    cardWidth = ((Math.max(0, safeFrame.width) - (hSlots - 1) * gap) / hSlots) * CARD_SIZE_FILL_RATIO
-  } else {
-    // Fit to height: cardHeight * vSlots + gap * (vSlots - 1) = safeFrame.height * fillRatio
-    const cardHeight = ((Math.max(0, safeFrame.height) - (vSlots - 1) * gap) / vSlots) * CARD_SIZE_FILL_RATIO
-    cardWidth = cardHeight / Math.max(cardAspectRatio, 0.0001)
-  }
+  // Take the smaller to guarantee cards fit in both directions
+  let cardWidth = Math.min(widthConstrained, heightConstrained)
 
   // Apply absolute limits
   cardWidth = Math.max(minCardWidth, Math.min(cardWidth, maxCardWidth))

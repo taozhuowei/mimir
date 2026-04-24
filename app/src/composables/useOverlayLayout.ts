@@ -13,9 +13,7 @@ import {
   resolveMotionMetrics,
   type SceneLayoutResult,
 } from '../utils/overlay_layout/index'
-import { WIDE_BREAKPOINT } from '../core/config/layout_constants'
-
-const RESULT_SHEET_FRACTION = 0.30
+import { WIDE_BREAKPOINT, RESULT_SHEET_FRACTION } from '../core/config/layout_constants'
 
 export interface UseOverlayLayoutDeps {
   isWide: Ref<boolean>
@@ -50,9 +48,10 @@ export function useOverlayLayout(deps: UseOverlayLayoutDeps) {
 
   /**
    * Resolve the unified scene layout for the current spread and viewport.
-   * draw_stage uses the full focusScale so card sizes are pre-shrunk to leave
-   * room for the CSS --card-focus-scale scale-up during the revealing phase.
-   * result_stage uses focusScale=1 so cards fill the smaller stage naturally.
+   * Both draw_stage and result_stage share an identical card size: sizing uses
+   * the draw_stage safe frame (with sheet reservation) pre-shrunk by the focus
+   * scale so the CSS --card-focus-scale scale-up still fits inside the safe
+   * frame. Positioning still uses the scene-specific safe frame.
    */
   function getSceneLayout(scene: 'draw_stage' | 'result_stage'): SceneLayoutResult {
     const viewport = getViewportMetrics(scene === 'result_stage')

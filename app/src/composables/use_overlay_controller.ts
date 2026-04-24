@@ -131,11 +131,6 @@ export function useOverlayController(deps: UseOverlayControllerDeps) {
   }
 
   let resizeHandler: ((res: UniApp.WindowResizeResult) => void) | null = null
-  function checkHeight(_windowHeight: number) {
-    if (animController.showResults.value || animController.phase.value === 'drawing' || animController.phase.value === 'revealing') {
-      nextTick(() => animController.updateLayout())
-    }
-  }
 
   onMounted(() => {
     animController.resumeAnimations()
@@ -145,11 +140,14 @@ export function useOverlayController(deps: UseOverlayControllerDeps) {
     const drawLayout = animController.getSceneLayout('draw_stage')
     animController.setDrawCardSizes(drawLayout)
     resizeHandler = (res) => {
-      const widthChanged = animController.checkWidth(res.size.windowWidth)
-      if (widthChanged && (animController.showResults.value || animController.phase.value === 'drawing' || animController.phase.value === 'revealing')) {
+      animController.checkWidth(res.size.windowWidth)
+      const layout = animController.getSceneLayout('draw_stage')
+      animController.setDrawCardSizes(layout)
+      if (animController.showResults.value
+          || animController.phase.value === 'drawing'
+          || animController.phase.value === 'revealing') {
         nextTick(() => animController.updateLayout())
       }
-      checkHeight(res.size.windowHeight)
     }
     uni.onWindowResize(resizeHandler)
     animController.start()

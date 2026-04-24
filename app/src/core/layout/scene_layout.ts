@@ -150,10 +150,21 @@ export function resolveSceneLayout(input: SceneLayoutInput): SceneLayoutResult {
 
   const safeFrame = buildOverlaySafeFrame(scene, overlayViewport, resultSheetFraction)
 
+  // Use draw_stage safe frame (with result-sheet reservation) for sizing, so both
+  // draw_stage and result_stage produce the same card size. Pre-shrink by focus
+  // scale so that CSS scale-up during revealing still fits inside the safe frame.
+  const drawSafeFrame = buildOverlaySafeFrame('draw_stage', overlayViewport, resultSheetFraction ?? LC.RESULT_SHEET_FRACTION)
+  const focusScale = getFocusScale(isWide)
+  const sizingSafeFrame: SafeFrame = {
+    ...drawSafeFrame,
+    width: drawSafeFrame.width / focusScale,
+    height: drawSafeFrame.height / focusScale,
+  }
+
   const cardSize = spreadId === 'single_card'
-    ? resolveSingleCardSize({ safeFrame })
+    ? resolveSingleCardSize({ safeFrame: sizingSafeFrame })
     : resolveCoreCardSize({
-        safeFrame,
+        safeFrame: sizingSafeFrame,
         cardAspectRatio,
         requirement: getBuiltInEnvelopeRequirement(spreadId, isWide),
       })

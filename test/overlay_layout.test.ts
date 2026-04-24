@@ -19,39 +19,51 @@ function makeViewport(
 
 describe('overlay_layout scene bounds', () => {
   it('fits three_card spread inside a narrow iPhone viewport', () => {
+    const viewport = makeViewport(390, 844)
     const layout = resolveSceneLayout({
       spreadId: 'three_card',
       scene: 'draw_stage',
-      viewport: makeViewport(390, 844),
+      viewport,
       isWide: false,
       cardAspectRatio: 1.6,
     })
 
     const maxX = Math.max(...layout.cards.map((c) => Math.abs(c.x)))
     const maxY = Math.max(...layout.cards.map((c) => Math.abs(c.y)))
-    const halfSafeWidth = layout.envelope.fullSpanX / 2
-    const halfSafeHeight = layout.envelope.fullSpanY / 2
 
-    // Card centers plus half dimensions must stay inside the safe frame
-    expect(maxX + layout.cardWidth / 2).toBeLessThanOrEqual(halfSafeWidth + 1)
-    expect(maxY + layout.cardHeight / 2).toBeLessThanOrEqual(halfSafeHeight + 1)
+    // Compute actual safe-frame half-dimensions from viewport and insets.
+    // The envelope uses sizing-safe-frame dimensions (pre-shrunk by focus scale),
+    // so we compare against the real safe-frame bounds instead.
+    const safeHalfWidth = (viewport.width - 2 * layout.safeSideInset) / 2
+    const safeHalfHeight = (viewport.height - layout.safeTopInset - layout.safeBottomInset) / 2
+
+    // Card centers plus half dimensions must stay inside the safe frame.
+    // Math: narrow iPhone safeHalfWidth ≈ 171, safeHalfHeight ≈ 235.
+    expect(maxX + layout.cardWidth / 2).toBeLessThanOrEqual(safeHalfWidth + 1)
+    expect(maxY + layout.cardHeight / 2).toBeLessThanOrEqual(safeHalfHeight + 1)
   })
 
   it('fits cross_spread inside a wide iPad viewport', () => {
+    const viewport = makeViewport(1024, 768)
     const layout = resolveSceneLayout({
       spreadId: 'cross_spread',
       scene: 'draw_stage',
-      viewport: makeViewport(1024, 768),
+      viewport,
       isWide: true,
       cardAspectRatio: 1.6,
     })
 
     const maxX = Math.max(...layout.cards.map((c) => Math.abs(c.x)))
     const maxY = Math.max(...layout.cards.map((c) => Math.abs(c.y)))
-    // envelope fullSpan accounts for the registry slot count; cards may be
-    // shifted by clampedCenterYOffset so we check against a slightly wider bound
-    expect(maxX + layout.cardWidth / 2).toBeLessThanOrEqual(layout.envelope.fullSpanX / 2 + 40)
-    expect(maxY + layout.cardHeight / 2).toBeLessThanOrEqual(layout.envelope.fullSpanY / 2 + 40)
+
+    // Compare against the real safe-frame bounds, not the envelope,
+    // because the envelope reflects the sizing-safe-frame (pre-shrunk by focus scale).
+    const safeHalfWidth = (viewport.width - 2 * layout.safeSideInset) / 2
+    const safeHalfHeight = (viewport.height - layout.safeTopInset - layout.safeBottomInset) / 2
+
+    // Math: wide iPad safeHalfWidth ≈ 488, safeHalfHeight ≈ 238.
+    expect(maxX + layout.cardWidth / 2).toBeLessThanOrEqual(safeHalfWidth + 1)
+    expect(maxY + layout.cardHeight / 2).toBeLessThanOrEqual(safeHalfHeight + 1)
   })
 
   it('keeps single_card inside safe frame on a small viewport', () => {
@@ -71,8 +83,8 @@ describe('overlay_layout scene bounds', () => {
   })
 })
 
-describe('overlay_layout short-side sizing', () => {
-  it('uses short side as the sole constraint', () => {
+describe('overlay_layout dual-axis sizing', () => {
+  it('uses dual-axis constraint to determine card size', () => {
     // Wide screen: height is short side, drives card size
     const wideLayout = resolveSceneLayout({
       spreadId: 'three_card',

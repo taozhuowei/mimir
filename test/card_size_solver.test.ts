@@ -17,31 +17,58 @@ function makeSafeFrame(w: number, h: number): SafeFrame {
 }
 
 describe('card_size_solver', () => {
-  it('narrow screen: width is short side, height scales by aspect ratio', () => {
-    // 390x844 narrow, three_card (1x3) → short side = 390, hSlots = 1
+  it('single_card on narrow screen: width-constrained (only 1 slot each axis)', () => {
+    // 390x844 narrow, single_card (1x1) → width = 390 drives since hSlots=1, vSlots=1
+    const safeFrame = makeSafeFrame(390, 844)
+    const size = resolveCardSize({
+      safeFrame,
+      cardAspectRatio: 1.6,
+      requirement: { horizontalSlots: 1, verticalSlots: 1 },
+    })
+    // widthConstrained = 390 * 0.85 = 331.5
+    // heightConstrained = (844 * 0.85) / 1.6 = 448.375
+    // min(331.5, 448.375) = 331.5
+    const expectedWidth = 390 * 0.85
+    expect(size.width).toBeCloseTo(expectedWidth, 0)
+    expect(size.height).toBeCloseTo(expectedWidth * 1.6, 0)
+    expect(size.gap).toBe(16)
+  })
+
+  it('three_card narrow: height-constrained because 3 vSlots overflow', () => {
+    // 390x844, three_card narrow (1x3) → 3 vertical slots
     const safeFrame = makeSafeFrame(390, 844)
     const size = resolveCardSize({
       safeFrame,
       cardAspectRatio: 1.6,
       requirement: { horizontalSlots: 1, verticalSlots: 3 },
     })
-    const expectedWidth = (390 - 0) / 1 * 0.85 // 331.5
-    expect(size.width).toBeCloseTo(expectedWidth, 0)
-    expect(size.height).toBeCloseTo(expectedWidth * 1.6, 0)
-    expect(size.gap).toBe(16)
+    // widthConstrained = 390 * 0.85 = 331.5
+    // heightConstrained = ((844 - 2*16) / 3 * 0.85) / 1.6 = (812/3 * 0.85) / 1.6 = 143.79
+    // min(331.5, 143.79) = 143.79 → height constraint binds
+    const heightConstrainedWidth = ((844 - 2 * 16) / 3 * 0.85) / 1.6
+    expect(size.width).toBeCloseTo(heightConstrainedWidth, 0)
+    expect(size.height).toBeCloseTo(heightConstrainedWidth * 1.6, 0)
+    // Verify 3 cards + gaps fit within safe frame height
+    const totalHeight = size.height * 3 + size.gap * 2
+    expect(totalHeight).toBeLessThanOrEqual(safeFrame.height)
   })
 
-  it('wide screen: height is short side, width scales by aspect ratio', () => {
-    // 1366x768 wide, three_card (3x1) → short side = 768, vSlots = 1
+  it('three_card wide: width-constrained with 3 hSlots', () => {
+    // 1366x768 wide, three_card (3x1) → 3 horizontal slots
     const safeFrame = makeSafeFrame(1366, 768)
     const size = resolveCardSize({
       safeFrame,
       cardAspectRatio: 1.6,
       requirement: { horizontalSlots: 3, verticalSlots: 1 },
     })
-    const expectedHeight = (768 - 0) / 1 * 0.85 // 652.8
-    expect(size.height).toBeCloseTo(expectedHeight, 0)
-    expect(size.width).toBeCloseTo(expectedHeight / 1.6, 0)
+    // widthConstrained = (1366 - 2*16) / 3 * 0.85 = 1334/3 * 0.85 = 377.97
+    // heightConstrained = (768 * 0.85) / 1.6 = 408
+    // min(377.97, 408) = 377.97
+    const widthConstrained = ((1366 - 2 * 16) / 3) * 0.85
+    const heightConstrained = (768 * 0.85) / 1.6
+    const expected = Math.min(widthConstrained, heightConstrained)
+    expect(size.width).toBeCloseTo(expected, 0)
+    expect(size.height).toBeCloseTo(expected * 1.6, 0)
   })
 
   it('preserves fixed aspect ratio on any screen', () => {
@@ -59,49 +86,36 @@ describe('card_size_solver', () => {
     expect(wide.height / wide.width).toBeCloseTo(1.6, 5)
   })
 
-  it('cross_spread 3x3 on narrow screen uses width as short side', () => {
-    // 390x844, cross_spread (3x3) → short side = 390, hSlots = 3
+  it('cross_spread 3x3 on narrow screen: both axes constrained, min wins', () => {
+    // 390x844, cross_spread (3x3)
     const safeFrame = makeSafeFrame(390, 844)
     const size = resolveCardSize({
       safeFrame,
       cardAspectRatio: 1.6,
       requirement: { horizontalSlots: 3, verticalSlots: 3 },
     })
-    const expectedWidth = (390 - 2 * 16) / 3 * 0.85 // 105.8
-    expect(size.width).toBeCloseTo(expectedWidth, 0)
-    expect(size.height).toBeCloseTo(expectedWidth * 1.6, 0)
+    // widthConstrained = (390 - 2*16) / 3 * 0.85 = 101.47
+    // heightConstrained = ((844 - 2*16) / 3 * 0.85) / 1.6 = 143.79
+    // min(101.47, 143.79) = 101.47 → width constraint binds
+    const widthConstrained = ((390 - 2 * 16) / 3) * 0.85
+    expect(size.width).toBeCloseTo(widthConstrained, 0)
+    expect(size.height).toBeCloseTo(widthConstrained * 1.6, 0)
   })
 
-  it('cross_spread 3x3 on wide screen uses height as short side', () => {
-    // 1366x768, cross_spread (3x3) → short side = 768, vSlots = 3
+  it('cross_spread 3x3 on wide screen: both axes constrained, min wins', () => {
+    // 1366x768, cross_spread (3x3)
     const safeFrame = makeSafeFrame(1366, 768)
     const size = resolveCardSize({
       safeFrame,
       cardAspectRatio: 1.6,
       requirement: { horizontalSlots: 3, verticalSlots: 3 },
     })
-    const expectedHeight = (768 - 2 * 16) / 3 * 0.85 // 208.5
-    expect(size.height).toBeCloseTo(expectedHeight, 0)
-    expect(size.width).toBeCloseTo(expectedHeight / 1.6, 0)
-  })
-
-  it('long side slot count does not affect card size (wide three_card)', () => {
-    // 1366x768 wide, three_card (3x1) → short side = 768 (height)
-    // Changing horizontalSlots on the long side should not change card size
-    const safeFrame = makeSafeFrame(1366, 768)
-    const size3 = resolveCardSize({
-      safeFrame,
-      cardAspectRatio: 1.6,
-      requirement: { horizontalSlots: 3, verticalSlots: 1 },
-    })
-    const size10 = resolveCardSize({
-      safeFrame,
-      cardAspectRatio: 1.6,
-      requirement: { horizontalSlots: 10, verticalSlots: 1 },
-    })
-    // Both should produce the same size because width is the long side
-    expect(size3.width).toBeCloseTo(size10.width, 0)
-    expect(size3.height).toBeCloseTo(size10.height, 0)
+    // widthConstrained = (1366 - 2*16) / 3 * 0.85 = 377.97
+    // heightConstrained = ((768 - 2*16) / 3 * 0.85) / 1.6 = 130.67
+    // min(377.97, 130.67) = 130.67 → height constraint binds
+    const heightConstrained = ((768 - 2 * 16) / 3 * 0.85) / 1.6
+    expect(size.width).toBeCloseTo(heightConstrained, 0)
+    expect(size.height).toBeCloseTo(heightConstrained * 1.6, 0)
   })
 
   it('respects maxCardWidth clamp', () => {
@@ -149,16 +163,43 @@ describe('card_size_solver', () => {
     expect(size.width).toBe(64)
   })
 
-  it('square safeFrame treats either side as short (width chosen for narrow logic)', () => {
+  it('square safeFrame: dual-axis constraint picks height due to aspect ratio', () => {
     const safeFrame = makeSafeFrame(500, 500)
     const size = resolveCardSize({
       safeFrame,
       cardAspectRatio: 1.6,
       requirement: { horizontalSlots: 1, verticalSlots: 1 },
     })
-    // width === height, so isWideScreen = false → width drives size
-    const expectedWidth = (500 - 0) / 1 * 0.85 // 425
-    expect(size.width).toBeCloseTo(expectedWidth, 0)
-    expect(size.height).toBeCloseTo(expectedWidth * 1.6, 0)
+    // widthConstrained = 500 * 0.85 = 425
+    // heightConstrained = (500 * 0.85) / 1.6 = 265.625
+    // min(425, 265.625) = 265.625 → height constraint binds
+    const heightConstrained = (500 * 0.85) / 1.6
+    expect(size.width).toBeCloseTo(heightConstrained, 0)
+    expect(size.height).toBeCloseTo(heightConstrained * 1.6, 0)
+  })
+
+  it('cards always fit within safe frame in both directions', () => {
+    // Exhaustive check across various configurations
+    const configs = [
+      { w: 375, h: 812, hSlots: 1, vSlots: 1 },
+      { w: 375, h: 812, hSlots: 1, vSlots: 3 },
+      { w: 375, h: 812, hSlots: 3, vSlots: 3 },
+      { w: 1366, h: 768, hSlots: 3, vSlots: 1 },
+      { w: 1366, h: 768, hSlots: 3, vSlots: 3 },
+      { w: 320, h: 568, hSlots: 1, vSlots: 3 },
+    ]
+
+    for (const { w, h, hSlots, vSlots } of configs) {
+      const safeFrame = makeSafeFrame(w, h)
+      const size = resolveCardSize({
+        safeFrame,
+        cardAspectRatio: 1.6,
+        requirement: { horizontalSlots: hSlots, verticalSlots: vSlots },
+      })
+      const totalWidth = size.width * hSlots + size.gap * (hSlots - 1)
+      const totalHeight = size.height * vSlots + size.gap * (vSlots - 1)
+      expect(totalWidth).toBeLessThanOrEqual(w * 1.001) // tiny float tolerance
+      expect(totalHeight).toBeLessThanOrEqual(h * 1.001)
+    }
   })
 })

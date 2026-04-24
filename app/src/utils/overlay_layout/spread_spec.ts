@@ -87,6 +87,8 @@ export interface SpreadSpec {
  * - Shuffle always spreads two card widths horizontally.
  * - Cut dictates 3 slots along the active axis.
  * - Draw stacks the spread's full layout.
+ * The solver picks a card size that satisfies both the horizontal and
+ * vertical slot constraints, taking the stricter of the two.
  */
 export function getBuiltInEnvelopeRequirement(
   spreadId: SpreadId,

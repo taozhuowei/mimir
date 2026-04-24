@@ -563,7 +563,7 @@ describe('cross-device card sizing', () => {
     expect(result.cardHeight).toBeCloseTo(result.cardWidth * 1.6, 1)
   })
 
-  it('mini program phone (375×812) three_card column: short side drives width', () => {
+  it('mini program phone (375×812) three_card column: dual-axis height constraint drives width', () => {
     const containerHeight = 812 - 84
     const result = resolveSpreadLayout({
       spreadKind: 'three_card',
@@ -574,9 +574,13 @@ describe('cross-device card sizing', () => {
       cardAspectRatio: 1.6,
     })
     expect(result.cards).toHaveLength(3)
-    // Envelope uses max(shuffleH=2, cutH=1, drawH=1) = 2 horizontal slots
-    // cardWidth = (375 - 1*16) / 2 * 0.85 = 152.575
-    expect(result.cardWidth).toBeCloseTo((375 - 16) / 2 * 0.85, 0)
+    
+    // Envelope now correctly uses drawH=1, drawV=3.
+    // Height constraint: 3 cards vertically -> cardHeight = (containerHeight - 2*16) / 3 * 0.85
+    const expectedCardHeight = ((containerHeight - 2 * 16) / 3) * 0.85
+    const expectedCardWidth = expectedCardHeight / 1.6
+    
+    expect(result.cardWidth).toBeCloseTo(expectedCardWidth, 0)
     expect(result.cardHeight).toBeCloseTo(result.cardWidth * 1.6, 0)
     // Solver should give more than old CSS var (88px)
     expect(result.cardWidth).toBeGreaterThan(88)

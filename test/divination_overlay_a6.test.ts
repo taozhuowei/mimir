@@ -97,17 +97,18 @@ describe('Stage C.2: Component - DivinationOverlay A.6 features', () => {
     const handle = wrapper.find('.drag-handle-zone')
     expect(handle.exists()).toBe(true)
 
-    // Initial state: drawer-sheet uses auto height with min-height
+    // Initial state: drawer-sheet height is based on RESULT_SHEET_FRACTION (30%).
+    // Math: Math.max(120, Math.round(844 * 0.30) - 8) = 245px.
     const drawerSheet = wrapper.find('.drawer-sheet')
-    expect(drawerSheet.attributes('style')).toContain('height: auto')
+    expect(drawerSheet.attributes('style')).toContain('height: 245px')
 
     // Simulate drag up: touchstart captures current height, touchmove updates it
     await handle.trigger('touchstart', { touches: [{ clientY: 500 }] })
     await handle.trigger('touchmove', { touches: [{ clientY: 400 }] })
 
-    // After drag, height is set to px value (startHeight 253 + delta 100 = 353)
+    // After drag, height is set to px value (startHeight 245 + delta 100 = 345)
     const updatedSheet = wrapper.find('.drawer-sheet')
-    expect(updatedSheet.attributes('style')).toContain('height: 353px')
+    expect(updatedSheet.attributes('style')).toContain('height: 345px')
   })
 
   it('A.6.5: Wide mode hides drawer handle and uses 54% width for stage', async () => {

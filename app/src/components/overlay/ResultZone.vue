@@ -70,9 +70,10 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 import ResultPanel from '../ResultPanel.vue'
 import type { ReadingResult } from '../../utils/tarotReading'
+import { RESULT_SHEET_FRACTION } from '../../core/config/layout_constants'
 
 const props = defineProps<{
   showResults: boolean
@@ -97,35 +98,47 @@ let drawerStartY = 0
 let drawerStartHeight = 0
 let isDragging = false
 
-// Max height limit (e.g., 85% of window height)
+// Max height limit (85% of window height)
 const getMaxHeight = () => {
   const { windowHeight } = uni.getWindowInfo()
   return windowHeight * 0.85
 }
 
-// Min height limit — compact initial peek so it doesn't cover drawn cards
-const getMinHeight = () => {
+// Initial height aligned with the stage-reserved bottom-sheet space (RESULT_SHEET_FRACTION)
+// so the revealed cards remain fully visible above the drawer. Manual drag may enlarge.
+const getInitialHeight = () => {
   const { windowHeight } = uni.getWindowInfo()
-  // Cap at ~20% of screen or 180px (whichever is smaller) for initial peek
-  return Math.min(Math.round(windowHeight * 0.20), 180)
+  // Use full reserved space minus 8px breathing room to keep cards fully visible.
+  return Math.max(getMinHeight(), Math.round(windowHeight * RESULT_SHEET_FRACTION) - 8)
 }
+
+// Min height limit — enough for drag handle + loading text
+const getMinHeight = () => {
+  return 120
+}
+
+// Reset drawer state when results toggle
+watch(() => props.showResults, (newVal) => {
+  if (newVal) {
+    isAutoHeight.value = false
+    drawerHeightPx.value = getInitialHeight()
+  } else {
+    isAutoHeight.value = true
+    drawerHeightPx.value = 0
+  }
+})
+
 
 const sheetStyle = computed(() => {
   if (props.isWide) return ''
   
   const maxHeight = getMaxHeight()
-  const style: Record<string, string> = {
-    'max-height': `${maxHeight}px`,
-  }
-  
-  if (isAutoHeight.value) {
-    style['height'] = 'auto'
-    style['min-height'] = `${getMinHeight()}px`
-  } else {
-    style['height'] = `${drawerHeightPx.value}px`
-  }
-  
-  return Object.entries(style).map(([k, v]) => `${k}: ${v}`).join(';')
+  const minHeight = getMinHeight()
+  const height = isAutoHeight.value
+    ? getInitialHeight()
+    : Math.max(minHeight, Math.min(drawerHeightPx.value, maxHeight))
+
+  return `height: ${height}px; max-height: ${maxHeight}px`
 })
 
 const resultKey = computed(() => {
@@ -134,15 +147,11 @@ const resultKey = computed(() => {
 })
 
 function onDrawerTouchStart(e: TouchEvent) {
-  const query = uni.createSelectorQuery()
-  query.select('.drawer-sheet').boundingClientRect(data => {
-    if (Array.isArray(data)) return
-    drawerStartHeight = (data as { height: number }).height
-    drawerStartY = e.touches[0].clientY
-    isDragging = true
-    isAutoHeight.value = false
-    drawerHeightPx.value = drawerStartHeight
-  }).exec()
+  drawerStartY = e.touches[0].clientY
+  // Read current height synchronously from the ref (avoid async jank)
+  drawerStartHeight = drawerHeightPx.value || getInitialHeight()
+  isDragging = true
+  isAutoHeight.value = false
 }
 
 function onDrawerTouchMove(e: TouchEvent) {
@@ -163,8 +172,12 @@ function onDrawerTouchEnd() {
   isDragging = false
   // Snap to limits if close
   const maxHeight = getMaxHeight()
+  const minHeight = getMinHeight()
   if (drawerHeightPx.value > maxHeight - 30) {
     drawerHeightPx.value = maxHeight
+  }
+  if (drawerHeightPx.value < minHeight + 30) {
+    drawerHeightPx.value = minHeight
   }
 }
 
@@ -175,7 +188,7 @@ function onDrawerKeydown(e: KeyboardEvent) {
   
   if (isAutoHeight.value) {
     isAutoHeight.value = false
-    drawerHeightPx.value = getMinHeight()
+    drawerHeightPx.value = getInitialHeight()
   }
 
   if (e.key === 'ArrowUp') {
@@ -208,7 +221,7 @@ function onDrawerKeydown(e: KeyboardEvent) {
   display: flex;
   flex-direction: column;
   pointer-events: auto;
-  transition: height 0.1s ease-out;
+  transition: height 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   overflow: hidden;
   border: 1rpx solid var(--color-border);
   margin: 0 auto;
@@ -229,6 +242,7 @@ function onDrawerKeydown(e: KeyboardEvent) {
   border-left: 1rpx solid var(--color-border);
   border-top: none;
   margin: 0;
+  transition: none;
 }
 
 .drag-handle-zone {
@@ -253,6 +267,7 @@ function onDrawerKeydown(e: KeyboardEvent) {
   flex: 1;
   width: 100%;
   min-height: 0;
+  overflow: hidden;
 }
 
 .result-inner {
@@ -260,7 +275,7 @@ function onDrawerKeydown(e: KeyboardEvent) {
 }
 
 .result-loading {
-  height: 400rpx;
+  height: 200rpx;
   display: flex;
   flex-direction: column;
   align-items: center;
