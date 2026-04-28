@@ -1,16 +1,12 @@
 /**
  * Name: core/layout/card_position_calculator
- * Purpose: shared coordinate conversion and clamping utilities for layout resolvers.
- * Reason: avoid duplicating math between draw and result resolvers.
+ * Purpose: shared coordinate conversion utilities for layout resolvers.
+ * Reason: avoid duplicating slot-to-layout math between draw and result resolvers.
  */
 
 import type { SafeFrame } from '../viewport/types'
 import type { CardSize } from '../sizing/types'
 import type { SpreadSlot, CardLayout } from './types'
-
-export function clamp(value: number, min: number, max: number): number {
-  return Math.max(min, Math.min(max, value))
-}
 
 export function toCardLayout(
   slot: SpreadSlot,

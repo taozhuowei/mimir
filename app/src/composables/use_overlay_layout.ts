@@ -1,5 +1,5 @@
 /**
- * Name: useOverlayLayout
+ * Name: use_overlay_layout
  * Purpose: encapsulate viewport, safe-frame, and scene-layout calculations for the overlay.
  * Reason: separates layout math from the controller so both can be tested and reasoned about independently.
  * Data flow: window size + spread metadata flow in; layout results and metrics flow out.

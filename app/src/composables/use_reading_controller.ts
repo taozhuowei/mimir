@@ -10,7 +10,7 @@ import { useTarotStore } from '../stores/tarot'
 import { OfflineReadingProvider } from '../utils/reading/offline_reading_provider'
 import { createReadingOrchestrator } from '../utils/reading/reading_orchestrator'
 import type { ReadingRequest } from '../utils/reading/reading_provider'
-import type { ReadingResult } from '../utils/tarotReading'
+import type { ReadingResult } from '../utils/tarot_reading'
 import type { ReadingStatus } from '../utils/reading/reading_orchestrator'
 import type { ComputedRef } from 'vue'
 

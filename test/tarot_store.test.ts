@@ -9,7 +9,7 @@
 import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest'
 import { createPinia, setActivePinia } from 'pinia'
 import { useTarotStore } from '../app/src/stores/tarot'
-import type { TarotCardInfo, DrawnResult, ReadingResult } from '../app/src/utils/tarotReading'
+import type { TarotCardInfo, DrawnResult, ReadingResult } from '../app/src/utils/tarot_reading'
 
 // Mock the API modules
 const mockFetchReading = vi.hoisted(() => vi.fn())

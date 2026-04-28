@@ -12,12 +12,17 @@
  *   8. Unsafe Cast: as unknown as (use narrower cast or type guard)
  *   9. Eslint Disable: eslint-disable without explanatory comment
  *  10. Todo Fixme: TODO/FIXME comments (warn)
- *  11. File Size: files exceeding line thresholds
+ *  11. File Size: files exceeding line thresholds (baseline = ratchet cap)
  *  12. Function Size: functions exceeding line thresholds
  *  13. Complexity: cyclomatic complexity thresholds
+ *  14. Duplicate Exports: same exported symbol defined in multiple files
+ *  15. Filename Case: snake_case for .ts/.js, PascalCase for .vue
  *
  * Baseline: scripts/quality_baseline.json records known issues.
- * Only NEW violations block the gate.
+ *   - fileSize entries are ratchet caps: file may stay at its recorded size,
+ *     but never grow beyond it. New violators fail at the global threshold.
+ *   - functionSize / complexity entries are flat exemptions keyed by
+ *     `path::funcName` (line numbers excluded so refactors don't churn).
  *
  * Usage: node scripts/quality_scan.js
  * Exit code: 0 = clean, 1 = violations found
@@ -61,6 +66,16 @@ function loadBaseline() {
 }
 
 const baseline = loadBaseline()
+
+// fileSize baseline acts as a ratchet cap: { path -> max permitted lines }.
+const baselineFileMax = new Map()
+for (const entry of baseline.fileSize ?? []) {
+  const lastColon = entry.lastIndexOf(':')
+  if (lastColon < 0) continue
+  const p = entry.slice(0, lastColon)
+  const n = parseInt(entry.slice(lastColon + 1), 10)
+  if (!Number.isNaN(n)) baselineFileMax.set(p, n)
+}
 
 function isInBaseline(category, key) {
   return baseline[category]?.includes(key)
@@ -465,16 +480,21 @@ function scanFileSize() {
     if (file.endsWith('.d.ts')) continue
     const lines = fs.readFileSync(file, 'utf-8').split('\n').length
     const rel = path.relative(ROOT, file)
-    const key = `${rel}:${lines}`
+    const baselineCap = baselineFileMax.get(rel)
+
     if (lines > 500) {
-      if (!isInBaseline('fileSize', key)) {
+      // Ratchet: a baseline-listed file may stay at its recorded size,
+      // but never grow beyond it. Files not in the baseline fail at 500.
+      const cap = baselineCap ?? 500
+      if (lines > cap) {
         report(file, 1, SEVERITY_ERROR, 'FileSize',
-          `File has ${lines} lines (max 500). Split into smaller modules.`)
+          `File has ${lines} lines (cap ${cap}). Split into smaller modules.`)
       }
     } else if (lines > 300) {
-      if (!isInBaseline('fileSize', key)) {
+      const cap = baselineCap ?? 300
+      if (lines > cap) {
         report(file, 1, SEVERITY_WARN, 'FileSize',
-          `File has ${lines} lines (warn at 300). Consider splitting.`)
+          `File has ${lines} lines (cap ${cap}). Consider splitting.`)
       }
     }
   }
@@ -521,7 +541,7 @@ function scanFunctionSize(file, content) {
       const funcName = getFuncName(node)
       const line = sourceFile.getLineAndCharacterOfPosition(node.getStart()).line + 1
       const rel = path.relative(ROOT, file)
-      const key = `${rel}:${line}:${funcName}`
+      const key = `${rel}::${funcName}`
 
       if (funcLines > 120) {
         if (!isInBaseline('functionSize', key)) {
@@ -598,7 +618,7 @@ function scanComplexity(file, content) {
       const funcName = getFuncName(node)
       const line = sourceFile.getLineAndCharacterOfPosition(node.getStart()).line + 1
       const rel = path.relative(ROOT, file)
-      const key = `${rel}:${line}:${funcName}`
+      const key = `${rel}::${funcName}`
 
       if (score > 15) {
         if (!isInBaseline('complexity', key)) {
@@ -615,6 +635,102 @@ function scanComplexity(file, content) {
     ts.forEachChild(node, visit)
   }
   visit(sourceFile)
+}
+
+// ─── 14. Duplicate Export Scanner ────────────────────────────────────────
+
+/**
+ * Detects when the same exported function/const name appears in more than one
+ * file. Prevents the historical pattern where utility functions like clamp()
+ * and prefersReducedMotion() each got defined in two places.
+ *
+ * Whitelist a name in DUPLICATE_EXPORT_ALLOWED if multiple definitions are
+ * intentional (e.g. platform-specific implementations behind #ifdef).
+ */
+const DUPLICATE_EXPORT_ALLOWED = new Set([
+  // 'symbolName',
+])
+
+function scanDuplicateExports(tsFiles) {
+  const exportsByName = new Map()
+
+  function record(name, file, line) {
+    if (!exportsByName.has(name)) exportsByName.set(name, [])
+    exportsByName.get(name).push({ file, line })
+  }
+
+  for (const file of tsFiles) {
+    if (file.endsWith('.d.ts')) continue
+    const content = fs.readFileSync(file, 'utf-8')
+    const sourceFile = ts.createSourceFile(file, content, ts.ScriptTarget.ESNext, true, ts.ScriptKind.TS)
+
+    function isExported(node) {
+      return node.modifiers?.some(m => m.kind === ts.SyntaxKind.ExportKeyword)
+    }
+
+    function visit(node) {
+      if (ts.isFunctionDeclaration(node) && node.name && isExported(node)) {
+        record(node.name.getText(sourceFile), file, getLine(sourceFile, node))
+      }
+      if (ts.isVariableStatement(node) && isExported(node)) {
+        for (const decl of node.declarationList.declarations) {
+          if (decl.name && ts.isIdentifier(decl.name)) {
+            record(decl.name.getText(sourceFile), file, getLine(sourceFile, decl))
+          }
+        }
+      }
+      // Don't recurse — only top-level exports count
+    }
+    ts.forEachChild(sourceFile, visit)
+  }
+
+  for (const [name, locations] of exportsByName) {
+    if (locations.length < 2) continue
+    if (DUPLICATE_EXPORT_ALLOWED.has(name)) continue
+    for (const { file, line } of locations) {
+      const others = locations
+        .filter(l => l.file !== file)
+        .map(l => path.relative(ROOT, l.file))
+        .join(', ')
+      report(file, line, SEVERITY_ERROR, 'DuplicateExport',
+        `Symbol "${name}" is also exported from: ${others}. Consolidate to a single canonical location.`)
+    }
+  }
+}
+
+// ─── 15. Filename Case Scanner ───────────────────────────────────────────
+
+/**
+ * Enforces the project's file naming convention:
+ *   .ts / .js → snake_case (lowercase, digits, underscores)
+ *   .vue → PascalCase (component files)
+ * Exempt: index.* files, files inside test/, .d.ts declarations.
+ */
+function scanFilenameCase() {
+  const SNAKE_TS = /^[a-z][a-z0-9_]*\.(ts|js)$/
+  const PASCAL_VUE = /^[A-Z][A-Za-z0-9]*\.vue$/
+
+  const targetFiles = findFiles(APP_SRC, ['.ts', '.vue', '.js'])
+    .concat(findFiles(path.join(ROOT, 'server/src'), ['.ts', '.js']))
+
+  for (const file of targetFiles) {
+    const base = path.basename(file)
+    if (base.startsWith('index.')) continue
+    if (file.endsWith('.d.ts')) continue
+    if (file.includes('/test/')) continue
+    if (base.includes('.test.')) continue
+
+    const isVue = base.endsWith('.vue')
+    if (isVue) {
+      if (!PASCAL_VUE.test(base)) {
+        report(file, 1, SEVERITY_ERROR, 'FilenameCase',
+          `Vue file "${base}" should be PascalCase (e.g. "MyComponent.vue").`)
+      }
+    } else if (!SNAKE_TS.test(base)) {
+      report(file, 1, SEVERITY_ERROR, 'FilenameCase',
+        `File "${base}" should be snake_case (e.g. "my_module.ts").`)
+    }
+  }
 }
 
 // ─── Main ────────────────────────────────────────────────────────────────
@@ -647,6 +763,8 @@ for (const file of vueFiles) {
 scanCssVariables()
 scanDangerousTransform()
 scanFileSize()
+scanDuplicateExports(tsFiles)
+scanFilenameCase()
 
 console.log('')
 console.log(`[quality-scan] ${errorCount} errors, ${warnCount} warnings`)

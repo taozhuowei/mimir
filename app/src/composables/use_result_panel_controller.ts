@@ -6,7 +6,7 @@
  */
 
 import { computed, reactive } from 'vue'
-import type { ReadingResult } from '../utils/tarotReading'
+import type { ReadingResult } from '../utils/tarot_reading'
 import {
   presentReadingResult,
   presentResultHero,

@@ -6,7 +6,7 @@
  */
 
 import { fetchReading } from '../../api/readings'
-import type { ReadingResult } from '../tarotReading'
+import type { ReadingResult } from '../tarot_reading'
 import type { ReadingProvider, ReadingRequest } from './reading_provider'
 
 export class OfflineReadingProvider implements ReadingProvider {

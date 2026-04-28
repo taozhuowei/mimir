@@ -6,7 +6,7 @@
 
 import { ref } from 'vue'
 import { fetchReading } from '../api/readings'
-import type { DrawnResult, ReadingResult } from '../utils/tarotReading'
+import type { DrawnResult, ReadingResult } from '../utils/tarot_reading'
 import type { SpreadKind } from '../core/layout/spread_registry'
 
 export function createReadingState() {

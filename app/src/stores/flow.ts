@@ -5,7 +5,7 @@
  */
 
 import { computed, ref } from 'vue'
-import type { DrawnResult } from '../utils/tarotReading'
+import type { DrawnResult } from '../utils/tarot_reading'
 import { getSpreadCardCount, type SpreadKind } from '../core/layout/spread_registry'
 import type { createReadingState } from './reading'
 

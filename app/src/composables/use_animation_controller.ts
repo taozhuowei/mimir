@@ -16,7 +16,7 @@ import { useTarotStore } from '../stores/tarot'
 import { useThemeStore } from '../stores/theme'
 import overlayConfig from '../config.json'
 import { useAnimationState } from './use_animation_state'
-import { useOverlayLayout } from './useOverlayLayout'
+import { useOverlayLayout } from './use_overlay_layout'
 import {
   createTimelineOrchestrator,
   killAnimationTargets,

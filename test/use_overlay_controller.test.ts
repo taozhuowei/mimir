@@ -4,7 +4,7 @@ import { mount } from '@vue/test-utils'
 import { defineComponent, h, nextTick, ref } from 'vue'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { createPinia, setActivePinia } from 'pinia'
-import type { TarotCardInfo } from '../app/src/utils/tarotReading'
+import type { TarotCardInfo } from '../app/src/utils/tarot_reading'
 
 // Post-d4cd310 the controller calls storeToRefs(tarotStore), which requires
 // a real Pinia store. Mock the cards/readings APIs the store imports at

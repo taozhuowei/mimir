@@ -8,7 +8,7 @@
 import type { SafeFrame } from '../viewport/types'
 import type { CardSize } from '../sizing/types'
 import type { SpreadSlot, CardLayout } from './types'
-import { clamp } from './card_position_calculator'
+import { clamp } from '../../utils/math'
 
 export interface ResultLayoutResult {
   cards: CardLayout[]

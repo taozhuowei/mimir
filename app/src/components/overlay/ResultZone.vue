@@ -72,7 +72,7 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
 import ResultPanel from '../ResultPanel.vue'
-import type { ReadingResult } from '../../utils/tarotReading'
+import type { ReadingResult } from '../../utils/tarot_reading'
 import { RESULT_SHEET_FRACTION } from '../../core/config/layout_constants'
 
 const props = defineProps<{

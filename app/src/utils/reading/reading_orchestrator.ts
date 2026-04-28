@@ -6,7 +6,7 @@
  */
 
 import type { Ref } from 'vue'
-import type { ReadingResult } from '../tarotReading'
+import type { ReadingResult } from '../tarot_reading'
 import type { ReadingProvider, ReadingRequest } from './reading_provider'
 
 export type ReadingStatus = 'idle' | 'loading' | 'success' | 'error'

@@ -1,11 +1,11 @@
 /**
- * tarotReading 前端单元测试
+ * tarot_reading 前端单元测试
  * Phase 1 后：本文件只测试留在前端的逻辑。
  * generateReading / loadAllCards / getCardScore 已迁移至后端，相关测试移除。
  */
 
 import { describe, expect, it } from 'vitest'
-import { drawCards, type TarotCardInfo, type DrawnResult } from '../app/src/utils/tarotReading'
+import { drawCards, type TarotCardInfo, type DrawnResult } from '../app/src/utils/tarot_reading'
 
 // 构造最小合法的 TarotCardInfo 用于测试，不依赖实际 JSON 数据
 function makeCard(id: string, sentiment: 'positive' | 'negative' | 'neutral' = 'positive'): TarotCardInfo {

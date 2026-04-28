@@ -5,7 +5,7 @@
  */
 
 import type { ComputedRef } from 'vue'
-import { drawCards as drawCardsUtil, type DrawnResult } from '../utils/tarotReading'
+import { drawCards as drawCardsUtil, type DrawnResult } from '../utils/tarot_reading'
 import type { createDeckState } from './deck'
 import type { createReadingState } from './reading'
 

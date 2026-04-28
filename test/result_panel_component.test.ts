@@ -3,7 +3,7 @@
 import { shallowMount } from '@vue/test-utils'
 import { describe, expect, it } from 'vitest'
 import ResultPanel from '../app/src/components/ResultPanel.vue'
-import type { ReadingResult, TarotCardInfo } from '../app/src/utils/tarotReading'
+import type { ReadingResult, TarotCardInfo } from '../app/src/utils/tarot_reading'
 
 function makeCard(): TarotCardInfo {
   return {

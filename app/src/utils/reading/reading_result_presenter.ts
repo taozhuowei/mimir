@@ -5,7 +5,7 @@
  * Data flow: ReadingResult flows in; presentation view-model flows out.
  */
 
-import type { ReadingResult, TarotCardInfo } from '../tarotReading'
+import type { ReadingResult, TarotCardInfo } from '../tarot_reading'
 
 export interface CardDetailViewModel {
   card: TarotCardInfo

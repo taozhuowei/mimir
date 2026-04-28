@@ -5,7 +5,7 @@
  * Data flow: drawn cards flow in; normalized reading result flows out.
  */
 
-import type { DrawnResult, ReadingResult } from '../tarotReading'
+import type { DrawnResult, ReadingResult } from '../tarot_reading'
 
 export type ReadingProviderType = 'offline' | 'ai'
 

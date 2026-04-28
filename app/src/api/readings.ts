@@ -5,7 +5,7 @@
  */
 
 import { request } from './client'
-import type { DrawnResult, ReadingResult } from '../utils/tarotReading'
+import type { DrawnResult, ReadingResult } from '../utils/tarot_reading'
 
 interface ReadingRequestCard {
   cardId: string

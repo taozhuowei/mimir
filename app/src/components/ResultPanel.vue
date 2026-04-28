@@ -91,7 +91,7 @@
 import TypewriterText from './TypewriterText.vue'
 import { HERO_TITLE_START_DELAY, HERO_TITLE_CHAR_INTERVAL, HERO_QUESTION_START_DELAY, HERO_QUESTION_CHAR_INTERVAL } from '../core/config/layout_constants'
 import { useResultPanelController } from '../composables/use_result_panel_controller'
-import type { ReadingResult } from '../utils/tarotReading'
+import type { ReadingResult } from '../utils/tarot_reading'
 
 const props = defineProps<{
   readingResult: ReadingResult

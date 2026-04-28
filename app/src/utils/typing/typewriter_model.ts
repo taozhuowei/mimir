@@ -5,6 +5,8 @@
  * Data flow: text and timing config flow in; display state updates flow out via callbacks.
  */
 
+import { prefersReducedMotion } from '../accessibility'
+
 export interface TypewriterConfig {
   text: string
   startDelay?: number
@@ -45,17 +47,6 @@ export function createTypewriterModel(
       clearTimeout(tickTimer)
       tickTimer = null
     }
-  }
-
-  function prefersReducedMotion(): boolean {
-    // #ifdef H5
-      /* eslint-disable no-restricted-globals -- reason: H5-only DOM API (window.matchMedia) */
-    if (typeof window !== 'undefined' && typeof window.matchMedia === 'function') {
-      return window.matchMedia('(prefers-reduced-motion: reduce)').matches
-    }
-      /* eslint-enable no-restricted-globals */
-    // #endif
-    return false
   }
 
   function complete(): void {

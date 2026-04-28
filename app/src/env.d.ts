@@ -12,8 +12,8 @@ declare global {
     __TAROT_TEST_API__?: {
       showResult: (payload: {
         question?: string
-        readingResult: import('./utils/tarotReading').ReadingResult
-        drawnCards?: import('./utils/tarotReading').DrawnResult[]
+        readingResult: import('./utils/tarot_reading').ReadingResult
+        drawnCards?: import('./utils/tarot_reading').DrawnResult[]
       }) => void
       reset: () => void
     }

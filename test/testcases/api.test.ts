@@ -2,7 +2,7 @@
  * Frontend-backend API contract tests
  * Uses supertest to send real HTTP requests to the Express app in-process.
  * Each assertion verifies that the server response matches the TypeScript
- * interface the frontend expects (TarotCardInfo, ReadingResult from tarotReading.ts).
+ * interface the frontend expects (TarotCardInfo, ReadingResult from tarot_reading.ts).
  *
  * This file is the source of truth for the API contract between:
  *   - app/src/api/cards.ts   ←→  GET  /api/v1/cards
