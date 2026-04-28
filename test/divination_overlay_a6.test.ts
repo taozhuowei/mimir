@@ -60,6 +60,7 @@ const mockController = {
   seek: vi.fn(),
   restart: vi.fn(),
   retryReading: vi.fn(),
+  getSceneLayout: vi.fn(() => ({ cardWidth: 200, cardHeight: 320, cards: [], stageShiftY: 0 })),
 }
 
 vi.mock('../app/src/composables/use_overlay_controller', () => ({
@@ -96,18 +97,20 @@ describe('Stage C.2: Component - DivinationOverlay A.6 features', () => {
     const handle = wrapper.find('.drag-handle-zone')
     expect(handle.exists()).toBe(true)
 
-    // Initial state: drawer-sheet height is based on RESULT_SHEET_FRACTION (30%).
-    // Math: Math.max(120, Math.round(844 * 0.30) - 8) = 245px.
+    // Initial drawer height is derived from card geometry so the drawer covers
+    // the bottom of the spread by exactly CARD_OVERLAP_PX (24).
+    // mock cardHeight=320, windowHeight=844:
+    //   round(844/2 - 320/2 + 24) = round(286) = 286px
     const drawerSheet = wrapper.find('.drawer-sheet')
-    expect(drawerSheet.attributes('style')).toContain('height: 245px')
+    expect(drawerSheet.attributes('style')).toContain('height: 286px')
 
-    // Simulate drag up: touchstart captures current height, touchmove updates it
-    await handle.trigger('touchstart', { touches: [{ clientY: 500 }] })
-    await handle.trigger('touchmove', { touches: [{ clientY: 400 }] })
+    // The whole sheet now captures the drag gesture (not only the handle).
+    await drawerSheet.trigger('touchstart', { touches: [{ clientY: 500 }] })
+    await drawerSheet.trigger('touchmove', { touches: [{ clientY: 400 }] })
 
-    // After drag, height is set to px value (startHeight 245 + delta 100 = 345)
+    // After drag (start 286 + delta 100 = 386), height updates accordingly.
     const updatedSheet = wrapper.find('.drawer-sheet')
-    expect(updatedSheet.attributes('style')).toContain('height: 345px')
+    expect(updatedSheet.attributes('style')).toContain('height: 386px')
   })
 
   it('A.6.5: Wide mode hides drawer handle and uses 54% width for stage', async () => {

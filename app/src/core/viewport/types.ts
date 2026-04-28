@@ -35,8 +35,6 @@ export interface UiInsetsConfig {
   footerReserveMinPx: number
   /** Stage width ratio in wide result mode. */
   resultStageWidthRatio: number
-  /** Stage height ratio in narrow result mode. */
-  resultStageHeightRatio: number
   /** Side inset for draw stage. */
   sideInsetDraw: number
   /** Side inset for result stage. */

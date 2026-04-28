@@ -14,7 +14,6 @@ export interface StageMetrics {
   stageWidth: number
   stageHeight: number
   stageContainerHeight: number
-  resultHeight: number
 }
 
 function toPx(rpx: number, windowWidth: number): number {
@@ -39,7 +38,6 @@ export function getDefaultInsets(windowWidth: number, isMiniProgram: boolean = f
     footerReserveRpx: isMiniProgram ? LC.FOOTER_RESERVE_RPX_MP : LC.FOOTER_RESERVE_RPX_H5,
     footerReserveMinPx: LC.FOOTER_RESERVE_MIN_PX,
     resultStageWidthRatio: LC.RESULT_WIDE_WIDTH_FRACTION,
-    resultStageHeightRatio: LC.RESULT_NARROW_HEIGHT_FRACTION,
     sideInsetDraw: LC.SIDE_INSET_DRAW,
     sideInsetResult: LC.SIDE_INSET_RESULT,
     topExtraDraw: LC.TOP_EXTRA_DRAW,
@@ -68,10 +66,12 @@ export function resolveStageMetrics(
       ? Math.round(width * insets.resultStageWidthRatio)
       : width
 
-  const stageHeight = showResults
-    ? isWide
-      ? height
-      : Math.round(height * insets.resultStageHeightRatio)
+  // Stage occupies the full viewport (minus the platform top bar) in every
+  // scene. The result drawer is a floating overlay — it covers the stage,
+  // it doesn't carve space out of it. This lets the result-stage card use
+  // the same vertical budget as the draw-stage cards.
+  const stageHeight = isWide && showResults
+    ? height
     : Math.max(0, height - topBarHeight)
 
   const headerBottom =
@@ -85,11 +85,6 @@ export function resolveStageMetrics(
   )
 
   const stageContainerHeight = showResults ? stageHeight : height
-  const resultHeight = showResults
-    ? isWide
-      ? height
-      : Math.max(0, height - stageContainerHeight)
-    : 0
 
   return {
     topBarHeight,
@@ -98,7 +93,6 @@ export function resolveStageMetrics(
     stageWidth,
     stageHeight,
     stageContainerHeight,
-    resultHeight,
   }
 }
 

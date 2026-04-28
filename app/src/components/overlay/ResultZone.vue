@@ -10,28 +10,26 @@
       role="dialog"
       aria-modal="true"
       aria-label="占卜结果解读"
+      @touchstart.stop="onDrawerTouchStart"
+      @touchmove.stop.prevent="onDrawerTouchMove"
+      @touchend.stop="onDrawerTouchEnd"
     >
-      <!-- Drag Handle for Mobile -->
+      <!-- Drag Handle for Mobile (visual + keyboard affordance only — the
+           whole sheet captures the drag gesture). -->
       <view
         v-if="!isWide"
         class="drag-handle-zone"
         tabindex="0"
         role="slider"
         aria-label="调整结果面板高度"
-        @touchstart.stop="onDrawerTouchStart"
-        @touchmove.stop.prevent="onDrawerTouchMove"
-        @touchend.stop="onDrawerTouchEnd"
         @keydown="onDrawerKeydown"
       >
         <view class="drag-handle-bar"></view>
       </view>
 
-      <!-- Content Area -->
-      <scroll-view
-        class="drawer-content"
-        scroll-y
-        enable-flex
-      >
+      <!-- Content area is a plain block — internal scrolling is intentionally
+           disabled. To read more, drag the entire drawer up. -->
+      <view class="drawer-content">
         <view class="result-inner">
           <transition name="fade-slide" mode="out-in">
             <!-- Loading State -->
@@ -64,7 +62,7 @@
             />
           </transition>
         </view>
-      </scroll-view>
+      </view>
     </view>
   </view>
 </template>
@@ -73,7 +71,6 @@
 import { ref, computed, watch } from 'vue'
 import ResultPanel from '../ResultPanel.vue'
 import type { ReadingResult } from '../../utils/tarot_reading'
-import { RESULT_SHEET_FRACTION } from '../../core/config/layout_constants'
 
 const props = defineProps<{
   showResults: boolean
@@ -84,6 +81,9 @@ const props = defineProps<{
   overlayText: { revealing: string }
   readingResult: ReadingResult | null
   currentQuestion: string
+  /** Result-stage card height in px. Used to size the drawer so it covers the
+   *  bottom of the spread by `CARD_OVERLAP_PX` and nothing more. */
+  cardHeight: number
 }>()
 
 const emit = defineEmits<{
@@ -91,33 +91,43 @@ const emit = defineEmits<{
   (event: 'restart'): void
 }>()
 
-// Use pixels for precise control during dragging
+// How far the drawer overlaps the bottom of the cards. Just enough to hint at
+// the drawer's existence without obscuring the spread.
+const CARD_OVERLAP_PX = 24
+// Minimum height when no card information is available (fallback / loading).
+const MIN_DRAWER_HEIGHT_PX = 120
+// Maximum drawer height as a fraction of the viewport — leaves a thin sliver
+// of stage visible so the user can always orient themselves.
+const MAX_DRAWER_FRACTION = 0.92
+
 const drawerHeightPx = ref(0)
 const isAutoHeight = ref(true)
 let drawerStartY = 0
 let drawerStartHeight = 0
 let isDragging = false
 
-// Max height limit (85% of window height)
-const getMaxHeight = () => {
+function getMaxHeight(): number {
   const { windowHeight } = uni.getWindowInfo()
-  return windowHeight * 0.85
+  return windowHeight * MAX_DRAWER_FRACTION
 }
 
-// Initial height aligned with the stage-reserved bottom-sheet space (RESULT_SHEET_FRACTION)
-// so the revealed cards remain fully visible above the drawer. Manual drag may enlarge.
-const getInitialHeight = () => {
+/**
+ * Drawer's resting height when the result phase first appears: the bottom
+ * `cardHeight / 2 + windowHeight / 2 - cardCenterY` is occupied by the card,
+ * and we want the drawer top to sit `CARD_OVERLAP_PX` below the card's
+ * bottom edge. With the stage roughly centred in the viewport, that
+ * simplifies to: drawerHeight = windowHeight/2 - cardHeight/2 + overlap.
+ */
+function getInitialHeight(): number {
   const { windowHeight } = uni.getWindowInfo()
-  // Use full reserved space minus 8px breathing room to keep cards fully visible.
-  return Math.max(getMinHeight(), Math.round(windowHeight * RESULT_SHEET_FRACTION) - 8)
+  if (props.cardHeight <= 0) {
+    // Fallback when card geometry isn't yet known (e.g. legacy callers).
+    return Math.max(MIN_DRAWER_HEIGHT_PX, Math.round(windowHeight * 0.3))
+  }
+  const target = Math.round(windowHeight / 2 - props.cardHeight / 2 + CARD_OVERLAP_PX)
+  return Math.max(MIN_DRAWER_HEIGHT_PX, Math.min(target, getMaxHeight()))
 }
 
-// Min height limit — enough for drag handle + loading text
-const getMinHeight = () => {
-  return 120
-}
-
-// Reset drawer state when results toggle
 watch(() => props.showResults, (newVal) => {
   if (newVal) {
     isAutoHeight.value = false
@@ -128,15 +138,21 @@ watch(() => props.showResults, (newVal) => {
   }
 })
 
+// If the card height becomes available *after* the drawer opened (race
+// between layout settle and reveal completion), recompute once.
+watch(() => props.cardHeight, (newH) => {
+  if (props.showResults && isAutoHeight.value === false && newH > 0) {
+    drawerHeightPx.value = getInitialHeight()
+  }
+})
 
 const sheetStyle = computed(() => {
   if (props.isWide) return ''
-  
+
   const maxHeight = getMaxHeight()
-  const minHeight = getMinHeight()
   const height = isAutoHeight.value
     ? getInitialHeight()
-    : Math.max(minHeight, Math.min(drawerHeightPx.value, maxHeight))
+    : Math.max(MIN_DRAWER_HEIGHT_PX, Math.min(drawerHeightPx.value, maxHeight))
 
   return `height: ${height}px; max-height: ${maxHeight}px`
 })
@@ -148,7 +164,6 @@ const resultKey = computed(() => {
 
 function onDrawerTouchStart(e: TouchEvent) {
   drawerStartY = e.touches[0].clientY
-  // Read current height synchronously from the ref (avoid async jank)
   drawerStartHeight = drawerHeightPx.value || getInitialHeight()
   isDragging = true
   isAutoHeight.value = false
@@ -158,34 +173,26 @@ function onDrawerTouchMove(e: TouchEvent) {
   if (!isDragging) return
   const deltaY = e.touches[0].clientY - drawerStartY
   let newHeight = drawerStartHeight - deltaY
-  
+
   const maxHeight = getMaxHeight()
-  const minHeight = getMinHeight()
-  
-  if (newHeight < minHeight) newHeight = minHeight
+  if (newHeight < MIN_DRAWER_HEIGHT_PX) newHeight = MIN_DRAWER_HEIGHT_PX
   if (newHeight > maxHeight) newHeight = maxHeight
-  
+
   drawerHeightPx.value = newHeight
 }
 
 function onDrawerTouchEnd() {
   isDragging = false
-  // Snap to limits if close
+  // Snap to limits if close.
   const maxHeight = getMaxHeight()
-  const minHeight = getMinHeight()
-  if (drawerHeightPx.value > maxHeight - 30) {
-    drawerHeightPx.value = maxHeight
-  }
-  if (drawerHeightPx.value < minHeight + 30) {
-    drawerHeightPx.value = minHeight
-  }
+  if (drawerHeightPx.value > maxHeight - 30) drawerHeightPx.value = maxHeight
+  if (drawerHeightPx.value < MIN_DRAWER_HEIGHT_PX + 30) drawerHeightPx.value = MIN_DRAWER_HEIGHT_PX
 }
 
 function onDrawerKeydown(e: KeyboardEvent) {
   const step = 40
   const maxHeight = getMaxHeight()
-  const minHeight = getMinHeight()
-  
+
   if (isAutoHeight.value) {
     isAutoHeight.value = false
     drawerHeightPx.value = getInitialHeight()
@@ -196,7 +203,7 @@ function onDrawerKeydown(e: KeyboardEvent) {
     drawerHeightPx.value = Math.min(maxHeight, drawerHeightPx.value + step)
   } else if (e.key === 'ArrowDown') {
     e.preventDefault()
-    drawerHeightPx.value = Math.max(minHeight, drawerHeightPx.value - step)
+    drawerHeightPx.value = Math.max(MIN_DRAWER_HEIGHT_PX, drawerHeightPx.value - step)
   }
 }
 </script>
@@ -230,6 +237,9 @@ function onDrawerKeydown(e: KeyboardEvent) {
      layouts the drawer is only 46% of the viewport, so viewport-based
      clamps misjudged the readable column. */
   container: result-drawer / inline-size;
+  /* The whole sheet captures the drag gesture; touch-action stops the
+     browser from competing with our handlers (e.g. pull-to-refresh). */
+  touch-action: none;
 }
 
 .is-wide .drawer-container {
@@ -248,6 +258,9 @@ function onDrawerKeydown(e: KeyboardEvent) {
   border-top: none;
   margin: 0;
   transition: none;
+  /* Wide layout uses a static side panel — no drag gesture, restore
+     normal touch behaviour so any future scrollable child works. */
+  touch-action: auto;
 }
 
 .drag-handle-zone {

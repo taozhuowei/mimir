@@ -128,6 +128,7 @@
       :overlay-text="controller.overlayText"
       :reading-result="tarotStore.readingResult"
       :current-question="tarotStore.currentQuestion"
+      :card-height="resultCardHeight"
       @retry="handleRetry"
       @restart="handleRestart"
     />
@@ -360,6 +361,13 @@ const safeFrameStyle = computed(() => {
 const phaseAnnouncement = computed(() => {
   const label = PHASE_LABELS[controller.phase.value]
   return label ? `当前阶段：${label}` : ''
+})
+
+// Result-stage card height feeds the result drawer's initial height calc
+// so the drawer covers just the bottom of the spread by `CARD_OVERLAP_PX`.
+const resultCardHeight = computed(() => {
+  if (!controller.showResults.value) return 0
+  return controller.getSceneLayout('result_stage').cardHeight
 })
 
 function handlePlaybackRate(rate: number) { controller.setPlaybackRate(rate) }

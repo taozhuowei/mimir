@@ -4,7 +4,6 @@
  */
 
 // Result stage ratios
-export const RESULT_NARROW_HEIGHT_FRACTION = 0.42
 export const RESULT_WIDE_WIDTH_FRACTION = 0.54
 export const RESULT_SHEET_FRACTION = 0.30
 

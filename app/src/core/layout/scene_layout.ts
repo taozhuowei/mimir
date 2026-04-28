@@ -51,7 +51,6 @@ export function resolveOverlayViewport(input: {
   stageWidth: number
   stageHeight: number
   stageContainerHeight: number
-  resultHeight: number
   topBarHeight: number
 } {
   const { windowWidth, windowHeight, isWide, showResults, menuButtonRect } = input
@@ -77,7 +76,6 @@ export function resolveOverlayViewport(input: {
     stageWidth: stageMetrics.stageWidth,
     stageHeight: stageMetrics.stageHeight,
     stageContainerHeight: stageMetrics.stageContainerHeight,
-    resultHeight: stageMetrics.resultHeight,
     topBarHeight,
   }
 }

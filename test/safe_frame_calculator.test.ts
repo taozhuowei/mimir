@@ -23,7 +23,6 @@ const baseInsets: UiInsetsConfig = {
   footerReserveRpx: 164,
   footerReserveMinPx: 48,
   resultStageWidthRatio: 0.54,
-  resultStageHeightRatio: 0.42,
   sideInsetDraw: 24,
   sideInsetResult: 20,
   topExtraDraw: 12,
@@ -58,7 +57,6 @@ describe('safe_frame_calculator', () => {
       })
       expect(metrics.stageWidth).toBe(390)
       expect(metrics.stageHeight).toBe(800)
-      expect(metrics.resultHeight).toBe(0)
     })
 
     it('draw_stage wide: same as narrow but isWide irrelevant because showResults=false', () => {
@@ -71,14 +69,16 @@ describe('safe_frame_calculator', () => {
       expect(metrics.stageHeight).toBe(844)
     })
 
-    it('result_stage narrow: stageHeight = height * 0.42, resultHeight = remainder', () => {
+    it('result_stage narrow: stageHeight matches full viewport (drawer floats over stage)', () => {
       const metrics = resolveStageMetrics(baseViewport, baseInsets, {
         isWide: false,
         showResults: true,
         topBarHeight: 0,
       })
-      expect(metrics.stageHeight).toBe(Math.round(844 * 0.42)) // 354
-      expect(metrics.resultHeight).toBe(844 - metrics.stageHeight) // 490
+      // The result drawer no longer carves vertical space out of the stage —
+      // it floats above it. Stage height is the same as the draw stage so the
+      // result-stage card has the same vertical budget.
+      expect(metrics.stageHeight).toBe(844)
     })
 
     it('result_stage wide: stageWidth = width * 0.54, stageHeight = full height', () => {
@@ -89,8 +89,6 @@ describe('safe_frame_calculator', () => {
       })
       expect(metrics.stageWidth).toBe(Math.round(390 * 0.54))
       expect(metrics.stageHeight).toBe(844)
-      // Current implementation returns height for resultHeight in wide mode
-      expect(metrics.resultHeight).toBe(844)
     })
 
     it('headerBottom includes topBarHeight + margin + iconSize', () => {
