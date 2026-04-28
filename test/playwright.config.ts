@@ -28,10 +28,9 @@ export default defineConfig({
   },
 
   projects: [
-    // PRD §3 declares mobile H5 as the primary delivery target. Desktop
-    // layout exists but has known pointer-event ordering issues in result
-    // mode (ActionBar intercepted by stage-container) — out of scope for
-    // these regression tests until that's addressed.
+    // The product is H5 mobile only (PRD §3). The codebase has a wide-layout
+    // branch for browser windows >= 768px, but it's a responsive courtesy,
+    // not a delivery target — we don't gate on it here.
     {
       name: 'chromium-mobile',
       use: { ...devices['iPhone 13'] },

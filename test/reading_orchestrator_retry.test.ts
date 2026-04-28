@@ -8,7 +8,7 @@ import type { ReadingResult } from '../app/src/utils/tarot_reading'
 
 function makeMockProvider(result: ReadingResult | null = null, shouldReject = false): ReadingProvider {
   return {
-    type: 'offline',
+    type: 'rule_based',
     requestReading: vi.fn().mockImplementation(() => {
       if (shouldReject) {
         return Promise.reject(new Error('Test error'))

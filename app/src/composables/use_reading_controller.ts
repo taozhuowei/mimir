@@ -7,7 +7,7 @@
 import { computed, ref } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useTarotStore } from '../stores/tarot'
-import { OfflineReadingProvider } from '../utils/reading/offline_reading_provider'
+import { RuleBasedReadingProvider } from '../utils/reading/rule_based_reading_provider'
 import { createReadingOrchestrator } from '../utils/reading/reading_orchestrator'
 import type { ReadingRequest } from '../utils/reading/reading_provider'
 import type { ReadingResult } from '../utils/tarot_reading'
@@ -35,7 +35,7 @@ export function useReadingController(deps: UseReadingControllerDeps): UseReading
   const { readingResult: storeReadingResult, readingError: storeReadingError } = storeToRefs(deps.tarotStore)
 
   const readingOrchestrator = createReadingOrchestrator({
-    provider: new OfflineReadingProvider(),
+    provider: new RuleBasedReadingProvider(),
     statusRef: readingStatus,
     resultRef: storeReadingResult,
     errorRef: storeReadingError,
