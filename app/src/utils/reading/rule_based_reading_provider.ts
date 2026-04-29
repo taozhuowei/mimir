@@ -1,23 +1,22 @@
 /**
  * Name: rule_based_reading_provider
- * Purpose: reading provider backed by the project's own rule-based backend.
+ * Purpose: divination provider backed by the project's rule-based backend.
  * Reason: implements the provider boundary for the current non-LLM reading
- *         pipeline. The name reflects the interpretation strategy (rules,
- *         not an AI model); networking is still required — readings are
- *         scored on the server.
- * Data flow: drawn cards flow in; backend response (normalized to
- *         ReadingResult) flows out.
+ *         pipeline. The backend now owns shuffling, drawing, and rule-based
+ *         interpretation in a single transaction (`POST /api/v1/divinations`),
+ *         so this provider just forwards the spread kind through.
+ * Data flow: spread kind flows in; hydrated `Divination` (drawn + reading
+ *         with resolved asset URLs) flows out.
  */
 
-import { fetchReading } from '../../api/readings'
-import type { ReadingResult } from '../tarot_reading'
+import { requestDivination, type Divination } from '../../api/divinations'
 import type { ReadingProvider, ReadingRequest } from './reading_provider'
 
 export class RuleBasedReadingProvider implements ReadingProvider {
   readonly type = 'rule_based' as const
 
-  async requestReading(request: ReadingRequest): Promise<ReadingResult> {
-    return fetchReading(request.cards, request.spreadKind)
+  async requestReading(request: ReadingRequest): Promise<Divination> {
+    return requestDivination(request.spreadKind ?? 'single_card')
   }
 
   isAvailable(): boolean {

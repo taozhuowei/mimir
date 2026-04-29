@@ -49,8 +49,9 @@ export const config = Object.freeze({
 
   logLevel: process.env.LOG_LEVEL ?? (IS_TEST ? 'silent' : IS_PROD ? 'info' : 'debug'),
 
-  // Body size limit for POST /api/v1/readings — a full 10-card spread is
-  // well under 4 KB; 64 KB leaves ample headroom without inviting abuse.
+  // Body size limit for POST /api/v1/divinations — request body is just
+  // `{ spreadKind?: string }`, well under 1 KB; 64 KB leaves ample headroom
+  // without inviting abuse.
   jsonBodyLimit: '64kb',
 
   // Rate limit only applies to /api/* in prod; disabled in dev to avoid

@@ -1,59 +1,25 @@
 /**
- * Tarot card type definitions and client-side drawing logic.
- * Interpretation logic (scoring, generateReading) has moved to the backend.
- * This file retains only:
- *   - Shared TypeScript interfaces (used by store, components, API layer)
- *   - drawCards — random card selection and position assignment
+ * Name: utils/tarot_reading
+ * Purpose: thin re-export shim that preserves the historical import path
+ *          while protocol types now live in `api/types.ts`.
+ * Reason: 11 modules across stores, components, and composables already
+ *         import from this module. Pointing them at the new canonical
+ *         types via re-export avoids a sweeping rename and lets us delete
+ *         the old `drawCards` random-draw helper (the backend now owns
+ *         drawing — see `api/divinations.ts`).
+ *
+ * NOTE: do NOT add new exports here. New code should import directly
+ *       from `app/src/api/types.ts`. This shim exists for backward
+ *       compatibility only and may be removed once consumers migrate.
  */
 
-import { secureRandomInt, secureRandomBoolean } from './secure_random'
-
-export interface TarotCardMeaning {
-  keywords: string[]
-  meaning: string
-  sentiment: 'positive' | 'negative' | 'neutral'
-}
-
-export interface TarotCardInfo {
-  id: string
-  name: string
-  nameEn: string
-  number: number
-  type: 'major' | 'minor'
-  suit?: 'wands' | 'cups' | 'swords' | 'pentacles'
-  image: string       // server-resolved URL, populated by GET /api/v1/cards
-  upright: TarotCardMeaning
-  reversed: TarotCardMeaning
-}
-
-export interface DrawnResult {
-  card: TarotCardInfo
-  position: 'upright' | 'reversed'
-}
-
-export interface ReadingResult {
-  result: 'positive' | 'negative'
-  score: number
-  cardDetails: Array<{
-    card: TarotCardInfo
-    position: 'upright' | 'reversed'
-    meaning: string
-  }>
-}
-
-/**
- * Draw `count` cards from the full deck using Fisher-Yates shuffle and random position.
- * Card data must be pre-loaded from the backend via fetchAllCards().
- * Interpretation of the drawn cards is done by POST /api/v1/readings.
- */
-export function drawCards(all_cards: TarotCardInfo[], count: number): DrawnResult[] {
-  const deck = [...all_cards]
-  for (let i = 0; i < Math.min(count, deck.length); i++) {
-    const j = i + secureRandomInt(deck.length - i)
-    ;[deck[i], deck[j]] = [deck[j], deck[i]]
-  }
-  return deck.slice(0, count).map(card => ({
-    card,
-    position: secureRandomBoolean() ? 'upright' : 'reversed'
-  }))
-}
+export type {
+  CardPosition,
+  TarotCardMeaning,
+  TarotCardInfo,
+  DrawnResult,
+  DivinationDrawnEntry,
+  ReadingCardDetail,
+  ReadingResult,
+  DivinationResponse,
+} from '../api/types'

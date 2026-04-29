@@ -6,7 +6,7 @@
  */
 
 import { request, resolveAssetUrl } from './client'
-import type { TarotCardInfo } from '../utils/tarot_reading'
+import type { TarotCardInfo } from './types'
 
 interface CardsResponse {
   cards: TarotCardInfo[]

@@ -31,7 +31,7 @@ import pinoHttp from 'pino-http'
 import { config } from './config'
 import { logger } from './logger'
 import cardsRouter from './routes/cards'
-import readingsRouter from './routes/readings'
+import divinationsRouter from './routes/divinations'
 import themesRouter from './routes/themes'
 import { getAllCards } from './services/card_loader'
 
@@ -179,7 +179,7 @@ app.get('/api/health', (_req, res) => {
 })
 
 app.use('/api/v1/cards', cardsRouter)
-app.use('/api/v1/readings', readingsRouter)
+app.use('/api/v1/divinations', divinationsRouter)
 app.use('/api/v1/themes', themesRouter)
 
 // Any unmatched /api/* path must return JSON 404 — never fall through to the

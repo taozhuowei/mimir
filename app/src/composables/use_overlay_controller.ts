@@ -33,12 +33,12 @@ export function useOverlayController(deps: UseOverlayControllerDeps) {
     isWide: deps.isWide,
     cardCount: deps.cardCount,
     callbacks: {
-      onDrawingComplete: () => {
-        currentReadingPromise = readingController.startReading({
-          cards: deps.tarotStore.drawnCards,
-          question: deps.tarotStore.currentQuestion,
-          spreadKind: deps.tarotStore.spreadKind,
-        })
+      // Fire the merged divination request the moment drawing begins.
+      // The reading orchestrator writes drawn cards into the store and
+      // resolves with the reading by the time `revealing` opens the panel,
+      // so the network round-trip is hidden behind the drawing animation.
+      onDrawingStart: () => {
+        currentReadingPromise = readingController.startReading({})
       },
       onPipelineComplete: () => { void finish() },
       onPhaseChange: (p: OverlayPhase) => { deps.tarotStore.setPhase(p) },
@@ -91,11 +91,7 @@ export function useOverlayController(deps: UseOverlayControllerDeps) {
     animController.openResultPanel()
     animController.setDrawScales(1)
     try {
-      const result = await readingController.retryReading({
-        cards: deps.tarotStore.drawnCards,
-        question: deps.tarotStore.currentQuestion,
-        spreadKind: deps.tarotStore.spreadKind,
-      })
+      const result = await readingController.retryReading({})
       if (result) deps.tarotStore.revealResult()
       return result
     } catch (err) {
@@ -106,6 +102,10 @@ export function useOverlayController(deps: UseOverlayControllerDeps) {
 
   function skipToReading() {
     readingController.resetReading()
+    // Without the drawing animation we have no `onDrawingStart` hook, so
+    // the dev tool must manually fire the divination request before the
+    // pipeline-complete handler tries to settle into the result state.
+    currentReadingPromise = readingController.startReading({})
     animController.skipToReading()
   }
 

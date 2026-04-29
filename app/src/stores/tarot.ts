@@ -1,10 +1,10 @@
-/** Divination flow state management (Pinia Store) — facade composing deck + reading + flow + draw */
+/** Divination flow state management (Pinia Store) — facade composing deck + reading + flow */
 
 import { defineStore } from 'pinia'
+import type { DrawnResult } from '../api/types'
 import { createDeckState } from './deck'
 import { createReadingState } from './reading'
 import { createFlowState } from './flow'
-import { createDrawAction } from './draw'
 
 export type { DivinationPhase } from './flow'
 
@@ -12,16 +12,15 @@ export const useTarotStore = defineStore('tarot', () => {
   const deck = createDeckState()
   const reading = createReadingState()
   const flow = createFlowState(reading)
-  const draw = createDrawAction(deck, flow.cardCount, reading)
 
-  function drawCards() {
-    const drawn = draw.drawCards()
+  /**
+   * Externally-owned write path for the drawn cards. The reading
+   * orchestrator calls this after a successful `/api/v1/divinations`
+   * response; the deck and tarot stores no longer perform any local
+   * shuffling or drawing.
+   */
+  function setDrawnCards(drawn: DrawnResult[]) {
     flow.drawnCards.value = drawn
-    return drawn
-  }
-
-  async function startReadingRequest() {
-    return reading.startReadingRequest(flow.drawnCards.value, flow.spreadKind.value)
   }
 
   return {
@@ -29,8 +28,6 @@ export const useTarotStore = defineStore('tarot', () => {
     phase: flow.phase,
     drawnCards: flow.drawnCards,
     currentQuestion: flow.currentQuestion,
-    spreadKind: flow.spreadKind,
-    cardCount: flow.cardCount,
     isAnimating: flow.isAnimating,
     isIdle: flow.isIdle,
     isResultVisible: flow.isResultVisible,
@@ -45,14 +42,14 @@ export const useTarotStore = defineStore('tarot', () => {
     isReadingLoading: reading.isReadingLoading,
     readingResult: reading.readingResult,
     readingError: reading.readingError,
-    startReadingRequest,
     waitForReadingResult: reading.waitForReadingResult,
     getReadingResult: () => reading.readingResult.value,
+
     // Actions
     startDivination: flow.startDivination,
     setPhase: flow.setPhase,
     revealResult: flow.revealResult,
-    drawCards,
+    setDrawnCards,
     reset: flow.reset,
   }
 })

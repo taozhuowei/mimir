@@ -12,7 +12,16 @@ import gsap from 'gsap'
 import type { AnimationTimeline } from '../../../core/animation/types'
 import type { OverlayPhase, PhaseContext, PhaseRunner } from '../../../core/flow/types'
 import { prefersReducedMotion } from '../../../utils/accessibility'
-import { secureRandomRange } from '../../../utils/secure_random'
+import { randomInRange } from '../../../utils/secure_random'
+
+/**
+ * Cosmetic jitter (a few degrees of pre-flip rotation per card). Routed
+ * through `secure_random` so the repo-wide rule against the global
+ * insecure RNG holds; randomness quality does not affect correctness here.
+ */
+function jitterDeg(min: number, max: number): number {
+  return randomInRange(min, max)
+}
 
 export interface DrawPhaseConfig {
   cardCount: number
@@ -109,7 +118,7 @@ export function buildDrawPhaseRunner(config: DrawPhaseConfig): PhaseRunner {
       const revealingStart = alignTime + 1.2 + flipDuration + 0.1 + revealDelay
       const finishTime = revealingStart + 0.3
 
-      const preRotations = Array.from({ length: cardCount }, () => secureRandomRange(-7.5, 7.5))
+      const preRotations = Array.from({ length: cardCount }, () => jitterDeg(-7.5, 7.5))
 
       const timeline = gsap.timeline()
 

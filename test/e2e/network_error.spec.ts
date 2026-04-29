@@ -11,7 +11,7 @@ import { test, expect } from '@playwright/test'
  */
 test('reading API failure surfaces a retryable error UI', async ({ page }) => {
   // Intercept BEFORE navigating so the very first reading request fails.
-  await page.route('**/api/v1/readings', async route => {
+  await page.route('**/api/v1/divinations', async route => {
     await route.fulfill({
       status: 500,
       contentType: 'application/json',

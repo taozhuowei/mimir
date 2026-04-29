@@ -1,12 +1,20 @@
 /**
  * Name: reading_orchestrator
- * Purpose: manage reading request lifecycle with retry and state tracking.
- * Reason: decouple reading request orchestration from overlay animation and store.
- * Data flow: reading request triggers flow in; status and results flow out.
+ * Purpose: manage divination request lifecycle with retry and state tracking.
+ * Reason: decouple divination orchestration from overlay animation and store.
+ *         Backend now returns `{ drawn, reading }` together, so the
+ *         orchestrator splits them into the appropriate refs (drawn ->
+ *         flow store, reading -> reading store) and exposes only the
+ *         reading result to its callers for back-compat with consumers
+ *         that just want the interpretation.
+ * Data flow: divination request triggers flow in; drawn cards land in
+ *           `drawnRef`, reading lands in `resultRef`, and status/error
+ *           flow through dedicated refs.
  */
 
 import type { Ref } from 'vue'
-import type { ReadingResult } from '../tarot_reading'
+import type { DrawnResult, ReadingResult } from '../../api/types'
+import type { Divination } from '../../api/divinations'
 import type { ReadingProvider, ReadingRequest } from './reading_provider'
 
 export type ReadingStatus = 'idle' | 'loading' | 'success' | 'error'
@@ -32,6 +40,12 @@ export interface ReadingOrchestratorDeps {
   statusRef: Ref<ReadingStatus>
   resultRef: Ref<ReadingResult | null>
   errorRef: Ref<string | null>
+  /**
+   * Where to write the drawn cards returned by the server. The flow store
+   * owns `drawnCards`; the orchestrator writes here directly so reveal
+   * animations can read the freshly-drawn cards without a second round-trip.
+   */
+  drawnRef: Ref<DrawnResult[]>
   errorMessage: string
 }
 
@@ -39,7 +53,7 @@ const TIMEOUT_MS = 15000
 const RETRY_BACKOFF_MS = 1000
 
 export function createReadingOrchestrator(deps: ReadingOrchestratorDeps): ReadingOrchestrator {
-  const { provider, statusRef, resultRef, errorRef, errorMessage } = deps
+  const { provider, statusRef, resultRef, errorRef, drawnRef, errorMessage } = deps
   let currentRequest: Promise<ReadingResult | null> | null = null
   let lastRequest: ReadingRequest | null = null
   let destroyed = false
@@ -83,11 +97,23 @@ export function createReadingOrchestrator(deps: ReadingOrchestratorDeps): Readin
     })
 
     try {
-      const result = await Promise.race([provider.requestReading(request), timeoutPromise])
+      const divination: Divination = await Promise.race([
+        provider.requestReading(request),
+        timeoutPromise,
+      ])
       if (timeoutId) clearTimeout(timeoutId)
-      resultRef.value = result
+      // If the orchestrator was destroyed mid-request (e.g. user backed out
+      // of the overlay), drop the response on the floor instead of leaking
+      // it into a now-stale store. Without this, returning to a fresh flow
+      // would briefly flash the previous run's cards.
+      if (destroyed) return null
+      // Drawn cards go to the flow store; reading goes to the reading store.
+      // Order matters: write drawn first so any sync watcher on the reading
+      // result already finds the drawn cards in place.
+      drawnRef.value = divination.drawn
+      resultRef.value = divination.reading
       statusRef.value = 'success'
-      return result
+      return divination.reading
     } catch (err: unknown) {
       if (timeoutId) clearTimeout(timeoutId)
       if (retryCount < 1 && !destroyed) {
@@ -130,6 +156,13 @@ export function createReadingOrchestrator(deps: ReadingOrchestratorDeps): Readin
       }
       return executeRequest(request)
     },
+    /**
+     * Retry semantics changed with the protocol merge: the divinations
+     * endpoint now draws + interprets in one transaction. A retry therefore
+     * re-draws fresh cards (overwriting drawnRef) and produces a new
+     * reading — there is no longer a way to keep the same draw and
+     * re-interpret it.
+     */
     async retry(request?: ReadingRequest) {
       const requestToUse = request ?? lastRequest
       if (!requestToUse) {

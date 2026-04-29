@@ -276,7 +276,6 @@ import { useThemeStore } from '../stores/theme'
 import ProgressHeader from './overlay/ProgressHeader.vue'
 import ResultZone from './overlay/ResultZone.vue'
 import ActionBar from './overlay/ActionBar.vue'
-import { getSpreadCardCount } from '../core/layout/spread_registry'
 import { trapFocus, getFocusableElements } from '../utils/accessibility'
 import { useOverlayController } from '../composables/use_overlay_controller'
 import { getPhaseStep, PHASE_STEPS } from '../animation/orchestration/phase_registry'
@@ -296,7 +295,8 @@ const showSafeFrame = ref(false)
 const playbackRates = [0.25, 0.5, 1, 2] as const
 
 const isWide = ref(false)
-const cardCount = computed(() => getSpreadCardCount(tarotStore.spreadKind))
+// single_card is the only backend-supported spread today.
+const cardCount = computed(() => 1)
 
 function updateIsWide() {
   const { windowWidth } = uni.getWindowInfo()

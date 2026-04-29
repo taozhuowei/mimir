@@ -1,11 +1,39 @@
 /**
  * Tarot Reading Service
- * Interprets drawn cards and produces a yes/no reading result.
- * Migrated from app/src/utils/tarotReading.ts — scoring logic lives here,
- * random card selection (drawThreeCards) stays on the frontend.
+ *
+ * Purpose:
+ *   Owns the full divination pipeline on the backend — from random card
+ *   selection through scoring/interpretation — so the frontend never holds
+ *   any draw randomness or scoring logic.
+ *
+ * Why:
+ *   Previously the frontend shuffled and drew cards locally, then POSTed the
+ *   chosen cards to /api/v1/readings for scoring. Splitting the random source
+ *   between client and server made the contract awkward and harder to audit
+ *   (replay, fairness, future server-side personalization). This module
+ *   centralizes both steps behind `performDivination()`.
+ *
+ * Data flow:
+ *   getAllCards() ──▶ Fisher-Yates shuffle ──▶ pick N (N depends on spread)
+ *                                              │
+ *                                              ▼
+ *                                        DrawnInput[]
+ *                                              │
+ *                                              ▼
+ *                                      generateReading()
+ *                                              │
+ *                                              ▼
+ *                                  { drawn, reading: ReadingResult }
+ *
+ * Random source:
+ *   Uses node:crypto via utils/secure_random. The shuffle and orientation
+ *   steps therefore draw from the platform CSPRNG. This is overkill for a
+ *   tarot demo but keeps the project-wide ban on Math.random consistent
+ *   and removes any predictability concerns from v8's PRNG state.
  */
 
-import { getCardById, type TarotCard } from './card_loader'
+import { getAllCards, getCardById, type TarotCard } from './card_loader'
+import { randomBelow, randomBool } from '../utils/secure_random'
 
 export interface DrawnInput {
   cardId: string
@@ -22,6 +50,18 @@ export interface ReadingResult {
   result: 'positive' | 'negative'
   score: number
   cardDetails: CardDetail[]
+}
+
+export interface DivinationOutput {
+  drawn: DrawnInput[]
+  reading: ReadingResult
+}
+
+// Spread → number of cards drawn. Currently single-card only; extending to
+// multi-card spreads later means adding entries here AND extending the route
+// validator. Keep this list and the route's zod enum in lock-step.
+const SPREAD_DRAW_COUNT: Record<string, number> = {
+  single_card: 1,
 }
 
 // Base sentiment weights: positive = +3, negative = -3, neutral = 0
@@ -65,7 +105,11 @@ function getCardScore(card: TarotCard, position: 'upright' | 'reversed'): number
 
 /**
  * Generate a reading from drawn card IDs + positions.
- * Total score > 0 → yes, < 0 → no. Tie-breaks by upright count.
+ * Total score > 0 → positive (yes), < 0 → negative (no). Ties resolve by
+ * upright count (more upright wins; reversed wins only on a strict majority).
+ *
+ * Kept exported because integration tests and the divination service both
+ * depend on it; do not collapse into performDivination.
  */
 export function generateReading(inputs: DrawnInput[]): ReadingResult {
   const resolved = inputs.map(({ cardId, position }) => {
@@ -92,4 +136,44 @@ export function generateReading(inputs: DrawnInput[]): ReadingResult {
       meaning: position === 'upright' ? card.upright.meaning : card.reversed.meaning
     }))
   }
+}
+
+/**
+ * Fisher-Yates in-place shuffle. Operates on a fresh copy so callers can pass
+ * the cached card list without mutating it. Uses the CSPRNG-backed
+ * `randomBelow` helper — see file header note on random source.
+ */
+function shuffle<T>(items: readonly T[]): T[] {
+  const out = items.slice()
+  for (let i = out.length - 1; i > 0; i--) {
+    const j = randomBelow(i + 1)
+    ;[out[i], out[j]] = [out[j], out[i]]
+  }
+  return out
+}
+
+/**
+ * Run a complete divination: shuffle the deck, pick N cards (N is fixed per
+ * spread), randomly orient each card upright/reversed, and produce the
+ * scored interpretation.
+ *
+ * Throws on unknown spreadKind — the route layer validates first, so this is
+ * a defensive backstop, not the primary error surface.
+ */
+export function performDivination(spreadKind: 'single_card'): DivinationOutput {
+  const draw_count = SPREAD_DRAW_COUNT[spreadKind]
+  if (draw_count === undefined) {
+    throw new Error(`Unknown spreadKind: ${spreadKind}`)
+  }
+
+  const shuffled = shuffle(getAllCards())
+  const picked = shuffled.slice(0, draw_count)
+
+  const drawn: DrawnInput[] = picked.map(card => ({
+    cardId: card.id,
+    position: randomBool() ? 'upright' : 'reversed',
+  }))
+
+  const reading = generateReading(drawn)
+  return { drawn, reading }
 }

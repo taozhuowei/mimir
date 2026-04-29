@@ -1,98 +1,309 @@
 /**
  * Name: use_overlay_layout
- * Purpose: encapsulate viewport, safe-frame, and scene-layout calculations for the overlay.
- * Reason: separates layout math from the controller so both can be tested and reasoned about independently.
- * Data flow: window size + spread metadata flow in; layout results and metrics flow out.
+ * Purpose: thin Vue composable that adapts platform window info to the pure
+ *          `solveLayout` solver and exposes scene + motion + deck metrics to
+ *          the controllers and components.
+ * Reason: the previous implementation accumulated semantic 0.x ratios and
+ *          delegated to several scattered modules (overlay_layout/*,
+ *          core/layout/scene_layout, core/viewport/*). This file now owns a
+ *          single integration path: window info -> PhysicalViewport ->
+ *          solveLayout -> SceneLayout, plus pure motion math.
+ * Data flow: window info + spread metadata flow in; SceneLayout, motion
+ *          metrics, and deck centre flow out.
  */
 
 import type { Ref } from 'vue'
 import {
-  resolveSceneLayout,
-  resolveOverlayViewport,
-  buildOverlaySafeFrame,
-  resolveMotionMetrics,
-  type SceneLayoutResult,
-} from '../utils/overlay_layout/index'
-import { WIDE_BREAKPOINT, RESULT_SHEET_FRACTION } from '../core/config/layout_constants'
+  solveLayout,
+  type SceneLayout as SolverSceneLayout,
+  type LayoutEnvelope,
+} from '../core/sizing/layout_solver'
+import {
+  getDefaultReservations,
+  getViewport,
+  type PhysicalViewport,
+  type UiReservations,
+} from '../core/sizing/physical_reservations'
+import { clamp } from '../utils/math'
+import { SHUFFLE_EDGE_MARGIN, WIDE_BREAKPOINT } from '../core/config/layout_constants'
 
 export interface UseOverlayLayoutDeps {
   isWide: Ref<boolean>
+  /** Retained in the API for source compatibility — current layout always
+   *  resolves a single centred slot (single_card spread). */
   spreadKind: string
   cutPileCount: number
   deckCount: number
 }
 
+/** Scene = phase grouping the solver understands. */
+type Scene = 'draw_stage' | 'result_stage'
+
+/**
+ * Viewport metrics that include both the new physical viewport and the
+ * legacy `stageWidth/stageHeight/stageContainerHeight/topBarHeight` keys
+ * still consumed by the animation controller and overlay components.
+ */
+export interface ViewportMetrics {
+  width: number
+  height: number
+  safeAreaTop: number
+  safeAreaBottom: number
+  dpr: number
+  stageWidth: number
+  stageHeight: number
+  stageContainerHeight: number
+  topBarHeight: number
+}
+
+/**
+ * Scene layout consumed by templates and animation phases. Extends the pure
+ * `SolverSceneLayout` with three legacy `safe*Inset` fields that the
+ * `DivinationOverlay` debug overlay still reads.
+ */
+export interface SceneLayout extends SolverSceneLayout {
+  /** Distance from viewport top to the top of the stage usable area (px). */
+  safeTopInset: number
+  /** Distance from viewport bottom edge to the stage usable area bottom (px). */
+  safeBottomInset: number
+  /** Distance from viewport left/right edges to the usable card area (px). */
+  safeSideInset: number
+}
+
+/** Cut motion axis — horizontal on wide screens, vertical on narrow. */
+type CutAxis = 'horizontal' | 'vertical'
+
+/** Motion metrics consumed by shuffle / cut / draw phase runners. */
+export interface MotionMetrics {
+  envelope: LayoutEnvelope
+  cardWidth: number
+  cardHeight: number
+  gap: number
+  safeHalfWidth: number
+  safeHalfHeight: number
+  shuffleSpreadX: number
+  cutPileSpacing: number
+  cutAxis: CutAxis
+  cardsPerPile: number
+  cutLeadingOffset: { x: number; y: number }
+  cutTrailingOffset: { x: number; y: number }
+}
+
+/**
+ * Read the mini-program capsule rect when running in WeChat MP. Returns
+ * `null` on H5 so the caller can treat the absence of a capsule uniformly.
+ */
+function getMenuButtonRect(): { top: number; height: number } | null {
+  // #ifdef MP-WEIXIN
+  try {
+    const { top, height } = uni.getMenuButtonBoundingClientRect()
+    return { top, height }
+  } catch {
+    return { top: 44, height: 32 }
+  }
+  // #endif
+  return null
+}
+
+/**
+ * Derive the topBarHeight (capsule + small breathing room) from the MP
+ * capsule rect. H5 has no capsule, so the topBarHeight is 0.
+ */
+function resolveTopBarHeight(rect: { top: number; height: number } | null): number {
+  if (!rect) return 0
+  return rect.top + rect.height + 8
+}
+
 export function useOverlayLayout(deps: UseOverlayLayoutDeps) {
-  function getMenuButtonRect() {
-    // #ifdef MP-WEIXIN
-    try {
-      const { top, height } = uni.getMenuButtonBoundingClientRect()
-      return { top, height }
-    } catch {
-      return { top: 44, height: 32 }
-    }
-    // #endif
-    return null
+  // Reservations are constant for the project right now; calling each time
+  // keeps the door open for future per-platform overrides without touching
+  // call sites.
+  function getReservations(): UiReservations {
+    return getDefaultReservations()
   }
 
-  function getViewportMetrics(showResults: boolean) {
-    const { windowWidth, windowHeight } = uni.getWindowInfo()
-    return resolveOverlayViewport({
-      windowWidth,
-      windowHeight,
-      isWide: deps.isWide.value,
-      showResults,
-      menuButtonRect: getMenuButtonRect(),
+  /**
+   * Build the physical viewport for the solver. `showResults` does NOT
+   * affect the underlying viewport — it influences the stage rectangle the
+   * solver derives, so we keep the conversion shape-stable here and pass
+   * `scene` to the solver further down.
+   */
+  function buildPhysicalViewport(): PhysicalViewport {
+    const win = uni.getWindowInfo()
+    const topBarHeight = resolveTopBarHeight(getMenuButtonRect())
+    return getViewport({
+      windowWidth: win.windowWidth,
+      windowHeight: win.windowHeight,
+      safeAreaInsets: win.safeAreaInsets,
+      topBarHeight,
     })
   }
 
   /**
-   * Resolve the scene layout for the current spread and viewport.
-   * Draw and result stages each solve their own card size against their own
-   * safe frame and slot grid. The reveal animation transitions between the two
-   * sizes — there is no shared/master size and no CSS focus-scale.
+   * Public viewport metrics — combines the physical viewport with the legacy
+   * `stageWidth/stageHeight/stageContainerHeight/topBarHeight` keys that
+   * downstream consumers (animation controller, overlay components) still
+   * use today.
    */
-  function getSceneLayout(scene: 'draw_stage' | 'result_stage'): SceneLayoutResult {
-    const viewport = getViewportMetrics(scene === 'result_stage')
-    return resolveSceneLayout({
-      spreadId: deps.spreadKind,
-      scene,
-      viewport,
-      isWide: deps.isWide.value,
-      cardAspectRatio: 1.6,
-      resultSheetFraction: scene === 'draw_stage' ? RESULT_SHEET_FRACTION : undefined,
-    })
+  function getViewportMetrics(showResults: boolean): ViewportMetrics {
+    const viewport = buildPhysicalViewport()
+    const reservations = getReservations()
+    const isWide = viewport.isWide
+
+    const stageWidth =
+      showResults && isWide ? viewport.width - reservations.drawerWideWidth : viewport.width
+    const stageHeight =
+      isWide && showResults ? viewport.height : viewport.height - viewport.topBarHeight
+    const stageContainerHeight = showResults ? stageHeight : viewport.height
+
+    return {
+      width: viewport.width,
+      height: viewport.height,
+      safeAreaTop: viewport.safeAreaTop,
+      safeAreaBottom: viewport.safeAreaBottom,
+      dpr: 1,
+      stageWidth,
+      stageHeight,
+      stageContainerHeight,
+      topBarHeight: viewport.topBarHeight,
+    }
   }
 
-  function getMotionMetrics(scene: 'draw_stage' | 'result_stage' = 'draw_stage') {
-    const viewport = getViewportMetrics(scene === 'result_stage')
-    const safeFrame = buildOverlaySafeFrame(
-      scene,
-      viewport,
-      scene === 'draw_stage' ? RESULT_SHEET_FRACTION : undefined,
+  /**
+   * Resolve the scene layout for `draw_stage` or `result_stage` by
+   * delegating to the pure solver, then attach the legacy `safe*Inset`
+   * compatibility fields the overlay debug rectangle expects.
+   */
+  function getSceneLayout(scene: Scene): SceneLayout {
+    const viewport = buildPhysicalViewport()
+    const reservations = getReservations()
+
+    const solved = solveLayout({ viewport, reservations, scene })
+
+    const safeTopInset =
+      viewport.topBarHeight + viewport.safeAreaTop + reservations.headerHeight
+    const safeBottomInset = reservations.actionBarHeight + viewport.safeAreaBottom
+    const safeSideInset = reservations.cardSideMargin
+
+    return {
+      ...solved,
+      safeTopInset,
+      safeBottomInset,
+      safeSideInset,
+    }
+  }
+
+  /**
+   * Resolve all motion metrics (shuffle spread, cut spacing, motion bounds)
+   * for the requested scene. Pure derivation from the solver's envelope.
+   */
+  function getMotionMetrics(scene: Scene = 'draw_stage'): MotionMetrics {
+    const viewport = buildPhysicalViewport()
+    const reservations = getReservations()
+    const layout = solveLayout({ viewport, reservations, scene })
+
+    const cardWidth = layout.envelope.cardWidth
+    const cardHeight = layout.envelope.cardHeight
+    const gap = layout.envelope.gap
+    const slotPitchX = layout.envelope.slotPitchX
+
+    // Available height matches the solver's worst-case draw-stage budget so
+    // shuffle/cut motion never escapes the safe frame.
+    const availableH =
+      viewport.height -
+      viewport.topBarHeight -
+      viewport.safeAreaTop -
+      reservations.headerHeight -
+      reservations.actionBarHeight -
+      viewport.safeAreaBottom
+
+    const safeHalfWidth = layout.stage.width / 2
+    const safeHalfHeight = availableH / 2
+
+    // Shuffle spread: target one card width + gap, clamped between
+    // `slotPitchX/2` (always visible) and `safeHalfWidth - cardWidth/2 -
+    // SHUFFLE_EDGE_MARGIN` (never crosses the safe frame edge).
+    const minShuffleSpread = slotPitchX / 2
+    const maxShuffleSpread = Math.max(
+      minShuffleSpread,
+      safeHalfWidth - cardWidth / 2 - SHUFFLE_EDGE_MARGIN,
+    )
+    const shuffleSpreadX = clamp(cardWidth + gap, minShuffleSpread, maxShuffleSpread)
+
+    // Cut: piles align horizontally on wide screens (one row), vertically on
+    // narrow (one column). Spacing must be card dimension + gap to avoid
+    // overlap when piles share the same axis.
+    const cutAxis: CutAxis = deps.isWide.value ? 'horizontal' : 'vertical'
+    const cutPileSpacing = (cutAxis === 'horizontal' ? cardWidth : cardHeight) + gap
+
+    const pilesAlongAxis = Math.max(1, deps.cutPileCount)
+    const halfRange = ((pilesAlongAxis - 1) / 2) * cutPileSpacing
+    const cutLeadingOffset =
+      cutAxis === 'horizontal' ? { x: -halfRange, y: 0 } : { x: 0, y: -halfRange }
+    const cutTrailingOffset =
+      cutAxis === 'horizontal' ? { x: halfRange, y: 0 } : { x: 0, y: halfRange }
+
+    const cardsPerPile = Math.max(
+      1,
+      Math.floor(Math.max(1, deps.deckCount) / pilesAlongAxis),
     )
 
-    return resolveMotionMetrics({
-      safeFrame,
-      cardAspectRatio: 1.6,
-      spreadId: deps.spreadKind,
-      isWide: deps.isWide.value,
-      cutPileCount: deps.cutPileCount,
-      deckCount: deps.deckCount,
-    })
+    return {
+      envelope: layout.envelope,
+      cardWidth,
+      cardHeight,
+      gap,
+      safeHalfWidth,
+      safeHalfHeight,
+      shuffleSpreadX,
+      cutPileSpacing,
+      cutAxis,
+      cardsPerPile,
+      cutLeadingOffset,
+      cutTrailingOffset,
+    }
   }
 
-  function getOverlayLayouts() {
+  /**
+   * Convenience accessor returning all three layouts the controller needs at
+   * once. Resolved from a single window snapshot so the three results are
+   * mutually consistent.
+   */
+  function getOverlayLayouts(): {
+    drawViewport: ViewportMetrics
+    drawLayout: SceneLayout
+    resultLayout: SceneLayout
+  } {
     const drawViewport = getViewportMetrics(false)
     const drawLayout = getSceneLayout('draw_stage')
     const resultLayout = getSceneLayout('result_stage')
     return { drawViewport, drawLayout, resultLayout }
   }
 
+  /**
+   * Update `deps.isWide` when the window size crosses the wide breakpoint.
+   * Returns true iff `isWide` actually changed so the caller can short-
+   * circuit redundant relayouts.
+   */
   function checkWidth(windowWidth: number): boolean {
     const wasWide = deps.isWide.value
     deps.isWide.value = windowWidth >= WIDE_BREAKPOINT
     return wasWide !== deps.isWide.value
+  }
+
+  /**
+   * Centre point the deck animates around at rest.
+   * Stage-relative coordinates (origin = stage centre): x is always 0
+   * because the deck stays horizontally centred; y matches the central
+   * slot's y so the deck visually sits where the drawn cards will land.
+   */
+  function getDeckCenter(): { centerX: number; centerY: number } {
+    const drawLayout = getSceneLayout('draw_stage')
+    const centerSlot = drawLayout.cards[0]
+    return {
+      centerX: 0,
+      centerY: centerSlot ? centerSlot.y : 0,
+    }
   }
 
   return {
@@ -100,8 +311,7 @@ export function useOverlayLayout(deps: UseOverlayLayoutDeps) {
     getSceneLayout,
     getMotionMetrics,
     getOverlayLayouts,
-    getMenuButtonRect,
     checkWidth,
-    RESULT_SHEET_FRACTION,
+    getDeckCenter,
   }
 }

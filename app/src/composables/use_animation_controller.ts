@@ -29,13 +29,11 @@ import {
   presentProgressHeader,
   presentFooter,
 } from '../utils/overlay_progress'
-import { buildOverlaySafeFrame } from '../utils/overlay_layout/index'
 import type { PhaseContext, PhaseRunner, OverlayPhase } from '../core/flow/types'
 import { buildShufflePhaseRunner } from '../animation/phases/shuffle/builder'
 import { buildCutPhaseRunner } from '../animation/phases/cut/builder'
 import { buildDrawPhaseRunner } from '../animation/phases/draw/builder'
 import { buildRevealPhaseRunner } from '../animation/phases/reveal/builder'
-import { resolveDeckGeometry } from '../core/deck/deck_calculator'
 import { prefersReducedMotion } from '../utils/accessibility'
 import {
   ENTRY_BG_FADE_DURATION,
@@ -57,7 +55,9 @@ const CARDS_PER_PILE: number = Math.max(1, Math.floor(DECK_COUNT / CUT_PILE_COUN
 const SHUFFLE_HALF_COUNT: number = Math.max(1, Math.floor(DECK_COUNT / 2))
 
 export interface UseAnimationControllerCallbacks {
-  onDrawingComplete: () => void
+  /** Fires when `drawing` starts; the overlay controller uses this to
+   *  trigger the divination request so the round trip overlaps the draw. */
+  onDrawingStart?: () => void
   onPipelineComplete: () => void
   onPhaseChange: (phase: OverlayPhase) => void
   onResetReading: () => void
@@ -148,9 +148,11 @@ export function useAnimationController(deps: UseAnimationControllerDeps): UseAni
 
   const timelineOrchestrator = createTimelineOrchestrator(false)
 
+  // The backend protocol currently only supports `single_card`; the layout
+  // layer will be refactored to consume spread metadata in the next phase.
   const layoutApi = useOverlayLayout({
     isWide: deps.isWide,
-    spreadKind: deps.tarotStore.spreadKind,
+    spreadKind: 'single_card',
     cutPileCount: CUT_PILE_COUNT,
     deckCount: DECK_COUNT,
   })
@@ -279,15 +281,15 @@ export function useAnimationController(deps: UseAnimationControllerDeps): UseAni
   }
 
   function createPhaseContext(): PhaseContext {
-    const drawViewport = layoutApi.getViewportMetrics(false)
-    const safeFrame = buildOverlaySafeFrame(
-      'draw_stage',
-      drawViewport,
-      layoutApi.RESULT_SHEET_FRACTION,
-    )
+    const deckCenter = layoutApi.getDeckCenter()
 
     return {
-      deckGeometry: resolveDeckGeometry(safeFrame, DECK_COUNT),
+      deckGeometry: {
+        centerX: deckCenter.centerX,
+        centerY: deckCenter.centerY,
+        cardOffsetStep: { x: 0, y: -0.8 },
+        totalOffset: { x: 0, y: -(DECK_COUNT - 1) * 0.8 },
+      },
       spreadSlots: [],
       getCurrentLayouts: () => {
         const { drawLayout } = layoutApi.getOverlayLayouts()
@@ -337,7 +339,8 @@ export function useAnimationController(deps: UseAnimationControllerDeps): UseAni
       {
         name: 'drawing',
         run(context: PhaseContext, onComplete: () => void) {
-          deps.tarotStore.drawCards()
+          // Drawn cards arrive via the orchestrator's onDrawingStart hook —
+          // no local randomisation happens here.
           const { drawLayout, drawViewport } = layoutApi.getOverlayLayouts()
           setDrawCardSizes(drawLayout)
           const runner = buildDrawPhaseRunner({
@@ -397,13 +400,15 @@ export function useAnimationController(deps: UseAnimationControllerDeps): UseAni
         if (startedPhase === 'shuffling') {
           settleEntryAnimation()
         }
+        if (startedPhase === 'drawing') {
+          // Trigger the merged divination request as soon as drawing begins.
+          // The reading orchestrator writes drawn -> store and reading ->
+          // store so that by the time `revealing` opens the result panel,
+          // both are ready.
+          deps.callbacks.onDrawingStart?.()
+        }
         if (startedPhase === 'revealing') {
           openResultPanel()
-        }
-      },
-      onPhaseComplete: (completedPhase: OverlayPhase) => {
-        if (completedPhase === 'drawing') {
-          deps.callbacks.onDrawingComplete()
         }
       },
       onPipelineComplete: () => {
@@ -418,17 +423,13 @@ export function useAnimationController(deps: UseAnimationControllerDeps): UseAni
     interruptCurrentAnimation()
     entryAnimationComplete.value = true
     resetOverlayScene()
-    
-    // Force draw cards if not done
-    if (deps.tarotStore.drawnCards.length === 0) {
-      deps.tarotStore.drawCards()
-    }
-    
-    // Jump to revealing phase
+
+    // Drawn cards arrive via the orchestrator's onDrawingStart hook; if the
+    // response is still pending the spread renders as card backs.
     transitionPhase('revealing')
     openResultPanel()
-    
-    // Position cards at their final slots for the revealing phase
+
+    // Position cards at their final slots for the revealing phase.
     const layout = getSceneLayout('draw_stage')
     setDrawCardSizes(layout)
     _draws.forEach((draw, index) => {
@@ -440,8 +441,9 @@ export function useAnimationController(deps: UseAnimationControllerDeps): UseAni
     })
     refreshDraws()
     
-    // Trigger callbacks
-    deps.callbacks.onDrawingComplete()
+    // Trigger callbacks. Skip-to-reading has no draw animation, so the
+    // pipeline-complete signal alone tells the overlay controller it can
+    // settle into the result state.
     deps.callbacks.onPipelineComplete()
   }
 
@@ -453,12 +455,8 @@ export function useAnimationController(deps: UseAnimationControllerDeps): UseAni
     progressModel.transitionTo(targetPhase)
     deps.callbacks.onPhaseChange(targetPhase)
 
-    if (targetPhase === 'revealing') {
-      if (deps.tarotStore.drawnCards.length === 0) {
-        deps.tarotStore.drawCards()
-      }
-    }
-
+    // For a dev replay starting at 'revealing' the draw may not have landed;
+    // the spread will render as card backs until the response arrives.
     const startIndex = getPhaseIndex(targetPhase)
     runPipeline(startIndex)
   }
