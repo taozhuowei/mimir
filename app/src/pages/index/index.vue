@@ -166,7 +166,7 @@ function calculateLayout() {
     })
     const layout = solveLayout({
       viewport,
-      reservations: getDefaultReservations(),
+      reservations: getDefaultReservations(viewport.width),
       scene: 'draw_stage',
     })
 

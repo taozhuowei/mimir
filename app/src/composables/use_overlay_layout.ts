@@ -115,11 +115,12 @@ function resolveTopBarHeight(rect: { top: number; height: number } | null): numb
 }
 
 export function useOverlayLayout(deps: UseOverlayLayoutDeps) {
-  // Reservations are constant for the project right now; calling each time
-  // keeps the door open for future per-platform overrides without touching
-  // call sites.
-  function getReservations(): UiReservations {
-    return getDefaultReservations()
+  // Reservations are tier-aware: gap and side-margin step from 16/16 on
+  // compact viewports through 20/20 on regular phones to 24/24 on wide
+  // screens. The viewport is the only input that selects the tier, so
+  // this helper takes one and returns the matching reservations.
+  function getReservations(viewport: PhysicalViewport): UiReservations {
+    return getDefaultReservations(viewport.width)
   }
 
   /**
@@ -147,7 +148,7 @@ export function useOverlayLayout(deps: UseOverlayLayoutDeps) {
    */
   function getViewportMetrics(showResults: boolean): ViewportMetrics {
     const viewport = buildPhysicalViewport()
-    const reservations = getReservations()
+    const reservations = getReservations(viewport)
     const isWide = viewport.isWide
 
     const stageWidth =
@@ -176,7 +177,7 @@ export function useOverlayLayout(deps: UseOverlayLayoutDeps) {
    */
   function getSceneLayout(scene: Scene): SceneLayout {
     const viewport = buildPhysicalViewport()
-    const reservations = getReservations()
+    const reservations = getReservations(viewport)
 
     const solved = solveLayout({ viewport, reservations, scene })
 
@@ -199,7 +200,7 @@ export function useOverlayLayout(deps: UseOverlayLayoutDeps) {
    */
   function getMotionMetrics(scene: Scene = 'draw_stage'): MotionMetrics {
     const viewport = buildPhysicalViewport()
-    const reservations = getReservations()
+    const reservations = getReservations(viewport)
     const layout = solveLayout({ viewport, reservations, scene })
 
     const cardWidth = layout.envelope.cardWidth

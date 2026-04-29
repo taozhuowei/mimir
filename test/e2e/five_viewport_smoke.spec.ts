@@ -20,12 +20,16 @@ import { test, expect } from '@playwright/test'
  *     — baselines should be set after a design pass, not now.
  */
 
+// Real-device viewport matrix. Each entry is a popular shipping device,
+// chosen so the suite covers all three spacing tiers (compact / regular /
+// wide) plus both layout branches (narrow vs wide). Logical viewport
+// sizes are what the device's stock browser reports at default zoom.
 const VIEWPORTS = [
-  { tag: '320x568', width: 320, height: 568, isWide: false },
-  { tag: '375x667', width: 375, height: 667, isWide: false },
-  { tag: '414x896', width: 414, height: 896, isWide: false },
-  { tag: '768x1024', width: 768, height: 1024, isWide: true },
-  { tag: '1280x800', width: 1280, height: 800, isWide: true },
+  { tag: 'galaxy-s22-360x800',     width: 360,  height: 800,  isWide: false }, // compact
+  { tag: 'iphone-se-375x667',      width: 375,  height: 667,  isWide: false }, // regular
+  { tag: 'iphone-pro-max-430x932', width: 430,  height: 932,  isWide: false }, // regular
+  { tag: 'ipad-portrait-768x1024', width: 768,  height: 1024, isWide: true  }, // wide threshold
+  { tag: 'macbook-air-1440x900',   width: 1440, height: 900,  isWide: true  }, // wide desktop
 ] as const
 
 // Layout-solver constants we expect to read back from CSS vars on wide.
@@ -34,6 +38,10 @@ const DRAWER_WIDE_WIDTH_PX = 480
 // in app/src/core/sizing/physical_reservations.ts). Acts as a hard lower bound
 // for narrow drawer initialHeight.
 const DRAWER_MIN_INITIAL_HEIGHT_PX = 220
+// Card-width upper bound (DEFAULT_MAX_CARD_WIDTH). The wide-tier viewports
+// have enough room that the result-card width is expected to clamp to this
+// ceiling; on narrow tiers the card stays smaller than the cap.
+const MAX_CARD_WIDTH_PX = 260
 
 for (const vp of VIEWPORTS) {
   test(`five-viewport smoke @ ${vp.tag}`, async ({ page }) => {
@@ -122,6 +130,26 @@ for (const vp of VIEWPORTS) {
           sheetBox.height,
           `narrow drawer initialHeight must be >= ${DRAWER_MIN_INITIAL_HEIGHT_PX}px at ${vp.tag}`,
         ).toBeGreaterThanOrEqual(DRAWER_MIN_INITIAL_HEIGHT_PX)
+      }
+    }
+
+    // ----- Card-size upper bound -----------------------------------------
+    // The result card must never grow beyond MAX_CARD_WIDTH_PX. This is
+    // the contract that keeps wide viewports from stretching the card to
+    // fill the stage; before the cap was tightened, 1280-class viewports
+    // produced ~390-px-wide cards that occupied the entire stage height.
+    // .draw-wrapper exists for every deck slot (toggled via v-show); only
+    // the slot for the current draw is rendered, so we read the first
+    // visible one rather than guessing an index.
+    const visibleCard = page.locator('.draw-wrapper:visible').first()
+    const cardCount = await visibleCard.count()
+    if (cardCount > 0) {
+      const cardBox = await visibleCard.boundingBox()
+      if (cardBox) {
+        expect(
+          cardBox.width,
+          `result card width must not exceed ${MAX_CARD_WIDTH_PX}px at ${vp.tag} (got ${cardBox.width})`,
+        ).toBeLessThanOrEqual(MAX_CARD_WIDTH_PX + 1)
       }
     }
   })

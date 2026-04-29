@@ -21,6 +21,7 @@ import {
 } from '../app/src/core/sizing/layout_solver'
 import {
   getDefaultReservations,
+  pickSpacingTier,
   type PhysicalViewport,
   type UiReservations,
 } from '../app/src/core/sizing/physical_reservations'
@@ -29,8 +30,6 @@ import { WIDE_BREAKPOINT } from '../app/src/core/config/layout_constants'
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
-
-const RESERVATIONS: UiReservations = getDefaultReservations()
 
 function makeViewport(width: number, height: number): PhysicalViewport {
   return {
@@ -47,14 +46,20 @@ interface ViewportFixture {
   label: string
   width: number
   height: number
+  /** Expected spacing tier for this viewport (sanity-checked per test). */
+  tier: 'compact' | 'regular' | 'wide'
 }
 
+// Real-device matrix. Each row is a popular shipping device, picked so the
+// suite spans all three spacing tiers and both narrow / wide layout
+// branches without overlap. Logical viewport sizes match what the device's
+// stock browser reports at default zoom.
 const VIEWPORTS: ViewportFixture[] = [
-  { label: '320x568 narrow', width: 320, height: 568 },
-  { label: '375x667 narrow', width: 375, height: 667 },
-  { label: '414x896 narrow', width: 414, height: 896 },
-  { label: '768x1024 wide (boundary)', width: 768, height: 1024 },
-  { label: '1280x800 wide', width: 1280, height: 800 },
+  { label: 'Galaxy S22/S23/S24 (360×800)', width: 360, height: 800, tier: 'compact' },
+  { label: 'iPhone SE 2/3 (375×667)', width: 375, height: 667, tier: 'regular' },
+  { label: 'iPhone 16 Pro Max (430×932)', width: 430, height: 932, tier: 'regular' },
+  { label: 'iPad portrait (768×1024)', width: 768, height: 1024, tier: 'wide' },
+  { label: 'MacBook Air 13" (1440×900)', width: 1440, height: 900, tier: 'wide' },
 ]
 
 const SCENES: SceneKind[] = ['draw_stage', 'result_stage']
@@ -102,12 +107,18 @@ describe('layout_solver — physical-pixel layout solver', () => {
     for (const scene of SCENES) {
       it(`${vpFixture.label} / ${scene}: produces a valid layout`, () => {
         const viewport = makeViewport(vpFixture.width, vpFixture.height)
+        // Tiered reservations — compact / regular / wide step gap+sideMargin.
+        // Resolve them per viewport so the solver receives exactly what the
+        // real callers (use_overlay_layout, pages/index/index.vue) send.
+        const reservations: UiReservations = getDefaultReservations(viewport.width)
+        expect(pickSpacingTier(viewport.width)).toBe(vpFixture.tier)
+
         const layout = solveLayout({
           viewport,
-          reservations: RESERVATIONS,
+          reservations,
           scene,
         })
-        const { topReserved, bottomReservedBase } = reservedBounds(viewport, RESERVATIONS)
+        const { topReserved, bottomReservedBase } = reservedBounds(viewport, reservations)
 
         // -------------------------------------------------------------------
         // (0) Sanity — all sizes positive and finite.
@@ -123,11 +134,11 @@ describe('layout_solver — physical-pixel layout solver', () => {
         // (1) Card aspect ratio respected.
         // -------------------------------------------------------------------
         expect(layout.cardHeight / layout.cardWidth).toBeCloseTo(
-          RESERVATIONS.cardAspectRatio,
+          reservations.cardAspectRatio,
           5,
         )
         expect(layout.drawCardHeight / layout.drawCardWidth).toBeCloseTo(
-          RESERVATIONS.cardAspectRatio,
+          reservations.cardAspectRatio,
           5,
         )
 
@@ -135,10 +146,10 @@ describe('layout_solver — physical-pixel layout solver', () => {
         // (2) Card width within legibility bounds OR equal to a derived
         //     dimension that's already smaller than maxCardWidth (clamp ok).
         // -------------------------------------------------------------------
-        expect(layout.cardWidth).toBeGreaterThanOrEqual(RESERVATIONS.minCardWidth - EPS)
-        expect(layout.cardWidth).toBeLessThanOrEqual(RESERVATIONS.maxCardWidth + EPS)
-        expect(layout.drawCardWidth).toBeGreaterThanOrEqual(RESERVATIONS.minCardWidth - EPS)
-        expect(layout.drawCardWidth).toBeLessThanOrEqual(RESERVATIONS.maxCardWidth + EPS)
+        expect(layout.cardWidth).toBeGreaterThanOrEqual(reservations.minCardWidth - EPS)
+        expect(layout.cardWidth).toBeLessThanOrEqual(reservations.maxCardWidth + EPS)
+        expect(layout.drawCardWidth).toBeGreaterThanOrEqual(reservations.minCardWidth - EPS)
+        expect(layout.drawCardWidth).toBeLessThanOrEqual(reservations.maxCardWidth + EPS)
 
         // -------------------------------------------------------------------
         // (3) Draw-stage uniform card size (envelope reflects worst case).
@@ -161,7 +172,7 @@ describe('layout_solver — physical-pixel layout solver', () => {
         // Wide + result_stage: stage shrinks to leave room for the side drawer.
         if (scene === 'result_stage' && viewport.isWide) {
           expect(layout.stage.width).toBeCloseTo(
-            viewport.width - RESERVATIONS.drawerWideWidth,
+            viewport.width - reservations.drawerWideWidth,
             5,
           )
         } else {
@@ -173,7 +184,7 @@ describe('layout_solver — physical-pixel layout solver', () => {
         // -------------------------------------------------------------------
         if (viewport.isWide) {
           expect(layout.drawer.rightAligned).toBe(true)
-          expect(layout.drawer.width).toBeCloseTo(RESERVATIONS.drawerWideWidth, 5)
+          expect(layout.drawer.width).toBeCloseTo(reservations.drawerWideWidth, 5)
           expect(layout.drawer.initialTop).toBeCloseTo(0, 5)
           expect(layout.drawer.initialHeight).toBeCloseTo(viewport.height, 5)
           expect(layout.drawer.maxHeight).toBeCloseTo(viewport.height, 5)
@@ -221,12 +232,12 @@ describe('layout_solver — physical-pixel layout solver', () => {
           } else {
             // Narrow: drawer.initialTop = card_bottom - overlap (exactly).
             expect(layout.drawer.initialTop).toBeCloseTo(
-              rect.bottom - RESERVATIONS.drawerCardOverlap,
+              rect.bottom - reservations.drawerCardOverlap,
               5,
             )
             // Narrow drawer must be at least the minimum useful height.
             expect(layout.drawer.initialHeight).toBeGreaterThanOrEqual(
-              RESERVATIONS.drawerMinInitialHeight - EPS,
+              reservations.drawerMinInitialHeight - EPS,
             )
           }
 
@@ -246,18 +257,18 @@ describe('layout_solver — physical-pixel layout solver', () => {
             viewport.height -
             viewport.topBarHeight -
             viewport.safeAreaTop -
-            RESERVATIONS.headerHeight -
-            RESERVATIONS.actionBarHeight -
+            reservations.headerHeight -
+            reservations.actionBarHeight -
             viewport.safeAreaBottom
           const usedH =
             expectedRows * layout.drawCardHeight +
-            (expectedRows - 1) * RESERVATIONS.cardGap
+            (expectedRows - 1) * reservations.cardGap
           expect(usedH).toBeLessThanOrEqual(availableH + EPS)
 
-          const availableW = viewport.width - 2 * RESERVATIONS.cardSideMargin
+          const availableW = viewport.width - 2 * reservations.cardSideMargin
           const usedW =
             expectedCols * layout.drawCardWidth +
-            (expectedCols - 1) * RESERVATIONS.cardGap
+            (expectedCols - 1) * reservations.cardGap
           expect(usedW).toBeLessThanOrEqual(availableW + EPS)
         }
       })
@@ -267,8 +278,9 @@ describe('layout_solver — physical-pixel layout solver', () => {
   it('drawCardWidth is identical between draw_stage and result_stage on the same viewport', () => {
     for (const vpFixture of VIEWPORTS) {
       const viewport = makeViewport(vpFixture.width, vpFixture.height)
-      const draw = solveLayout({ viewport, reservations: RESERVATIONS, scene: 'draw_stage' })
-      const result = solveLayout({ viewport, reservations: RESERVATIONS, scene: 'result_stage' })
+      const reservations = getDefaultReservations(viewport.width)
+      const draw = solveLayout({ viewport, reservations, scene: 'draw_stage' })
+      const result = solveLayout({ viewport, reservations, scene: 'result_stage' })
       expect(result.drawCardWidth).toBeCloseTo(draw.drawCardWidth, 5)
       expect(result.drawCardHeight).toBeCloseTo(draw.drawCardHeight, 5)
     }
