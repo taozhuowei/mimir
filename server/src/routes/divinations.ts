@@ -12,8 +12,9 @@
  *   { spreadKind?: 'single_card' }   // defaults to 'single_card' when omitted
  *
  * Response (200):
- *   { drawn:   DrawnInput[],         // cards picked by the server
- *     reading: ReadingResult }       // scored interpretation
+ *   { spreadKind: SpreadKind,        // echo of the resolved spread kind
+ *     drawn:      DrawnInput[],      // cards picked by the server
+ *     reading:    ReadingResult }    // scored interpretation
  *
  * Errors:
  *   400 { error: 'Unknown spreadKind', code: 'spreadKind' }

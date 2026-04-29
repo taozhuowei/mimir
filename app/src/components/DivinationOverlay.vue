@@ -477,7 +477,8 @@ onUnmounted(() => {
 }
 
 .is-wide.show-results .stage-container {
-  width: 54%;
+  /* --stage-width is JS-bound from the solver; 54% is a CSS-vars fallback. */
+  width: var(--stage-width, 54%);
 }
 
 .overlay-result-zone {

@@ -255,6 +255,10 @@ function scanCssVariables() {
   const RUNTIME_VARS = new Set([
     '--card-width', '--card-height', '--result-card-lift-y',
     '--card-focus-scale',
+    // Wide-mode stage / drawer widths come from the layout solver via
+    // useOverlayController.overlayVarsStyle. Defined per-render, not in
+    // global.css.
+    '--stage-width', '--drawer-width',
   ])
 
   const definedVars = new Set()

@@ -145,7 +145,7 @@ describe('Stage C.2: Component - DivinationOverlay A.6 features', () => {
     expect(updatedSheet.attributes('style')).toContain('height: 386px')
   })
 
-  it('A.6.5: Wide mode hides drawer handle and uses 54% width for stage', async () => {
+  it('A.6.5: Wide mode hides drawer handle and applies wide-mode classes', async () => {
     vi.stubGlobal('uni', {
       getWindowInfo: () => ({ windowWidth: 1024, windowHeight: 768 }),
       onWindowResize: vi.fn(),
@@ -157,8 +157,11 @@ describe('Stage C.2: Component - DivinationOverlay A.6 features', () => {
     const handle = wrapper.find('.drag-handle-container')
     expect(handle.exists()).toBe(false)
 
-    // CSS check: .is-wide.show-results .stage-container { width: 54%; }
-    // We can check if the class is present.
+    // The wide-mode stage / drawer split is now driven by the JS-bound CSS
+    // variables `--stage-width` / `--drawer-width` (composed in
+    // use_overlay_controller from the layout solver's px outputs). The
+    // 54% / 46% values that used to live in CSS are gone; class checks
+    // here just confirm we're rendering the wide-mode branch at all.
     expect(wrapper.classes()).toContain('is-wide')
     expect(wrapper.classes()).toContain('show-results')
   })

@@ -10,6 +10,7 @@
  */
 
 import type { Divination } from '../../api/divinations'
+import type { SpreadKind } from '../../api/types'
 
 export type ReadingProviderType = 'rule_based' | 'ai'
 
@@ -19,7 +20,7 @@ export type ReadingProviderType = 'rule_based' | 'ai'
  * object keep working.
  */
 export interface ReadingRequest {
-  spreadKind?: 'single_card'
+  spreadKind?: SpreadKind
 }
 
 export interface ReadingProvider {

@@ -68,10 +68,27 @@ export function useOverlayController(deps: UseOverlayControllerDeps) {
       return Math.max(0, lift)
     } catch { return 0 }
   })
+  // Wide-mode stage / drawer split: previously hard-coded as `54% / 46%` in
+  // CSS, which silently disagreed with the solver's pixel-based stage and
+  // drawer widths whenever viewport.width × 0.46 ≠ DEFAULT_DRAWER_WIDE_WIDTH.
+  // Exposing both as CSS variables keeps the DOM container widths and the
+  // solver-computed card positions in lock-step.
+  const stageWidthPx = computed(() => {
+    try { return animController.getSceneLayout('result_stage').stage.width }
+    catch { return 0 }
+  })
+  const drawerWidthPx = computed(() => {
+    try { return animController.getSceneLayout('result_stage').drawer.width }
+    catch { return 0 }
+  })
   const overlayVarsStyle = computed(() => {
     const base = animController.overlayVarsStyle.value
-    const extra = `--result-card-lift-y: ${resultCardLiftY.value}px`
-    return base ? `${base}; ${extra}` : extra
+    const extras = [
+      `--result-card-lift-y: ${resultCardLiftY.value}px`,
+      `--stage-width: ${stageWidthPx.value}px`,
+      `--drawer-width: ${drawerWidthPx.value}px`,
+    ].join('; ')
+    return base ? `${base}; ${extras}` : extras
   })
 
   async function finish() {

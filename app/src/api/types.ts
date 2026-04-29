@@ -12,6 +12,13 @@
 
 export type CardPosition = 'upright' | 'reversed'
 
+/**
+ * Supported divination spread kinds. Today only `single_card` is wired up
+ * end-to-end; the union exists so future spreads can be added in one place
+ * (here + the server's zod enum) instead of in every signature individually.
+ */
+export type SpreadKind = 'single_card'
+
 export interface TarotCardMeaning {
   keywords: string[]
   meaning: string
@@ -57,7 +64,7 @@ export interface ReadingResult {
 
 /** Top-level reply from `POST /api/v1/divinations`. */
 export interface DivinationResponse {
-  spreadKind: 'single_card'
+  spreadKind: SpreadKind
   drawn: DivinationDrawnEntry[]
   reading: ReadingResult
 }

@@ -53,6 +53,10 @@ export interface ReadingResult {
 }
 
 export interface DivinationOutput {
+  /** Echo of the request so callers can branch on spread without keeping
+   *  request-side state. Today only `single_card` is supported; this field
+   *  is the protocol's extension point for future multi-card spreads. */
+  spreadKind: 'single_card'
   drawn: DrawnInput[]
   reading: ReadingResult
 }
@@ -175,5 +179,5 @@ export function performDivination(spreadKind: 'single_card'): DivinationOutput {
   }))
 
   const reading = generateReading(drawn)
-  return { drawn, reading }
+  return { spreadKind, drawn, reading }
 }

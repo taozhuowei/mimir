@@ -70,7 +70,7 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
 import ResultPanel from '../ResultPanel.vue'
-import type { ReadingResult } from '../../utils/tarot_reading'
+import type { ReadingResult } from '../../api/types'
 import type { DrawerGeometry } from '../../core/sizing/layout_solver'
 
 const props = defineProps<{
@@ -223,7 +223,11 @@ function onDrawerKeydown(e: KeyboardEvent) {
 .is-wide .drawer-sheet {
   height: 100% !important;
   max-height: 100% !important;
-  width: 46%;
+  /* Width is the solver's `drawer.width` (DEFAULT_DRAWER_WIDE_WIDTH=480
+     unless reservations override it), exposed as `--drawer-width` from
+     use_overlay_controller. The 46% fallback covers browsers without CSS
+     custom-properties; the production code paths always set the var. */
+  width: var(--drawer-width, 46%);
   max-width: none;
   border-top-left-radius: 0;
   border-top-right-radius: 0;

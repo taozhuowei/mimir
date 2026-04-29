@@ -16,6 +16,7 @@ import type {
   DrawnResult,
   ReadingCardDetail,
   ReadingResult,
+  SpreadKind,
   TarotCardInfo,
 } from './types'
 
@@ -25,7 +26,7 @@ import type {
  * panel consumes `reading`.
  */
 export interface Divination {
-  spreadKind: 'single_card'
+  spreadKind: SpreadKind
   drawn: DrawnResult[]
   reading: ReadingResult
 }
@@ -77,7 +78,7 @@ function hydrateReading(reading: ReadingResult): ReadingResult {
  * just a typed HTTP wrapper, so the verb reflects the round-trip.
  */
 export async function requestDivination(
-  spreadKind: 'single_card' = 'single_card',
+  spreadKind: SpreadKind = 'single_card',
 ): Promise<Divination> {
   const res = await request<DivinationResponse>('/api/v1/divinations', {
     method: 'POST',

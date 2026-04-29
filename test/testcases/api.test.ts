@@ -129,6 +129,11 @@ describe('POST /api/v1/divinations', () => {
   it('returns 200 with default body (no spreadKind)', async () => {
     const res = await request(app).post('/api/v1/divinations').send({})
     expect(res.status).toBe(200)
+    // Server echoes the resolved spread kind so callers don't have to keep
+    // request-side state to know what they got. Today the only value is
+    // `single_card`; this assertion guards against silently dropping the
+    // field again the way the original C2 wiring did.
+    expect(res.body.spreadKind).toBe('single_card')
   })
 
   it('returns 200 when spreadKind is omitted (no body at all)', async () => {
