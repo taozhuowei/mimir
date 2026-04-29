@@ -38,10 +38,11 @@ const DRAWER_WIDE_WIDTH_PX = 480
 // in app/src/core/sizing/physical_reservations.ts). Acts as a hard lower bound
 // for narrow drawer initialHeight.
 const DRAWER_MIN_INITIAL_HEIGHT_PX = 220
-// Card-width upper bound (DEFAULT_MAX_CARD_WIDTH). The wide-tier viewports
-// have enough room that the result-card width is expected to clamp to this
-// ceiling; on narrow tiers the card stays smaller than the cap.
-const MAX_CARD_WIDTH_PX = 260
+// Card-width upper bound (DEFAULT_MAX_CARD_WIDTH). Single global cap by
+// design — desktop result cards never grow bigger than the largest phone's
+// natural size. iPhone Pro Max naturally lands here; everything wider
+// (iPad portrait, MacBook) clamps to this ceiling.
+const MAX_CARD_WIDTH_PX = 240
 
 for (const vp of VIEWPORTS) {
   test(`five-viewport smoke @ ${vp.tag}`, async ({ page }) => {

@@ -149,6 +149,15 @@ function computeAvailableHeight(viewport: PhysicalViewport, reservations: UiRese
  * Uniform draw-stage card size: chosen against the worst-case slot grid
  * (cut phase needs 3 piles), so the same value is valid across shuffle,
  * cut and draw — cards never visibly resize between phases.
+ *
+ * Spacing budget along each axis:
+ *   total_axis = N × cardSize + (N − 1) × gap_between + 2 × gap_breathing
+ *              = N × cardSize + (N + 1) × gap
+ * The two extra `gap`s are the breathing buffers on the leading and
+ * trailing edges of the card grid, so the topmost cut pile keeps a
+ * `gap`-sized clearance from the header (and the same on the bottom /
+ * sides depending on cut axis). Without them, the cut animation can
+ * push cards visually into the header icons.
  */
 function computeDrawCardSize(
   viewport: PhysicalViewport,
@@ -158,9 +167,9 @@ function computeDrawCardSize(
   const cols = viewport.isWide ? 3 : 1
   const rows = viewport.isWide ? 1 : 3
   const availableW = viewport.width - 2 * reservations.cardSideMargin
-  const cwByW = (availableW - (cols - 1) * reservations.cardGap) / cols
+  const cwByW = (availableW - (cols + 1) * reservations.cardGap) / cols
   const cwByH =
-    (availableH - (rows - 1) * reservations.cardGap) / rows / reservations.cardAspectRatio
+    (availableH - (rows + 1) * reservations.cardGap) / rows / reservations.cardAspectRatio
   const width = clamp(
     Math.min(cwByW, cwByH),
     reservations.minCardWidth,
@@ -173,6 +182,11 @@ function computeDrawCardSize(
  * Result-stage card size + screen rectangle. Vertical budget on narrow
  * screens leaves room for the drawer's minimum initial height, minus the
  * overlap pixels the card is allowed to sit under.
+ *
+ * The single card has the same `gap`-sized breathing on every side as the
+ * draw-stage grid: we subtract `2 * gap` from the available width and
+ * height before solving so the result card never sits flush against the
+ * header, side margin, or drawer edge.
  */
 function computeResultCardLayout(
   viewport: PhysicalViewport,
@@ -190,8 +204,10 @@ function computeResultCardLayout(
     ? availableH
     : availableH - reservations.drawerMinInitialHeight + reservations.drawerCardOverlap
 
+  const cwByW = availableW - 2 * reservations.cardGap
+  const cwByH = (budgetH - 2 * reservations.cardGap) / reservations.cardAspectRatio
   const width = clamp(
-    Math.min(availableW, budgetH / reservations.cardAspectRatio),
+    Math.min(cwByW, cwByH),
     reservations.minCardWidth,
     reservations.maxCardWidth,
   )

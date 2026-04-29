@@ -207,8 +207,14 @@ describe('layout_solver — physical-pixel layout solver', () => {
           expect(layout.cards).toHaveLength(1)
           expect(layout.cards[0]?.slotId).toBe('center')
 
-          // Card size >= draw card size (single card has at least as much room).
-          expect(layout.cardWidth).toBeGreaterThanOrEqual(layout.drawCardWidth - EPS)
+          // Card size >= draw card size — but only when both scenes share the
+          // same stage width. On wide viewports the result stage shrinks to
+          // leave room for the side drawer (e.g. iPad portrait drops to 288 px
+          // of stage out of 768 viewport), so the result card can legitimately
+          // be smaller than a draw card sized against the full 768 px.
+          if (!viewport.isWide) {
+            expect(layout.cardWidth).toBeGreaterThanOrEqual(layout.drawCardWidth - EPS)
+          }
 
           const rect = resultCardScreenRect(layout, viewport)
           // Card stays inside viewport horizontally and vertically.
@@ -251,8 +257,11 @@ describe('layout_solver — physical-pixel layout solver', () => {
           expect(layout.cards[0]?.y).toBeCloseTo(0, 5)
           expect(layout.stageShiftY).toBeCloseTo(0, 5)
 
-          // Size fit check: rowsDraw cards stacked vertically (or 1 row of 3)
-          // must fit inside the available band between header and action bar.
+          // Size fit check: rowsDraw cards stacked vertically (or 1 row of
+          // 3 piles on wide), plus the (N+1)*gap reserved for inter-card
+          // spacing AND breathing buffers on each end of the grid. The
+          // breathing keeps the topmost cut pile a `gap`-px clearance away
+          // from the header icons (and the same on the bottom / sides).
           const availableH =
             viewport.height -
             viewport.topBarHeight -
@@ -262,13 +271,13 @@ describe('layout_solver — physical-pixel layout solver', () => {
             viewport.safeAreaBottom
           const usedH =
             expectedRows * layout.drawCardHeight +
-            (expectedRows - 1) * reservations.cardGap
+            (expectedRows + 1) * reservations.cardGap
           expect(usedH).toBeLessThanOrEqual(availableH + EPS)
 
           const availableW = viewport.width - 2 * reservations.cardSideMargin
           const usedW =
             expectedCols * layout.drawCardWidth +
-            (expectedCols - 1) * reservations.cardGap
+            (expectedCols + 1) * reservations.cardGap
           expect(usedW).toBeLessThanOrEqual(availableW + EPS)
         }
       })

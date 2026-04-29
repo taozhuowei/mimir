@@ -97,30 +97,32 @@ const DEFAULT_DRAWER_MIN_INITIAL_HEIGHT = 220
 /**
  * Legibility lower bound for card width.
  *
- * Sized so the cut-phase 1×3 envelope on the tightest supported viewport
- * — iPhone SE 2/3 at 375×667, regular tier (gap=20) — still fits without
- * overflow. The math: with availH = 491 (667 − 80 header − 96 action bar)
- * and three rows separated by two 20-px gaps, the per-card height ceiling
- * is (491 − 40) / 3 = 150.3, which at aspect 1.6 caps the card width at
- * ~93 px. Pinning min at 88 leaves a small margin and rounds to a friendly
- * multiple of 4. Galaxy S22 (360×800), iPhone Pro Max (430×932) and every
- * larger device land well above this floor naturally; the clamp is a
- * legibility contract, not a fitting rule.
- *
- * Devices smaller than 375 wide and shorter than ~660 tall (e.g. iPhone
- * SE 1, very old Android) are out of scope and may overflow.
+ * The cut-phase 1×3 envelope on iPhone SE 2/3 (375×667, regular tier,
+ * gap=20) is the tightest supported case. The new sizing formula reserves
+ * `gap` of breathing on each end of the card grid (so the topmost cut
+ * pile keeps a `gap`-px gap from the header icons rather than touching
+ * them), which forces the per-card height ceiling on SE 2/3 down to
+ * (491 − 4×20) / 3 = 137, i.e. cardWidth ≤ ~85.6 px. We pin min at 84 so
+ * that natural value passes through unclamped; rounding to a multiple
+ * of 4 stays friendly to the design system. Anything smaller than 84
+ * is functionally illegible for tarot artwork; everything from
+ * Galaxy S22 (360×800) upward sits well above this floor naturally,
+ * making the clamp a legibility contract, not a fitting rule.
  */
-const DEFAULT_MIN_CARD_WIDTH = 88
+const DEFAULT_MIN_CARD_WIDTH = 84
 
 /**
  * Aesthetic upper bound for card width.
  *
- * A real Rider–Waite tarot card is ~70mm × 112mm, roughly 264 × 422 px on
- * a 96 dpi display. Capping at 260 keeps a "hand-held printed card"
- * feeling on every viewport — large screens grow the breathing space, not
- * the card itself.
+ * 240 px is "the largest single card we ever want to render" — the
+ * iPhone Pro Max (430×932) result-stage card naturally lands at this
+ * size with the new formula, and every wider screen (iPad portrait,
+ * desktop) shares the cap. Effect: cards on a 27-inch desktop monitor
+ * never look bigger than they would on a top-of-the-line phone in the
+ * user's hand. Big screens grow the breathing space around the card,
+ * not the card itself.
  */
-const DEFAULT_MAX_CARD_WIDTH = 260
+const DEFAULT_MAX_CARD_WIDTH = 240
 
 /** Card aspect ratio (height / width) — tarot cards are tall. */
 const DEFAULT_CARD_ASPECT_RATIO = 1.6
