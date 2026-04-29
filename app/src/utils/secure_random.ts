@@ -27,6 +27,20 @@ function getCrypto(): CryptoLike | null {
   return g.crypto && typeof g.crypto.getRandomValues === 'function' ? g.crypto : null
 }
 
+// Monotonic counter that breaks same-tick collisions in the fallback path.
+// Without it, multiple calls inside one millisecond all return the same
+// `Date.now() % 1e6 / 1e6` value, which would make every draw card share
+// the same jitter angle when the loop runs synchronously. Multiplying by
+// Knuth's 32-bit hash constant (2654435761) and masking back to 32 bits
+// produces a cheap, well-distributed scramble for the visual-jitter use
+// case — nothing here protects fairness or security.
+let _fallbackCounter = 0
+function fallbackRandomFloat(): number {
+  _fallbackCounter = (_fallbackCounter + 1) >>> 0
+  const seed = ((Date.now() & 0xff_ff_ff_ff) + _fallbackCounter) >>> 0
+  return ((seed * 2654435761) >>> 0) / 0x1_0000_0000
+}
+
 /** Uniform float in [0, 1). Source-agnostic, see file header. */
 export function randomFloat(): number {
   const c = getCrypto()
@@ -35,9 +49,7 @@ export function randomFloat(): number {
     c.getRandomValues(arr)
     return arr[0] / 0x1_0000_0000
   }
-  // Last-resort fallback — quality is degraded but the call site only uses
-  // it for visual jitter where any unpredictability is enough.
-  return (Date.now() % 1_000_000) / 1_000_000
+  return fallbackRandomFloat()
 }
 
 /** Uniform float in [min, max). */
