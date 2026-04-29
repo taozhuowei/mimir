@@ -16,7 +16,9 @@ export class RuleBasedReadingProvider implements ReadingProvider {
   readonly type = 'rule_based' as const
 
   async requestReading(request: ReadingRequest): Promise<Divination> {
-    return requestDivination(request.spreadKind ?? 'single_card')
+    // No client-side fallback to 'single_card' here — when `spreadKind` is
+    // missing, the server's zod default fills it in. Single source of truth.
+    return requestDivination(request.spreadKind)
   }
 
   isAvailable(): boolean {

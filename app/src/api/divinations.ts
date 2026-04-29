@@ -70,19 +70,25 @@ function hydrateReading(reading: ReadingResult): ReadingResult {
 }
 
 /**
- * Run a divination. The default spread kind is `single_card`; callers may
- * pass another kind once additional spreads are wired into the backend.
+ * Run a divination. The spread kind is optional; when omitted the server's
+ * zod default takes effect (`single_card` today). Centralising the default
+ * server-side means future spreads only need to update the route's enum
+ * and zod default, not every caller of this helper.
  *
  * Named `requestDivination` rather than `performDivination` because the
  * server-side implementation already owns the latter name; this helper is
  * just a typed HTTP wrapper, so the verb reflects the round-trip.
  */
-export async function requestDivination(
-  spreadKind: SpreadKind = 'single_card',
-): Promise<Divination> {
+export async function requestDivination(spreadKind?: SpreadKind): Promise<Divination> {
+  // Build the body explicitly so we never send `{ spreadKind: undefined }`
+  // (which would serialize as `{}` anyway, but spelling it out makes the
+  // "no client-side default" intent obvious to readers).
+  const data: { spreadKind?: SpreadKind } = {}
+  if (spreadKind !== undefined) data.spreadKind = spreadKind
+
   const res = await request<DivinationResponse>('/api/v1/divinations', {
     method: 'POST',
-    data: { spreadKind },
+    data,
   })
 
   const reading = hydrateReading(res.reading)
