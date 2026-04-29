@@ -482,15 +482,19 @@ onUnmounted(() => {
   background: var(--color-overlay-bg);
 }
 
-/* Phone-shell envelope. Mobile caps at 440×956 (iPhone 17 Pro Max), pc
-   widens to 920 (phone stage + 480 side column). Centered by parent flex. */
+/* Phone-shell envelope.
+   Default (mobile + pc-pre-results): 440 × 956, centered.
+   Pc with results showing: widens to 920 (phone stage + 480 side column),
+   so the deck animation phase stays centered on big screens and only
+   splits into two columns once the reading actually arrives. */
 .overlay-main {
   max-width: 440px;
   max-height: 956px;
   width: 100%;
   height: 100%;
+  transition: max-width 0.42s cubic-bezier(0.32, 0.72, 0, 1);
 }
-.divination-overlay.is-wide .overlay-main {
+.divination-overlay.is-wide.show-results .overlay-main {
   max-width: 920px;
   flex-direction: row;
 }
@@ -514,8 +518,11 @@ onUnmounted(() => {
   transition: width 0.52s cubic-bezier(0.32, 0.72, 0, 1);
 }
 
-.is-wide .stage-container {
-  /* PC mode: stage is fixed 440 (phone envelope), sidebar is the row sibling. */
+.is-wide.show-results .stage-container {
+  /* Pc + results: stage pinned to phone-envelope width on the left of the
+     row, sidebar takes the remaining 480 on the right. Before results
+     show, .stage-container keeps its default `width: 100%` so the deck
+     animation occupies the centered 440 box. */
   width: 440px;
   flex: 0 0 auto;
 }
