@@ -1,9 +1,8 @@
 {
   "fileSize": [
-    "app/src/components/DivinationOverlay.vue:880",
+    "app/src/components/DivinationOverlay.vue:925",
     "app/src/composables/use_animation_controller.ts:622",
-    "app/src/pages/index/index.vue:574",
-    "app/src/components/overlay/ResultZone.vue:352",
+    "app/src/pages/index/index.vue:610",
     "server/src/services/theme_loader.ts:325"
   ],
   "functionSize": [

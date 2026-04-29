@@ -200,6 +200,80 @@ export function getDefaultReservations(viewportWidth?: number): UiReservations {
 }
 
 // ---------------------------------------------------------------------------
+// Supported-screen envelope.
+//
+// The whole product is designed to feel like an iPhone-sized "object" on
+// every device. We pick two real iPhones as the envelope:
+//   - iPhone 8 / SE 2 / SE 3 (375 × 667) is the smallest screen we design
+//     for. Anything narrower is shown a non-blocking "screen too small"
+//     banner; the layout still tries to render but may overflow.
+//   - iPhone 17 Pro Max (440 × 956) is the largest screen the layout
+//     itself uses. Bigger physical viewports get the layout solved as if
+//     the viewport were Pro Max-sized, then centered in the actual screen
+//     by CSS, with the surplus filled by the page background.
+// ---------------------------------------------------------------------------
+
+/** Smallest viewport width the layout is designed for (iPhone 8 / SE 2). */
+export const MIN_VIEWPORT_WIDTH = 375
+/** Smallest viewport height the layout is designed for (iPhone 8 / SE 2). */
+export const MIN_VIEWPORT_HEIGHT = 667
+
+/** Largest viewport width the solver ever sees (iPhone 17 Pro Max). */
+export const MAX_STAGE_VIEWPORT_WIDTH = 440
+/** Largest viewport height the solver ever sees (iPhone 17 Pro Max). */
+export const MAX_STAGE_VIEWPORT_HEIGHT = 956
+
+/**
+ * Threshold above which the reading panel switches from a bottom sheet
+ * to a side column. Equal to MAX_STAGE_VIEWPORT_WIDTH (440) plus the
+ * side-column drawer width (480) — below 920, the side column wouldn't
+ * fit alongside the phone-sized stage.
+ */
+export const PC_BREAKPOINT = MAX_STAGE_VIEWPORT_WIDTH + DEFAULT_DRAWER_WIDE_WIDTH // 920
+
+/**
+ * Three top-level screen modes the rest of the app branches on.
+ *
+ *   too_small  width <  375  — show banner, render at actual size
+ *   mobile     375 ≤ w < 920 — bottom-drawer layout, stage capped at 440
+ *   pc         width ≥ 920   — side-column layout, stage 440 + drawer 480
+ *
+ * The mobile/pc split is decided by ACTUAL viewport width, not by the
+ * clamped stage viewport. The stage itself is always phone-sized so the
+ * solver always produces phone-sized cards.
+ */
+export type ScreenMode = 'too_small' | 'mobile' | 'pc'
+
+/** Classify a viewport width into one of the three top-level screen modes. */
+export function pickScreenMode(actualViewportWidth: number): ScreenMode {
+  if (actualViewportWidth < MIN_VIEWPORT_WIDTH) return 'too_small'
+  if (actualViewportWidth < PC_BREAKPOINT) return 'mobile'
+  return 'pc'
+}
+
+/**
+ * Clamp an actual viewport down to the phone-sized envelope used for layout
+ * solving. Width and height are capped at iPhone 17 Pro Max; `isWide` is
+ * forced to false because the solver always treats the stage as a phone.
+ *
+ * The mobile/pc layout difference is handled by the caller (component
+ * choice + CSS centering), NOT by passing isWide=true through to the
+ * solver. Keeping isWide=false here means the solver's drawer geometry is
+ * always the bottom-sheet shape; pc mode swaps in a separate side-column
+ * component that doesn't consume that geometry.
+ */
+export function clampViewportToStage(viewport: PhysicalViewport): PhysicalViewport {
+  return {
+    width: Math.min(viewport.width, MAX_STAGE_VIEWPORT_WIDTH),
+    height: Math.min(viewport.height, MAX_STAGE_VIEWPORT_HEIGHT),
+    safeAreaTop: viewport.safeAreaTop,
+    safeAreaBottom: viewport.safeAreaBottom,
+    topBarHeight: viewport.topBarHeight,
+    isWide: false,
+  }
+}
+
+// ---------------------------------------------------------------------------
 // Viewport adapter
 // ---------------------------------------------------------------------------
 
@@ -220,6 +294,12 @@ export interface WindowInfoShape {
 
 /**
  * Adapt a platform window-info object into the solver's PhysicalViewport.
+ *
+ * Returns the *raw* viewport (not clamped). Most callers should pipe the
+ * result through `clampViewportToStage` before feeding it to the solver,
+ * so cards are always sized as if the screen were at most an iPhone 17
+ * Pro Max. The unclamped viewport is still useful for screen-mode
+ * detection (`pickScreenMode`) and CSS centering math.
  *
  * Pure / side-effect free: does not call uni APIs or read globals — the
  * caller is responsible for fetching the window info first. This keeps the

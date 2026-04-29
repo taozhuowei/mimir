@@ -73,6 +73,8 @@
       @back-home="restartDivination"
     />
 
+    <TooSmallBanner :visible="screenIsTooSmall" />
+
     <view class="landscape-hint">
       <text class="landscape-hint-text">请将设备旋转至竖屏</text>
       <text class="landscape-hint-text">以获得最佳体验</text>
@@ -88,12 +90,18 @@ import { computed, nextTick, ref, onMounted, onUnmounted } from 'vue'
 // gsap-core. Issue mitigated by gsap-core alias.
 import { gsap } from 'gsap'
 import DivinationOverlay from '../../components/DivinationOverlay.vue'
+import TooSmallBanner from '../../components/TooSmallBanner.vue'
 import { useTarotStore } from '../../stores/tarot'
 import { useThemeStore } from '../../stores/theme'
 import { prefersReducedMotion } from '../../utils/accessibility'
 import { DECK_CLICK_SAFETY_MS } from '../../core/config/layout_constants'
 import { solveLayout } from '../../core/sizing/layout_solver'
-import { getDefaultReservations, getViewport } from '../../core/sizing/physical_reservations'
+import {
+  clampViewportToStage,
+  getDefaultReservations,
+  getViewport,
+  pickScreenMode,
+} from '../../core/sizing/physical_reservations'
 
 const DECK_CLICK_RELEASE_MS = 300
 
@@ -102,6 +110,7 @@ const themeStore = useThemeStore()
 
 const cardWidth = ref(100)
 const cardHeight = ref(160)
+const screenIsTooSmall = ref(false)
 const deckContainerStyle = computed(() => ({
   width: `${cardWidth.value}px`,
   height: `${cardHeight.value}px`
@@ -155,15 +164,24 @@ function calculateLayout() {
     const winInfo = uni.getWindowInfo()
     winHeight = winInfo.windowHeight
 
+    // Detect screen mode against the actual viewport (drives the
+    // too-small banner + the centered-shell CSS branch below).
+    screenIsTooSmall.value = pickScreenMode(winInfo.windowWidth) === 'too_small'
+
     // Sync the home-page card size with the overlay algorithm by going
     // through the same layout solver. The home page only renders draw-
     // stage cards, so we always ask for `draw_stage` here.
-    const viewport = getViewport({
+    //
+    // The viewport fed to the solver is clamped to the iPhone 17 Pro Max
+    // envelope (440 × 956). Tablets and desktops therefore size their
+    // idle deck as if the screen were a phone; CSS centers the result.
+    const rawViewport = getViewport({
       windowWidth: winInfo.windowWidth,
       windowHeight: winInfo.windowHeight,
       safeAreaInsets: winInfo.safeAreaInsets,
       topBarHeight: 0,
     })
+    const viewport = clampViewportToStage(rawViewport)
     const layout = solveLayout({
       viewport,
       reservations: getDefaultReservations(viewport.width),
@@ -381,13 +399,25 @@ onUnmounted(() => {
   height: 100vh;
   display: flex;
   flex-direction: column;
+  align-items: center;
+  justify-content: center;
   position: relative;
   overflow: hidden;
+  /* Background covers the whole viewport even when the inner content is
+     centered (large tablets / desktops); .parchment-bg paints onto this
+     element so the surplus space outside the shell stays themed. */
 }
 
+/*
+ * Scene container is the gsap animation target (sceneStyle drives its
+ * transform), so its own positioning rules must not use `transform`.
+ * Sizing is capped at the iPhone 17 Pro Max envelope; the parent flex
+ * (.index-page) centers it.
+ */
 .scene-container {
-  position: absolute;
-  inset: 0;
+  position: relative;
+  width: min(100vw, 440px);
+  height: min(100vh, 956px);
   display: flex;
   flex-direction: column;
   z-index: 10;

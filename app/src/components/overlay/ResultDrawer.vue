@@ -2,7 +2,7 @@
   <view
     v-if="showResults"
     class="drawer-container"
-    :class="{ 'is-wide': isWide, 'is-loading': isReadingLoading }"
+    :class="{ 'is-loading': isReadingLoading }"
   >
     <view
       class="drawer-sheet"
@@ -14,10 +14,9 @@
       @touchmove.stop.prevent="onDrawerTouchMove"
       @touchend.stop="onDrawerTouchEnd"
     >
-      <!-- Drag Handle for Mobile (visual + keyboard affordance only — the
-           whole sheet captures the drag gesture). -->
+      <!-- Drag handle (visual + keyboard affordance only — the whole
+           sheet captures the drag gesture). -->
       <view
-        v-if="!isWide"
         class="drag-handle-zone"
         tabindex="0"
         role="slider"
@@ -27,12 +26,12 @@
         <view class="drag-handle-bar"></view>
       </view>
 
-      <!-- Content area is a plain block — internal scrolling is intentionally
-           disabled. To read more, drag the entire drawer up. -->
+      <!-- Internal scrolling is intentionally disabled. To read more,
+           drag the entire drawer up. -->
       <view class="drawer-content">
         <view class="result-inner">
           <transition name="fade-slide" mode="out-in">
-            <!-- Loading State -->
+            <!-- Loading -->
             <view v-if="isReadingLoading" key="loading" class="result-loading">
               <view class="loading-spinner"></view>
               <text class="loading-text">{{ overlayText.revealing }}</text>
@@ -43,7 +42,7 @@
               </view>
             </view>
 
-            <!-- Error State -->
+            <!-- Error -->
             <view v-else-if="isReadingFailed" key="error" class="result-error">
               <view class="error-box">
                 <text class="error-icon">⚠️</text>
@@ -52,7 +51,7 @@
               <view class="btn btn-primary" @click="emit('retry')">重试读取</view>
             </view>
 
-            <!-- Success State -->
+            <!-- Success -->
             <ResultPanel
               v-else-if="readingResult"
               :key="resultKey"
@@ -68,6 +67,19 @@
 </template>
 
 <script setup lang="ts">
+/**
+ * Narrow-screen / mobile reading drawer.
+ *
+ * Renders the divination reading as a draggable bottom sheet anchored
+ * to the actual card's bottom edge. The sheet's initial height,
+ * maximum height, and pinned top all come from the layout solver as a
+ * single `DrawerGeometry` prop — this component never re-derives those
+ * values from window dimensions.
+ *
+ * Pairs with `ResultSidebar.vue`, the wide-screen sibling. The screen-
+ * mode router (`DivinationOverlay`) decides which one to mount; both
+ * wrap the same `ResultPanel` content but apply very different chrome.
+ */
 import { ref, computed, watch } from 'vue'
 import ResultPanel from '../ResultPanel.vue'
 import type { ReadingResult } from '../../api/types'
@@ -75,7 +87,6 @@ import type { DrawerGeometry } from '../../core/sizing/layout_solver'
 
 const props = defineProps<{
   showResults: boolean
-  isWide: boolean
   isReadingLoading: boolean
   isReadingFailed: boolean
   readingErrorMessage: string
@@ -93,9 +104,9 @@ const emit = defineEmits<{
   (event: 'restart'): void
 }>()
 
-// Safety floor for very short viewports — picked to keep the drag handle plus
-// at least one short line of text legible. Below this, the layout is broken
-// regardless of what the solver says.
+// Safety floor for very short viewports — picked to keep the drag handle
+// plus at least one short line of text legible. Below this the layout is
+// broken regardless of what the solver says.
 const MIN_DRAWER_HEIGHT_PX = 120
 
 const drawerHeightPx = ref(0)
@@ -130,7 +141,6 @@ watch(initialHeight, (newH) => {
 })
 
 const sheetStyle = computed(() => {
-  if (props.isWide) return ''
   const height = isAutoHeight.value
     ? initialHeight.value
     : Math.max(MIN_DRAWER_HEIGHT_PX, Math.min(drawerHeightPx.value, maxHeight.value))
@@ -192,8 +202,11 @@ function onDrawerKeydown(e: KeyboardEvent) {
 }
 
 .drawer-sheet {
+  /* Width follows the parent shell, which is already capped at the
+     phone envelope (MAX_STAGE_VIEWPORT_WIDTH = 440 px) by .overlay-main.
+     No additional max-width here — the cap belongs to the shell, not
+     to the drawer. */
   width: 100%;
-  max-width: 800px;
   background: var(--color-bg-page);
   border-top-left-radius: 40rpx;
   border-top-right-radius: 40rpx;
@@ -204,40 +217,12 @@ function onDrawerKeydown(e: KeyboardEvent) {
   transition: height 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   overflow: hidden;
   border: 1rpx solid var(--color-border);
-  margin: 0 auto;
   /* Establish a named container so descendants can size text against the
-     drawer's actual inline width (cqi) instead of the viewport. On wide
-     layouts the drawer is only 46% of the viewport, so viewport-based
-     clamps misjudged the readable column. */
+     drawer's actual inline width (cqi) instead of the viewport. */
   container: result-drawer / inline-size;
   /* The whole sheet captures the drag gesture; touch-action stops the
      browser from competing with our handlers (e.g. pull-to-refresh). */
   touch-action: none;
-}
-
-.is-wide .drawer-container {
-  justify-content: flex-end;
-  align-items: flex-end;
-}
-
-.is-wide .drawer-sheet {
-  height: 100% !important;
-  max-height: 100% !important;
-  /* Width is the solver's `drawer.width` (DEFAULT_DRAWER_WIDE_WIDTH=480
-     unless reservations override it), exposed as `--drawer-width` from
-     use_overlay_controller. The 46% fallback covers browsers without CSS
-     custom-properties; the production code paths always set the var. */
-  width: var(--drawer-width, 46%);
-  max-width: none;
-  border-top-left-radius: 0;
-  border-top-right-radius: 0;
-  border-left: 1rpx solid var(--color-border);
-  border-top: none;
-  margin: 0;
-  transition: none;
-  /* Wide layout uses a static side panel — no drag gesture, restore
-     normal touch behaviour so any future scrollable child works. */
-  touch-action: auto;
 }
 
 .drag-handle-zone {

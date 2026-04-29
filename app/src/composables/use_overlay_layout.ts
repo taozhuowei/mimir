@@ -19,13 +19,15 @@ import {
   type LayoutEnvelope,
 } from '../core/sizing/layout_solver'
 import {
+  clampViewportToStage,
   getDefaultReservations,
   getViewport,
+  PC_BREAKPOINT,
   type PhysicalViewport,
   type UiReservations,
 } from '../core/sizing/physical_reservations'
 import { clamp } from '../utils/math'
-import { SHUFFLE_EDGE_MARGIN, WIDE_BREAKPOINT } from '../core/config/layout_constants'
+import { SHUFFLE_EDGE_MARGIN } from '../core/config/layout_constants'
 
 export interface UseOverlayLayoutDeps {
   isWide: Ref<boolean>
@@ -124,20 +126,29 @@ export function useOverlayLayout(deps: UseOverlayLayoutDeps) {
   }
 
   /**
-   * Build the physical viewport for the solver. `showResults` does NOT
-   * affect the underlying viewport — it influences the stage rectangle the
-   * solver derives, so we keep the conversion shape-stable here and pass
-   * `scene` to the solver further down.
+   * Build the physical viewport the solver works in.
+   *
+   * Two stages:
+   *   1. `getViewport()` adapts the platform window-info into our shape.
+   *   2. `clampViewportToStage()` caps the result at the iPhone 17 Pro Max
+   *      envelope (440 × 956). Cards are therefore always sized as if the
+   *      screen were a phone; the actual extra space on tablets / desktops
+   *      is filled by background and centering at the CSS layer.
+   *
+   * `showResults` does NOT affect the underlying viewport — it influences
+   * the stage rectangle the solver derives, so we keep the conversion
+   * shape-stable here and pass `scene` to the solver further down.
    */
   function buildPhysicalViewport(): PhysicalViewport {
     const win = uni.getWindowInfo()
     const topBarHeight = resolveTopBarHeight(getMenuButtonRect())
-    return getViewport({
+    const raw = getViewport({
       windowWidth: win.windowWidth,
       windowHeight: win.windowHeight,
       safeAreaInsets: win.safeAreaInsets,
       topBarHeight,
     })
+    return clampViewportToStage(raw)
   }
 
   /**
@@ -282,13 +293,18 @@ export function useOverlayLayout(deps: UseOverlayLayoutDeps) {
   }
 
   /**
-   * Update `deps.isWide` when the window size crosses the wide breakpoint.
+   * Update `deps.isWide` when the window size crosses the PC breakpoint.
    * Returns true iff `isWide` actually changed so the caller can short-
    * circuit redundant relayouts.
+   *
+   * The threshold is `PC_BREAKPOINT` (920 = phone-stage 440 + side drawer
+   * 480), the smallest viewport on which the side-column reading layout
+   * fits next to the phone-sized stage. Below 920 we render the bottom-
+   * sheet drawer; above we render the side column.
    */
   function checkWidth(windowWidth: number): boolean {
     const wasWide = deps.isWide.value
-    deps.isWide.value = windowWidth >= WIDE_BREAKPOINT
+    deps.isWide.value = windowWidth >= PC_BREAKPOINT
     return wasWide !== deps.isWide.value
   }
 

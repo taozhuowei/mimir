@@ -118,10 +118,15 @@
       </view>
     </view>
 
-    <ResultZone
+    <!-- Reading panel: two distinct components, picked by screen mode.
+         - ResultDrawer  : narrow / mobile, draggable bottom sheet.
+         - ResultSidebar : wide / pc, static right column.
+         The components share content (ResultPanel inside) but very
+         different chrome, so each one owns its own template + behavior. -->
+    <ResultDrawer
+      v-if="!isWide"
       class="overlay-result-zone"
       :show-results="controller.showResults.value"
-      :is-wide="isWide"
       :is-reading-loading="controller.isReadingLoading.value"
       :is-reading-failed="controller.isReadingFailed.value"
       :reading-error-message="controller.readingErrorMessage.value"
@@ -129,6 +134,18 @@
       :reading-result="tarotStore.readingResult"
       :current-question="tarotStore.currentQuestion"
       :drawer-geometry="resultDrawerGeometry"
+      @retry="handleRetry"
+      @restart="handleRestart"
+    />
+    <ResultSidebar
+      v-else
+      :show-results="controller.showResults.value"
+      :is-reading-loading="controller.isReadingLoading.value"
+      :is-reading-failed="controller.isReadingFailed.value"
+      :reading-error-message="controller.readingErrorMessage.value"
+      :overlay-text="controller.overlayText"
+      :reading-result="tarotStore.readingResult"
+      :current-question="tarotStore.currentQuestion"
       @retry="handleRetry"
       @restart="handleRestart"
     />
@@ -274,7 +291,8 @@ import { computed, nextTick, onMounted, onUnmounted, ref } from 'vue'
 import { useTarotStore } from '../stores/tarot'
 import { useThemeStore } from '../stores/theme'
 import ProgressHeader from './overlay/ProgressHeader.vue'
-import ResultZone from './overlay/ResultZone.vue'
+import ResultDrawer from './overlay/ResultDrawer.vue'
+import ResultSidebar from './overlay/ResultSidebar.vue'
 import ActionBar from './overlay/ActionBar.vue'
 import { trapFocus, getFocusableElements } from '../utils/accessibility'
 import { useOverlayController } from '../composables/use_overlay_controller'
@@ -300,7 +318,9 @@ const cardCount = computed(() => 1)
 
 function updateIsWide() {
   const { windowWidth } = uni.getWindowInfo()
-  isWide.value = windowWidth >= 768
+  // PC mode (side-column reading) requires room for the phone-sized stage
+  // (≤440) plus the 480-px side drawer. Below 920 we use the bottom sheet.
+  isWide.value = windowWidth >= 920
 }
 
 updateIsWide()
@@ -436,6 +456,9 @@ onUnmounted(() => {
   --color-badge-reversed-from: #8b6f5e;
   --color-badge-reversed-to: #5c3d2e;
 
+  /* Outer shell: covers the whole viewport so background extends edge-to-edge.
+     Inner content (overlay-main) is constrained to a phone-sized box and
+     centered by the .overlay-bg layer + flex on this container. */
   position: fixed;
   top: 0;
   right: 0;
@@ -444,6 +467,8 @@ onUnmounted(() => {
   z-index: 500;
   display: flex;
   flex-direction: column;
+  align-items: center;
+  justify-content: center;
   overflow: hidden;
 }
 
@@ -455,6 +480,19 @@ onUnmounted(() => {
   left: 0;
   z-index: -1;
   background: var(--color-overlay-bg);
+}
+
+/* Phone-shell envelope. Mobile caps at 440×956 (iPhone 17 Pro Max), pc
+   widens to 920 (phone stage + 480 side column). Centered by parent flex. */
+.overlay-main {
+  max-width: 440px;
+  max-height: 956px;
+  width: 100%;
+  height: 100%;
+}
+.divination-overlay.is-wide .overlay-main {
+  max-width: 920px;
+  flex-direction: row;
 }
 
 /* Main flex region — stage always fills the full height; result sheet is overlaid. */
@@ -476,18 +514,23 @@ onUnmounted(() => {
   transition: width 0.52s cubic-bezier(0.32, 0.72, 0, 1);
 }
 
-.is-wide.show-results .stage-container {
-  /* --stage-width is JS-bound from the solver; 54% is a CSS-vars fallback. */
-  width: var(--stage-width, 54%);
+.is-wide .stage-container {
+  /* PC mode: stage is fixed 440 (phone envelope), sidebar is the row sibling. */
+  width: 440px;
+  flex: 0 0 auto;
 }
 
 .overlay-result-zone {
+  /* Centered to the phone-shell envelope (matches .overlay-main). */
   position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  z-index: 2000; /* Extremely high to beat any 3D layers */
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 100%;
+  height: 100%;
+  max-width: 440px;
+  max-height: 956px;
+  z-index: 2000;
   pointer-events: none;
 }
 
