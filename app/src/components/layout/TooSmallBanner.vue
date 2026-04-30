@@ -37,7 +37,7 @@
  * reappear in the same session.
  */
 import { ref } from 'vue'
-import { MIN_VIEWPORT_WIDTH } from '../core/sizing/physical_reservations'
+import { MIN_VIEWPORT_WIDTH } from '../../core/sizing/physical_reservations'
 
 defineProps<{
   /** Whether the actual viewport is below the supported minimum. */

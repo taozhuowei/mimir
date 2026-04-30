@@ -60,7 +60,7 @@
  * why we render two components instead of one chooser-by-class.
  */
 import { computed } from 'vue'
-import ResultPanel from '../ResultPanel.vue'
+import ResultPanel from './ResultPanel.vue'
 import type { ReadingResult } from '../../api/types'
 
 const props = defineProps<{

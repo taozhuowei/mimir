@@ -289,16 +289,16 @@
 
 <script setup lang="ts">
 import { computed, nextTick, onMounted, onUnmounted, ref } from 'vue'
-import { useTarotStore } from '../stores/tarot'
-import { useThemeStore } from '../stores/theme'
-import ProgressHeader from './overlay/ProgressHeader.vue'
-import ResultDrawer from './overlay/ResultDrawer.vue'
-import ResultSidebar from './overlay/ResultSidebar.vue'
-import ActionBar from './overlay/ActionBar.vue'
-import { trapFocus, getFocusableElements } from '../utils/accessibility'
-import { useOverlayController } from '../composables/use_overlay_controller'
-import { getPhaseStep, PHASE_STEPS } from '../animation/phases/registry'
-import type { OverlayPhase } from '../core/flow/types'
+import { useTarotStore } from '../../stores/tarot'
+import { useThemeStore } from '../../stores/theme'
+import ProgressHeader from './ProgressHeader.vue'
+import ResultDrawer from './ResultDrawer.vue'
+import ResultSidebar from './ResultSidebar.vue'
+import ActionBar from './ActionBar.vue'
+import { trapFocus, getFocusableElements } from '../../utils/accessibility'
+import { useOverlayController } from '../../composables/use_overlay_controller'
+import { getPhaseStep, PHASE_STEPS } from '../../animation/phases/registry'
+import type { OverlayPhase } from '../../core/flow/types'
 
 const emit = defineEmits<{
   (event: 'complete'): void

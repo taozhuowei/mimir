@@ -81,7 +81,7 @@
  * wrap the same `ResultPanel` content but apply very different chrome.
  */
 import { ref, computed, watch } from 'vue'
-import ResultPanel from '../ResultPanel.vue'
+import ResultPanel from './ResultPanel.vue'
 import type { ReadingResult } from '../../api/types'
 import type { DrawerGeometry } from '../../core/sizing/layout_solver'
 

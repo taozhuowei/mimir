@@ -5,7 +5,7 @@
  */
 
 import type { DeckGeometry } from '../deck/types'
-import type { CardLayout } from '../layout/types'
+import type { CardLayout } from '../sizing/layout_solver'
 
 export type OverlayPhase = 'shuffling' | 'cutting' | 'drawing' | 'revealing'
 

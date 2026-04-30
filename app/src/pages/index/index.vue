@@ -89,8 +89,8 @@ import { computed, nextTick, ref, onMounted, onUnmounted } from 'vue'
 // function exports (to, timeline, killTweensOf) are not available from
 // gsap-core. Issue mitigated by gsap-core alias.
 import { gsap } from 'gsap'
-import DivinationOverlay from '../../components/DivinationOverlay.vue'
-import TooSmallBanner from '../../components/TooSmallBanner.vue'
+import DivinationOverlay from '../../components/overlay/DivinationOverlay.vue'
+import TooSmallBanner from '../../components/layout/TooSmallBanner.vue'
 import { useTarotStore } from '../../stores/tarot'
 import { useThemeStore } from '../../stores/theme'
 import { prefersReducedMotion } from '../../utils/accessibility'
