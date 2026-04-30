@@ -6,7 +6,7 @@
  */
 
 import gsap from 'gsap'
-import type { AnimationTimeline } from '../../../core/animation/types'
+import type { AnimationTimeline } from '../../../animation/engine'
 import type { OverlayPhase, PhaseContext, PhaseRunner } from '../../../core/flow/types'
 import { prefersReducedMotion } from '../../../utils/accessibility'
 

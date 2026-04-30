@@ -1,7 +1,8 @@
 /**
- * Name: core/animation/types
- * Purpose: minimal animation engine types decoupled from GSAP details.
- * Reason: allow the flow layer to depend on an abstract engine interface.
+ * Module: animation/engine
+ * Purpose: animation engine types decoupled from GSAP. Phase plugins consume
+ *          AnimationTimeline; adapters implement AnimationEngine.
+ * Reason: extracted from core/animation/types.ts during architecture cleanup.
  */
 
 export interface TweenConfig {
@@ -20,7 +21,6 @@ export interface AnimationTimeline {
   add(fn: () => void, position?: number | string): AnimationTimeline
   kill(): void
   clear(): void
-  /** Allow GSAP-specific properties without breaking structural typing. */
   [key: string]: unknown
 }
 
