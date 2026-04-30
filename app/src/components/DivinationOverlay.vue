@@ -116,13 +116,26 @@
           </view>
         </view>
       </view>
+
+      <!-- PC sidebar lives inside overlay-main so the flex-row layout
+           (.is-wide.show-results) places it next to stage-container. The
+           mobile drawer is a separate absolutely-positioned overlay below. -->
+      <ResultSidebar
+        v-if="isWide"
+        :show-results="controller.showResults.value"
+        :is-reading-loading="controller.isReadingLoading.value"
+        :is-reading-failed="controller.isReadingFailed.value"
+        :reading-error-message="controller.readingErrorMessage.value"
+        :overlay-text="controller.overlayText"
+        :reading-result="tarotStore.readingResult"
+        :current-question="tarotStore.currentQuestion"
+        @retry="handleRetry"
+        @restart="handleRestart"
+      />
     </view>
 
-    <!-- Reading panel: two distinct components, picked by screen mode.
-         - ResultDrawer  : narrow / mobile, draggable bottom sheet.
-         - ResultSidebar : wide / pc, static right column.
-         The components share content (ResultPanel inside) but very
-         different chrome, so each one owns its own template + behavior. -->
+    <!-- Mobile drawer: absolutely-positioned overlay anchored to the
+         centered phone-shell envelope. Mounted only on narrow viewports. -->
     <ResultDrawer
       v-if="!isWide"
       class="overlay-result-zone"
@@ -134,18 +147,6 @@
       :reading-result="tarotStore.readingResult"
       :current-question="tarotStore.currentQuestion"
       :drawer-geometry="resultDrawerGeometry"
-      @retry="handleRetry"
-      @restart="handleRestart"
-    />
-    <ResultSidebar
-      v-else
-      :show-results="controller.showResults.value"
-      :is-reading-loading="controller.isReadingLoading.value"
-      :is-reading-failed="controller.isReadingFailed.value"
-      :reading-error-message="controller.readingErrorMessage.value"
-      :overlay-text="controller.overlayText"
-      :reading-result="tarotStore.readingResult"
-      :current-question="tarotStore.currentQuestion"
       @retry="handleRetry"
       @restart="handleRestart"
     />
