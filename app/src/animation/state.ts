@@ -1,5 +1,5 @@
 /**
- * Name: animation/engine/animation_state
+ * Name: animation/state
  * Purpose: GSAP target object management decoupled from Vue view layer.
  * Reason: centralize all animation state objects that GSAP mutates.
  */
@@ -9,8 +9,8 @@ import {
   createShuffleInitialStates,
   createCutInitialStates,
   createDrawInitialStates,
-} from '../orchestration/initial_states'
-import type { CardState, CenterCardState, InnerState } from '../orchestration/types'
+} from './initial_states'
+import type { CardState, CenterCardState, InnerState } from './types'
 
 export interface AnimationStateOptions {
   deckCount: number

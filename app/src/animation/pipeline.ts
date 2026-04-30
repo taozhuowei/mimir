@@ -1,5 +1,5 @@
 /**
- * Name: pipeline
+ * Name: animation/pipeline
  * Purpose: phase pipeline composer.
  * Reason: the controller provides an ordered phase list and the pipeline executes them
  *   in sequence; inserting or removing a phase does not require rewriting controller flow.
@@ -11,8 +11,8 @@
 // function exports (to, timeline, killTweensOf) are not available from
 // gsap-core. Issue mitigated by gsap-core alias.
 import type { gsap } from 'gsap'
-import type { OverlayPhase } from './phase_registry'
-import type { TimelineOrchestrator } from './timeline_master'
+import type { OverlayPhase } from './phases/registry'
+import type { TimelineOrchestrator } from './adapters/gsap'
 
 export interface PipelinePhase {
   phase: OverlayPhase

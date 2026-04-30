@@ -20,9 +20,9 @@ import { useOverlayLayout } from './use_overlay_layout'
 import {
   createTimelineOrchestrator,
   killAnimationTargets,
-  createPhasePipeline,
-  getPhaseIndex,
-} from '../animation/orchestration'
+} from '../animation/adapters/gsap'
+import { createPhasePipeline } from '../animation/pipeline'
+import { getPhaseIndex } from '../animation/phases/registry'
 import {
   createProgressModel,
   calculatePhaseProgress,

@@ -1,5 +1,5 @@
 /**
- * Name: animation/engine/visibility_controller
+ * Name: animation/visibility
  * Purpose: visibility flags for lefts, rights, piles, and draws.
  * Reason: isolate v-show/v-if toggles from animation state and style sync.
  */

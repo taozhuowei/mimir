@@ -1,5 +1,5 @@
 /**
- * Name: overlay_animation/initial_states
+ * Name: animation/initial_states
  * Purpose: create initial animation state objects for all overlay element groups.
  * Reason: these pure factories are consumed by use_animation_state.ts.
  */

@@ -5,10 +5,10 @@
  * Data flow: receives layout results and options; returns reactive styles, states, and helpers.
  */
 
-import { createAnimationState } from '../animation/engine/animation_state'
-import { createStyleReconciler } from '../animation/engine/style_reconciler'
-import { createVisibilityController } from '../animation/engine/visibility_controller'
-import { getAllTargets } from '../animation/engine/gsap_adapter'
+import { createAnimationState } from '../animation/state'
+import { createStyleReconciler } from '../animation/reconciler'
+import { createVisibilityController } from '../animation/visibility'
+import { getAllTargets } from '../animation/adapters/gsap'
 
 export function useAnimationState(opts: {
   deckCount: number

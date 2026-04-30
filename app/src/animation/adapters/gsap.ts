@@ -1,7 +1,9 @@
 /**
- * Name: timeline_orchestrator
- * Purpose: orchestrate GSAP timelines for overlay animations.
- * Reason: centralize timeline management while delegating phase-specific animations to dedicated modules.
+ * Name: animation/adapters/gsap
+ * Purpose: GSAP adapter — collect all tweenable targets into a flat array
+ *   and orchestrate GSAP timelines for overlay animations.
+ * Reason: centralize GSAP-specific logic so the rest of the animation system
+ *   never imports gsap directly.
  * Data flow: animation configurations flow in; timeline controls flow out.
  */
 
@@ -10,7 +12,28 @@
 // function exports (to, timeline, killTweensOf) are not available from
 // gsap-core. Issue mitigated by gsap-core alias.
 import gsap from 'gsap'
+import type { AnimationState } from '../state'
 import type { OverlayPhase } from '../../core/flow/types'
+
+/* ── getAllTargets ────────────────────────────────────────────────── */
+
+export function getAllTargets(state: AnimationState): unknown[] {
+  return [
+    state._bg,
+    state._stage,
+    state._header,
+    state._footer,
+    state._deckCtn,
+    ...state._initials,
+    ...state._lefts,
+    ...state._rights,
+    ...state._piles,
+    ...state._draws,
+    ...state._inners,
+  ]
+}
+
+/* ── TimelineOrchestrator ─────────────────────────────────────────── */
 
 export interface TimelineOrchestrator {
   readonly timeline: gsap.core.Timeline

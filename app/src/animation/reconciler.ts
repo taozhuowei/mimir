@@ -1,13 +1,13 @@
 /**
- * Name: animation/engine/style_reconciler
+ * Name: animation/reconciler
  * Purpose: synchronize GSAP-mutated state objects into Vue style refs.
  * Reason: decouple style computation and watch bindings from raw state management.
  */
 
 import { computed, ref, watch } from 'vue'
 import type { Ref, ComputedRef } from 'vue'
-import type { SceneLayout as SceneLayoutResult } from '../../core/sizing/layout_solver'
-import type { AnimationState } from './animation_state'
+import type { SceneLayout as SceneLayoutResult } from '../core/sizing/layout_solver'
+import type { AnimationState } from './state'
 
 export interface StyleReconcilerOptions {
   shuffleHalfCount: number

@@ -1,5 +1,5 @@
 /**
- * Name: phase_registry
+ * Name: animation/phases/registry
  * Purpose: define and manage overlay animation phases metadata.
  * Reason: centralize phase definitions so progress UI and orchestration stay in sync.
  * Data flow: phase configuration flows out to progress model and timeline orchestrator.

@@ -1,5 +1,5 @@
 /**
- * Name: overlay_animation/types
+ * Name: animation/types
  * Purpose: shared animation state types for overlay animations.
  * Reason: keep animation state contracts explicit and reusable.
  */

@@ -297,7 +297,7 @@ import ResultSidebar from './overlay/ResultSidebar.vue'
 import ActionBar from './overlay/ActionBar.vue'
 import { trapFocus, getFocusableElements } from '../utils/accessibility'
 import { useOverlayController } from '../composables/use_overlay_controller'
-import { getPhaseStep, PHASE_STEPS } from '../animation/orchestration/phase_registry'
+import { getPhaseStep, PHASE_STEPS } from '../animation/phases/registry'
 import type { OverlayPhase } from '../core/flow/types'
 
 const emit = defineEmits<{
