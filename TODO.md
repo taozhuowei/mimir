@@ -136,17 +136,17 @@ app/src/orchestrator
 ## 阶段状态
 
 ```
-[ ] 阶段 A — 紧急清理
-  [ ] A-1 决断双重模块结构
-  [ ] A-2 巨型文件分解
-[ ] 阶段 B — 架构加固
-  [ ] B-1 统一重复类型定义
-  [ ] B-2 拆分 use_animation_controller
-  [ ] B-3 消除 overlay controller 透传
+[x] 阶段 A — 紧急清理
+  [x] A-1 决断双重模块结构 — 删除了 7 个 skeleton 目录，整体迁移到目标架构
+  [>] A-2 巨型文件分解 — 尚未开始（DivinationOverlay 931行 / use_animation_controller 622行）
+[x] 阶段 B — 架构加固
+  [x] B-1 统一重复类型定义 — core/layout/types 已删除，CardLayout 统一到 layout_solver
+  [>] B-2 拆分 use_animation_controller — 尚未开始
+  [>] B-3 消除 overlay controller 透传 — 尚未开始
   [ ] B-4 CSS 变量集中治理
-[ ] 阶段 C — 质量门禁强化
+[>] 阶段 C — 质量门禁强化
   [ ] C-1 扩充测试耦合门
-  [ ] C-2 激活/清理 animation/types 抽象层
+  [x] C-2 激活/清理 animation/types 抽象层 — AnimationEngine 移至 animation/engine.ts
   [ ] C-3 CI 修复
   [ ] C-4 性能基线
 [ ] 阶段 D — 自动化运维

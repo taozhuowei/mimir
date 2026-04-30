@@ -11,6 +11,7 @@ const stepsByMode = {
     { label: 'type-check', command: 'npm', args: ['run', 'quality:type-check'] },
     { label: 'test', command: 'npm', args: ['run', 'quality:test'] },
     { label: 'build:h5', command: 'npm', args: ['run', 'quality:build:h5'] },
+    { label: 'perf-baseline', command: 'node', args: ['scripts/perf_baseline_gate.js'] },
     {
       label: 'audit',
       command: 'npm',

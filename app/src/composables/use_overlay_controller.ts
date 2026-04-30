@@ -176,45 +176,20 @@ export function useOverlayController(deps: UseOverlayControllerDeps) {
   })
 
   return {
-    bgStyle: animController.bgStyle, stageStyle: animController.stageStyle,
-    headerStyle: animController.headerStyle, footerStyle: animController.footerStyle,
-    deckCtnStyle: animController.deckCtnStyle, initialsStyle: animController.initialsStyle,
-    leftsStyle: animController.leftsStyle, rightsStyle: animController.rightsStyle,
-    leftsVisible: animController.leftsVisible, rightsVisible: animController.rightsVisible,
-    pilesStyle: animController.pilesStyle, pilesVisible: animController.pilesVisible,
-    drawsStyle: animController.drawsStyle, drawsSizeStyle: animController.drawsSizeStyle,
-    innersStyle: animController.innersStyle, drawsVisible: animController.drawsVisible,
+    ...animController,
+    // Overlays add their own computed/methods
     overlayVarsStyle,
-
-    deckCount: animController.deckCount, shuffleHalfCount: animController.shuffleHalfCount,
-    cutPileCount: animController.cutPileCount, cardsPerPile: animController.cardsPerPile,
-
-    showResults: animController.showResults, phase: animController.phase,
-    entryAnimationComplete: animController.entryAnimationComplete,
-    layoutCardWidth: animController.layoutCardWidth, layoutCardHeight: animController.layoutCardHeight,
-    playbackRate: animController.playbackRate, isPaused: animController.isPaused,
-
     readingPanelState: readingController.readingPanelState,
     readingErrorMessage: readingController.readingErrorMessage,
     isReadingFailed: readingController.isReadingFailed,
     isReadingLoading: readingController.isReadingLoading,
     cardsFocused, cardsDocked,
-
-    progressHeaderPresentation: animController.progressHeaderPresentation,
-    footerPresentation: animController.footerPresentation,
-    phaseSteps: animController.phaseSteps, activePhaseIndex: animController.activePhaseIndex,
-
     cardBack: computed(() => deps.themeStore.cardBackImage),
     getCardImg: (index: number) => deps.tarotStore.drawnCards[index]?.card.image || deps.themeStore.cardBackImage,
     getCardImgName: (index: number) => deps.tarotStore.drawnCards[index]?.card.name,
     overlayText: DEFAULT_OVERLAY_TEXT,
-    getSceneLayout: animController.getSceneLayout,
-
-    setPlaybackRate: animController.setPlaybackRate, pauseAnimations: animController.pauseAnimations,
-    resumeAnimations: animController.resumeAnimations, stepForward: animController.stepForward,
-    stepBackward: animController.stepBackward, seek: animController.seek,
-    replayFromPhase: animController.replayFromPhase, 
     skipToReading,
-    restart, retryReading,
+    restart,
+    retryReading,
   }
 }

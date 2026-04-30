@@ -585,9 +585,6 @@ onUnmounted(() => {
   height: var(--card-height);
 }
 
-.tarot-card {
-}
-
 .deck-layer {
   position: relative;
 }

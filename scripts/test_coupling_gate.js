@@ -21,7 +21,8 @@ const BASE_BRANCH = process.env.BASE_BRANCH || 'main'
 const RISK_PATHS = [
   'app/src/composables',
   'app/src/animation',
-  'app/src/reading',
+  'app/src/stores',
+  'app/src/core',
   'server/src/routes',
 ]
 
