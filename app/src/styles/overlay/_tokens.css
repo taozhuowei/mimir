@@ -1,0 +1,18 @@
+/**
+ * Name: styles/overlay/_tokens.css
+ * Purpose: overlay-specific design tokens extracted from global.css (Phase 4).
+ * Reason: isolates divination-overlay variables so global.css stays lean.
+ * Data flow: imported by App.vue (or any overlay host) after global.css.
+ */
+
+:root, page {
+  /* Background fills for the divination overlay panels */
+  --color-overlay-bg: rgba(242, 232, 208, 0.97);
+  --color-overlay-bg-fade: rgba(242, 232, 208, 0.96);
+  --color-overlay-bg-transparent: rgba(242, 232, 208, 0);
+
+  /* Primary action button — dark green with gold text */
+  --color-btn-primary-from: #2b302a;
+  --color-btn-primary-to: #1a1e19;
+  --color-btn-primary-text: #cca957;
+}

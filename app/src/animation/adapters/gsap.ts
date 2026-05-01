@@ -19,17 +19,17 @@ import type { OverlayPhase } from '../../core/flow/types'
 
 export function getAllTargets(state: AnimationState): unknown[] {
   return [
-    state._bg,
-    state._stage,
-    state._header,
-    state._footer,
-    state._deckCtn,
-    ...state._initials,
-    ...state._lefts,
-    ...state._rights,
-    ...state._piles,
-    ...state._draws,
-    ...state._inners,
+    state.bg,
+    state.stage,
+    state.header,
+    state.footer,
+    state.deckCtn,
+    ...state.initials,
+    ...state.lefts,
+    ...state.rights,
+    ...state.piles,
+    ...state.draws,
+    ...state.inners,
   ]
 }
 

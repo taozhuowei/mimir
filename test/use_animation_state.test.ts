@@ -66,22 +66,22 @@ describe('useAnimationState', () => {
     expect(state.overlayVarsStyle.value).toContain('--card-height: 192px')
   })
 
-  it('watchEffect auto-syncs bgStyle when _bg.opacity changes', async () => {
+  it('watchEffect auto-syncs bgStyle when bg.opacity changes', async () => {
     const state = mountHarness({ deckCount: 12, shuffleHalfCount: 6, maxCutPiles: 3, maxCardCount: 5 })
 
-    state._bg.opacity = 0.5
+    state.bg.opacity = 0.5
     await nextTick()
     expect(state.bgStyle.value).toEqual({ opacity: '0.5' })
 
-    state._bg.opacity = 1
+    state.bg.opacity = 1
     await nextTick()
     expect(state.bgStyle.value).toEqual({ opacity: '1' })
   })
 
-  it('watchEffect auto-syncs drawsStyle when _draws mutate', async () => {
+  it('watchEffect auto-syncs drawsStyle when draws mutate', async () => {
     const state = mountHarness({ deckCount: 12, shuffleHalfCount: 6, maxCutPiles: 3, maxCardCount: 5 })
 
-    Object.assign(state._draws[0], { x: 10, y: 20, rotation: 15, scale: 1.1, opacity: 0.8, zIndex: 25 })
+    Object.assign(state.draws[0], { x: 10, y: 20, rotation: 15, scale: 1.1, opacity: 0.8, zIndex: 25 })
     await nextTick()
 
     expect(state.drawsStyle.value[0].transform).toContain('translateX(calc(-50% + 10px))')
@@ -95,7 +95,7 @@ describe('useAnimationState', () => {
   it('card style string does NOT contain will-change: transform', async () => {
     const state = mountHarness({ deckCount: 12, shuffleHalfCount: 6, maxCutPiles: 3, maxCardCount: 5 })
 
-    Object.assign(state._draws[0], { x: 0, y: 0, rotation: 0, scale: 1, opacity: 1, zIndex: 20 })
+    Object.assign(state.draws[0], { x: 0, y: 0, rotation: 0, scale: 1, opacity: 1, zIndex: 20 })
     await nextTick()
 
     expect(state.drawsStyle.value[0].willChange).toBeUndefined()
@@ -105,8 +105,8 @@ describe('useAnimationState', () => {
     const state = mountHarness({ deckCount: 12, shuffleHalfCount: 6, maxCutPiles: 3, maxCardCount: 5 })
 
     state.leftsVisible.value = true
-    state._lefts[0].x = 100
-    state._rights[0].x = 100
+    state.lefts[0].x = 100
+    state.rights[0].x = 100
 
     state.resetShuffleVisualState()
     await nextTick()
@@ -120,8 +120,8 @@ describe('useAnimationState', () => {
     const state = mountHarness({ deckCount: 12, shuffleHalfCount: 6, maxCutPiles: 3, maxCardCount: 5 })
 
     state.drawsVisible.value = [true, false, false, false, false]
-    state._draws[0].x = 50
-    state._inners[0].rotationY = 180
+    state.draws[0].x = 50
+    state.inners[0].rotationY = 180
 
     state.resetDrawVisualState()
     await nextTick()
@@ -135,9 +135,9 @@ describe('useAnimationState', () => {
     const state = mountHarness({ deckCount: 2, shuffleHalfCount: 1, maxCutPiles: 1, maxCardCount: 1 })
 
     const targets = state.getAllTargets()
-    expect(targets).toContain(state._bg)
-    expect(targets).toContain(state._stage)
-    expect(targets).toContain(state._draws[0])
-    expect(targets).toContain(state._inners[0])
+    expect(targets).toContain(state.bg)
+    expect(targets).toContain(state.stage)
+    expect(targets).toContain(state.draws[0])
+    expect(targets).toContain(state.inners[0])
   })
 })

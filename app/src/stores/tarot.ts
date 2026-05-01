@@ -49,6 +49,7 @@ export const useTarotStore = defineStore('tarot', () => {
     startDivination: flow.startDivination,
     setPhase: flow.setPhase,
     revealResult: flow.revealResult,
+    enterDecision: flow.enterDecision,
     setDrawnCards,
     reset: flow.reset,
   }

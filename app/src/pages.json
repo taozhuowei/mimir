@@ -1,7 +1,14 @@
 {
 	"pages": [
 		{
-			"path": "pages/index/index",
+			"path": "pages/main/index",
+			"style": {
+				"navigationStyle": "custom",
+				"navigationBarTitleText": "SCALES TAROT"
+			}
+		},
+		{
+			"path": "pages/fallback/index",
 			"style": {
 				"navigationStyle": "custom",
 				"navigationBarTitleText": "SCALES TAROT"

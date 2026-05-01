@@ -39,7 +39,7 @@ export interface UseOverlayLayoutDeps {
 }
 
 /** Scene = phase grouping the solver understands. */
-type Scene = 'draw_stage' | 'result_stage'
+type Scene = 'draw_stage' | 'reading_stage'
 
 /**
  * Viewport metrics that include both the new physical viewport and the
@@ -182,7 +182,7 @@ export function useOverlayLayout(deps: UseOverlayLayoutDeps) {
   }
 
   /**
-   * Resolve the scene layout for `draw_stage` or `result_stage` by
+   * Resolve the scene layout for `draw_stage` or `reading_stage` by
    * delegating to the pure solver, then attach the legacy `safe*Inset`
    * compatibility fields the overlay debug rectangle expects.
    */
@@ -288,7 +288,7 @@ export function useOverlayLayout(deps: UseOverlayLayoutDeps) {
   } {
     const drawViewport = getViewportMetrics(false)
     const drawLayout = getSceneLayout('draw_stage')
-    const resultLayout = getSceneLayout('result_stage')
+    const resultLayout = getSceneLayout('reading_stage')
     return { drawViewport, drawLayout, resultLayout }
   }
 

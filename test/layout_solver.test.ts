@@ -62,14 +62,14 @@ const VIEWPORTS: ViewportFixture[] = [
   { label: 'MacBook Air 13" (1440×900)', width: 1440, height: 900, tier: 'wide' },
 ]
 
-const SCENES: SceneKind[] = ['draw_stage', 'result_stage']
+const SCENES: SceneKind[] = ['draw_stage', 'reading_stage']
 
 const EPS = 1e-6
 
 /**
  * Reserved viewport bands (px). Cards must stay inside these.
  * For draw_stage we only check size fit (since (0,0) is a placeholder).
- * For result_stage we check the actual card screen rectangle.
+ * For reading_stage we check the actual card screen rectangle.
  */
 function reservedBounds(vp: PhysicalViewport, r: UiReservations) {
   const topReserved = vp.topBarHeight + vp.safeAreaTop + r.headerHeight
@@ -169,8 +169,8 @@ describe('layout_solver — physical-pixel layout solver', () => {
         expect(layout.stage.x + layout.stage.width).toBeLessThanOrEqual(viewport.width + EPS)
         expect(layout.stage.y + layout.stage.height).toBeLessThanOrEqual(viewport.height + EPS)
 
-        // Wide + result_stage: stage shrinks to leave room for the side drawer.
-        if (scene === 'result_stage' && viewport.isWide) {
+        // Wide + reading_stage: stage shrinks to leave room for the side drawer.
+        if (scene === 'reading_stage' && viewport.isWide) {
           expect(layout.stage.width).toBeCloseTo(
             viewport.width - reservations.drawerWideWidth,
             5,
@@ -202,7 +202,7 @@ describe('layout_solver — physical-pixel layout solver', () => {
         // -------------------------------------------------------------------
         // (6) Scene-specific assertions.
         // -------------------------------------------------------------------
-        if (scene === 'result_stage') {
+        if (scene === 'reading_stage') {
           // Single card.
           expect(layout.cards).toHaveLength(1)
           expect(layout.cards[0]?.slotId).toBe('center')
@@ -284,12 +284,12 @@ describe('layout_solver — physical-pixel layout solver', () => {
     }
   }
 
-  it('drawCardWidth is identical between draw_stage and result_stage on the same viewport', () => {
+  it('drawCardWidth is identical between draw_stage and reading_stage on the same viewport', () => {
     for (const vpFixture of VIEWPORTS) {
       const viewport = makeViewport(vpFixture.width, vpFixture.height)
       const reservations = getDefaultReservations(viewport.width)
       const draw = solveLayout({ viewport, reservations, scene: 'draw_stage' })
-      const result = solveLayout({ viewport, reservations, scene: 'result_stage' })
+      const result = solveLayout({ viewport, reservations, scene: 'reading_stage' })
       expect(result.drawCardWidth).toBeCloseTo(draw.drawCardWidth, 5)
       expect(result.drawCardHeight).toBeCloseTo(draw.drawCardHeight, 5)
     }

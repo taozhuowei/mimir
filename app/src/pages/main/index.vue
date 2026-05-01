@@ -1,0 +1,312 @@
+<template>
+  <!--
+    Main page — phase-2.2.a wired.
+    Hosts the main route's view tree (PRD §2.2 #1):
+      - IdleView when phase === 'idle'
+      - DivinationView when phase ∈ {'divination', 'reading', 'decision'}
+        (ProgressArea + DivinationDeck are self-driven via injected animationController)
+      - ReadingSplitView (wide) or ReadingDrawerView (narrow) overlaid on
+        the divination view when phase ∈ {'reading', 'decision'}
+      - NotificationHost mounted on the route root for cross-view alerts
+  -->
+  <view class="main-page">
+    <!--
+      View picker: phase === 'idle' renders IdleView, every other phase
+      renders DivinationView. We use explicit v-if branches rather than
+      <component :is> because the two views' prop shapes are disjoint —
+      the dynamic-component intersection type erases each view's emit
+      contract on the other branch and breaks vue-tsc.
+
+      The <transition> provides the PRD §8.1.2 idle → divination visual swap:
+      IdleView fades out while DivinationView fades in simultaneously.
+      Both views are position: absolute during the overlap so neither
+      pushes the other in the normal flow.
+    -->
+    <transition name="view-switch">
+      <IdleView
+        v-if="phase === 'idle'"
+        :cards-load-error="tarotStore.cardsLoadError"
+        :is-cards-loading="tarotStore.isCardsLoading"
+        @trigger-divination="handleTriggerDivination"
+        @retry-load-cards="handleRetryLoadCards"
+      />
+      <DivinationView v-else :key="'divination'" />
+    </transition>
+
+    <!--
+      Reading viewport: chosen by viewport width per PRD §2.3 (wide → split,
+      narrow → drawer). Mounted only while the application is in the
+      reading or decision phase.
+    -->
+    <ReadingSplitView
+      v-if="showReadingView && isWide"
+      :panel-state="readingPanelState"
+      :reading-result="readingResult"
+      :phase="phase"
+      :question="currentQuestion"
+      :error-message="readingErrorMessage"
+      @restart="handleRestart"
+      @back-home="handleBackHome"
+      @retry="handleRetry"
+      @typewriter-complete="handleTypewriterComplete"
+    />
+    <ReadingDrawerView
+      v-else-if="showReadingView && !isWide"
+      :panel-state="readingPanelState"
+      :reading-result="readingResult"
+      :phase="phase"
+      :drawer-geometry="resultDrawerGeometry"
+      :question="currentQuestion"
+      :error-message="readingErrorMessage"
+      @restart="handleRestart"
+      @back-home="handleBackHome"
+      @retry="handleRetry"
+      @typewriter-complete="handleTypewriterComplete"
+    />
+
+    <NotificationHost />
+  </view>
+</template>
+
+<script setup lang="ts">
+/**
+ * Name: pages/main/index
+ * Purpose: route root for the main divination flow. Owns the application-
+ *          level phase state (via useAppPhase), the responsive `isWide`
+ *          ref, and the animation / reading controller instances. Provides
+ *          all of these to descendant views via Vue's provide / inject.
+ * Reason: the legacy entry (pages/index/index.vue + DivinationOverlay) put
+ *         layout decisions, animation lifecycle, and store transitions in
+ *         the same component. This page becomes the orchestration seam:
+ *         it picks the active view by phase, supplies it props, and lets
+ *         each view stay declarative.
+ * Data flow:
+ *   - tarotStore.phase ──▶ useAppPhase ──▶ provide('appPhase') ──▶ views
+ *   - uni.getWindowInfo + uni.onWindowResize ──▶ isWide ref ──▶ provide
+ *     ('isWide') + reading-view branch picker
+ *   - useAnimationController + useReadingController instances are created
+ *     here, wired via callbacks (onDrawingStart / onPipelineComplete), and
+ *     provided so any descendant can inject them.
+ */
+import { computed, provide, ref, onMounted, onUnmounted } from 'vue'
+import IdleView from '../../views/IdleView.vue'
+import DivinationView from '../../views/DivinationView.vue'
+import ReadingSplitView from '../../views/ReadingSplitView.vue'
+import ReadingDrawerView from '../../views/ReadingDrawerView.vue'
+import NotificationHost from '../../components/containers/NotificationHost.vue'
+import { useAppPhase } from '../../composables/use_app_phase'
+import { useTarotStore } from '../../stores/tarot'
+import { useThemeStore } from '../../stores/theme'
+import { useAnimationController } from '../../composables/use_animation_controller'
+import { useReadingController } from '../../composables/use_reading_controller'
+import { solveLayout } from '../../core/sizing/layout_solver'
+import {
+  clampViewportToStage,
+  getDefaultReservations,
+  getViewport,
+} from '../../core/sizing/physical_reservations'
+import type { OverlayPhase } from '../../core/flow/types'
+
+/* ── Stores + phase ─────────────────────────────────────────────────── */
+
+const tarotStore = useTarotStore()
+const themeStore = useThemeStore()
+const { phase, startDivination, enterDecision, resetToIdle } = useAppPhase()
+
+provide('appPhase', phase)
+
+/* ── Responsive width ──────────────────────────────────────────────── */
+
+/**
+ * Wide-screen branch threshold. Mirrors the legacy DivinationOverlay
+ * (≥ 920 px = phone shell + 480 px sidebar). The same value is used to
+ * mount ReadingSplitView vs ReadingDrawerView.
+ */
+const WIDE_VIEWPORT_BREAKPOINT_PX = 920
+
+const isWide = ref(false)
+
+function recomputeIsWide() {
+  const { windowWidth } = uni.getWindowInfo()
+  isWide.value = windowWidth >= WIDE_VIEWPORT_BREAKPOINT_PX
+}
+
+provide('isWide', isWide)
+
+/* ── Card count (always 1 for single_card today) ───────────────────── */
+
+const cardCount = computed(() => 1)
+
+/* ── Controller instances ──────────────────────────────────────────── */
+
+const readingController = useReadingController({ tarotStore })
+
+let currentReadingPromise: Promise<unknown> | null = null
+
+const animationController = useAnimationController({
+  tarotStore,
+  themeStore,
+  isWide,
+  cardCount,
+  callbacks: {
+    onDrawingStart: () => { currentReadingPromise = readingController.startReading({}) },
+    onPipelineComplete: () => { void settlePipeline() },
+    onPhaseChange: (_p: OverlayPhase) => { tarotStore.setPhase('divination') },
+    onResetReading: () => { readingController.resetReading() },
+    onDestroyReading: () => { readingController.destroyReading() },
+  },
+})
+// Both controllers are exposed so descendant views can inject them without
+// re-instantiating.
+provide('animationController', animationController)
+provide('readingController', readingController)
+
+/* ── View picker ───────────────────────────────────────────────────── */
+
+/**
+ * Reading-view gate (PRD §7.4): the reading split / drawer view overlays
+ * the divination view only while the application is in `reading` or
+ * `decision`. Idle and divination phases never show it.
+ */
+const showReadingView = computed(() =>
+  phase.value === 'reading' || phase.value === 'decision',
+)
+
+/* ── Reading panel props passthrough ───────────────────────────────── */
+
+const readingPanelState = computed(() => readingController.readingPanelState.value)
+const readingResult = computed(() => readingController.readingResult.value)
+const readingErrorMessage = computed(() => readingController.readingErrorMessage.value)
+const currentQuestion = computed(() => tarotStore.currentQuestion)
+
+/**
+ * Drawer geometry used by the narrow-screen reading view. Falls back to
+ * a zero-sized geometry while the layout solver can't run (e.g. very
+ * early in the lifecycle before a window-info call succeeds). 2.2 wires
+ * this into the live solver pipeline.
+ */
+const resultDrawerGeometry = computed(() => {
+  try {
+    const winInfo = uni.getWindowInfo()
+    const rawViewport = getViewport({
+      windowWidth: winInfo.windowWidth,
+      windowHeight: winInfo.windowHeight,
+      safeAreaInsets: winInfo.safeAreaInsets,
+      topBarHeight: 0,
+    })
+    const viewport = clampViewportToStage(rawViewport)
+    const layout = solveLayout({
+      viewport,
+      reservations: getDefaultReservations(viewport.width),
+      scene: 'reading_stage',
+    })
+    return layout.drawer
+  } catch {
+    return {
+      initialTop: 0,
+      initialHeight: 0,
+      maxHeight: 0,
+      width: 0,
+      rightAligned: false,
+    }
+  }
+})
+
+/* ── Event handlers ─────────────────────────────────────────────────── */
+
+function handleTriggerDivination() {
+  startDivination(tarotStore.currentQuestion)
+}
+
+function handleRetryLoadCards() {
+  tarotStore.loadCards()
+}
+
+async function settlePipeline(): Promise<void> {
+  try {
+    await (currentReadingPromise ?? Promise.resolve(null))
+  } catch (err) {
+    console.error('[main] settlePipeline failed', err)
+  }
+  currentReadingPromise = null
+  animationController.setDrawScales(1)
+  if (
+    readingController.readingPanelState.value === 'success' &&
+    readingController.readingResult.value
+  ) {
+    tarotStore.revealResult()
+  }
+}
+
+function handleTypewriterComplete() {
+  enterDecision()
+}
+
+function handleRestart(): void {
+  animationController.resumeAnimations()
+  animationController.setPlaybackRate(1)
+  readingController.resetReading()
+  animationController.clearTimeline()
+  animationController.seek(0)
+  animationController.showResults.value = false
+  animationController.resetOverlayScene()
+  startDivination(tarotStore.currentQuestion)
+  animationController.resetProgressModel()
+  animationController.phase.value = 'shuffling'
+  animationController.start()
+}
+
+function handleBackHome() {
+  resetToIdle()
+}
+
+function handleRetry() {
+  void readingController.retryReading({})
+}
+
+/* ── Lifecycle ─────────────────────────────────────────────────────── */
+
+onMounted(() => {
+  recomputeIsWide()
+  uni.onWindowResize(recomputeIsWide)
+})
+
+onUnmounted(() => {
+  uni.offWindowResize(recomputeIsWide)
+})
+</script>
+
+<style scoped>
+.main-page {
+  position: relative;
+  width: 100%;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* PRD §8.1.2 — idle ↔ divination view swap, ~450ms.
+   Keep duration in sync with DUR_IDLE_TO_DIV_MS in animation/easings.ts.
+   Both views are absolute so they overlap cleanly during the transition. */
+.view-switch-enter-active,
+.view-switch-leave-active {
+  transition: opacity 450ms cubic-bezier(0.16, 1, 0.3, 1);
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.view-switch-enter-from,
+.view-switch-leave-to {
+  opacity: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .view-switch-enter-active,
+  .view-switch-leave-active {
+    transition: none;
+  }
+}
+</style>

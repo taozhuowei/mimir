@@ -20,17 +20,17 @@ export interface AnimationStateOptions {
 }
 
 export interface AnimationState {
-  _bg: { opacity: number }
-  _stage: { y: number }
-  _header: { y: number; opacity: number }
-  _footer: { y: number; opacity: number }
-  _deckCtn: { x: number }
-  _initials: CardState[]
-  _lefts: CardState[]
-  _rights: CardState[]
-  _piles: CenterCardState[]
-  _draws: CenterCardState[]
-  _inners: InnerState[]
+  bg: { opacity: number }
+  stage: { y: number }
+  header: { y: number; opacity: number }
+  footer: { y: number; opacity: number }
+  deckCtn: { x: number }
+  initials: CardState[]
+  lefts: CardState[]
+  rights: CardState[]
+  piles: CenterCardState[]
+  draws: CenterCardState[]
+  inners: InnerState[]
   resetShuffleVisualState(): void
   resetCutVisualState(): void
   resetDrawVisualState(): void
@@ -89,17 +89,17 @@ export function createAnimationState(opts: AnimationStateOptions): AnimationStat
   }
 
   return {
-    _bg,
-    _stage,
-    _header,
-    _footer,
-    _deckCtn,
-    _initials,
-    _lefts,
-    _rights,
-    _piles,
-    _draws,
-    _inners,
+    bg: _bg,
+    stage: _stage,
+    header: _header,
+    footer: _footer,
+    deckCtn: _deckCtn,
+    initials: _initials,
+    lefts: _lefts,
+    rights: _rights,
+    piles: _piles,
+    draws: _draws,
+    inners: _inners,
     resetShuffleVisualState,
     resetCutVisualState,
     resetDrawVisualState,

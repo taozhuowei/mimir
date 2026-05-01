@@ -17,13 +17,6 @@
  *  narrow / mobile layout. */
 export const WIDE_BREAKPOINT = 768
 
-// ---- Entry-animation durations (seconds, GSAP convention) ------------------
-
-export const ENTRY_BG_FADE_DURATION = 0.7
-export const ENTRY_CARDS_DROP_DURATION = 1.05
-export const ENTRY_HEADER_SLIDE_DURATION = 0.4
-export const ENTRY_FOOTER_SLIDE_DURATION = 0.35
-
 // ---- Hero typewriter timing (ms) ------------------------------------------
 
 export const HERO_TITLE_START_DELAY = 180
@@ -43,9 +36,6 @@ export const MAX_CUT_PILES = 8
 
 /** Delay between the draw landing and the auto-flip kick-off (ms). */
 export const AUTO_REVEAL_DELAY_MS = 800
-
-/** Delay between the entry animation and the shuffle kick-off (ms). */
-export const ENTRY_TO_SHUFFLE_DELAY_MS = 300
 
 /** Vertical margin added to the result-card lift transform so the bottom
  *  of the card never touches the drawer's top edge during the reveal. */

@@ -36,7 +36,7 @@ export const PHASE_STEPS: PhaseStep[] = [
   },
   {
     phase: 'revealing',
-    label: '解读',
+    label: '翻牌',
     activeIcon: 'icon_pentacles',
     inactiveIcon: 'icon_pentacles_inactive',
   },

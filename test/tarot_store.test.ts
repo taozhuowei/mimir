@@ -121,37 +121,31 @@ describe('tarot store - drawn cards and reading flow', () => {
       expect(store.isAnimating).toBe(false)
 
       store.startDivination('Test question')
-      expect(store.phase).toBe('shuffling')
+      expect(store.phase).toBe('divination')
       expect(store.isIdle).toBe(false)
       expect(store.isAnimating).toBe(true)
       expect(store.currentQuestion).toBe('Test question')
 
-      store.setPhase('cutting')
-      expect(store.phase).toBe('cutting')
-
-      store.setPhase('drawing')
-      expect(store.phase).toBe('drawing')
-
-      store.setPhase('revealing')
-      expect(store.phase).toBe('revealing')
-
       store.revealResult()
-      expect(store.phase).toBe('result')
+      expect(store.phase).toBe('reading')
       // isResultVisible is false because readingResult is null (no result loaded yet)
       expect(store.isResultVisible).toBe(false)
+
+      store.enterDecision()
+      expect(store.phase).toBe('decision')
     })
 
-    it('isResultVisible requires both phase=result AND readingResult', () => {
+    it('isResultVisible requires both phase=reading AND readingResult', () => {
       const store = useTarotStore()
 
       // Initially not visible
       expect(store.isResultVisible).toBe(false)
 
       // Just changing phase is not enough
-      store.setPhase('result')
+      store.revealResult()
       expect(store.isResultVisible).toBe(false)
 
-      // Need both phase='result' AND readingResult
+      // Need both phase='reading' AND readingResult
       const drawn = makeDrawn()
       store.setDrawnCards(drawn)
       store.readingResult = makeReadingResult(drawn)
@@ -167,7 +161,7 @@ describe('tarot store - drawn cards and reading flow', () => {
 
       store.startDivination('Fresh question')
 
-      expect(store.phase).toBe('shuffling')
+      expect(store.phase).toBe('divination')
       expect(store.drawnCards).toHaveLength(0)
       expect(store.readingResult).toBeNull()
       expect(store.currentQuestion).toBe('Fresh question')

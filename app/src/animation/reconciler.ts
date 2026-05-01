@@ -103,7 +103,7 @@ export function createStyleReconciler(
   const deckCtnStyle = ref<Record<string, string>>({})
 
   const initialsStyle = ref<Record<string, string>[]>(
-    state._initials.map((_, i) => ({ transform: `translateY(${-i * 0.8}px)` })),
+    state.initials.map((_, i) => ({ transform: `translateY(${-i * 0.8}px)` })),
   )
   const leftsStyle = ref<Record<string, string>[]>(
     Array.from({ length: opts.shuffleHalfCount }, () => ({})),
@@ -123,43 +123,43 @@ export function createStyleReconciler(
   )
 
   const refreshBg = () => {
-    bgStyle.value = { opacity: String(state._bg.opacity) }
+    bgStyle.value = { opacity: String(state.bg.opacity) }
   }
   const refreshStage = () => {
-    stageStyle.value = { transform: `translateY(${state._stage.y}px)` }
+    stageStyle.value = { transform: `translateY(${state.stage.y}px)` }
   }
   const refreshHeader = () => {
     headerStyle.value = {
-      transform: `translateY(${state._header.y}px)`,
-      opacity: String(state._header.opacity),
+      transform: `translateY(${state.header.y}px)`,
+      opacity: String(state.header.opacity),
     }
   }
   const refreshFooter = () => {
     footerStyle.value = {
-      transform: `translateY(${state._footer.y}px)`,
-      opacity: String(state._footer.opacity),
+      transform: `translateY(${state.footer.y}px)`,
+      opacity: String(state.footer.opacity),
     }
   }
   const refreshDeckCtn = () => {
-    deckCtnStyle.value = { transform: `translateX(${state._deckCtn.x}px)` }
+    deckCtnStyle.value = { transform: `translateX(${state.deckCtn.x}px)` }
   }
   const refreshInitials = () => {
-    initialsStyle.value = state._initials.map(_cardStyleObj)
+    initialsStyle.value = state.initials.map(_cardStyleObj)
   }
   const refreshLefts = () => {
-    leftsStyle.value = state._lefts.map(_cardStyleObj)
+    leftsStyle.value = state.lefts.map(_cardStyleObj)
   }
   const refreshRights = () => {
-    rightsStyle.value = state._rights.map(_cardStyleObj)
+    rightsStyle.value = state.rights.map(_cardStyleObj)
   }
   const refreshPiles = () => {
-    pilesStyle.value = state._piles.map(_centerStyleObj)
+    pilesStyle.value = state.piles.map(_centerStyleObj)
   }
   const refreshDraws = () => {
-    drawsStyle.value = state._draws.map(_centerStyleObj)
+    drawsStyle.value = state.draws.map(_centerStyleObj)
   }
   const refreshInners = () => {
-    innersStyle.value = state._inners.map(_innerStyleObj)
+    innersStyle.value = state.inners.map(_innerStyleObj)
   }
 
   function setDrawCardSizes(layout: SceneLayoutResult) {
@@ -173,17 +173,17 @@ export function createStyleReconciler(
 
   // Automatic style refresh: when GSAP mutates the plain state objects,
   // Vue watch(deep: true) tracks property mutations and triggers the corresponding refresh callbacks.
-  watch(() => state._bg, refreshBg, { deep: true, immediate: true })
-  watch(() => state._stage, refreshStage, { deep: true, immediate: true })
-  watch(() => state._header, refreshHeader, { deep: true, immediate: true })
-  watch(() => state._footer, refreshFooter, { deep: true, immediate: true })
-  watch(() => state._deckCtn, refreshDeckCtn, { deep: true, immediate: true })
-  watch(() => state._initials, refreshInitials, { deep: true, immediate: true })
-  watch(() => state._lefts, refreshLefts, { deep: true, immediate: true })
-  watch(() => state._rights, refreshRights, { deep: true, immediate: true })
-  watch(() => state._piles, refreshPiles, { deep: true, immediate: true })
-  watch(() => state._draws, refreshDraws, { deep: true, immediate: true })
-  watch(() => state._inners, refreshInners, { deep: true, immediate: true })
+  watch(() => state.bg, refreshBg, { deep: true, immediate: true })
+  watch(() => state.stage, refreshStage, { deep: true, immediate: true })
+  watch(() => state.header, refreshHeader, { deep: true, immediate: true })
+  watch(() => state.footer, refreshFooter, { deep: true, immediate: true })
+  watch(() => state.deckCtn, refreshDeckCtn, { deep: true, immediate: true })
+  watch(() => state.initials, refreshInitials, { deep: true, immediate: true })
+  watch(() => state.lefts, refreshLefts, { deep: true, immediate: true })
+  watch(() => state.rights, refreshRights, { deep: true, immediate: true })
+  watch(() => state.piles, refreshPiles, { deep: true, immediate: true })
+  watch(() => state.draws, refreshDraws, { deep: true, immediate: true })
+  watch(() => state.inners, refreshInners, { deep: true, immediate: true })
 
   return {
     layoutCardWidth,

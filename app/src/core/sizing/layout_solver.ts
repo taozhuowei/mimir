@@ -119,7 +119,7 @@ export interface SceneLayout {
   envelope: LayoutEnvelope
 }
 
-export type SceneKind = 'draw_stage' | 'result_stage'
+export type SceneKind = 'draw_stage' | 'reading_stage'
 
 export interface SolveLayoutInput {
   viewport: PhysicalViewport
@@ -248,7 +248,7 @@ function computeStage(
   reservations: UiReservations,
   scene: SceneKind,
 ): StageRect {
-  const isResultWide = scene === 'result_stage' && viewport.isWide
+  const isResultWide = scene === 'reading_stage' && viewport.isWide
   return {
     x: 0,
     y: viewport.topBarHeight,
@@ -310,7 +310,7 @@ export function solveLayout(input: SolveLayoutInput): SceneLayout {
     reservations.cardGap,
   )
 
-  if (scene === 'result_stage') {
+  if (scene === 'reading_stage') {
     const stageCenterY = stage.y + stage.height / 2
     const stageShiftY = result.topScreenY + result.height / 2 - stageCenterY
     const cards: CardLayout[] = [

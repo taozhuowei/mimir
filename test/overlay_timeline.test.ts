@@ -1,7 +1,7 @@
 // @vitest-environment node
 
 import { describe, expect, it, vi, beforeEach } from 'vitest'
-import { createTimelineOrchestrator, killAnimationTargets } from '../app/src/animation/orchestration/timeline_master'
+import { createTimelineOrchestrator, killAnimationTargets } from '../app/src/animation/adapters/gsap'
 
 // Mock GSAP
 vi.mock('gsap', () => {

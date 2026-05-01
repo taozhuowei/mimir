@@ -17,6 +17,7 @@
  *  13. Complexity: cyclomatic complexity thresholds
  *  14. Duplicate Exports: same exported symbol defined in multiple files
  *  15. Filename Case: snake_case for .ts/.js, PascalCase for .vue
+ *  16. Pages Route Integrity: every path in pages.json must have a matching .vue file
  *
  * Baseline: scripts/quality_baseline.json records known issues.
  *   - fileSize entries are ratchet caps: file may stay at its recorded size,
@@ -278,6 +279,13 @@ function scanCssVariables() {
   const uniScssPath = path.join(APP_SRC, 'uni.scss')
   if (fs.existsSync(uniScssPath)) {
     extractDefinitions(fs.readFileSync(uniScssPath, 'utf-8'))
+  }
+
+  // Also scan all CSS partials in styles/ directory
+  const cssPartials = findFiles(STYLES_DIR, ['.css'])
+  for (const partial of cssPartials) {
+    if (partial === globalCssPath) continue  // already read above
+    extractDefinitions(fs.readFileSync(partial, 'utf-8'))
   }
 
   const cssFiles = findFiles(APP_SRC, ['.vue', '.css', '.scss'])
@@ -737,6 +745,37 @@ function scanFilenameCase() {
   }
 }
 
+// ─── 16. Pages Route Integrity Scanner ───────────────────────────────────
+
+/**
+ * Reads pages.json and verifies that every route path has a matching .vue file
+ * under app/src/. Catches the class of bug where a page component is deleted
+ * but its route entry is left behind — Vite only reports this at runtime.
+ */
+function scanPagesRouteIntegrity() {
+  const pagesJsonPath = path.join(APP_SRC, 'pages.json')
+  if (!fs.existsSync(pagesJsonPath)) return
+
+  let parsed
+  try {
+    parsed = JSON.parse(fs.readFileSync(pagesJsonPath, 'utf-8'))
+  } catch (e) {
+    report(pagesJsonPath, 1, SEVERITY_ERROR, 'PagesRouteIntegrity',
+      `pages.json is not valid JSON: ${e.message}`)
+    return
+  }
+
+  const pages = parsed?.pages ?? []
+  for (const page of pages) {
+    if (typeof page.path !== 'string') continue
+    const vuePath = path.join(APP_SRC, `${page.path}.vue`)
+    if (!fs.existsSync(vuePath)) {
+      report(pagesJsonPath, 1, SEVERITY_ERROR, 'PagesRouteIntegrity',
+        `Route "${page.path}" in pages.json has no matching .vue file (expected ${path.relative(ROOT, vuePath)}).`)
+    }
+  }
+}
+
 // ─── Main ────────────────────────────────────────────────────────────────
 
 console.log('[quality-scan] Starting static analysis...\n')
@@ -769,6 +808,7 @@ scanDangerousTransform()
 scanFileSize()
 scanDuplicateExports(tsFiles)
 scanFilenameCase()
+scanPagesRouteIntegrity()
 
 console.log('')
 console.log(`[quality-scan] ${errorCount} errors, ${warnCount} warnings`)
