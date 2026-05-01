@@ -206,7 +206,17 @@ describe('use_overlay_controller result-zone sizing', () => {
     expect(controller.overlayVarsStyle.value).toContain('--result-card-lift-y:')
   })
 
-  it('overlayVarsStyle reflects result-card lift state', async () => {
+  it('result-card lift is 0 in narrow + wide modes (new solver model)', async () => {
+    // Contract test pinning the new solver behavior: the layout solver now
+    // places the result card at the same center as the draw card
+    // (stageShiftY = 0) and the result card == the stage rect. Therefore
+    // resultCardLiftY (use_overlay.ts:66-80) is structurally 0 in both modes:
+    //   - Wide mode short-circuits at use_overlay.ts:67 (`isWide ? 0`).
+    //   - Narrow mode: drawBottom = drawCardH/2, resultBottom = resultCardH/2
+    //     with resultCardH >> drawCardH, so `lift = drawBottom - resultBottom
+    //     + RESULT_LIFT_MARGIN` is negative and clamped to 0 by Math.max.
+    // The previous test asserted lift > 0 under the old solver that shifted
+    // the result card upward via stageShiftY < 0; that contract is gone.
     const isWideRef = ref(false)
     const { controller } = await mountHarness(isWideRef)
 
@@ -216,14 +226,17 @@ describe('use_overlay_controller result-zone sizing', () => {
     controller.showResults.value = true
     await nextTick()
 
-    const liftMatch = controller.overlayVarsStyle.value.match(/--result-card-lift-y: ([\d.]+)px/)
-    expect(liftMatch).not.toBeNull()
-    const liftY = parseFloat(liftMatch![1])
-    expect(liftY).toBeGreaterThan(0)
+    const narrowMatch = controller.overlayVarsStyle.value.match(/--result-card-lift-y: ([\d.]+)px/)
+    expect(narrowMatch).not.toBeNull()
+    const narrowLiftY = parseFloat(narrowMatch![1])
+    expect(narrowLiftY).toBe(0)
 
     isWideRef.value = true
     await nextTick()
-    expect(controller.overlayVarsStyle.value).toContain('--result-card-lift-y: 0px')
+    const wideMatch = controller.overlayVarsStyle.value.match(/--result-card-lift-y: ([\d.]+)px/)
+    expect(wideMatch).not.toBeNull()
+    const wideLiftY = parseFloat(wideMatch![1])
+    expect(wideLiftY).toBe(0)
   })
 
   it('cardsFocused and cardsDocked reflect result state', async () => {
