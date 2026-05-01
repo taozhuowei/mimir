@@ -1,14 +1,13 @@
 // @vitest-environment node
 
 /**
- * Test suite for the physical-pixel layout solver.
+ * Test suite for the proportional-tokens layout solver.
  *
- * Coverage matrix: 5 viewports × 2 scenes = 10 cases. Each case asserts:
- *   1. Cards do not overflow the viewport.
- *   2. Cards do not occlude reserved UI (header, action bar, drawer).
- *   3. drawCardWidth / drawCardHeight are uniform between scenes.
- *   4. result.cardWidth >= drawCardWidth (single card has at least as much room).
- *   5. Drawer geometry matches the contract (narrow vs wide).
+ * Coverage matrix: 5 viewports × 2 scenes = 10 cases. The new solver is a
+ * pure function of (PhysicalViewport, ResponsiveTokens, scene) and produces
+ * a single 1:1.6 stage rect (= result card on the reading scene), three
+ * draw piles tiling the stage horizontally with `gap` breathing, and a
+ * bottom-sheet drawer pinned to the stage's lower edge.
  *
  * Inputs are passed as plain literals — no window mocking, no DOM access.
  */
@@ -17,108 +16,79 @@ import { describe, expect, it } from 'vitest'
 import {
   solveLayout,
   type SceneKind,
-  type SceneLayout,
 } from '../app/src/core/sizing/layout_solver'
 import {
-  getDefaultReservations,
-  pickSpacingTier,
+  deriveTokens,
+  pickCanvasWidth,
+  CARD_ASPECT_RATIO,
   type PhysicalViewport,
-  type UiReservations,
-} from '../app/src/core/sizing/physical_reservations'
-import { WIDE_BREAKPOINT } from '../app/src/core/config/layout_constants'
+} from '../app/src/core/sizing/scale'
 
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
 
-function makeViewport(width: number, height: number): PhysicalViewport {
+/**
+ * Build a PhysicalViewport with the canvas width clamped to the supported
+ * envelope [375, 440]. Matches the runtime call sites — every consumer
+ * pipes the raw viewport width through `pickCanvasWidth` before feeding it
+ * to the solver, so the test reproduces that exact shape.
+ */
+function makeViewport(
+  actualWidth: number,
+  height: number,
+  safeTop = 0,
+  safeBottom = 0,
+): PhysicalViewport {
   return {
-    width,
+    width: pickCanvasWidth(actualWidth),
     height,
-    safeAreaTop: 0,
-    safeAreaBottom: 0,
-    topBarHeight: 0,
-    isWide: width >= WIDE_BREAKPOINT,
+    safeAreaTop: safeTop,
+    safeAreaBottom: safeBottom,
   }
 }
 
 interface ViewportFixture {
   label: string
-  width: number
+  actualWidth: number
   height: number
-  /** Expected spacing tier for this viewport (sanity-checked per test). */
-  tier: 'compact' | 'regular' | 'wide'
+  safeAreaTop: number
+  safeAreaBottom: number
 }
 
-// Real-device matrix. Each row is a popular shipping device, picked so the
-// suite spans all three spacing tiers and both narrow / wide layout
-// branches without overlap. Logical viewport sizes match what the device's
-// stock browser reports at default zoom.
+// Real-device matrix. Each row is a popular shipping device sized at the
+// logical pixel values its stock browser reports at default zoom. The two
+// rows beyond MAX_CANVAS_WIDTH (iPad portrait, MacBook Air) verify that
+// large screens collapse to the canvas cap (440) for the solver while the
+// rest of the screen stays empty / centred at the CSS layer.
 const VIEWPORTS: ViewportFixture[] = [
-  { label: 'Galaxy S22/S23/S24 (360×800)', width: 360, height: 800, tier: 'compact' },
-  { label: 'iPhone SE 2/3 (375×667)', width: 375, height: 667, tier: 'regular' },
-  { label: 'iPhone 16 Pro Max (430×932)', width: 430, height: 932, tier: 'regular' },
-  { label: 'iPad portrait (768×1024)', width: 768, height: 1024, tier: 'wide' },
-  { label: 'MacBook Air 13" (1440×900)', width: 1440, height: 900, tier: 'wide' },
+  { label: 'iPhone 8 (375×667)', actualWidth: 375, height: 667, safeAreaTop: 20, safeAreaBottom: 0 },
+  { label: 'iPhone 12 (390×844)', actualWidth: 390, height: 844, safeAreaTop: 47, safeAreaBottom: 34 },
+  { label: 'iPhone 17 Pro Max (440×956)', actualWidth: 440, height: 956, safeAreaTop: 47, safeAreaBottom: 34 },
+  { label: 'iPad portrait (768×1024)', actualWidth: 768, height: 1024, safeAreaTop: 0, safeAreaBottom: 0 },
+  { label: 'MacBook Air (1440×900)', actualWidth: 1440, height: 900, safeAreaTop: 0, safeAreaBottom: 0 },
 ]
 
 const SCENES: SceneKind[] = ['draw_stage', 'reading_stage']
 
 const EPS = 1e-6
 
-/**
- * Reserved viewport bands (px). Cards must stay inside these.
- * For draw_stage we only check size fit (since (0,0) is a placeholder).
- * For reading_stage we check the actual card screen rectangle.
- */
-function reservedBounds(vp: PhysicalViewport, r: UiReservations) {
-  const topReserved = vp.topBarHeight + vp.safeAreaTop + r.headerHeight
-  const bottomReservedBase = r.actionBarHeight + vp.safeAreaBottom
-  return { topReserved, bottomReservedBase }
-}
-
-/**
- * Result card's absolute screen rectangle, reconstructed from SceneLayout.
- * Mirrors the solver's stage-relative encoding (origin = stage center).
- */
-function resultCardScreenRect(layout: SceneLayout, vp: PhysicalViewport) {
-  const card = layout.cards[0]
-  if (!card) throw new Error('expected at least one card')
-  const stageCenterY = layout.stage.y + layout.stage.height / 2
-  const cardCenterY = stageCenterY + card.y
-  const stageCenterX = layout.stage.x + layout.stage.width / 2
-  const cardCenterX = stageCenterX + card.x
-  return {
-    top: cardCenterY - card.height / 2,
-    bottom: cardCenterY + card.height / 2,
-    left: cardCenterX - card.width / 2,
-    right: cardCenterX + card.width / 2,
-    vpRight: vp.width,
-    vpBottom: vp.height,
-  }
-}
-
 // ---------------------------------------------------------------------------
 // Tests
 // ---------------------------------------------------------------------------
 
-describe('layout_solver — physical-pixel layout solver', () => {
-  for (const vpFixture of VIEWPORTS) {
+describe('layout_solver — proportional-tokens layout solver', () => {
+  for (const fixture of VIEWPORTS) {
     for (const scene of SCENES) {
-      it(`${vpFixture.label} / ${scene}: produces a valid layout`, () => {
-        const viewport = makeViewport(vpFixture.width, vpFixture.height)
-        // Tiered reservations — compact / regular / wide step gap+sideMargin.
-        // Resolve them per viewport so the solver receives exactly what the
-        // real callers (use_overlay_layout, pages/index/index.vue) send.
-        const reservations: UiReservations = getDefaultReservations(viewport.width)
-        expect(pickSpacingTier(viewport.width)).toBe(vpFixture.tier)
-
-        const layout = solveLayout({
-          viewport,
-          reservations,
-          scene,
-        })
-        const { topReserved, bottomReservedBase } = reservedBounds(viewport, reservations)
+      it(`${fixture.label} / ${scene}: produces a valid layout`, () => {
+        const viewport = makeViewport(
+          fixture.actualWidth,
+          fixture.height,
+          fixture.safeAreaTop,
+          fixture.safeAreaBottom,
+        )
+        const tokens = deriveTokens(viewport.width)
+        const layout = solveLayout({ viewport, tokens, scene })
 
         // -------------------------------------------------------------------
         // (0) Sanity — all sizes positive and finite.
@@ -127,171 +97,126 @@ describe('layout_solver — physical-pixel layout solver', () => {
         expect(layout.cardHeight).toBeGreaterThan(0)
         expect(layout.drawCardWidth).toBeGreaterThan(0)
         expect(layout.drawCardHeight).toBeGreaterThan(0)
-        expect(Number.isFinite(layout.cardWidth)).toBe(true)
         expect(Number.isFinite(layout.drawer.initialHeight)).toBe(true)
 
         // -------------------------------------------------------------------
-        // (1) Card aspect ratio respected.
+        // (1) Stage centered horizontally in the canvas; pinned below the
+        //     header (safeAreaTop + margin + headerHeight).
         // -------------------------------------------------------------------
-        expect(layout.cardHeight / layout.cardWidth).toBeCloseTo(
-          reservations.cardAspectRatio,
+        expect(layout.stage.x).toBeCloseTo((viewport.width - layout.stage.width) / 2, 5)
+        expect(layout.stage.y).toBeCloseTo(
+          viewport.safeAreaTop + tokens.margin + tokens.headerHeight,
           5,
         )
+
+        // -------------------------------------------------------------------
+        // (2) Stage 1.6 aspect ratio.
+        // -------------------------------------------------------------------
+        expect(Math.abs(layout.stage.height / layout.stage.width - CARD_ASPECT_RATIO))
+          .toBeLessThan(1e-6)
+
+        // -------------------------------------------------------------------
+        // (3) Stage stays inside the viewport.
+        // -------------------------------------------------------------------
+        expect(layout.stage.x).toBeGreaterThanOrEqual(-EPS)
+        expect(layout.stage.y).toBeGreaterThanOrEqual(-EPS)
+        expect(layout.stage.x + layout.stage.width).toBeLessThanOrEqual(viewport.width + EPS)
+        expect(layout.stage.y + layout.stage.height).toBeLessThanOrEqual(
+          viewport.height - viewport.safeAreaBottom + EPS,
+        )
+
+        // -------------------------------------------------------------------
+        // (4) Draw card: 3 piles tile the stage horizontally with `gap`
+        //     breathing on each end and between piles.
+        //     stageW = 3 × drawCardWidth + 4 × gap.
+        // -------------------------------------------------------------------
+        const reconstructedStageW =
+          3 * layout.drawCardWidth + 4 * tokens.gap
+        expect(reconstructedStageW).toBeCloseTo(layout.stage.width, 4)
         expect(layout.drawCardHeight / layout.drawCardWidth).toBeCloseTo(
-          reservations.cardAspectRatio,
+          CARD_ASPECT_RATIO,
           5,
         )
 
         // -------------------------------------------------------------------
-        // (2) Card width within legibility bounds OR equal to a derived
-        //     dimension that's already smaller than maxCardWidth (clamp ok).
+        // (5) Drawer geometry: bottom-sheet anchored to stage bottom.
         // -------------------------------------------------------------------
-        expect(layout.cardWidth).toBeGreaterThanOrEqual(reservations.minCardWidth - EPS)
-        expect(layout.cardWidth).toBeLessThanOrEqual(reservations.maxCardWidth + EPS)
-        expect(layout.drawCardWidth).toBeGreaterThanOrEqual(reservations.minCardWidth - EPS)
-        expect(layout.drawCardWidth).toBeLessThanOrEqual(reservations.maxCardWidth + EPS)
+        expect(layout.drawer.rightAligned).toBe(false)
+        expect(layout.drawer.width).toBeCloseTo(viewport.width, 5)
+        expect(layout.drawer.initialTop).toBeCloseTo(
+          layout.stage.y + layout.stage.height,
+          5,
+        )
+        expect(layout.drawer.initialTop + layout.drawer.initialHeight).toBeCloseTo(
+          viewport.height - viewport.safeAreaBottom,
+          5,
+        )
+        expect(layout.drawer.maxHeight).toBeCloseTo(
+          viewport.height - viewport.safeAreaBottom,
+          5,
+        )
 
         // -------------------------------------------------------------------
-        // (3) Draw-stage uniform card size (envelope reflects worst case).
+        // (6) Envelope: 3 horizontal slots, 1 vertical slot, derived from
+        //     the draw card size.
         // -------------------------------------------------------------------
+        expect(layout.envelope.horizontalSlots).toBe(3)
+        expect(layout.envelope.verticalSlots).toBe(1)
         expect(layout.envelope.cardWidth).toBeCloseTo(layout.drawCardWidth, 5)
         expect(layout.envelope.cardHeight).toBeCloseTo(layout.drawCardHeight, 5)
-        const expectedCols = viewport.isWide ? 3 : 1
-        const expectedRows = viewport.isWide ? 1 : 3
-        expect(layout.envelope.horizontalSlots).toBe(expectedCols)
-        expect(layout.envelope.verticalSlots).toBe(expectedRows)
+        expect(layout.envelope.gap).toBe(tokens.gap)
 
         // -------------------------------------------------------------------
-        // (4) Stage rectangle is inside the viewport.
+        // (7) Cards array: single placeholder at stage center.
         // -------------------------------------------------------------------
-        expect(layout.stage.x).toBeGreaterThanOrEqual(0)
-        expect(layout.stage.y).toBeGreaterThanOrEqual(0)
-        expect(layout.stage.x + layout.stage.width).toBeLessThanOrEqual(viewport.width + EPS)
-        expect(layout.stage.y + layout.stage.height).toBeLessThanOrEqual(viewport.height + EPS)
-
-        // Wide + reading_stage: stage shrinks to leave room for the side drawer.
-        if (scene === 'reading_stage' && viewport.isWide) {
-          expect(layout.stage.width).toBeCloseTo(
-            viewport.width - reservations.drawerWideWidth,
-            5,
-          )
-        } else {
-          expect(layout.stage.width).toBeCloseTo(viewport.width, 5)
-        }
+        expect(layout.cards).toHaveLength(1)
+        expect(layout.cards[0]?.slotId).toBe('center')
+        expect(layout.cards[0]?.x).toBeCloseTo(0, 5)
+        expect(layout.cards[0]?.y).toBeCloseTo(0, 5)
+        expect(layout.stageShiftY).toBeCloseTo(0, 5)
 
         // -------------------------------------------------------------------
-        // (5) Drawer geometry contract.
-        // -------------------------------------------------------------------
-        if (viewport.isWide) {
-          expect(layout.drawer.rightAligned).toBe(true)
-          expect(layout.drawer.width).toBeCloseTo(reservations.drawerWideWidth, 5)
-          expect(layout.drawer.initialTop).toBeCloseTo(0, 5)
-          expect(layout.drawer.initialHeight).toBeCloseTo(viewport.height, 5)
-          expect(layout.drawer.maxHeight).toBeCloseTo(viewport.height, 5)
-        } else {
-          expect(layout.drawer.rightAligned).toBe(false)
-          expect(layout.drawer.width).toBeCloseTo(viewport.width, 5)
-          // initialTop + initialHeight == viewport.height (exact identity).
-          expect(layout.drawer.initialTop + layout.drawer.initialHeight).toBeCloseTo(
-            viewport.height,
-            5,
-          )
-          expect(layout.drawer.maxHeight).toBeCloseTo(viewport.height, 5)
-        }
-
-        // -------------------------------------------------------------------
-        // (6) Scene-specific assertions.
+        // (8) Scene-specific assertions.
         // -------------------------------------------------------------------
         if (scene === 'reading_stage') {
-          // Single card.
-          expect(layout.cards).toHaveLength(1)
-          expect(layout.cards[0]?.slotId).toBe('center')
-
-          // Card size >= draw card size — but only when both scenes share the
-          // same stage width. On wide viewports the result stage shrinks to
-          // leave room for the side drawer (e.g. iPad portrait drops to 288 px
-          // of stage out of 768 viewport), so the result card can legitimately
-          // be smaller than a draw card sized against the full 768 px.
-          if (!viewport.isWide) {
-            expect(layout.cardWidth).toBeGreaterThanOrEqual(layout.drawCardWidth - EPS)
-          }
-
-          const rect = resultCardScreenRect(layout, viewport)
-          // Card stays inside viewport horizontally and vertically.
-          expect(rect.left).toBeGreaterThanOrEqual(-EPS)
-          expect(rect.top).toBeGreaterThanOrEqual(-EPS)
-          expect(rect.right).toBeLessThanOrEqual(rect.vpRight + EPS)
-          expect(rect.bottom).toBeLessThanOrEqual(rect.vpBottom + EPS)
-
-          // Card stays inside the stage horizontally (matters on wide).
-          if (viewport.isWide) {
-            expect(rect.right).toBeLessThanOrEqual(layout.stage.width + EPS)
-          }
-
-          // Does not occlude the header.
-          expect(rect.top).toBeGreaterThanOrEqual(topReserved - EPS)
-
-          if (viewport.isWide) {
-            // Wide: drawer is a side panel — vertical bound is action bar.
-            const bottomLimit = viewport.height - bottomReservedBase
-            expect(rect.bottom).toBeLessThanOrEqual(bottomLimit + EPS)
-          } else {
-            // Narrow: drawer.initialTop = card_bottom - overlap (exactly).
-            expect(layout.drawer.initialTop).toBeCloseTo(
-              rect.bottom - reservations.drawerCardOverlap,
-              5,
-            )
-            // Narrow drawer must be at least the minimum useful height.
-            expect(layout.drawer.initialHeight).toBeGreaterThanOrEqual(
-              reservations.drawerMinInitialHeight - EPS,
-            )
-          }
-
-          // stageShiftY is signed offset from default (0) — finite check.
-          expect(Number.isFinite(layout.stageShiftY)).toBe(true)
+          // Result card == stage rect.
+          expect(layout.cardWidth).toBeCloseTo(layout.stage.width, 5)
+          expect(layout.cardHeight).toBeCloseTo(layout.stage.height, 5)
+          expect(layout.cards[0]?.width).toBeCloseTo(layout.stage.width, 5)
+          expect(layout.cards[0]?.height).toBeCloseTo(layout.stage.height, 5)
         } else {
-          // draw_stage — placeholder card at (0, 0).
-          expect(layout.cards).toHaveLength(1)
-          expect(layout.cards[0]?.slotId).toBe('center')
-          expect(layout.cards[0]?.x).toBeCloseTo(0, 5)
-          expect(layout.cards[0]?.y).toBeCloseTo(0, 5)
-          expect(layout.stageShiftY).toBeCloseTo(0, 5)
-
-          // Size fit check: rowsDraw cards stacked vertically (or 1 row of
-          // 3 piles on wide), plus the (N+1)*gap reserved for inter-card
-          // spacing AND breathing buffers on each end of the grid. The
-          // breathing keeps the topmost cut pile a `gap`-px clearance away
-          // from the header icons (and the same on the bottom / sides).
-          const availableH =
-            viewport.height -
-            viewport.topBarHeight -
-            viewport.safeAreaTop -
-            reservations.headerHeight -
-            reservations.actionBarHeight -
-            viewport.safeAreaBottom
-          const usedH =
-            expectedRows * layout.drawCardHeight +
-            (expectedRows + 1) * reservations.cardGap
-          expect(usedH).toBeLessThanOrEqual(availableH + EPS)
-
-          const availableW = viewport.width - 2 * reservations.cardSideMargin
-          const usedW =
-            expectedCols * layout.drawCardWidth +
-            (expectedCols + 1) * reservations.cardGap
-          expect(usedW).toBeLessThanOrEqual(availableW + EPS)
+          // draw_stage: card size matches the 3-pile draw card.
+          expect(layout.cardWidth).toBeCloseTo(layout.drawCardWidth, 5)
+          expect(layout.cardHeight).toBeCloseTo(layout.drawCardHeight, 5)
         }
       })
     }
   }
 
-  it('drawCardWidth is identical between draw_stage and reading_stage on the same viewport', () => {
-    for (const vpFixture of VIEWPORTS) {
-      const viewport = makeViewport(vpFixture.width, vpFixture.height)
-      const reservations = getDefaultReservations(viewport.width)
-      const draw = solveLayout({ viewport, reservations, scene: 'draw_stage' })
-      const result = solveLayout({ viewport, reservations, scene: 'reading_stage' })
+  it('drawCardWidth / drawCardHeight are identical between scenes on the same viewport', () => {
+    for (const fixture of VIEWPORTS) {
+      const viewport = makeViewport(
+        fixture.actualWidth,
+        fixture.height,
+        fixture.safeAreaTop,
+        fixture.safeAreaBottom,
+      )
+      const tokens = deriveTokens(viewport.width)
+      const draw = solveLayout({ viewport, tokens, scene: 'draw_stage' })
+      const result = solveLayout({ viewport, tokens, scene: 'reading_stage' })
       expect(result.drawCardWidth).toBeCloseTo(draw.drawCardWidth, 5)
       expect(result.drawCardHeight).toBeCloseTo(draw.drawCardHeight, 5)
     }
+  })
+
+  it('Canvases above 440px collapse to the cap (large screen → phone-sized stage)', () => {
+    const ipad = makeViewport(768, 1024, 0, 0)
+    const desktop = makeViewport(1440, 900, 0, 0)
+    expect(ipad.width).toBe(440)
+    expect(desktop.width).toBe(440)
+    const ipadTokens = deriveTokens(ipad.width)
+    const desktopTokens = deriveTokens(desktop.width)
+    expect(ipadTokens.canvasWidth).toBe(440)
+    expect(desktopTokens.canvasWidth).toBe(440)
   })
 })

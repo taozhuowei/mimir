@@ -19,15 +19,33 @@ import {
   type LayoutEnvelope,
 } from '../core/sizing/layout_solver'
 import {
-  clampViewportToStage,
-  getDefaultReservations,
-  getViewport,
-  PC_BREAKPOINT,
+  deriveTokens,
+  pickCanvasWidth,
+  readViewport,
+  MAX_CANVAS_WIDTH,
   type PhysicalViewport,
-  type UiReservations,
-} from '../core/sizing/physical_reservations'
+  type ResponsiveTokens,
+} from '../core/sizing/scale'
 import { clamp } from '../utils/math'
 import { SHUFFLE_EDGE_MARGIN } from '../core/config/layout_constants'
+
+/**
+ * Side-column drawer width (px) used by the wide-screen reading layout.
+ * The wide split is rendered by ReadingSplitView at the view layer and is
+ * not visible to the solver — the constant lives here so `getViewportMetrics`
+ * can still expose `stageWidth = viewport.width − sideDrawerWidth` for the
+ * legacy callers until that UI is removed in a later step.
+ */
+const WIDE_SIDE_DRAWER_WIDTH_PX = 480
+
+/**
+ * PC-mode breakpoint (px). Below this the bottom-sheet drawer wins; at or
+ * above it the side-column reading layout wins. Equal to the canvas cap
+ * (440) plus the side-column drawer width (480). Stays here for the same
+ * reason as `WIDE_SIDE_DRAWER_WIDTH_PX` — the wide-split UI cleanup is
+ * deferred to a later step.
+ */
+const PC_BREAKPOINT = MAX_CANVAS_WIDTH + WIDE_SIDE_DRAWER_WIDTH_PX // 920
 
 export interface UseOverlayLayoutDeps {
   isWide: Ref<boolean>
@@ -117,38 +135,45 @@ function resolveTopBarHeight(rect: { top: number; height: number } | null): numb
 }
 
 export function useOverlayLayout(deps: UseOverlayLayoutDeps) {
-  // Reservations are tier-aware: gap and side-margin step from 16/16 on
-  // compact viewports through 20/20 on regular phones to 24/24 on wide
-  // screens. The viewport is the only input that selects the tier, so
-  // this helper takes one and returns the matching reservations.
-  function getReservations(viewport: PhysicalViewport): UiReservations {
-    return getDefaultReservations(viewport.width)
+  /**
+   * Resolve the proportional design tokens for a physical viewport. The
+   * tokens are derived from the canvas width (already clamped to
+   * [375, 440] by `buildPhysicalViewport`), so passing the viewport here
+   * is equivalent to passing the canvas width directly.
+   */
+  function getTokens(viewport: PhysicalViewport): ResponsiveTokens {
+    return deriveTokens(viewport.width)
   }
 
   /**
    * Build the physical viewport the solver works in.
    *
    * Two stages:
-   *   1. `getViewport()` adapts the platform window-info into our shape.
-   *   2. `clampViewportToStage()` caps the result at the iPhone 17 Pro Max
-   *      envelope (440 × 956). Cards are therefore always sized as if the
-   *      screen were a phone; the actual extra space on tablets / desktops
-   *      is filled by background and centering at the CSS layer.
+   *   1. `readViewport()` adapts the platform window-info into our shape
+   *      (real, unclamped width + height + safe areas).
+   *   2. `pickCanvasWidth()` clamps the width into the supported envelope
+   *      [375, 440] so the layout is always sized as if the screen were a
+   *      phone; the actual extra space on tablets / desktops is filled by
+   *      background and centering at the CSS layer.
    *
    * `showResults` does NOT affect the underlying viewport — it influences
    * the stage rectangle the solver derives, so we keep the conversion
    * shape-stable here and pass `scene` to the solver further down.
+   *
+   * Note: the platform `topBarHeight` (mini-program capsule) is no longer
+   * carried inside the viewport — the proportional `tokens.headerHeight`
+   * absorbs the chrome reservation. We still read the capsule rect during
+   * resize handling because future work may surface it as a separate inset.
    */
   function buildPhysicalViewport(): PhysicalViewport {
+    void resolveTopBarHeight(getMenuButtonRect()) // preserved side-effect call
     const win = uni.getWindowInfo()
-    const topBarHeight = resolveTopBarHeight(getMenuButtonRect())
-    const raw = getViewport({
+    const raw = readViewport({
       windowWidth: win.windowWidth,
       windowHeight: win.windowHeight,
       safeAreaInsets: win.safeAreaInsets,
-      topBarHeight,
     })
-    return clampViewportToStage(raw)
+    return { ...raw, width: pickCanvasWidth(raw.width) }
   }
 
   /**
@@ -159,13 +184,15 @@ export function useOverlayLayout(deps: UseOverlayLayoutDeps) {
    */
   function getViewportMetrics(showResults: boolean): ViewportMetrics {
     const viewport = buildPhysicalViewport()
-    const reservations = getReservations(viewport)
-    const isWide = viewport.isWide
+    // Wide-screen branch retained for the legacy ReadingSplitView pipeline.
+    // The solver itself no longer branches on isWide; this metric is used
+    // only by the legacy stageWidth/stageHeight consumers and will be
+    // dropped when the wide-split UI is cleaned up in a later step.
+    const isWide = deps.isWide.value
 
     const stageWidth =
-      showResults && isWide ? viewport.width - reservations.drawerWideWidth : viewport.width
-    const stageHeight =
-      isWide && showResults ? viewport.height : viewport.height - viewport.topBarHeight
+      showResults && isWide ? viewport.width - WIDE_SIDE_DRAWER_WIDTH_PX : viewport.width
+    const stageHeight = viewport.height
     const stageContainerHeight = showResults ? stageHeight : viewport.height
 
     return {
@@ -177,7 +204,7 @@ export function useOverlayLayout(deps: UseOverlayLayoutDeps) {
       stageWidth,
       stageHeight,
       stageContainerHeight,
-      topBarHeight: viewport.topBarHeight,
+      topBarHeight: 0,
     }
   }
 
@@ -188,14 +215,13 @@ export function useOverlayLayout(deps: UseOverlayLayoutDeps) {
    */
   function getSceneLayout(scene: Scene): SceneLayout {
     const viewport = buildPhysicalViewport()
-    const reservations = getReservations(viewport)
+    const tokens = getTokens(viewport)
 
-    const solved = solveLayout({ viewport, reservations, scene })
+    const solved = solveLayout({ viewport, tokens, scene })
 
-    const safeTopInset =
-      viewport.topBarHeight + viewport.safeAreaTop + reservations.headerHeight
-    const safeBottomInset = reservations.actionBarHeight + viewport.safeAreaBottom
-    const safeSideInset = reservations.cardSideMargin
+    const safeTopInset = viewport.safeAreaTop + tokens.margin + tokens.headerHeight
+    const safeBottomInset = tokens.actionAreaHeight + viewport.safeAreaBottom
+    const safeSideInset = tokens.margin
 
     return {
       ...solved,
@@ -211,23 +237,23 @@ export function useOverlayLayout(deps: UseOverlayLayoutDeps) {
    */
   function getMotionMetrics(scene: Scene = 'draw_stage'): MotionMetrics {
     const viewport = buildPhysicalViewport()
-    const reservations = getReservations(viewport)
-    const layout = solveLayout({ viewport, reservations, scene })
+    const tokens = getTokens(viewport)
+    const layout = solveLayout({ viewport, tokens, scene })
 
     const cardWidth = layout.envelope.cardWidth
     const cardHeight = layout.envelope.cardHeight
     const gap = layout.envelope.gap
     const slotPitchX = layout.envelope.slotPitchX
 
-    // Available height matches the solver's worst-case draw-stage budget so
-    // shuffle/cut motion never escapes the safe frame.
+    // Available height matches the solver's stage budget so shuffle/cut
+    // motion never escapes the safe frame. Mirror the formula in
+    // `computeStage` so the two stay aligned.
     const availableH =
       viewport.height -
-      viewport.topBarHeight -
       viewport.safeAreaTop -
-      reservations.headerHeight -
-      reservations.actionBarHeight -
-      viewport.safeAreaBottom
+      viewport.safeAreaBottom -
+      2 * tokens.margin -
+      tokens.headerHeight
 
     const safeHalfWidth = layout.stage.width / 2
     const safeHalfHeight = availableH / 2

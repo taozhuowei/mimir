@@ -68,10 +68,10 @@ import { prefersReducedMotion } from '../../utils/accessibility'
 import { DECK_CLICK_SAFETY_MS } from '../../core/config/layout_constants'
 import { solveLayout } from '../../core/sizing/layout_solver'
 import {
-  clampViewportToStage,
-  getDefaultReservations,
-  getViewport,
-} from '../../core/sizing/physical_reservations'
+  deriveTokens,
+  pickCanvasWidth,
+  readViewport,
+} from '../../core/sizing/scale'
 import { buildFanTimeline } from '../../animation/phases/fan/builder'
 
 const emit = defineEmits<{
@@ -105,16 +105,15 @@ function resolveCardSize() {
 
     // Use the same solver as the divination draw stage so the card size
     // stays stable across the idle → divination transition.
-    const rawViewport = getViewport({
+    const rawViewport = readViewport({
       windowWidth: winInfo.windowWidth,
       windowHeight: winInfo.windowHeight,
       safeAreaInsets: winInfo.safeAreaInsets,
-      topBarHeight: 0,
     })
-    const viewport = clampViewportToStage(rawViewport)
+    const viewport = { ...rawViewport, width: pickCanvasWidth(rawViewport.width) }
     const layout = solveLayout({
       viewport,
-      reservations: getDefaultReservations(viewport.width),
+      tokens: deriveTokens(viewport.width),
       scene: 'draw_stage',
     })
 

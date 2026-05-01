@@ -37,14 +37,14 @@
  * reappear in the same session.
  */
 import { ref } from 'vue'
-import { MIN_VIEWPORT_WIDTH } from '../../core/sizing/physical_reservations'
+import { MIN_CANVAS_WIDTH } from '../../core/sizing/scale'
 
 defineProps<{
   /** Whether the actual viewport is below the supported minimum. */
   visible: boolean
 }>()
 
-const minWidth = MIN_VIEWPORT_WIDTH
+const minWidth = MIN_CANVAS_WIDTH
 
 // Dismissal is per-mount; if the user resizes back above min and then
 // below again later, we'll re-show. Persisting dismissal across reloads

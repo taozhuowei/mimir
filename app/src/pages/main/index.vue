@@ -101,10 +101,10 @@ import { useAnimationController } from '../../composables/use_animation_controll
 import { useReadingController } from '../../composables/use_reading_controller'
 import { solveLayout } from '../../core/sizing/layout_solver'
 import {
-  clampViewportToStage,
-  getDefaultReservations,
-  getViewport,
-} from '../../core/sizing/physical_reservations'
+  deriveTokens,
+  pickCanvasWidth,
+  readViewport,
+} from '../../core/sizing/scale'
 import type { OverlayPhase } from '../../core/flow/types'
 
 /* ── Stores + phase ─────────────────────────────────────────────────── */
@@ -188,16 +188,15 @@ const currentQuestion = computed(() => tarotStore.currentQuestion)
 const resultDrawerGeometry = computed(() => {
   try {
     const winInfo = uni.getWindowInfo()
-    const rawViewport = getViewport({
+    const rawViewport = readViewport({
       windowWidth: winInfo.windowWidth,
       windowHeight: winInfo.windowHeight,
       safeAreaInsets: winInfo.safeAreaInsets,
-      topBarHeight: 0,
     })
-    const viewport = clampViewportToStage(rawViewport)
+    const viewport = { ...rawViewport, width: pickCanvasWidth(rawViewport.width) }
     const layout = solveLayout({
       viewport,
-      reservations: getDefaultReservations(viewport.width),
+      tokens: deriveTokens(viewport.width),
       scene: 'reading_stage',
     })
     return layout.drawer

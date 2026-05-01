@@ -1,28 +1,32 @@
 /**
  * Name: core/sizing/layout_solver
- * Purpose: single physical-pixel layout solver for the tarot reading flow.
- *          Given a viewport + UI reservations + scene kind, returns a fully
- *          described SceneLayout (card rects, drawer geometry, stage rect,
- *          envelope) with no hidden ratios.
- * Reason: the previous code spread layout decisions across multiple modules
- *         (overlay_layout, spread_layout, scene_layout, draw/result resolvers)
- *         using semantic 0.x ratios (RESULT_WIDE_WIDTH_FRACTION 0.54,
- *         BOTTOM_RATIO_DRAW 0.12, ...). Those numbers couldn't be reasoned
- *         about — they expressed neither pixels nor any explicit physical
- *         meaning. This module replaces all of them with pixel reservations
- *         so each derived value is auditable and editable from one place.
+ * Purpose: pure layout solver for the tarot reading flow. Given a viewport,
+ *          ResponsiveTokens, and a scene kind, returns a fully described
+ *          SceneLayout (card rects, drawer geometry, stage rect, animation
+ *          envelope) — every value derived from a single 1:1.6 stage rect
+ *          centered horizontally in the canvas.
+ * Reason: previous versions held a tiered "physical reservations" budget
+ *         (physical_reservations.ts) that branched on `viewport.isWide` and
+ *         carried bespoke fields like `drawerWideWidth`, `drawerCardOverlap`,
+ *         `cardSideMargin`. The proportional `ResponsiveTokens` model
+ *         (core/sizing/scale.ts) is now the single source of truth for
+ *         spacing, so the solver becomes a flat function of those tokens
+ *         plus the viewport. The wide-split branching is gone — the drawer
+ *         always overlays the bottom of the stage as a sheet; the wide-screen
+ *         side-column UI is handled at the view layer (ReadingSplitView)
+ *         and is not visible to the solver.
  *
  * Purity: pure function. No window access, no DOM, no global state. The
- *         caller is responsible for collecting the viewport + reservations.
+ *         caller is responsible for collecting the viewport and tokens.
  *
  * Data flow:
- *   getViewport(windowInfo) ──┐
- *                              ├──▶ solveLayout({viewport, reservations, scene}) ──▶ SceneLayout
- *   getDefaultReservations() ─┘
+ *   readViewport(windowInfo) ──▶ pickCanvasWidth ──┐
+ *                                                  ├──▶ solveLayout({viewport, tokens, scene}) ──▶ SceneLayout
+ *   deriveTokens(canvasWidth) ──────────────────────┘
  */
 
-import { clamp } from '../../utils/math'
-import type { PhysicalViewport, UiReservations } from './physical_reservations'
+import type { PhysicalViewport, ResponsiveTokens } from './scale'
+import { CARD_ASPECT_RATIO } from './scale'
 
 // ---------------------------------------------------------------------------
 // Output types
@@ -52,20 +56,25 @@ export interface CardLayout {
 export interface DrawerGeometry {
   /** Distance from the top of the viewport to the drawer's initial top edge. */
   initialTop: number
-  /** Initial drawer height (= viewport.height - initialTop on narrow). */
+  /** Initial drawer height (= viewport.height - safeAreaBottom - initialTop). */
   initialHeight: number
   /** Maximum drawer height when fully expanded. */
   maxHeight: number
   /** Drawer width in px. */
   width: number
-  /** True when drawer is anchored to the right side (wide screens). */
+  /**
+   * True when drawer is anchored to the right side. Always false in the new
+   * model (drawer is always a bottom sheet) — the field is kept so consumers
+   * that branch on it continue to compile until the wide-split UI is removed
+   * in a later step.
+   */
   rightAligned: boolean
 }
 
 /**
  * Sizing envelope for shuffle/cut motion bounds. Always derived from the
- * draw-stage worst-case slot grid so animations stay inside the safe frame
- * regardless of which scene we're currently rendering.
+ * 3-pile draw-stage grid so animations stay inside the safe frame regardless
+ * of which scene we're currently rendering.
  */
 export interface LayoutEnvelope {
   cardWidth: number
@@ -111,7 +120,11 @@ export interface SceneLayout {
   drawCardWidth: number
   /** Uniform draw-stage card height. */
   drawCardHeight: number
-  /** Vertical offset applied to the stage layer. 0 for draw stage. */
+  /**
+   * Vertical offset applied to the stage layer. Always 0 in the new model
+   * — the card is centred in the stage rect on every scene, so no shift
+   * is required to align the result card with the draw card.
+   */
   stageShiftY: number
   // ----- new fields -----
   stage: StageRect
@@ -123,156 +136,99 @@ export type SceneKind = 'draw_stage' | 'reading_stage'
 
 export interface SolveLayoutInput {
   viewport: PhysicalViewport
-  reservations: UiReservations
+  tokens: ResponsiveTokens
   scene: SceneKind
 }
 
 // ---------------------------------------------------------------------------
-// Solver — split into stage-specific helpers so each one stays well below
-// the project's per-function size cap. The public `solveLayout` just wires
-// them together in the order documented above.
+// Solver — split into small helpers so each piece is auditable on its own.
+// The public `solveLayout` wires them together in the order documented above.
 // ---------------------------------------------------------------------------
 
-/** Vertical budget shared by both stages (header + footer + safe-areas). */
-function computeAvailableHeight(viewport: PhysicalViewport, reservations: UiReservations): number {
-  return (
+/**
+ * Compute the largest 1:1.6 stage rect that fits inside the canvas after
+ * subtracting the header and the page margins on every side. The stage is
+ * the visual region cards live in — it doubles as the result card rect on
+ * the reading scene because there's exactly one card and the card fills it.
+ */
+function computeStage(
+  viewport: PhysicalViewport,
+  tokens: ResponsiveTokens,
+): StageRect {
+  const availableW = viewport.width - 2 * tokens.margin
+  const availableH =
     viewport.height -
-    viewport.topBarHeight -
     viewport.safeAreaTop -
-    reservations.headerHeight -
-    reservations.actionBarHeight -
-    viewport.safeAreaBottom
-  )
+    viewport.safeAreaBottom -
+    2 * tokens.margin -
+    tokens.headerHeight
+
+  // Largest 1:1.6 (height/width) rect that fits in (availableW × availableH).
+  // If the canvas is wide-and-short, height is the limiting dimension.
+  const widthLimitedByH = availableH / CARD_ASPECT_RATIO
+  const stageW = Math.min(availableW, widthLimitedByH)
+  const stageH = stageW * CARD_ASPECT_RATIO
+
+  // Centre the stage horizontally in the canvas; pin it below the header
+  // (which itself sits below the safe-area top + page margin).
+  const stageX = (viewport.width - stageW) / 2
+  const stageY = viewport.safeAreaTop + tokens.margin + tokens.headerHeight
+
+  return { x: stageX, y: stageY, width: stageW, height: stageH }
 }
 
 /**
- * Uniform draw-stage card size: chosen against the worst-case slot grid
- * (cut phase needs 3 piles), so the same value is valid across shuffle,
- * cut and draw — cards never visibly resize between phases.
- *
- * Spacing budget along each axis:
- *   total_axis = N × cardSize + (N − 1) × gap_between + 2 × gap_breathing
- *              = N × cardSize + (N + 1) × gap
- * The two extra `gap`s are the breathing buffers on the leading and
- * trailing edges of the card grid, so the topmost cut pile keeps a
- * `gap`-sized clearance from the header (and the same on the bottom /
- * sides depending on cut axis). Without them, the cut animation can
- * push cards visually into the header icons.
+ * Three-pile draw card size. The cut phase requires three piles laid out
+ * horizontally inside the stage with a `gap` of breathing on each end and
+ * between piles, so each pile gets `(stageW − 4 × gap) / 3`. The card is
+ * still 1:1.6, so height follows.
  */
-function computeDrawCardSize(
-  viewport: PhysicalViewport,
-  reservations: UiReservations,
-  availableH: number,
-): { width: number; height: number; cols: number; rows: number } {
-  const cols = viewport.isWide ? 3 : 1
-  const rows = viewport.isWide ? 1 : 3
-  const availableW = viewport.width - 2 * reservations.cardSideMargin
-  const cwByW = (availableW - (cols + 1) * reservations.cardGap) / cols
-  const cwByH =
-    (availableH - (rows + 1) * reservations.cardGap) / rows / reservations.cardAspectRatio
-  const width = clamp(
-    Math.min(cwByW, cwByH),
-    reservations.minCardWidth,
-    reservations.maxCardWidth,
-  )
-  return { width, height: width * reservations.cardAspectRatio, cols, rows }
-}
-
-/**
- * Result-stage card size + screen rectangle. Vertical budget on narrow
- * screens leaves room for the drawer's minimum initial height, minus the
- * overlap pixels the card is allowed to sit under.
- *
- * The single card has the same `gap`-sized breathing on every side as the
- * draw-stage grid: we subtract `2 * gap` from the available width and
- * height before solving so the result card never sits flush against the
- * header, side margin, or drawer edge.
- */
-function computeResultCardLayout(
-  viewport: PhysicalViewport,
-  reservations: UiReservations,
-  availableH: number,
-): {
+function computeDrawCardSize(stage: StageRect, tokens: ResponsiveTokens): {
   width: number
   height: number
-  topScreenY: number
-  bottomScreenY: number
 } {
-  const stageW = viewport.isWide ? viewport.width - reservations.drawerWideWidth : viewport.width
-  const availableW = stageW - 2 * reservations.cardSideMargin
-  const budgetH = viewport.isWide
-    ? availableH
-    : availableH - reservations.drawerMinInitialHeight + reservations.drawerCardOverlap
-
-  const cwByW = availableW - 2 * reservations.cardGap
-  const cwByH = (budgetH - 2 * reservations.cardGap) / reservations.cardAspectRatio
-  const width = clamp(
-    Math.min(cwByW, cwByH),
-    reservations.minCardWidth,
-    reservations.maxCardWidth,
-  )
-  const height = width * reservations.cardAspectRatio
-  const topScreenY =
-    viewport.topBarHeight + viewport.safeAreaTop + reservations.headerHeight + (budgetH - height) / 2
-  return { width, height, topScreenY, bottomScreenY: topScreenY + height }
+  const width = (stage.width - 4 * tokens.gap) / 3
+  return { width, height: width * CARD_ASPECT_RATIO }
 }
 
-/** Drawer geometry: side panel on wide, bottom sheet on narrow. */
-function computeDrawer(
-  viewport: PhysicalViewport,
-  reservations: UiReservations,
-  cardBottomScreenY: number,
-): DrawerGeometry {
-  if (viewport.isWide) {
-    return {
-      initialTop: 0,
-      initialHeight: viewport.height,
-      maxHeight: viewport.height,
-      width: reservations.drawerWideWidth,
-      rightAligned: true,
-    }
-  }
-  const initialTop = cardBottomScreenY - reservations.drawerCardOverlap
+/**
+ * Drawer geometry in the new model: always a bottom sheet that opens from
+ * the bottom of the stage and stretches to the bottom of the viewport
+ * (above the safe-area inset). Width spans the full canvas.
+ */
+function computeDrawer(viewport: PhysicalViewport, stage: StageRect): DrawerGeometry {
+  const initialTop = stage.y + stage.height
+  const initialHeight = viewport.height - initialTop - viewport.safeAreaBottom
+  const maxHeight = viewport.height - viewport.safeAreaBottom
   return {
     initialTop,
-    initialHeight: viewport.height - initialTop,
-    maxHeight: viewport.height,
+    initialHeight,
+    maxHeight,
     width: viewport.width,
     rightAligned: false,
   }
 }
 
-/** Stage rectangle in viewport-absolute px. */
-function computeStage(
-  viewport: PhysicalViewport,
-  reservations: UiReservations,
-  scene: SceneKind,
-): StageRect {
-  const isResultWide = scene === 'reading_stage' && viewport.isWide
-  return {
-    x: 0,
-    y: viewport.topBarHeight,
-    width: isResultWide ? viewport.width - reservations.drawerWideWidth : viewport.width,
-    height: viewport.height - viewport.topBarHeight,
-  }
-}
-
-/** Worst-case slot grid envelope, used by animation bounds in every scene. */
+/**
+ * Animation envelope for the 3-pile draw / cut grid. Always horizontal in
+ * the new model — the wide / narrow rotation of the grid is gone because
+ * the stage rect is a single shape on every viewport.
+ */
 function computeEnvelope(
   drawCardWidth: number,
   drawCardHeight: number,
-  cols: number,
-  rows: number,
   gap: number,
 ): LayoutEnvelope {
-  const fullSpanX = cols * drawCardWidth + (cols - 1) * gap
-  const fullSpanY = rows * drawCardHeight + (rows - 1) * gap
+  const horizontalSlots = 3
+  const verticalSlots = 1
+  const fullSpanX = horizontalSlots * drawCardWidth + (horizontalSlots - 1) * gap
+  const fullSpanY = drawCardHeight
   return {
     cardWidth: drawCardWidth,
     cardHeight: drawCardHeight,
     gap,
-    horizontalSlots: cols,
-    verticalSlots: rows,
+    horizontalSlots,
+    verticalSlots,
     slotPitchX: drawCardWidth + gap,
     slotPitchY: drawCardHeight + gap,
     halfSpanX: fullSpanX / 2,
@@ -289,56 +245,55 @@ function computeEnvelope(
  *
  * Strategy
  * ────────
- *  1. Compute draw-stage card size from the worst-case 3-pile grid.
- *  2. Compute result-stage card size + on-screen rect (drawer-aware).
- *  3. Compute drawer + stage geometry from those rects.
- *  4. Compose the scene-specific output, preserving legacy field names.
+ *  1. Compute the stage rect — largest 1:1.6 box that fits the canvas after
+ *     subtracting margins, header, and safe areas. The stage is centered
+ *     horizontally and pinned below the header.
+ *  2. Compute the 3-pile draw card size from the stage (one card per pile).
+ *  3. Compose the result-stage card (= stage rect — single card fills it).
+ *  4. Compute drawer geometry as a bottom sheet anchored to the stage bottom.
+ *  5. Build the animation envelope from the draw card size.
  */
 export function solveLayout(input: SolveLayoutInput): SceneLayout {
-  const { viewport, reservations, scene } = input
+  const { viewport, tokens, scene } = input
 
-  const availableH = computeAvailableHeight(viewport, reservations)
-  const draw = computeDrawCardSize(viewport, reservations, availableH)
-  const result = computeResultCardLayout(viewport, reservations, availableH)
-  const drawer = computeDrawer(viewport, reservations, result.bottomScreenY)
-  const stage = computeStage(viewport, reservations, scene)
-  const envelope = computeEnvelope(
-    draw.width,
-    draw.height,
-    draw.cols,
-    draw.rows,
-    reservations.cardGap,
-  )
+  const stage = computeStage(viewport, tokens)
+  const draw = computeDrawCardSize(stage, tokens)
+  const drawer = computeDrawer(viewport, stage)
+  const envelope = computeEnvelope(draw.width, draw.height, tokens.gap)
 
+  // Result card == stage rect (single card fills the entire stage).
+  const resultCardWidth = stage.width
+  const resultCardHeight = stage.height
+
+  // Cards array: one centred placeholder. Concrete shuffle / cut / draw /
+  // reveal phases position individual cards themselves; the solver only
+  // emits a rest layout the controller can use as a fallback.
   if (scene === 'reading_stage') {
-    const stageCenterY = stage.y + stage.height / 2
-    const stageShiftY = result.topScreenY + result.height / 2 - stageCenterY
     const cards: CardLayout[] = [
       {
         slotId: 'center',
         x: 0,
-        y: stageShiftY,
-        width: result.width,
-        height: result.height,
+        y: 0,
+        width: resultCardWidth,
+        height: resultCardHeight,
         rotateDeg: 0,
         zIndex: 1,
       },
     ]
     return {
       cards,
-      cardWidth: result.width,
-      cardHeight: result.height,
+      cardWidth: resultCardWidth,
+      cardHeight: resultCardHeight,
       drawCardWidth: draw.width,
       drawCardHeight: draw.height,
-      stageShiftY,
+      stageShiftY: 0,
       stage,
       drawer,
       envelope,
     }
   }
 
-  // draw_stage: single centered slot at (0, 0). Concrete shuffle / cut /
-  // draw phases position the deck themselves; this is the rest layout.
+  // draw_stage: single centered slot at (0, 0) using the draw card size.
   const cards: CardLayout[] = [
     {
       slotId: 'center',

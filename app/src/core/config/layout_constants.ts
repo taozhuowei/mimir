@@ -1,9 +1,9 @@
 /**
  * Layout, animation, and interaction constants.
  *
- * Physical card sizing reservations now live in
- * `core/sizing/physical_reservations.ts`; this file holds the timing,
- * thresholds, and motion-magnitude values that don't fit there.
+ * Proportional sizing tokens now live in `core/sizing/scale.ts`; this file
+ * holds the timing, thresholds, and motion-magnitude values that don't fit
+ * there.
  *
  * Naming rule: every value is a concrete physical quantity — px, ms, or
  * a count. Fractions of the viewport (`*_FRACTION`, `*_RATIO`) are no
