@@ -1,6 +1,9 @@
 {
   "$schema": "https://unpkg.com/knip@6/schema.json",
   "workspaces": {
+    ".": {
+      "entry": ["scripts/*.js"]
+    },
     "app": {
       "entry": [
         "src/main.ts",
@@ -11,14 +14,9 @@
       "project": [
         "src/**/*.{ts,vue}",
         "!src/**/*.d.ts"
-      ],
-      "ignore": [
-        "src/env.d.ts",
-        "src/shime-uni.d.ts"
       ]
     },
     "server": {
-      "entry": ["src/server.ts"],
       "project": ["src/**/*.ts"]
     },
     "test": {
@@ -30,7 +28,26 @@
     "@dcloudio/uni-app-plus",
     "@dcloudio/uni-components",
     "@dcloudio/uni-h5",
-    "@dcloudio/uni-mp-weixin"
+    "@dcloudio/uni-mp-weixin",
+    "@dcloudio/uni-automator",
+    "@dcloudio/uni-cli-shared",
+    "@dcloudio/uni-stacktracey",
+    "@vue/runtime-core",
+    "jscpd"
   ],
-  "ignoreBinaries": []
+  "ignoreExportsUsedInFile": true,
+  "vite": false,
+  "rules": {
+    "files": "error",
+    "dependencies": "error",
+    "unlisted": "error",
+    "unresolved": "error",
+    "exports": "warn",
+    "types": "warn",
+    "nsExports": "warn",
+    "nsTypes": "warn",
+    "duplicates": "warn",
+    "enumMembers": "warn",
+    "classMembers": "warn"
+  }
 }

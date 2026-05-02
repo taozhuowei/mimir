@@ -31,20 +31,6 @@ export const useThemeStore = defineStore('theme', () => {
   }
 
   /**
-   * Extract theme base URL from resolved asset URL
-   * Derives from any resolved URL in currentTheme, strips path after /static/themes/{id}/
-   */
-  const themeBase = computed<string>(() => {
-    if (!currentTheme.value) return ''
-    // Use card_back image URL to derive base path
-    const cardBackUrl = currentTheme.value.images.card_back
-    if (!cardBackUrl) return ''
-    // Extract base URL up to /static/themes/{id}/
-    const match = cardBackUrl.match(/(.+\/static\/themes\/[^/]+)\//)
-    return match ? match[1] : ''
-  })
-
-  /**
    * Card back image URL from theme, or empty string if not loaded
    */
   const cardBackImage = computed<string>(() => {
@@ -92,7 +78,6 @@ export const useThemeStore = defineStore('theme', () => {
     isLoading,
     loadError,
     loadTheme,
-    themeBase,
     cardBackImage,
     uiAssets,
     getUiAsset,

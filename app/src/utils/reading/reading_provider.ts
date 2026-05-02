@@ -29,25 +29,3 @@ export interface ReadingProvider {
   isAvailable(): boolean
 }
 
-export interface ReadingProviderFactory {
-  createProvider(type: ReadingProviderType): ReadingProvider
-}
-
-export class DefaultReadingProviderFactory implements ReadingProviderFactory {
-  constructor(
-    private ruleBasedProvider: ReadingProvider,
-    // Future: private aiProvider: ReadingProvider,
-  ) {}
-
-  createProvider(type: ReadingProviderType): ReadingProvider {
-    switch (type) {
-      case 'rule_based':
-        return this.ruleBasedProvider
-      // Future:
-      // case 'ai':
-      //   return this.aiProvider
-      default:
-        return this.ruleBasedProvider
-    }
-  }
-}

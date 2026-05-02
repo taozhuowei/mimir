@@ -83,21 +83,30 @@ const SENTIMENT_BASE_WEIGHT: Record<string, number> = {
  *  - Neutral cards: upright = +1, reversed = -1
  *  - Major Arcana: score × 1.3 (rounded)
  */
+function getNeutralScore(position: 'upright' | 'reversed'): number {
+  return position === 'upright' ? 1 : -1
+}
+
+function getAlignmentBonus(
+  card: TarotCard,
+  position: 'upright' | 'reversed',
+  sentiment: 'positive' | 'negative',
+): number {
+  const positionSentiment = position === 'upright' ? card.upright.sentiment : card.reversed.sentiment
+  const aligned = positionSentiment === sentiment
+  if (sentiment === 'positive') return aligned ? 2 : -1
+  return aligned ? -2 : 1
+}
+
 function getCardScore(card: TarotCard, position: 'upright' | 'reversed'): number {
   const meaning = position === 'upright' ? card.upright : card.reversed
   const sentiment = meaning.sentiment
 
-  let score = SENTIMENT_BASE_WEIGHT[sentiment] ?? 0
-
+  let score: number
   if (sentiment === 'neutral') {
-    score = position === 'upright' ? 1 : -1
+    score = getNeutralScore(position)
   } else {
-    const position_sentiment = position === 'upright' ? card.upright.sentiment : card.reversed.sentiment
-    if (position_sentiment === sentiment) {
-      score += sentiment === 'positive' ? 2 : -2
-    } else {
-      score += sentiment === 'positive' ? -1 : 1
-    }
+    score = (SENTIMENT_BASE_WEIGHT[sentiment] ?? 0) + getAlignmentBonus(card, position, sentiment)
   }
 
   if (card.type === 'major') {

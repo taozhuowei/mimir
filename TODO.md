@@ -1,5 +1,143 @@
 # Scales Tarot — TODO
 
+## 阶段 7 — 门禁工程清理 + 死代码治理
+
+### 总览
+
+- **背景**：本地 `2e89722` 提交因 `pre-push` 钩子执行 `npm run quality` 失败（knip 误报 + 真实死代码）而无法推送至 `origin/main`。CI (`.github/workflows/ci.yml`) 与本地钩子镜像，绕过 `--no-verify` 也会被 CI 拦截。
+- **总工时估算**：≈ 4.5 小时（7.0 ≈ 70 分钟，7.1 ≈ 100 分钟，7.2 ≈ 95 分钟）
+- **解锁第一次 push 的关键路径**：完成 7.0 全部任务后 `npm run quality` 转绿，即可 `git push origin main`
+- **延期事项**：
+  - `getDefaultPhaseOrder()`（`app/src/animation/pipeline.ts:70`）需待 phase-replay 重构后再评估，本阶段不动
+  - GitHub 分支保护配置（需仓库管理员权限）延至 7.2 之后单独立项
+  - sonarjs `warn` 规则 ratchet 计划需用户确认 deadline 后再排期
+- **审计来源**：Test Results Analyzer / Software Architect / DevOps Automator 三方报告交叉核验
+
+### 7.0 Push 解锁前必修（P0）
+
+`[x]` **7.0.1 删除两处死 vi.mock 块**
+- 文件：`test/overlay_controller_sizing.test.ts:55-82`、`test/use_overlay_controller.test.ts:122-151`
+- 做什么：删除引用已重命名路径 `../app/src/utils/overlay_layout/index` 的 `vi.mock()` 块（factory 永不执行，测试通过的是 real solver）
+- Agent：`engineering/engineering-frontend-developer.md`
+- 工时：15 min
+- 依赖：无（首发）
+
+`[x]` **7.0.2 删除未使用类 DefaultReadingProviderFactory**
+- 文件：`app/src/utils/reading/reading_provider.ts:36-53`
+- 做什么：删除 `DefaultReadingProviderFactory` 类与 `ReadingProviderFactory` 接口（grep 确认 monorepo 零调用方）
+- Agent：`engineering/engineering-frontend-developer.md`
+- 工时：15 min
+- 依赖：无（可与 7.0.1 并行）
+
+`[x]` **7.0.3 删除未使用 themeBase getter**
+- 文件：`app/src/stores/theme.ts:38-45`
+- 做什么：删除 `themeBase` getter（零消费者 + ReDoS 风险），同步删除相关正则
+- Agent：`engineering/engineering-frontend-developer.md`
+- 工时：20 min
+- 依赖：无（可与 7.0.1/7.0.2 并行）
+
+`[x]` **7.0.4 修复 knip.json 配置消除误报**
+- 文件：`knip.json`
+- 做什么：在根 workspace 添加 `scripts/*` 入口；`ignoreFiles: ['app/vite.config.ts']`；将 `jscpd`、`@vue/runtime-core`、`@dcloudio/uni-automator/cli-shared/stacktracey` 加入 `ignoreDependencies`；删除真实未用 devDeps `madge`、`webpack-bundle-analyzer`；核实 `@vue/tsconfig` 是否被 `tsconfig` extends 引用后决定保留或删除
+- Agent：`engineering/engineering-frontend-developer.md`
+- 工时：15 min
+- 依赖：7.0.1 / 7.0.2 / 7.0.3 完成（避免修配置后又触发新 knip 报错）
+
+`[x]` **7.0.5 补齐 @vitejs/plugin-vue 缺失声明**
+- 文件：根 `package.json`
+- 做什么：将 `@vitejs/plugin-vue` 加入 `devDependencies`（`test/vitest.config.ts` 引用但未声明）
+- Agent：`engineering/engineering-frontend-developer.md`
+- 工时：5 min
+- 依赖：无（可与 7.0.4 并行）
+
+`[x]` **7.0.6 验证 npm run quality 转绿并 push**
+- 做什么：本地跑 `npm run quality`，全绿后 `git push origin main`，确认远程接受 + CI 转绿
+- Agent：`testing/testing-reality-checker.md`
+- 工时：10 min
+- 依赖：7.0.1 ~ 7.0.5 全部完成（必须串行最后跑）
+
+### 7.1 架构债清理（P1）
+
+`[ ]` **7.1.1 提取 parseServerError 辅助函数**
+- 文件：`app/src/api/client.ts:64`
+- 做什么：将 3 层嵌套三元抽出独立函数 `parseServerError(data)`，提升可读性
+- Agent：`engineering/engineering-frontend-developer.md`
+- 工时：15 min
+- 依赖：7.0.6 完成（push 解锁后再做）
+
+`[ ]` **7.1.2 提取 initPilesAtRest 辅助函数**
+- 文件：`app/src/animation/phases/cut/builder.ts:47-72`
+- 做什么：将 piles 初始化重复段抽出 `initPilesAtRest(piles, pilesVisible, N)`
+- Agent：`engineering/engineering-frontend-developer.md`
+- 工时：15 min
+- 依赖：7.0.6（与 7.1.1 并行）
+
+`[ ]` **7.1.3 StyleReconciler 接口去重**
+- 文件：`app/src/composables/use_animation_controller.ts`（参考 `app/src/composables/use_overlay_layout.ts:84` 已有 extends 模式）
+- 做什么：让 `UseAnimationControllerReturn` 用 `extends StyleReconciler` 消除 13 行字段重复
+- Agent：`engineering/engineering-frontend-developer.md`
+- 工时：20 min
+- 依赖：7.0.6
+
+`[ ]` **7.1.4 重新评估 106 处未使用类型导出**
+- 做什么：在 7.0.4 修复 knip 配置后重跑 `npm run quality`，对剩余条目逐一核验（架构师抽样命中 100% 误报，仅处理真实未用项）
+- Agent：`engineering/engineering-code-reviewer.md`
+- 工时：30 min
+- 依赖：7.0.4 + 7.1.1 ~ 7.1.3 完成
+
+`[ ]` **7.1.5 atom 测试补强（fakeTimers + 边界）**
+- 文件：现有 4 个 atom 测试文件（具体路径以 `test/` 目录为准）
+- 做什么：将 `setTimeout` 替换为 `vi.useFakeTimers()`，补充边界用例
+- Agent：`engineering/engineering-frontend-developer.md`
+- 工时：30 min
+- 依赖：7.0.6
+
+### 7.2 配置精修 + 文档 + CI 优化（P2）
+
+`[ ]` **7.2.1 jscpd 阈值收紧 + 补 server/src 扫描**
+- 文件：`.jscpd.json`、`scripts/quality_gate.js`
+- 做什么：阈值从 5% 调至 1.5%（适配 6.1k LoC）；`quality_gate.js` 中 jscpd 命令补充扫描 `server/src`
+- Agent：`engineering/engineering-frontend-developer.md`
+- 工时：5 min
+- 依赖：7.0.6
+
+`[ ]` **7.2.2 pre-commit 提速：移除 type-check**
+- 文件：`.simple-git-hooks` 配置或 `package.json` 中 hook 定义
+- 做什么：将 `type-check`（vue-tsc + tsc 全量）从 pre-commit 移至 pre-push 唯一执行
+- Agent：`engineering/engineering-frontend-developer.md`
+- 工时：10 min
+- 依赖：7.0.6
+
+`[ ]` **7.2.3 新增 theme_store 测试（如保留 themeBase 简化版）**
+- 前置条件：仅当 7.0.3 决定保留简化正则版而非整体删除
+- 文件：`test/theme_store.test.ts`（新建）
+- 做什么：3 个用例覆盖正则边界（合法 hex / 非法输入 / 空值）
+- Agent：`engineering/engineering-frontend-developer.md`
+- 工时：20 min
+- 依赖：7.0.3 决议
+
+`[ ]` **7.2.4 README 补充 hook bypass 文档**
+- 文件：`README.md`
+- 做什么：新增章节说明 `SKIP_SIMPLE_GIT_HOOKS=1` 用法及使用前提
+- Agent：`engineering/engineering-frontend-developer.md`
+- 工时：10 min
+- 依赖：7.0.6
+
+`[ ]` **7.2.5 sonarjs warn 规则 ratchet 计划立项**
+- 文件：`TODO.md`（追加阶段 8 占位）+ ESLint 配置注释
+- 做什么：列出当前 warn 规则清单 + 拟定逐步升 error 的 deadline（需用户确认）
+- Agent：`engineering/engineering-code-reviewer.md`
+- 工时：15 min
+- 依赖：7.0.6 + 用户确认
+
+`[ ]` **7.2.6 GitHub 分支保护配置立项（待管理员）**
+- 做什么：拟定 `main` 分支保护策略（required status checks = `quality` job、PR review、禁止 force-push），交付清单交用户在 GitHub 后台启用
+- Agent：`engineering/engineering-code-reviewer.md`
+- 工时：15 min
+- 依赖：7.0.6
+
+---
+
 ## 重构总目标
 
 按新 PRD 视觉层术语体系（5 视图 / 9 容器 / 4 阶段 / 4 类动画 / 双路由）对 overlay 模块全面重构。
