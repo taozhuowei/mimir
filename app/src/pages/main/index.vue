@@ -9,7 +9,11 @@
         the divination view when phase ∈ {'reading', 'decision'}
       - NotificationHost mounted on the route root for cross-view alerts
   -->
-  <view class="main-page" :style="cssVarStyle">
+  <view
+    class="main-page"
+    :class="{ 'is-reading-wide': isWide && showReadingView }"
+    :style="cssVarStyle"
+  >
     <!--
       View picker: phase === 'idle' renders IdleView, every other phase
       renders DivinationView. We use explicit v-if branches rather than
@@ -21,17 +25,25 @@
       IdleView fades out while DivinationView fades in simultaneously.
       Both views are position: absolute during the overlap so neither
       pushes the other in the normal flow.
+
+      The .canvas wrapper holds the divination canvas (width capped at
+      MAX_CANVAS_WIDTH). It's centered when the viewport has spare room
+      (PRD §8.2.1) and slides flush-left when reading mode opens on a
+      wide viewport, so the right-side ReadingSplitView fills the
+      remainder.
     -->
-    <transition name="view-switch">
-      <IdleView
-        v-if="phase === 'idle'"
-        :cards-load-error="tarotStore.cardsLoadError"
-        :is-cards-loading="tarotStore.isCardsLoading"
-        @trigger-divination="handleTriggerDivination"
-        @retry-load-cards="handleRetryLoadCards"
-      />
-      <DivinationView v-else :key="'divination'" />
-    </transition>
+    <view class="canvas">
+      <transition name="view-switch">
+        <IdleView
+          v-if="phase === 'idle'"
+          :cards-load-error="tarotStore.cardsLoadError"
+          :is-cards-loading="tarotStore.isCardsLoading"
+          @trigger-divination="handleTriggerDivination"
+          @retry-load-cards="handleRetryLoadCards"
+        />
+        <DivinationView v-else :key="'divination'" />
+      </transition>
+    </view>
 
     <!--
       Reading viewport: chosen by viewport width per PRD §2.3 (wide → split,
@@ -102,6 +114,7 @@ import { useReadingController } from '../../composables/use_reading_controller'
 import { solveLayout } from '../../core/sizing/layout_solver'
 import {
   deriveSizes,
+  MAX_CANVAS_WIDTH,
   pickCanvasWidth,
   readViewport,
   useResponsiveScale,
@@ -119,17 +132,17 @@ provide('appPhase', phase)
 /* ── Responsive width ──────────────────────────────────────────────── */
 
 /**
- * Wide-screen branch threshold. Mirrors the legacy DivinationOverlay
- * (≥ 920 px = phone shell + 480 px sidebar). The same value is used to
- * mount ReadingSplitView vs ReadingDrawerView.
+ * Wide-screen branch threshold. The divination canvas is capped at
+ * MAX_CANVAS_WIDTH (440 px), so any viewport wider than that has spare
+ * horizontal room for the side reading panel — that's the entire
+ * eligibility condition for split mode (PRD §8.2.1). Below or equal,
+ * the drawer overlay is used instead.
  */
-const WIDE_VIEWPORT_BREAKPOINT_PX = 920
-
 const isWide = ref(false)
 
 function recomputeIsWide() {
   const { windowWidth } = uni.getWindowInfo()
-  isWide.value = windowWidth >= WIDE_VIEWPORT_BREAKPOINT_PX
+  isWide.value = windowWidth > MAX_CANVAS_WIDTH
 }
 
 provide('isWide', isWide)
@@ -310,14 +323,47 @@ onUnmounted(() => {
   position: relative;
   width: 100%;
   height: 100vh;
+  overflow: hidden;
+  background: var(--color-bg-page);
+}
+
+/* PRD §8.2.1 — canvas wrapper. Width is capped at MAX_CANVAS_WIDTH
+   (440 px); on a wider viewport the canvas is horizontally centered
+   via translateX(max(0, (100vw - 440)/2)), so the surrounding background
+   is exposed on both sides. When reading mode opens on a wide viewport
+   (.is-reading-wide), the canvas slides flush-left and the
+   ReadingSplitView takes the remaining space on the right. The
+   max() clamp keeps the calc at 0 on viewports ≤ 440 so the canvas
+   sits naturally at the left edge there. */
+.canvas {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  max-width: 440px;
+  transform: translateX(max(0px, calc((100vw - 440px) / 2)));
+  transition: transform 450ms cubic-bezier(0.16, 1, 0.3, 1);
   display: flex;
   flex-direction: column;
   overflow: hidden;
 }
 
+.main-page.is-reading-wide .canvas {
+  transform: translateX(0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .canvas {
+    transition: none;
+  }
+}
+
 /* PRD §8.1.2 — idle ↔ divination view swap, ~450ms.
    Keep duration in sync with DUR_IDLE_TO_DIV_MS in animation/easings.ts.
-   Both views are absolute so they overlap cleanly during the transition. */
+   Both views are absolute so they overlap cleanly during the transition.
+   The position: absolute fills the .canvas wrapper (which is itself
+   absolutely positioned, acting as the positioning ancestor). */
 .view-switch-enter-active,
 .view-switch-leave-active {
   transition: opacity 450ms cubic-bezier(0.16, 1, 0.3, 1);

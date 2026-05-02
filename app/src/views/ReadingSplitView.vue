@@ -68,9 +68,14 @@ defineEmits<{
 .reading-split-view {
   position: absolute;
   top: 0;
+  /* The divination canvas is anchored flush-left at MAX_CANVAS_WIDTH
+     (440 px) in wide+reading mode (see pages/main/index.vue .canvas).
+     The split view fills everything to the right of that. Width is
+     therefore implicit (= viewport.width - 440) — no explicit width
+     so the layout adapts to any wide viewport. */
+  left: 440px;
   right: 0;
   bottom: 0;
-  width: 50%;
   display: flex;
   flex-direction: column;
   background: var(--color-bg-page);
@@ -80,7 +85,10 @@ defineEmits<{
   overflow: hidden;
   container: result-drawer / inline-size;
   /* PRD §8.2.1: slide in from right on mount.
-     450ms = DUR_DIV_TO_READING_WIDE_MS in animation/easings.ts */
+     450ms = DUR_DIV_TO_READING_WIDE_MS in animation/easings.ts.
+     translateX(100%) is relative to this element's own width
+     (viewport.width - 440), so the slide-in still appears to come from
+     off-screen right regardless of the actual width. */
   animation: split-view-enter 450ms cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
