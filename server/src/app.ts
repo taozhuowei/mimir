@@ -61,15 +61,35 @@ app.disable('x-powered-by')
 //     and pollutes localhost HTTP debugging across all of `localhost:*`.
 //     Production keeps the default HSTS so the reverse proxy + app are
 //     defense-in-depth.
+// CSP source list: in dev/test the SPA runs from Vite at localhost:4123 and
+// proxies /static/* to this server at :3000 — fonts/images/connect become
+// effectively cross-origin from the browser's POV. Allow common loopback
+// origins in non-prod so the dev server doesn't trip CSP. Production stays
+// strict ('self' only) because the SPA is served from this same origin
+// (nginx → express on the same host).
+// Loopback URLs for dev only. The `http://`/`ws://` here is intentional
+// (localhost has no TLS); production CSP uses the empty cspExtras array
+// below so these never reach a deployed environment.
+/* eslint-disable sonarjs/no-clear-text-protocols -- dev-only loopback */
+const DEV_LOOPBACK_ORIGINS = [
+  'http://localhost:*',
+  'http://127.0.0.1:*',
+  'ws://localhost:*',
+  'ws://127.0.0.1:*',
+]
+/* eslint-enable sonarjs/no-clear-text-protocols */
+
+const cspExtras = config.isProd ? [] : DEV_LOOPBACK_ORIGINS
+
 app.use(helmet({
   contentSecurityPolicy: {
     directives: {
       defaultSrc: ["'self'"],
-      scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'"],
-      styleSrc: ["'self'", "'unsafe-inline'"],
-      imgSrc: ["'self'", "data:", "blob:"],
-      fontSrc: ["'self'"],
-      connectSrc: ["'self'"],
+      scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", ...cspExtras],
+      styleSrc: ["'self'", "'unsafe-inline'", ...cspExtras],
+      imgSrc: ["'self'", "data:", "blob:", ...cspExtras],
+      fontSrc: ["'self'", "data:", ...cspExtras],
+      connectSrc: ["'self'", ...cspExtras],
       frameAncestors: ["'none'"],
       baseUri: ["'self'"],
       formAction: ["'self'"],
