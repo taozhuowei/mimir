@@ -15,14 +15,16 @@
  * Inputs are passed as plain literals — no DOM, no uni, no Vue.
  */
 
-import { describe, expect, it } from 'vitest'
+import { beforeEach, describe, expect, it } from 'vitest'
 import {
   BASELINE_ACTION_AREA_HEIGHT,
   BASELINE_DRAWER_MIN_HEIGHT,
   BASELINE_FONT_L,
   BASELINE_FONT_M,
   BASELINE_FONT_S,
+  BASELINE_FONT_XL,
   BASELINE_FONT_XS,
+  BASELINE_FONT_XXL,
   BASELINE_GAP,
   BASELINE_HEADER_HEIGHT,
   BASELINE_MARGIN,
@@ -31,6 +33,7 @@ import {
   deriveScale,
   deriveSizes,
   pickCanvasWidth,
+  useResponsiveScale,
 } from '../app/src/core/sizing/scale'
 
 /**
@@ -48,6 +51,8 @@ const EXPECTED_AT_440 = {
   gap: 14,
   drawerMinHeight: 141,
   actionAreaHeight: 113,
+  fontXXL: 38,
+  fontXL: 28,
   fontL: 26,
   fontM: 19,
   fontS: 16,
@@ -114,6 +119,8 @@ describe('scale — deriveSizes at iPhone 8 baseline (375)', () => {
     expect(t.gap).toBe(BASELINE_GAP)
     expect(t.drawerMinHeight).toBe(BASELINE_DRAWER_MIN_HEIGHT)
     expect(t.actionAreaHeight).toBe(BASELINE_ACTION_AREA_HEIGHT)
+    expect(t.fontXXL).toBe(BASELINE_FONT_XXL)
+    expect(t.fontXL).toBe(BASELINE_FONT_XL)
     expect(t.fontL).toBe(BASELINE_FONT_L)
     expect(t.fontM).toBe(BASELINE_FONT_M)
     expect(t.fontS).toBe(BASELINE_FONT_S)
@@ -135,6 +142,8 @@ describe('scale — deriveSizes at iPhone 17 Pro Max (440)', () => {
     expect(t.gap).toBe(EXPECTED_AT_440.gap) // 14
     expect(t.drawerMinHeight).toBe(EXPECTED_AT_440.drawerMinHeight) // 141
     expect(t.actionAreaHeight).toBe(EXPECTED_AT_440.actionAreaHeight) // 113
+    expect(t.fontXXL).toBe(EXPECTED_AT_440.fontXXL) // 38
+    expect(t.fontXL).toBe(EXPECTED_AT_440.fontXL) // 28
     expect(t.fontL).toBe(EXPECTED_AT_440.fontL) // 26
     expect(t.fontM).toBe(EXPECTED_AT_440.fontM) // 19
     expect(t.fontS).toBe(EXPECTED_AT_440.fontS) // 16
@@ -151,6 +160,8 @@ describe('scale — deriveSizes token integrity', () => {
       expect(Number.isInteger(t.gap)).toBe(true)
       expect(Number.isInteger(t.drawerMinHeight)).toBe(true)
       expect(Number.isInteger(t.actionAreaHeight)).toBe(true)
+      expect(Number.isInteger(t.fontXXL)).toBe(true)
+      expect(Number.isInteger(t.fontXL)).toBe(true)
       expect(Number.isInteger(t.fontL)).toBe(true)
       expect(Number.isInteger(t.fontM)).toBe(true)
       expect(Number.isInteger(t.fontS)).toBe(true)
@@ -162,5 +173,57 @@ describe('scale — deriveSizes token integrity', () => {
     for (const canvas of [375, 390, 400, 414, 428, 440]) {
       expect(deriveSizes(canvas).k).toBe(deriveScale(canvas))
     }
+  })
+})
+
+/**
+ * Singleton behaviour for `useResponsiveScale` — verifies the module-level
+ * state survives across calls (so N consumers share ONE listener) and that
+ * `dispose()` resets it cleanly so a future call rebuilds fresh refs.
+ *
+ * The test runs in node env (`@vitest-environment node` declared at the top
+ * of the file), where `uni` and the rAF globals do not exist. We stub them
+ * minimally in `beforeEach` so the composable's platform-touching paths
+ * resolve to deterministic values. The stub is reset every test so any
+ * residual singleton state from a prior test leaks at most one assertion.
+ */
+describe('scale — useResponsiveScale singleton', () => {
+  beforeEach(() => {
+    // Minimal `uni` stub — the composable touches only these three methods.
+    // Pinning a 375 px viewport keeps the derived sizes deterministic and
+    // matches the iPhone 8 baseline used by the other suites.
+    ;(globalThis as { uni?: unknown }).uni = {
+      getWindowInfo: () => ({
+        windowWidth: 375,
+        windowHeight: 667,
+        safeAreaInsets: { top: 0, bottom: 0 },
+      }),
+      onWindowResize: () => { /* no-op */ },
+      offWindowResize: () => { /* no-op */ },
+    }
+  })
+
+  it('returns the same `sizes` / `viewport` ref objects across calls', () => {
+    const a = useResponsiveScale()
+    const b = useResponsiveScale()
+    // Object identity: every consumer shares ONE subscription point. If
+    // this regresses (e.g. someone reverts the singleton), the CSS-variable
+    // bridge ends up duplicating listeners and the bridge in pages/main
+    // silently drifts from the descendants' independently-subscribed refs.
+    expect(a.sizes).toBe(b.sizes)
+    expect(a.viewport).toBe(b.viewport)
+    a.dispose()
+  })
+
+  it('rebuilds fresh refs after `dispose()` resets the singleton', () => {
+    const first = useResponsiveScale()
+    const sizesBeforeDispose = first.sizes
+    first.dispose()
+
+    // After disposal the module-level singleton is null again, so the next
+    // call MUST construct fresh refs — the disposed ones are unreachable.
+    const second = useResponsiveScale()
+    expect(second.sizes).not.toBe(sizesBeforeDispose)
+    second.dispose()
   })
 })

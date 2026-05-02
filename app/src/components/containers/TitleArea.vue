@@ -7,11 +7,15 @@
     The GSAP entrance comes from the legacy pages/index/index.vue header
     block; we keep the same DOM-free animation pattern so MP-WeChat doesn't
     need DOM refs.
+
+    Sizing: all dimensions / fonts come from the proportional scale system
+    via CSS custom properties bound on `pages/main/index.vue`'s root. This
+    component reads `var(--header-height)`, `var(--font-xxl)` etc; it does
+    NOT subscribe to `useResponsiveScale` directly.
   -->
   <view
     class="title-area"
     :class="`title-area--${variant}`"
-    :style="{ paddingTop: `${headerPaddingTop}px` }"
     role="banner"
   >
     <template v-if="variant === 'idle'">
@@ -43,7 +47,7 @@
  *            refs, identical to the legacy pattern). Reduced-motion users
  *            get the final state immediately.
  */
-import { onMounted, onUnmounted, ref, watch } from 'vue'
+import { onUnmounted, ref, watch, onMounted } from 'vue'
 import { gsap } from 'gsap'
 import { prefersReducedMotion } from '../../utils/accessibility'
 
@@ -71,9 +75,6 @@ const COPY = {
   },
 } as const
 
-/** Mini-program / H5 status-bar safe inset (px). */
-const headerPaddingTop = ref(20)
-
 /* ── DOM-free animation state (MP-WeChat compatible) ──────────────── */
 
 const titleStyle = ref<Record<string, string>>({})
@@ -96,23 +97,6 @@ function flushHeaderStyles() {
   guidanceStyle.value = {
     transform: `translateY(${_guidance.y}px)`,
     opacity: String(_guidance.opacity),
-  }
-}
-
-function resolveHeaderPadding() {
-  try {
-    const winInfo = uni.getWindowInfo()
-    // #ifdef H5
-    headerPaddingTop.value = Math.max(20, winInfo.safeArea?.top || 20)
-    // #endif
-    // #ifdef MP-WEIXIN
-    const menuButtonRect = uni.getMenuButtonBoundingClientRect()
-    headerPaddingTop.value = menuButtonRect.bottom + 8
-    // #endif
-    // Suppress unused warning on H5-only builds.
-    void winInfo
-  } catch {
-    headerPaddingTop.value = 20
   }
 }
 
@@ -146,7 +130,6 @@ function runEntranceAnimation() {
 }
 
 onMounted(() => {
-  resolveHeaderPadding()
   runEntranceAnimation()
 })
 
@@ -164,49 +147,51 @@ onUnmounted(() => {
 
 <style scoped>
 .title-area {
+  height: var(--header-height);
+  flex-shrink: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 16rpx;
-  padding-left: 40rpx;
-  padding-right: 40rpx;
-  padding-bottom: 20rpx;
-  flex-shrink: 0;
+  justify-content: center;
+  gap: 4px;
   text-align: center;
+  overflow: hidden;
 }
 
 .title-area__title {
-  font-size: 64rpx;
+  font-size: var(--font-xxl);
   color: var(--color-text-primary);
   letter-spacing: 0.18em;
   text-shadow: 0 4rpx 12rpx rgba(74, 37, 16, 0.1);
+  line-height: 1;
 }
 
 .title-area__subtitle {
-  font-size: 24rpx;
+  font-size: var(--font-xs);
   color: var(--color-text-secondary);
   letter-spacing: 0.35em;
   text-transform: uppercase;
+  line-height: 1.2;
 }
 
 .title-area__guidance {
-  margin-top: 8rpx;
-  font-size: 22rpx;
+  font-size: var(--font-xs);
   color: var(--color-text-tertiary);
   letter-spacing: 0.08em;
+  line-height: 1.2;
 }
 
 .title-area__error {
-  margin-top: 8rpx;
-  font-size: 20rpx;
+  font-size: var(--font-xs);
   color: var(--color-no);
   letter-spacing: 0.04em;
   max-width: 80%;
   word-break: break-word;
+  line-height: 1.2;
 }
 
 .title-area__fallback {
-  font-size: 28rpx;
+  font-size: var(--font-s);
   color: var(--color-text-secondary);
   letter-spacing: 0.18em;
 }

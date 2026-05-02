@@ -9,7 +9,7 @@
         the divination view when phase ∈ {'reading', 'decision'}
       - NotificationHost mounted on the route root for cross-view alerts
   -->
-  <view class="main-page">
+  <view class="main-page" :style="cssVarStyle">
     <!--
       View picker: phase === 'idle' renders IdleView, every other phase
       renders DivinationView. We use explicit v-if branches rather than
@@ -104,6 +104,7 @@ import {
   deriveSizes,
   pickCanvasWidth,
   readViewport,
+  useResponsiveScale,
 } from '../../core/sizing/scale'
 import type { OverlayPhase } from '../../core/flow/types'
 
@@ -132,6 +133,36 @@ function recomputeIsWide() {
 }
 
 provide('isWide', isWide)
+
+/* ── CSS variable bridge ───────────────────────────────────────────── */
+
+/**
+ * Single subscription point for the proportional scale system: bind every
+ * derived size as a CSS custom property on the root view so any descendant
+ * scoped CSS can reference them via `var(--xxx)` without re-subscribing
+ * to the composable. `useResponsiveScale` is a module-level singleton, so
+ * this is the only place in the tree that needs to call it for the bridge
+ * to work — descendants stay declarative.
+ *
+ * TODO(mp-weixin): wrap with #ifdef MP-WEIXIN to add menu button height
+ *                  to top padding via uni.getMenuButtonBoundingClientRect.
+ *                  H5 is the primary delivery target; mini-program path
+ *                  is deferred per the responsive-scale rollout plan.
+ */
+const { sizes } = useResponsiveScale()
+const cssVarStyle = computed(() => ({
+  '--margin': `${sizes.value.margin}px`,
+  '--gap': `${sizes.value.gap}px`,
+  '--header-height': `${sizes.value.headerHeight}px`,
+  '--drawer-min-height': `${sizes.value.drawerMinHeight}px`,
+  '--action-area-height': `${sizes.value.actionAreaHeight}px`,
+  '--font-xxl': `${sizes.value.fontXXL}px`,
+  '--font-xl': `${sizes.value.fontXL}px`,
+  '--font-l': `${sizes.value.fontL}px`,
+  '--font-m': `${sizes.value.fontM}px`,
+  '--font-s': `${sizes.value.fontS}px`,
+  '--font-xs': `${sizes.value.fontXS}px`,
+}))
 
 /* ── Card count (always 1 for single_card today) ───────────────────── */
 

@@ -95,7 +95,11 @@ export const BASELINE_GAP = 12
 export const BASELINE_DRAWER_MIN_HEIGHT = 120
 /** Bottom action area height at the baseline (px). */
 export const BASELINE_ACTION_AREA_HEIGHT = 96
-/** Large display font size at the baseline (px). */
+/** Hero / display font size at the baseline (px). */
+export const BASELINE_FONT_XXL = 32
+/** Large heading font size at the baseline (px). */
+export const BASELINE_FONT_XL = 24
+/** Heading font size at the baseline (px). */
 export const BASELINE_FONT_L = 22
 /** Medium body font size at the baseline (px). */
 export const BASELINE_FONT_M = 16
@@ -182,7 +186,11 @@ export interface ResponsiveSizes {
   drawerMinHeight: number
   /** Bottom action area height in px (baseline 96 × k, rounded). */
   actionAreaHeight: number
-  /** Large display font size in px (baseline 22 × k, rounded). */
+  /** Hero / display font size in px (baseline 32 × k, rounded). */
+  fontXXL: number
+  /** Large heading font size in px (baseline 24 × k, rounded). */
+  fontXL: number
+  /** Heading font size in px (baseline 22 × k, rounded). */
   fontL: number
   /** Medium body font size in px (baseline 16 × k, rounded). */
   fontM: number
@@ -208,6 +216,8 @@ export function deriveSizes(canvasWidth: number): ResponsiveSizes {
     gap: Math.round(BASELINE_GAP * k),
     drawerMinHeight: Math.round(BASELINE_DRAWER_MIN_HEIGHT * k),
     actionAreaHeight: Math.round(BASELINE_ACTION_AREA_HEIGHT * k),
+    fontXXL: Math.round(BASELINE_FONT_XXL * k),
+    fontXL: Math.round(BASELINE_FONT_XL * k),
     fontL: Math.round(BASELINE_FONT_L * k),
     fontM: Math.round(BASELINE_FONT_M * k),
     fontS: Math.round(BASELINE_FONT_S * k),
@@ -324,20 +334,55 @@ function scaleChangedSignificantly(prev: number, next: number): boolean {
 }
 
 /**
+ * Module-level singleton state for `useResponsiveScale`. Persists across
+ * calls so every consumer subscribes to the SAME refs and only ONE
+ * `uni.onWindowResize` listener is registered for the entire application
+ * lifetime. `null` until the first call; reset to `null` by `dispose()`
+ * so a future call after disposal can reinitialize cleanly (which is the
+ * only path tests / SSR re-entries need).
+ */
+let singletonState: ResponsiveScaleState | null = null
+
+/**
  * Vue composable: exposes reactive `sizes` + `viewport`, recomputes on
  * `uni.onWindowResize`, coalesces resize bursts to the next animation
  * frame, and short-circuits sub-pixel jitter so reactivity stays cheap.
  *
- * Cleanup: the returned object exposes a `dispose()` method that removes
- * the resize listener and cancels any pending rAF. When called inside a
- * Vue scope (`setup()` or `effectScope()`) `dispose()` is also wired into
- * `onScopeDispose`, so callers do nothing. When called outside any scope
- * (e.g. an ad-hoc unit-test harness) the caller must invoke `dispose()`
- * manually to release the listener — the no-op `onScopeDispose` branch
- * deliberately skips registration to avoid Vue's "called outside scope"
- * warning.
+ * Singleton behavior: this composable is a module-level singleton. The
+ * first call builds the refs and registers ONE `uni.onWindowResize`
+ * listener. Subsequent calls return the SAME `sizes` / `viewport` refs
+ * (object identity preserved) and do NOT register additional listeners.
+ * This means N consumers across the app share one subscription — useful
+ * for the CSS variable bridge pattern where one root component exports
+ * sizes as custom properties for the whole tree.
+ *
+ * Cleanup: each call still registers its own `onScopeDispose` so the
+ * caller's Vue scope owns its own cleanup hook (the hook is a no-op
+ * facade — it does NOT tear down the underlying singleton, because other
+ * scopes may still be using it). The real `dispose()` is exposed on the
+ * returned object: calling it tears down the listener, cancels any
+ * pending rAF, and resets `singletonState = null` so a future call
+ * reinitialises. This is intended for tests / SSR re-entry, not normal
+ * runtime use.
+ *
+ * Outside a Vue scope (ad-hoc unit-test harness) `onScopeDispose` is
+ * skipped and the caller must invoke `dispose()` manually.
  */
 export function useResponsiveScale(): ResponsiveScaleState {
+  // Fast path: singleton already initialised — return existing refs and
+  // optionally register a per-scope cleanup facade. Object identity of
+  // `sizes` / `viewport` is preserved so consumers' computed refs stay
+  // stable and the test below (`a.sizes === b.sizes`) succeeds.
+  if (singletonState !== null) {
+    if (getCurrentScope() !== undefined) {
+      // The hook is a deliberate no-op: the singleton outlives any single
+      // scope. Registering `dispose` here would tear down the listener
+      // the moment any one consumer's scope ends, breaking the others.
+      onScopeDispose(() => { /* singleton outlives per-scope teardown */ })
+    }
+    return singletonState
+  }
+
   const initialViewport = readViewportFromUni()
   const initialCanvas = pickCanvasWidth(initialViewport.width)
 
@@ -377,8 +422,10 @@ export function useResponsiveScale(): ResponsiveScaleState {
   uni.onWindowResize(resizeHandler)
 
   /**
-   * Idempotent tear-down. First call removes the listener and cancels any
-   * pending frame; subsequent calls short-circuit on the `disposed` flag.
+   * Idempotent tear-down. First call removes the listener, cancels any
+   * pending frame, and resets the module-level singleton so a subsequent
+   * `useResponsiveScale()` call rebuilds fresh state. Subsequent calls
+   * short-circuit on the `disposed` flag.
    */
   const dispose = (): void => {
     if (disposed) return
@@ -388,20 +435,31 @@ export function useResponsiveScale(): ResponsiveScaleState {
       caf(pendingFrame)
       pendingFrame = 0
     }
+    // Reset the module-level singleton so a future call reinitialises.
+    // Useful for tests (each `it` can start fresh) and SSR re-entry.
+    singletonState = null
   }
+
+  const state: ResponsiveScaleState = {
+    sizes: readonly(sizes) as Readonly<Ref<ResponsiveSizes>>,
+    viewport: readonly(viewport) as Readonly<Ref<ResponsiveViewport>>,
+    dispose,
+  }
+  singletonState = state
 
   // Auto-cleanup hook is registered only when we have an active Vue scope.
   // `getCurrentScope()` is non-null inside `setup()` and `effectScope()`
   // and undefined for ad-hoc calls; guarding here avoids the runtime
   // warning Vue emits when `onScopeDispose` is invoked outside a scope.
   // Outside a scope the caller must invoke the returned `dispose()` method.
+  //
+  // The hook is a no-op facade — it does NOT tear down the singleton.
+  // The first caller's scope ending must not invalidate the listener for
+  // every other consumer. Only the explicit `dispose()` (or app teardown)
+  // releases the underlying listener.
   if (getCurrentScope() !== undefined) {
-    onScopeDispose(dispose)
+    onScopeDispose(() => { /* singleton outlives per-scope teardown */ })
   }
 
-  return {
-    sizes: readonly(sizes) as Readonly<Ref<ResponsiveSizes>>,
-    viewport: readonly(viewport) as Readonly<Ref<ResponsiveViewport>>,
-    dispose,
-  }
+  return state
 }

@@ -29,7 +29,11 @@
  * Purpose: divination view top-anchored progress bar — 4 phase icons driven by
  *          animationController's progressHeaderPresentation computed ref.
  * Reason: migrated from ProgressHeader.vue in phase 2.2.a. Self-contained via
- *         inject; headerStyle wires the GSAP entry animation.
+ *         inject; headerStyle wires the GSAP entry animation. Sizing comes
+ *         from the proportional scale system via CSS custom properties bound
+ *         on `pages/main/index.vue`'s root — this component does NOT
+ *         subscribe to `useResponsiveScale` directly, so the idle and
+ *         divination header slots line up to the same `var(--header-height)`.
  * Data flow: animationController (injected from main page) → progressHeaderPresentation
  *            → icon list. headerStyle drives GSAP slide-in animation.
  */
@@ -41,31 +45,20 @@ const animCtrl = inject<UseAnimationControllerReturn>('animationController')!
 
 <style scoped>
 .progress-area {
+  height: var(--header-height);
+  flex-shrink: 0;
   display: flex;
-  flex-direction: column;
   align-items: center;
+  justify-content: center;
   z-index: 20;
-  padding: 24rpx 0;
 }
-
-/* #ifdef H5 */
-.progress-area {
-  margin-top: calc(env(safe-area-inset-top, 0px) + 60rpx);
-}
-/* #endif */
-
-/* #ifdef MP-WEIXIN */
-.progress-area {
-  margin-top: calc(env(safe-area-inset-top, 0px) + 140rpx);
-}
-/* #endif */
 
 .progress-area__bar {
   display: flex;
   flex-direction: row;
   align-items: center;
   justify-content: center;
-  gap: 24rpx;
+  gap: var(--gap);
 }
 
 .progress-area__step {

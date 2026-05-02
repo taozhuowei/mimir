@@ -159,6 +159,28 @@
   /* Overlay-specific tokens moved to styles/overlay/_tokens.css */
   --color-badge-reversed-from: #8b6f5e;
   --color-badge-reversed-to: #5c3d2e;
+
+  /* ── Proportional scale system ──────────────────────────────────────
+     Static fallbacks for the runtime CSS variable bridge defined on
+     `pages/main/index.vue`'s root view (uses useResponsiveScale). The
+     bridge overrides these with proportional values derived from canvas
+     width × k. Static defaults match the iPhone 8 baseline (k = 1) so
+     any descendant scoped CSS that ships before the bridge mounts still
+     renders sane sizes. Reason for declaring them here: the project's
+     CSS lint rule rejects var() references unless the variable is
+     defined globally or locally, and the runtime bridge counts as
+     "locally" only at render time. */
+  --margin: 16px;
+  --gap: 12px;
+  --header-height: 80px;
+  --drawer-min-height: 120px;
+  --action-area-height: 96px;
+  --font-xxl: 32px;
+  --font-xl: 24px;
+  --font-l: 22px;
+  --font-m: 16px;
+  --font-s: 14px;
+  --font-xs: 12px;
 }
 
 /* H5 专用：响应式字体大小 */

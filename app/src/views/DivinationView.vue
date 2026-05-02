@@ -35,5 +35,14 @@ import DivinationDeck from '../components/stage-content/DivinationDeck.vue'
   position: relative;
   width: 100%;
   min-height: 0;
+  /* Uniform safe-area + margin handling shared with IdleView. The CSS
+     variable `--margin` is set on the main-page root via the scale
+     bridge (pages/main/index.vue), so the same value scales across
+     iPhone 8 → 17 Pro Max without per-view subscription. */
+  padding-top: calc(env(safe-area-inset-top, 0px) + var(--margin));
+  padding-bottom: calc(env(safe-area-inset-bottom, 0px) + var(--margin));
+  padding-left: var(--margin);
+  padding-right: var(--margin);
+  box-sizing: border-box;
 }
 </style>
