@@ -1,16 +1,19 @@
 /**
  * Name: use_reading_controller
- * Purpose: manage reading lifecycle (start, retry, reset, destroy) and expose reading state.
- * Reason: decouples reading orchestration from animation; reading code never imports gsap.
+ * Purpose: manage divination lifecycle (start, retry, reset, destroy) and
+ *          expose request state to the overlay templates.
+ * Reason: decouples divination orchestration from animation; this module
+ *         never imports gsap. Drawn cards land in the tarot store via the
+ *         orchestrator's `drawnRef`, so animation code reads them directly.
  */
 
 import { computed, ref } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useTarotStore } from '../stores/tarot'
-import { OfflineReadingProvider } from '../utils/reading/offline_reading_provider'
+import { RuleBasedReadingProvider } from '../utils/reading/rule_based_reading_provider'
 import { createReadingOrchestrator } from '../utils/reading/reading_orchestrator'
 import type { ReadingRequest } from '../utils/reading/reading_provider'
-import type { ReadingResult } from '../utils/tarotReading'
+import type { ReadingResult } from '../api/types'
 import type { ReadingStatus } from '../utils/reading/reading_orchestrator'
 import type { ComputedRef } from 'vue'
 
@@ -32,13 +35,18 @@ export interface UseReadingControllerReturn {
 
 export function useReadingController(deps: UseReadingControllerDeps): UseReadingControllerReturn {
   const readingStatus = ref<'idle' | 'loading' | 'success' | 'error'>('idle')
-  const { readingResult: storeReadingResult, readingError: storeReadingError } = storeToRefs(deps.tarotStore)
+  const {
+    readingResult: storeReadingResult,
+    readingError: storeReadingError,
+    drawnCards: storeDrawnCards,
+  } = storeToRefs(deps.tarotStore)
 
   const readingOrchestrator = createReadingOrchestrator({
-    provider: new OfflineReadingProvider(),
+    provider: new RuleBasedReadingProvider(),
     statusRef: readingStatus,
     resultRef: storeReadingResult,
     errorRef: storeReadingError,
+    drawnRef: storeDrawnCards,
     errorMessage: '解读暂时不可用，请稍后重试',
   })
 

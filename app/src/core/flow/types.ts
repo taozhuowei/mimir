@@ -4,8 +4,9 @@
  * Reason: decouple phase execution order from individual phase logic.
  */
 
+import type { DrawCardState } from '../../animation/types'
 import type { DeckGeometry } from '../deck/types'
-import type { CardLayout } from '../layout/types'
+import type { CardLayout } from '../sizing/layout_solver'
 
 export type OverlayPhase = 'shuffling' | 'cutting' | 'drawing' | 'revealing'
 
@@ -19,7 +20,7 @@ export interface PhaseContext {
     lefts: { x: number; y: number; rotation: number; scale: number; scaleY: number; opacity: number }[]
     rights: { x: number; y: number; rotation: number; scale: number; scaleY: number; opacity: number }[]
     piles: { x: number; y: number; rotation: number; scale: number; opacity: number; zIndex: number }[]
-    draws: { x: number; y: number; rotation: number; scale: number; opacity: number; zIndex: number }[]
+    draws: DrawCardState[]
     inners: { rotationY: number }[]
     stage: { y: number }
     deckCtn: { x: number }

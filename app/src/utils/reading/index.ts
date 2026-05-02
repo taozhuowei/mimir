@@ -4,6 +4,6 @@
  */
 
 export * from './reading_provider'
-export * from './offline_reading_provider'
+export * from './rule_based_reading_provider'
 export * from './reading_orchestrator'
 export * from './reading_result_presenter'

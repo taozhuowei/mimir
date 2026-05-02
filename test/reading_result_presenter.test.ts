@@ -6,7 +6,7 @@ import {
   presentResultHero,
   presentCardDetail,
 } from '../app/src/utils/reading/reading_result_presenter'
-import type { ReadingResult, TarotCardInfo } from '../app/src/utils/tarotReading'
+import type { ReadingResult, TarotCardInfo } from '../app/src/utils/tarot_reading'
 
 function makeCard(overrides: Partial<TarotCardInfo> = {}): TarotCardInfo {
   return {

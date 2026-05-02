@@ -97,7 +97,7 @@ describe('overlay_progress/phase_progress_model', () => {
       expect(progress[0].label).toBe('洗牌')
       expect(progress[1].label).toBe('切牌')
       expect(progress[2].label).toBe('抽牌')
-      expect(progress[3].label).toBe('解读')
+      expect(progress[3].label).toBe('翻牌')
     })
   })
 })

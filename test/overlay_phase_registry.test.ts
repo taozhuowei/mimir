@@ -7,8 +7,8 @@ import {
   getPhaseStep,
   isValidPhase,
   getNextPhase,
-} from '../app/src/animation/orchestration/phase_registry'
-import type { OverlayPhase } from '../app/src/animation/orchestration/types'
+} from '../app/src/animation/phases/registry'
+import type { OverlayPhase } from '../app/src/core/flow/types'
 
 describe('overlay_animation/phase_registry', () => {
   describe('PHASE_STEPS', () => {
@@ -52,7 +52,7 @@ describe('overlay_animation/phase_registry', () => {
 
       const revealStep = getPhaseStep('revealing')
       expect(revealStep).toBeDefined()
-      expect(revealStep?.label).toBe('解读')
+      expect(revealStep?.label).toBe('翻牌')
     })
 
     it('returns undefined for invalid phase', () => {

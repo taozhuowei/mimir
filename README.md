@@ -18,7 +18,7 @@ Scales Tarot 是一个以 H5 为主要交付形态的单页塔罗体验项目。
 
 - 产品需求：[PRD.md](PRD.md)
 - 执行计划：[TODO.md](TODO.md)
-- 技术架构：[docs/technical_architecture.md](docs/technical_architecture.md)
+- 塔罗术语：[docs/tarot_glossary.md](docs/tarot_glossary.md)
 - 测试入口：[test/README.md](test/README.md)
 - AI 协作约束：[AGENTS.md](AGENTS.md)
 
@@ -68,8 +68,8 @@ npm run quality
 
 ## 协作原则
 
-1. 开始任何任务前，先读 `TODO.md`、`PRD.md` 和 `docs/technical_architecture.md`。
-2. 产品范围变化，先更新 `PRD.md`；技术边界变化，先更新技术架构文档；执行节奏变化，先更新 `TODO.md`。
+1. 开始任何任务前，先读 `TODO.md`、`PRD.md`，需要塔罗领域知识时查阅 `docs/tarot_glossary.md`。
+2. 产品范围变化，先更新 `PRD.md`；执行节奏变化，先更新 `TODO.md`。
 3. 所有代码改动都必须附带对应验证证据，至少覆盖类型检查、测试或构建中的必要项。
 4. 项目文档必须能被人类开发者直接理解，AI 只能是辅助工具，不能成为唯一知识入口。
 
@@ -96,5 +96,5 @@ npm run quality
 app/      前端应用
 server/   后端服务
 test/     测试工作区
-docs/     技术文档
+docs/     塔罗术语
 ```

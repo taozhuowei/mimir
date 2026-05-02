@@ -1,12 +1,13 @@
 /**
  * Frontend-backend API contract tests
+ *
  * Uses supertest to send real HTTP requests to the Express app in-process.
  * Each assertion verifies that the server response matches the TypeScript
- * interface the frontend expects (TarotCardInfo, ReadingResult from tarotReading.ts).
+ * interface the frontend expects (TarotCardInfo, ReadingResult, DrawnInput).
  *
  * This file is the source of truth for the API contract between:
- *   - app/src/api/cards.ts   ←→  GET  /api/v1/cards
- *   - app/src/api/readings.ts ←→  POST /api/v1/readings
+ *   - app/src/api/cards.ts       ←→  GET  /api/v1/cards
+ *   - app/src/api/divinations.ts ←→  POST /api/v1/divinations
  */
 
 import { describe, it, expect } from 'vitest'
@@ -116,95 +117,92 @@ describe('GET /api/v1/cards', () => {
 })
 
 // ---------------------------------------------------------------------------
-// POST /api/v1/readings
-// Frontend contract: fetchReading(drawn) → Promise<ReadingResult>
-// Request body: { cards: [{ cardId: string, position: 'upright' | 'reversed' }] }
-// Expected shape: { result: 'positive'|'negative', score: number, cardDetails: CardDetail[] }
+// POST /api/v1/divinations
+// Frontend contract: requestDivination(spreadKind?) → Promise<DivinationOutput>
+// Request body: { spreadKind?: 'single_card' }   (defaults to single_card)
+// Expected response shape:
+//   { drawn:   [{ cardId: string, position: 'upright' | 'reversed' }],
+//     reading: { result: 'positive'|'negative', score: number, cardDetails: CardDetail[] } }
 // ---------------------------------------------------------------------------
 
-describe('POST /api/v1/readings', () => {
-  const VALID_BODY = {
-    spreadKind: 'three_card',
-    cards: [
-      { cardId: 'the_fool', position: 'upright' },
-      { cardId: 'cups_ace', position: 'upright' },
-      { cardId: 'swords_2', position: 'reversed' },
-    ],
-  }
+describe('POST /api/v1/divinations', () => {
+  it('returns 200 with default body (no spreadKind)', async () => {
+    const res = await request(app).post('/api/v1/divinations').send({})
+    expect(res.status).toBe(200)
+    // Server echoes the resolved spread kind so callers don't have to keep
+    // request-side state to know what they got. Today the only value is
+    // `single_card`; this assertion guards against silently dropping the
+    // field again the way the original C2 wiring did.
+    expect(res.body.spreadKind).toBe('single_card')
+  })
 
-  it('returns 200 for a valid three-card request', async () => {
-    const res = await request(app).post('/api/v1/readings').send(VALID_BODY)
+  it('returns 200 when spreadKind is omitted (no body at all)', async () => {
+    const res = await request(app).post('/api/v1/divinations')
     expect(res.status).toBe(200)
   })
 
-  it('response satisfies ReadingResult shape', async () => {
-    const res = await request(app).post('/api/v1/readings').send(VALID_BODY)
-    expect(['positive', 'negative']).toContain(res.body.result)
-    expect(typeof res.body.score).toBe('number')
-    expect(Array.isArray(res.body.cardDetails)).toBe(true)
+  it('returns 200 for explicit spreadKind: single_card', async () => {
+    const res = await request(app)
+      .post('/api/v1/divinations')
+      .send({ spreadKind: 'single_card' })
+    expect(res.status).toBe(200)
   })
 
-  it('cardDetails length matches submitted card count', async () => {
-    const res = await request(app).post('/api/v1/readings').send(VALID_BODY)
-    expect(res.body.cardDetails).toHaveLength(3)
+  it('drawn contains exactly one card for single_card spread', async () => {
+    const res = await request(app)
+      .post('/api/v1/divinations')
+      .send({ spreadKind: 'single_card' })
+    expect(Array.isArray(res.body.drawn)).toBe(true)
+    expect(res.body.drawn).toHaveLength(1)
+    expect(typeof res.body.drawn[0].cardId).toBe('string')
+    expect(['upright', 'reversed']).toContain(res.body.drawn[0].position)
   })
 
-  it('each cardDetail satisfies CardDetail shape', async () => {
-    const res = await request(app).post('/api/v1/readings').send(VALID_BODY)
-    for (const detail of res.body.cardDetails) {
+  it('reading satisfies ReadingResult shape', async () => {
+    const res = await request(app).post('/api/v1/divinations').send({})
+    expect(['positive', 'negative']).toContain(res.body.reading.result)
+    expect(typeof res.body.reading.score).toBe('number')
+    expect(Array.isArray(res.body.reading.cardDetails)).toBe(true)
+    expect(res.body.reading.cardDetails).toHaveLength(1)
+  })
+
+  it('cardDetails entries satisfy CardDetail shape', async () => {
+    const res = await request(app).post('/api/v1/divinations').send({})
+    for (const detail of res.body.reading.cardDetails) {
       expect(['upright', 'reversed']).toContain(detail.position)
       expect(typeof detail.meaning).toBe('string')
       expect(detail.meaning.length).toBeGreaterThan(0)
-      // nested card object satisfies TarotCardInfo shape
       expect(typeof detail.card.id).toBe('string')
       expect(typeof detail.card.image).toBe('string')
       expect(['major', 'minor']).toContain(detail.card.type)
     }
   })
 
-  it('returns the_fool score of 7 (major ×1.3 multiplier verified end-to-end)', async () => {
+  it('drawn[0].cardId matches reading.cardDetails[0].card.id', async () => {
+    const res = await request(app).post('/api/v1/divinations').send({})
+    expect(res.body.drawn[0].cardId).toBe(res.body.reading.cardDetails[0].card.id)
+    expect(res.body.drawn[0].position).toBe(res.body.reading.cardDetails[0].position)
+  })
+
+  it('returns 400 with code "spreadKind" for unknown spread', async () => {
     const res = await request(app)
-      .post('/api/v1/readings')
-      .send({ spreadKind: 'single_card', cards: [{ cardId: 'the_fool', position: 'upright' }] })
-    expect(res.body.score).toBe(7)
-    expect(res.body.result).toBe('positive')
+      .post('/api/v1/divinations')
+      .send({ spreadKind: 'unknown_spread' })
+    expect(res.status).toBe(400)
+    expect(res.body.error).toBe('Unknown spreadKind')
+    expect(res.body.code).toBe('spreadKind')
   })
 
-  it('returns 400 when cards array is empty', async () => {
-    const res = await request(app).post('/api/v1/readings').send({ spreadKind: 'three_card', cards: [] })
-    expect(res.status).toBe(400)
-    expect(typeof res.body.error).toBe('string')
-  })
-
-  it('returns 400 when cards field is missing', async () => {
-    const res = await request(app).post('/api/v1/readings').send({ spreadKind: 'three_card' })
-    expect(res.status).toBe(400)
-    expect(typeof res.body.error).toBe('string')
-  })
-
-  it('returns 400 when spreadKind is missing', async () => {
-    const res = await request(app)
-      .post('/api/v1/readings')
-      .send({ cards: [{ cardId: 'the_fool', position: 'upright' }] })
-    expect(res.status).toBe(400)
-    expect(typeof res.body.error).toBe('string')
-  })
-
-  it('returns 400 when spreadKind card count mismatches', async () => {
-    const res = await request(app)
-      .post('/api/v1/readings')
-      .send({ spreadKind: 'three_card', cards: [{ cardId: 'the_fool', position: 'upright' }] })
-    expect(res.status).toBe(400)
-    expect(res.body.error).toMatch(/requires exactly 3 cards/)
-  })
-
-  it('returns 400 when a card id does not exist', async () => {
-    const res = await request(app)
-      .post('/api/v1/readings')
-      .send({ spreadKind: 'single_card', cards: [{ cardId: 'not_a_real_card', position: 'upright' }] })
-    expect(res.status).toBe(400)
-    expect(res.body.error).toBe('Invalid card ID')
-    expect(res.body.code).toBe('CARD_NOT_FOUND')
+  it('drawn cards are random across many calls (set size > 1 over 50 trials)', async () => {
+    // Probability of drawing the same card 50 times in a row from 78 cards:
+    // (1/78)^49 ≈ 10^-93. Effectively impossible — a constant value here
+    // means the random source is broken or the deck shrunk.
+    const drawn_ids = new Set<string>()
+    for (let i = 0; i < 50; i++) {
+      const res = await request(app).post('/api/v1/divinations').send({})
+      drawn_ids.add(res.body.drawn[0].cardId)
+    }
+    expect(drawn_ids.size).toBeGreaterThan(1)
   })
 
   it('CORS header is present', async () => {

@@ -5,10 +5,10 @@
  * Data flow: receives layout results and options; returns reactive styles, states, and helpers.
  */
 
-import { createAnimationState } from '../animation/engine/animation_state'
-import { createStyleReconciler } from '../animation/engine/style_reconciler'
-import { createVisibilityController } from '../animation/engine/visibility_controller'
-import { getAllTargets } from '../animation/engine/gsap_adapter'
+import { createAnimationState } from '../animation/state'
+import { createStyleReconciler } from '../animation/reconciler'
+import { createVisibilityController } from '../animation/visibility'
+import { getAllTargets } from '../animation/adapters/gsap'
 
 export function useAnimationState(opts: {
   deckCount: number
@@ -44,17 +44,17 @@ export function useAnimationState(opts: {
   }
 
   return {
-    _bg: state._bg,
-    _stage: state._stage,
-    _header: state._header,
-    _footer: state._footer,
-    _deckCtn: state._deckCtn,
-    _initials: state._initials,
-    _lefts: state._lefts,
-    _rights: state._rights,
-    _piles: state._piles,
-    _draws: state._draws,
-    _inners: state._inners,
+    bg: state.bg,
+    stage: state.stage,
+    header: state.header,
+    footer: state.footer,
+    deckCtn: state.deckCtn,
+    initials: state.initials,
+    lefts: state.lefts,
+    rights: state.rights,
+    piles: state.piles,
+    draws: state.draws,
+    inners: state.inners,
     leftsVisible: visibility.leftsVisible,
     rightsVisible: visibility.rightsVisible,
     pilesVisible: visibility.pilesVisible,

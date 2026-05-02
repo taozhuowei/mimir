@@ -5,6 +5,8 @@
  * Data flow: text and timing config flow in; display state updates flow out via callbacks.
  */
 
+import { prefersReducedMotion } from '../accessibility'
+
 export interface TypewriterConfig {
   text: string
   startDelay?: number
@@ -45,17 +47,6 @@ export function createTypewriterModel(
       clearTimeout(tickTimer)
       tickTimer = null
     }
-  }
-
-  function prefersReducedMotion(): boolean {
-    // #ifdef H5
-      /* eslint-disable no-restricted-globals */
-    if (typeof window !== 'undefined' && typeof window.matchMedia === 'function') {
-      return window.matchMedia('(prefers-reduced-motion: reduce)').matches
-    }
-      /* eslint-enable no-restricted-globals */
-    // #endif
-    return false
   }
 
   function complete(): void {
@@ -137,26 +128,26 @@ export interface TypewriterFieldTiming {
 export function calculateFieldTiming(
   cardIndex: number,
   fieldStep: number,
-  baseDelay: number = 620,
-  cardDelay: number = 320,
-  stepDelay: number = 90,
+  baseDelay: number = 100,
+  cardDelay: number = 200,
+  stepDelay: number = 50,
 ): TypewriterFieldTiming {
   return {
     startDelay: baseDelay + cardIndex * cardDelay + fieldStep * stepDelay,
-    charInterval: 24,
+    charInterval: 18,
   }
 }
 
 export function calculateKeywordTiming(
   cardIndex: number,
   keywordIndex: number,
-  baseDelay: number = 620,
-  cardDelay: number = 320,
-  keywordDelay: number = 70,
+  baseDelay: number = 100,
+  cardDelay: number = 200,
+  keywordDelay: number = 40,
 ): TypewriterFieldTiming {
-  const field4Delay = baseDelay + cardIndex * cardDelay + 3 * 90
+  const field4Delay = baseDelay + cardIndex * cardDelay + 3 * 50
   return {
-    startDelay: field4Delay + 90 + keywordIndex * keywordDelay,
-    charInterval: 20,
+    startDelay: field4Delay + 50 + keywordIndex * keywordDelay,
+    charInterval: 16,
   }
 }

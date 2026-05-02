@@ -1,9 +1,10 @@
 // @vitest-environment node
 
 import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest'
-import { createPhasePipeline, getDefaultPhaseOrder } from '../app/src/animation/orchestration/pipeline'
-import type { PipelinePhase, TimelineOrchestrator } from '../app/src/animation/orchestration/pipeline'
-import type { OverlayPhase } from '../app/src/animation/orchestration/types'
+import { createPhasePipeline, getDefaultPhaseOrder } from '../app/src/animation/pipeline'
+import type { PipelinePhase } from '../app/src/animation/pipeline'
+import type { TimelineOrchestrator } from '../app/src/animation/adapters/gsap'
+import type { OverlayPhase } from '../app/src/core/flow/types'
 
 function createMockOrchestrator(): TimelineOrchestrator {
   const timelines: unknown[] = []

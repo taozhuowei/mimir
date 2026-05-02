@@ -83,7 +83,7 @@ describe('homepage settings panel', () => {
 
       store.startDivination('Test question')
       expect(store.isIdle).toBe(false)
-      expect(store.phase).toBe('shuffling')
+      expect(store.phase).toBe('divination')
 
       store.reset()
       expect(store.isIdle).toBe(true)

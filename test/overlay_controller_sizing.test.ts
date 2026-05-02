@@ -5,22 +5,16 @@ import { mount } from '@vue/test-utils'
 import { defineComponent, h, nextTick, ref, isRef } from 'vue'
 import type { Ref } from 'vue'
 import { createPinia, setActivePinia } from 'pinia'
-import type { TarotCardInfo } from '../app/src/utils/tarotReading'
+import type { TarotCardInfo } from '../app/src/utils/tarot_reading'
 
-// Post-d4cd310 the controller calls storeToRefs(tarotStore); mock the
-// store's API dependencies so useTarotStore() is constructible.
+// The controller calls storeToRefs(tarotStore); mocking the cards API the
+// deck store reads at module init keeps useTarotStore() constructible
+// without hitting the network. The reading + draw paths are not exercised
+// by these tests, so they need no further mocking.
 const mockFetchAllCards = vi.hoisted(() => vi.fn().mockResolvedValue([]))
-const mockFetchReading = vi.hoisted(() => vi.fn().mockResolvedValue({
-  result: 'positive',
-  score: 3,
-  cardDetails: [],
-}))
 
 vi.mock('../app/src/api/cards', () => ({
   fetchAllCards: mockFetchAllCards,
-}))
-vi.mock('../app/src/api/readings', () => ({
-  fetchReading: mockFetchReading,
 }))
 
 vi.mock('gsap', () => ({
@@ -143,7 +137,6 @@ describe('use_overlay_controller result-zone sizing', () => {
     const tarotStore = useTarotStore()
     tarotStore.drawnCards = [{ card: makeCard(), position: 'upright' }]
     tarotStore.currentQuestion = 'Test question'
-    tarotStore.drawCards = vi.fn() as never
     tarotStore.setPhase = vi.fn() as never
     tarotStore.revealResult = vi.fn() as never
 
@@ -210,59 +203,40 @@ describe('use_overlay_controller result-zone sizing', () => {
     expect(controller.overlayVarsStyle).toBeDefined()
     expect(controller.overlayVarsStyle.value).toContain('--card-width:')
     expect(controller.overlayVarsStyle.value).toContain('--card-height:')
-    // --card-focus-scale must be present so .card-focus-frame scales correctly
-    expect(controller.overlayVarsStyle.value).toContain('--card-focus-scale:')
+    expect(controller.overlayVarsStyle.value).toContain('--result-card-lift-y:')
   })
 
-  it('focusScale adapts to viewport width', async () => {
+  it('result-card lift is 0 in narrow + wide modes (new solver model)', async () => {
+    // Contract test pinning the new solver behavior: the layout solver now
+    // places the result card at the same center as the draw card
+    // (stageShiftY = 0) and the result card == the stage rect. Therefore
+    // resultCardLiftY (use_overlay.ts:66-80) is structurally 0 in both modes:
+    //   - Wide mode short-circuits at use_overlay.ts:67 (`isWide ? 0`).
+    //   - Narrow mode: drawBottom = drawCardH/2, resultBottom = resultCardH/2
+    //     with resultCardH >> drawCardH, so `lift = drawBottom - resultBottom
+    //     + RESULT_LIFT_MARGIN` is negative and clamped to 0 by Math.max.
+    // The previous test asserted lift > 0 under the old solver that shifted
+    // the result card upward via stageShiftY < 0; that contract is gone.
     const isWideRef = ref(false)
     const { controller } = await mountHarness(isWideRef)
 
-    // Narrow mode focus scale
-    const narrowFocusScale = controller.focusScale.value
-    expect(narrowFocusScale).toBe(1.42)
-
-    // Switch to wide mode
-    isWideRef.value = true
-    await nextTick()
-
-    expect(controller.focusScale.value).toBe(1.2)
-    expect(controller.focusScale.value).not.toBe(narrowFocusScale)
-  })
-
-  it('overlayVarsStyle reflects focus scale and result state', async () => {
-    const isWideRef = ref(false)
-    const { controller } = await mountHarness(isWideRef)
-
-    // Default: no results, cards not landed -> focus scale is 1
     const defaultStyle = controller.overlayVarsStyle.value
-    expect(defaultStyle).toContain('--card-focus-scale: 1')
     expect(defaultStyle).toContain('--result-card-lift-y: 0px')
 
-    // Simulate cards landed (but results not shown) -> focus scale applies
-    controller.showResults.value = false
-    // cardsLanded is internal to animController; we simulate the observable effect
-    // by checking that when showResults becomes true, the style changes accordingly
-    await nextTick()
-
-    // Simulate result phase (showResults = true)
     controller.showResults.value = true
     await nextTick()
 
-    // When showResults is true, focus scale should be 1
-    expect(controller.overlayVarsStyle.value).toContain('--card-focus-scale: 1')
+    const narrowMatch = controller.overlayVarsStyle.value.match(/--result-card-lift-y: ([\d.]+)px/)
+    expect(narrowMatch).not.toBeNull()
+    const narrowLiftY = parseFloat(narrowMatch![1])
+    expect(narrowLiftY).toBe(0)
 
-    // result-card-lift-y should be present (non-zero in narrow mode with results)
-    expect(controller.overlayVarsStyle.value).toContain('--result-card-lift-y:')
-    const liftMatch = controller.overlayVarsStyle.value.match(/--result-card-lift-y: ([\d.]+)px/)
-    expect(liftMatch).not.toBeNull()
-    const liftY = parseFloat(liftMatch![1])
-    expect(liftY).toBeGreaterThan(0)
-
-    // In wide mode, lift should be 0
     isWideRef.value = true
     await nextTick()
-    expect(controller.overlayVarsStyle.value).toContain('--result-card-lift-y: 0px')
+    const wideMatch = controller.overlayVarsStyle.value.match(/--result-card-lift-y: ([\d.]+)px/)
+    expect(wideMatch).not.toBeNull()
+    const wideLiftY = parseFloat(wideMatch![1])
+    expect(wideLiftY).toBe(0)
   })
 
   it('cardsFocused and cardsDocked reflect result state', async () => {

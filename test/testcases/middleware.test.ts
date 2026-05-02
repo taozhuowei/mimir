@@ -51,8 +51,8 @@ describe('API 404 returns JSON, never the SPA', () => {
 describe('JSON body size limit', () => {
   it('rejects bodies larger than the configured limit', async () => {
     // 128 KB payload — comfortably over the 64 KB limit
-    const huge = { cards: Array.from({ length: 4000 }, () => ({ cardId: 'x'.repeat(30), position: 'upright' })) }
-    const res = await request(app).post('/api/v1/readings').send(huge)
+    const huge = { spreadKind: 'single_card', padding: 'x'.repeat(128 * 1024) }
+    const res = await request(app).post('/api/v1/divinations').send(huge)
     expect(res.status).toBe(413)
   })
 })
