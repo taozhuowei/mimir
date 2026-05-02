@@ -152,10 +152,21 @@ onUnmounted(() => {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
+  /* Content top-aligned at the same y as ProgressArea's icon top so idle
+     and divination headers visually share a baseline. Progress icons are
+     44px centred in an 80px container -> their top is at
+     (var(--header-height) - 44px) / 2 from the container top. We mirror
+     that here instead of using justify-content: center, which would
+     anchor by the geometric centre of the (taller) title content and
+     visually appear higher than the progress icons. */
+  padding-top: calc((var(--header-height) - 44px) / 2);
+  box-sizing: border-box;
   gap: 4px;
   text-align: center;
-  overflow: hidden;
+  /* Title content is taller than (header - padding-top); allow the
+     guidance line to extend a few px into the stage breathing area
+     rather than clipping. */
+  overflow: visible;
 }
 
 .title-area__title {
