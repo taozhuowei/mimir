@@ -21,6 +21,7 @@ import {
   deriveSizes,
   pickCanvasWidth,
   CARD_ASPECT_RATIO,
+  RESULT_CARD_FILL_RATIO,
   type PhysicalViewport,
 } from '../app/src/core/sizing/scale'
 
@@ -139,14 +140,22 @@ describe('layout_solver — proportional-sizes layout solver', () => {
         )
 
         // -------------------------------------------------------------------
-        // (5) Drawer geometry: bottom-sheet anchored to stage bottom.
+        // (5) Drawer geometry: bottom-sheet anchored to the result card's
+        //     bottom edge. On the reading scene the card is shrunk to
+        //     RESULT_CARD_FILL_RATIO of the stage so the drawer rises to
+        //     hug the card; on the draw scene the card height equals the
+        //     stage height (drawer keeps its old "stage bottom" anchor).
+        //
+        //     Formula: cardBottom = stage.y + (stage.height + cardHeight) / 2
         // -------------------------------------------------------------------
         expect(layout.drawer.rightAligned).toBe(false)
         expect(layout.drawer.width).toBeCloseTo(viewport.width, 5)
-        expect(layout.drawer.initialTop).toBeCloseTo(
-          layout.stage.y + layout.stage.height,
-          5,
-        )
+        const expectedCardHeight = scene === 'reading_stage'
+          ? layout.stage.height * RESULT_CARD_FILL_RATIO
+          : layout.stage.height
+        const expectedDrawerTop =
+          layout.stage.y + (layout.stage.height + expectedCardHeight) / 2
+        expect(layout.drawer.initialTop).toBeCloseTo(expectedDrawerTop, 5)
         expect(layout.drawer.initialTop + layout.drawer.initialHeight).toBeCloseTo(
           viewport.height - viewport.safeAreaBottom,
           5,
@@ -179,11 +188,14 @@ describe('layout_solver — proportional-sizes layout solver', () => {
         // (8) Scene-specific assertions.
         // -------------------------------------------------------------------
         if (scene === 'reading_stage') {
-          // Result card == stage rect.
-          expect(layout.cardWidth).toBeCloseTo(layout.stage.width, 5)
-          expect(layout.cardHeight).toBeCloseTo(layout.stage.height, 5)
-          expect(layout.cards[0]?.width).toBeCloseTo(layout.stage.width, 5)
-          expect(layout.cards[0]?.height).toBeCloseTo(layout.stage.height, 5)
+          // Result card occupies RESULT_CARD_FILL_RATIO of the stage rect
+          // on each axis (90%). Stage rect itself is unchanged.
+          const expectedW = layout.stage.width * RESULT_CARD_FILL_RATIO
+          const expectedH = layout.stage.height * RESULT_CARD_FILL_RATIO
+          expect(layout.cardWidth).toBeCloseTo(expectedW, 5)
+          expect(layout.cardHeight).toBeCloseTo(expectedH, 5)
+          expect(layout.cards[0]?.width).toBeCloseTo(expectedW, 5)
+          expect(layout.cards[0]?.height).toBeCloseTo(expectedH, 5)
         } else {
           // draw_stage: card size matches the 3-pile draw card.
           expect(layout.cardWidth).toBeCloseTo(layout.drawCardWidth, 5)

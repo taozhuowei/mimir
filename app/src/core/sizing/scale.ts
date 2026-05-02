@@ -112,6 +112,13 @@ export const BASELINE_FONT_XS = 12
 export const CARD_ASPECT_RATIO = 1.6
 
 /**
+ * Result card occupies this fraction of the stage rect (each axis).
+ * Stage stays at the maximum 1:1.6 safe-area rect; the result card sits
+ * centred inside, padded uniformly so it never feels "edge-pressed".
+ */
+export const RESULT_CARD_FILL_RATIO = 0.9
+
+/**
  * Sub-pixel jitter threshold. If a recomputed `k` differs from the previous
  * by less than this fraction, the sizes are not updated. 0.5% lines up
  * with "less than half a pixel" on every size derived from k * baseline,

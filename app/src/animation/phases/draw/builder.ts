@@ -42,7 +42,7 @@ export function buildDrawPhaseRunner(config: DrawPhaseConfig): PhaseRunner {
   return {
     name: 'drawing' as OverlayPhase,
     run(context: PhaseContext, onComplete: () => void): AnimationTimeline {
-      const { initials, draws, inners, stage, deckCtn } = context.cardElements
+      const { initials, draws, stage, deckCtn } = context.cardElements
       const { draws: drawsVisible } = context.visible
       const {
         cardCount,
@@ -76,7 +76,10 @@ export function buildDrawPhaseRunner(config: DrawPhaseConfig): PhaseRunner {
               width: cardWidth,
               height: cardHeight,
             })
-            Object.assign(inners[i], { rotationY: 180 })
+            // Cards land face-DOWN. The reveal phase owns the flip animation
+            // (see animation/atoms/flip + phases/reveal/builder). Per the
+            // design rule cards must be enlarged before flipping, so the flip
+            // can no longer happen here.
             visible[i] = true
           }
           drawsVisible.value = visible
@@ -113,15 +116,12 @@ export function buildDrawPhaseRunner(config: DrawPhaseConfig): PhaseRunner {
 
       const alignTime = lastCardLandingTime + 0.28
 
-      const flipPerCardDuration = 1
-      const flipOverlapBudget = 1.4
-      const flipStagger = cardCount > 1
-        ? Math.min(0.4, flipOverlapBudget / (cardCount - 1))
-        : 0
-      const flipDuration = flipPerCardDuration + (cardCount - 1) * flipStagger
-
+      // Flip is now owned by the reveal phase (see animation/atoms/flip).
+      // After alignment, the draw phase only needs a short settle beat
+      // before handing off to revealing — 1.0s leaves room for the player
+      // to register the landed deck before cards begin growing/flipping.
       const revealDelay = autoRevealDelayMs / 1000
-      const revealingStart = alignTime + 1.2 + flipDuration + 0.1 + revealDelay
+      const revealingStart = alignTime + 1.0 + revealDelay
       const finishTime = revealingStart + 0.3
 
       const preRotations = Array.from({ length: cardCount }, () => jitterDeg(-7.5, 7.5))
@@ -219,13 +219,8 @@ export function buildDrawPhaseRunner(config: DrawPhaseConfig): PhaseRunner {
         ease: 'power3.inOut',
       }, alignTime + 0.1)
 
-      // Flip
-      timeline.to(inners, {
-        rotationY: 180,
-        duration: flipPerCardDuration,
-        stagger: flipStagger,
-        ease: 'power3.out',
-      }, alignTime + 1.2)
+      // Flip animation lives in the reveal phase now. See
+      // animation/phases/reveal/builder.ts for the grow + flip composition.
 
       // Phase change
       timeline.add(() => {

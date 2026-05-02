@@ -254,6 +254,12 @@ onUnmounted(() => {
   right: 0;
   bottom: 0;
   left: 0;
+  /* Override .tarot-card's fixed var(--card-width)/(--card-height) so the
+     face fills whatever animated size .card-3d-inner currently has —
+     otherwise reveal grows the wrapper but the card image stays at draw
+     size, looking like "card never enlarged". */
+  width: 100%;
+  height: 100%;
   backface-visibility: hidden;
   margin: 0 !important;
 }

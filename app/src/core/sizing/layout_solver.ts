@@ -26,7 +26,7 @@
  */
 
 import type { PhysicalViewport, ResponsiveSizes } from './scale'
-import { CARD_ASPECT_RATIO } from './scale'
+import { CARD_ASPECT_RATIO, RESULT_CARD_FILL_RATIO } from './scale'
 
 // ---------------------------------------------------------------------------
 // Output types
@@ -192,12 +192,27 @@ function computeDrawCardSize(stage: StageRect, sizes: ResponsiveSizes): {
 }
 
 /**
- * Drawer geometry in the new model: always a bottom sheet that opens from
- * the bottom of the stage and stretches to the bottom of the viewport
- * (above the safe-area inset). Width spans the full canvas.
+ * Drawer geometry in the new model: always a bottom sheet that opens
+ * directly under the result card. The drawer's top edge anchors to the
+ * card's bottom edge — not the stage's bottom edge — so the drawer
+ * naturally hugs the (now-padded) result card on the reading scene.
+ *
+ * `cardHeight` is the card height to anchor against. On the reading scene
+ * it equals `stage.height * RESULT_CARD_FILL_RATIO`; on the draw scene the
+ * caller can pass `stage.height` to keep the original "drawer at stage
+ * bottom" behaviour.
+ *
+ * The card is centred vertically in the stage rect (stage layer doesn't
+ * shift it), so cardTop = stage.y + (stage.height - cardHeight) / 2 and
+ * cardBottom = cardTop + cardHeight, which simplifies to
+ *   stage.y + (stage.height + cardHeight) / 2.
  */
-function computeDrawer(viewport: PhysicalViewport, stage: StageRect): DrawerGeometry {
-  const initialTop = stage.y + stage.height
+function computeDrawer(
+  viewport: PhysicalViewport,
+  stage: StageRect,
+  cardHeight: number,
+): DrawerGeometry {
+  const initialTop = stage.y + (stage.height + cardHeight) / 2
   const initialHeight = viewport.height - initialTop - viewport.safeAreaBottom
   const maxHeight = viewport.height - viewport.safeAreaBottom
   return {
@@ -258,17 +273,22 @@ export function solveLayout(input: SolveLayoutInput): SceneLayout {
 
   const stage = computeStage(viewport, sizes)
   const draw = computeDrawCardSize(stage, sizes)
-  const drawer = computeDrawer(viewport, stage)
   const envelope = computeEnvelope(draw.width, draw.height, sizes.gap)
 
-  // Result card == stage rect (single card fills the entire stage).
-  const resultCardWidth = stage.width
-  const resultCardHeight = stage.height
+  // Result card occupies RESULT_CARD_FILL_RATIO of the stage rect on each
+  // axis. Stage rect itself stays the same — the card now sits inside,
+  // padded uniformly. The card stays centred at (0, 0) in stage-relative
+  // coordinates because the stage container is the anchor.
+  const resultCardWidth = stage.width * RESULT_CARD_FILL_RATIO
+  const resultCardHeight = stage.height * RESULT_CARD_FILL_RATIO
 
   // Cards array: one centred placeholder. Concrete shuffle / cut / draw /
   // reveal phases position individual cards themselves; the solver only
   // emits a rest layout the controller can use as a fallback.
   if (scene === 'reading_stage') {
+    // Drawer anchors to the result card's bottom edge (not stage bottom)
+    // so the drawer naturally hugs the card on the reading scene.
+    const drawer = computeDrawer(viewport, stage, resultCardHeight)
     const cards: CardLayout[] = [
       {
         slotId: 'center',
@@ -292,6 +312,11 @@ export function solveLayout(input: SolveLayoutInput): SceneLayout {
       envelope,
     }
   }
+
+  // draw_stage: drawer keeps anchoring to the stage bottom (same behaviour
+  // as before this change). Pass `stage.height` so cardBottom collapses to
+  // `stage.y + stage.height` per the formula in computeDrawer's docstring.
+  const drawer = computeDrawer(viewport, stage, stage.height)
 
   // draw_stage: single centered slot at (0, 0) using the draw card size.
   const cards: CardLayout[] = [
