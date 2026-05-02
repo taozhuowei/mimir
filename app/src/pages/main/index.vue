@@ -101,7 +101,7 @@ import { useAnimationController } from '../../composables/use_animation_controll
 import { useReadingController } from '../../composables/use_reading_controller'
 import { solveLayout } from '../../core/sizing/layout_solver'
 import {
-  deriveTokens,
+  deriveSizes,
   pickCanvasWidth,
   readViewport,
 } from '../../core/sizing/scale'
@@ -196,7 +196,7 @@ const resultDrawerGeometry = computed(() => {
     const viewport = { ...rawViewport, width: pickCanvasWidth(rawViewport.width) }
     const layout = solveLayout({
       viewport,
-      tokens: deriveTokens(viewport.width),
+      sizes: deriveSizes(viewport.width),
       scene: 'reading_stage',
     })
     return layout.drawer

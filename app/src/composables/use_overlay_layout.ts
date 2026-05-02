@@ -19,12 +19,12 @@ import {
   type LayoutEnvelope,
 } from '../core/sizing/layout_solver'
 import {
-  deriveTokens,
+  deriveSizes,
   pickCanvasWidth,
   readViewport,
   MAX_CANVAS_WIDTH,
   type PhysicalViewport,
-  type ResponsiveTokens,
+  type ResponsiveSizes,
 } from '../core/sizing/scale'
 import { clamp } from '../utils/math'
 import { SHUFFLE_EDGE_MARGIN } from '../core/config/layout_constants'
@@ -136,13 +136,13 @@ function resolveTopBarHeight(rect: { top: number; height: number } | null): numb
 
 export function useOverlayLayout(deps: UseOverlayLayoutDeps) {
   /**
-   * Resolve the proportional design tokens for a physical viewport. The
-   * tokens are derived from the canvas width (already clamped to
+   * Resolve the proportional sizes for a physical viewport. The
+   * sizes are derived from the canvas width (already clamped to
    * [375, 440] by `buildPhysicalViewport`), so passing the viewport here
    * is equivalent to passing the canvas width directly.
    */
-  function getTokens(viewport: PhysicalViewport): ResponsiveTokens {
-    return deriveTokens(viewport.width)
+  function getSizes(viewport: PhysicalViewport): ResponsiveSizes {
+    return deriveSizes(viewport.width)
   }
 
   /**
@@ -161,7 +161,7 @@ export function useOverlayLayout(deps: UseOverlayLayoutDeps) {
    * shape-stable here and pass `scene` to the solver further down.
    *
    * Note: the platform `topBarHeight` (mini-program capsule) is no longer
-   * carried inside the viewport — the proportional `tokens.headerHeight`
+   * carried inside the viewport — the proportional `sizes.headerHeight`
    * absorbs the chrome reservation. We still read the capsule rect during
    * resize handling because future work may surface it as a separate inset.
    */
@@ -215,13 +215,13 @@ export function useOverlayLayout(deps: UseOverlayLayoutDeps) {
    */
   function getSceneLayout(scene: Scene): SceneLayout {
     const viewport = buildPhysicalViewport()
-    const tokens = getTokens(viewport)
+    const sizes = getSizes(viewport)
 
-    const solved = solveLayout({ viewport, tokens, scene })
+    const solved = solveLayout({ viewport, sizes, scene })
 
-    const safeTopInset = viewport.safeAreaTop + tokens.margin + tokens.headerHeight
-    const safeBottomInset = tokens.actionAreaHeight + viewport.safeAreaBottom
-    const safeSideInset = tokens.margin
+    const safeTopInset = viewport.safeAreaTop + sizes.margin + sizes.headerHeight
+    const safeBottomInset = sizes.actionAreaHeight + viewport.safeAreaBottom
+    const safeSideInset = sizes.margin
 
     return {
       ...solved,
@@ -237,8 +237,8 @@ export function useOverlayLayout(deps: UseOverlayLayoutDeps) {
    */
   function getMotionMetrics(scene: Scene = 'draw_stage'): MotionMetrics {
     const viewport = buildPhysicalViewport()
-    const tokens = getTokens(viewport)
-    const layout = solveLayout({ viewport, tokens, scene })
+    const sizes = getSizes(viewport)
+    const layout = solveLayout({ viewport, sizes, scene })
 
     const cardWidth = layout.envelope.cardWidth
     const cardHeight = layout.envelope.cardHeight
@@ -252,8 +252,8 @@ export function useOverlayLayout(deps: UseOverlayLayoutDeps) {
       viewport.height -
       viewport.safeAreaTop -
       viewport.safeAreaBottom -
-      2 * tokens.margin -
-      tokens.headerHeight
+      2 * sizes.margin -
+      sizes.headerHeight
 
     const safeHalfWidth = layout.stage.width / 2
     const safeHalfHeight = availableH / 2

@@ -6,7 +6,7 @@
  * Coverage: only the pure exported functions —
  *   - pickCanvasWidth (clamps viewport width into [375, 440])
  *   - deriveScale     (k = canvasWidth / 375)
- *   - deriveTokens    (px tokens = baseline × k, rounded)
+ *   - deriveSizes    (px sizes = baseline × k, rounded)
  *
  * `useResponsiveScale` is a Vue composable that depends on the uni
  * runtime and `requestAnimationFrame`; it is intentionally out of scope
@@ -29,7 +29,7 @@ import {
   MAX_CANVAS_WIDTH,
   MIN_CANVAS_WIDTH,
   deriveScale,
-  deriveTokens,
+  deriveSizes,
   pickCanvasWidth,
 } from '../app/src/core/sizing/scale'
 
@@ -84,7 +84,7 @@ describe('scale — pickCanvasWidth', () => {
 
   it('rounds fractional inputs inside the supported range to integers', () => {
     // Contract: fractional viewports are coerced to the nearest integer
-    // canvas width so downstream `deriveTokens` always sees an integer.
+    // canvas width so downstream `deriveSizes` always sees an integer.
     expect(pickCanvasWidth(390.6)).toBe(391)
     expect(pickCanvasWidth(390.4)).toBe(390)
   })
@@ -104,9 +104,9 @@ describe('scale — deriveScale', () => {
   })
 })
 
-describe('scale — deriveTokens at iPhone 8 baseline (375)', () => {
+describe('scale — deriveSizes at iPhone 8 baseline (375)', () => {
   it('returns each token equal to its baseline value', () => {
-    const t = deriveTokens(375)
+    const t = deriveSizes(375)
     expect(t.canvasWidth).toBe(375)
     expect(t.k).toBe(1)
     expect(t.headerHeight).toBe(BASELINE_HEADER_HEIGHT)
@@ -121,10 +121,10 @@ describe('scale — deriveTokens at iPhone 8 baseline (375)', () => {
   })
 })
 
-describe('scale — deriveTokens at iPhone 17 Pro Max (440)', () => {
+describe('scale — deriveSizes at iPhone 17 Pro Max (440)', () => {
   it('scales each token by 440/375 and rounds to the spec literals', () => {
     const k = 440 / 375
-    const t = deriveTokens(440)
+    const t = deriveSizes(440)
     expect(t.canvasWidth).toBe(440)
     expect(t.k).toBeCloseTo(k, 10)
 
@@ -142,10 +142,10 @@ describe('scale — deriveTokens at iPhone 17 Pro Max (440)', () => {
   })
 })
 
-describe('scale — deriveTokens token integrity', () => {
+describe('scale — deriveSizes token integrity', () => {
   it('returns integer values for every px field across the supported range', () => {
     for (const canvas of [375, 390, 400, 414, 428, 440]) {
-      const t = deriveTokens(canvas)
+      const t = deriveSizes(canvas)
       expect(Number.isInteger(t.headerHeight)).toBe(true)
       expect(Number.isInteger(t.margin)).toBe(true)
       expect(Number.isInteger(t.gap)).toBe(true)
@@ -160,7 +160,7 @@ describe('scale — deriveTokens token integrity', () => {
 
   it('exposes a `k` field equal to deriveScale(canvasWidth) for several inputs', () => {
     for (const canvas of [375, 390, 400, 414, 428, 440]) {
-      expect(deriveTokens(canvas).k).toBe(deriveScale(canvas))
+      expect(deriveSizes(canvas).k).toBe(deriveScale(canvas))
     }
   })
 })

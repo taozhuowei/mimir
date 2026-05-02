@@ -1,23 +1,23 @@
 /**
  * Name: core/sizing/scale
  * Purpose: derive a single proportional scale factor `k` from the viewport
- *          width and expose pixel-valued design tokens (header height,
+ *          width and expose pixel-valued sizes (header height,
  *          margins, font sizes, etc.) as `baseline × k`. Provides a Vue
- *          composable that keeps those tokens reactive with respect to the
+ *          composable that keeps those sizes reactive with respect to the
  *          viewport, with rAF coalescing and a sub-pixel jitter
  *          short-circuit so micro-changes do not trigger reactivity. The
  *          three exported pure functions (`pickCanvasWidth`, `deriveScale`,
- *          `deriveTokens`) are the only pieces tests target; the composable
+ *          `deriveSizes`) are the only pieces tests target; the composable
  *          is the lone piece that touches uni APIs and browser globals.
  * Reason: the previous approach hard-coded pixel values per breakpoint and
  *         scattered tier picks across components, making it impossible to
  *         tune the design proportionally to the device. A single `k` driven
  *         by canvas width gives every UI surface one consistent rule:
- *         tokens grow / shrink together, and iPhone 8 stays the baseline so
+ *         sizes grow / shrink together, and iPhone 8 stays the baseline so
  *         no existing layout regresses on the smallest supported device.
  * Data flow: uni.getWindowInfo() / uni.onWindowResize ──▶
  *            pickCanvasWidth(viewportWidth) ──▶ deriveScale(canvasWidth) ──▶
- *            deriveTokens(canvasWidth) ──▶ Readonly<Ref<ResponsiveTokens>>
+ *            deriveSizes(canvasWidth) ──▶ Readonly<Ref<ResponsiveSizes>>
  *            consumed by UI surfaces.
  */
 
@@ -73,7 +73,7 @@ const caf: (handle: number) => void =
 // Constants — iPhone 8 baseline (375 px) pixel values.
 //
 // All baselines are expressed for a 375 px logical canvas. When the device
-// has a wider viewport (up to iPhone 17 Pro Max at 440 px), the tokens grow
+// has a wider viewport (up to iPhone 17 Pro Max at 440 px), the sizes grow
 // proportionally via `k = canvasWidth / 375`. Below 375 the canvas is
 // pinned at 375 — the layout will overflow; we do not try to fit smaller
 // devices because they fall below the supported envelope: a non-blocking
@@ -109,8 +109,8 @@ export const CARD_ASPECT_RATIO = 1.6
 
 /**
  * Sub-pixel jitter threshold. If a recomputed `k` differs from the previous
- * by less than this fraction, the tokens are not updated. 0.5% lines up
- * with "less than half a pixel" on every token derived from k * baseline,
+ * by less than this fraction, the sizes are not updated. 0.5% lines up
+ * with "less than half a pixel" on every size derived from k * baseline,
  * ensuring rounded outputs are stable while reactivity stays cheap.
  */
 const SCALE_JITTER_THRESHOLD = 0.005
@@ -128,7 +128,7 @@ const SCALE_JITTER_THRESHOLD = 0.005
  *
  * Non-finite inputs (NaN, -Infinity) collapse to MIN_CANVAS_WIDTH; +Infinity
  * collapses to MAX_CANVAS_WIDTH. The result is always an integer in
- * `[MIN_CANVAS_WIDTH, MAX_CANVAS_WIDTH]`, so downstream `deriveTokens`
+ * `[MIN_CANVAS_WIDTH, MAX_CANVAS_WIDTH]`, so downstream `deriveSizes`
  * receives a stable, integer canvas width regardless of caller.
  *
  * Pure function: same input always produces the same output.
@@ -159,15 +159,15 @@ export function deriveScale(canvasWidth: number): number {
 }
 
 // ---------------------------------------------------------------------------
-// Token interface — the single source of truth for derived px values.
+// Sizes interface — the single source of truth for derived px values.
 // ---------------------------------------------------------------------------
 
 /**
- * Pixel-valued design tokens, all derived from `canvasWidth` via `k`.
+ * Pixel-valued sizes, all derived from `canvasWidth` via `k`.
  * Every px field is rounded to the nearest integer so consumers never
  * see sub-pixel values that would force fractional layouts.
  */
-export interface ResponsiveTokens {
+export interface ResponsiveSizes {
   /** Logical canvas width (clamped to [375, 440]). */
   canvasWidth: number
   /** Scale factor relative to iPhone 8 baseline. */
@@ -193,12 +193,12 @@ export interface ResponsiveTokens {
 }
 
 /**
- * Pure derivation: given a canvas width, return all derived px tokens.
+ * Pure derivation: given a canvas width, return all derived px sizes.
  * Each px field is rounded to the nearest integer.
  *
  * Pure function: same input always produces the same output.
  */
-export function deriveTokens(canvasWidth: number): ResponsiveTokens {
+export function deriveSizes(canvasWidth: number): ResponsiveSizes {
   const k = deriveScale(canvasWidth)
   return {
     canvasWidth,
@@ -218,7 +218,7 @@ export function deriveTokens(canvasWidth: number): ResponsiveTokens {
 // ---------------------------------------------------------------------------
 // Viewport adapter — pure conversion from platform window info to a
 // PhysicalViewport. The layout solver consumes this shape directly, so the
-// adapter lives alongside the tokens it ultimately drives. Width is left
+// adapter lives alongside the sizes it ultimately drives. Width is left
 // unclamped so callers can either feed the raw viewport into `pickScreenMode`-
 // style branches or pipe it through `pickCanvasWidth` to get the canvas
 // value the solver actually uses.
@@ -274,11 +274,11 @@ export function readViewport(info: WindowInfoShape): PhysicalViewport {
 }
 
 // ---------------------------------------------------------------------------
-// Composable — reactive viewport + tokens with rAF coalescing.
+// Composable — reactive viewport + sizes with rAF coalescing.
 // ---------------------------------------------------------------------------
 
 /**
- * Reactive viewport metrics surfaced alongside the tokens. Identical shape
+ * Reactive viewport metrics surfaced alongside the sizes. Identical shape
  * to `PhysicalViewport` — kept as a type alias so the composable's state
  * uses one source of truth with the pure adapter `readViewport`.
  */
@@ -286,8 +286,8 @@ export type ResponsiveViewport = PhysicalViewport
 
 /** Return shape of `useResponsiveScale`. */
 export interface ResponsiveScaleState {
-  /** Reactive tokens; updated when viewport width changes (rAF coalesced). */
-  tokens: Readonly<Ref<ResponsiveTokens>>
+  /** Reactive sizes; updated when viewport width changes (rAF coalesced). */
+  sizes: Readonly<Ref<ResponsiveSizes>>
   /** Reactive viewport metrics (width, height, safe areas). */
   viewport: Readonly<Ref<ResponsiveViewport>>
   /**
@@ -324,7 +324,7 @@ function scaleChangedSignificantly(prev: number, next: number): boolean {
 }
 
 /**
- * Vue composable: exposes reactive `tokens` + `viewport`, recomputes on
+ * Vue composable: exposes reactive `sizes` + `viewport`, recomputes on
  * `uni.onWindowResize`, coalesces resize bursts to the next animation
  * frame, and short-circuits sub-pixel jitter so reactivity stays cheap.
  *
@@ -342,14 +342,14 @@ export function useResponsiveScale(): ResponsiveScaleState {
   const initialCanvas = pickCanvasWidth(initialViewport.width)
 
   const viewport = ref<ResponsiveViewport>(initialViewport)
-  const tokens = ref<ResponsiveTokens>(deriveTokens(initialCanvas))
+  const sizes = ref<ResponsiveSizes>(deriveSizes(initialCanvas))
 
   // 0 sentinel = no pending frame. Number both because `raf` returns `number`
   // on H5 and because `setTimeout` returns `number` in the shim path.
   let pendingFrame = 0
   let disposed = false
 
-  /** Recompute viewport + tokens; called inside the rAF callback. */
+  /** Recompute viewport + sizes; called inside the rAF callback. */
   const recompute = (): void => {
     pendingFrame = 0
     if (disposed) return
@@ -358,9 +358,9 @@ export function useResponsiveScale(): ResponsiveScaleState {
 
     const nextCanvas = pickCanvasWidth(nextViewport.width)
     const nextK = deriveScale(nextCanvas)
-    if (!scaleChangedSignificantly(tokens.value.k, nextK)) return
+    if (!scaleChangedSignificantly(sizes.value.k, nextK)) return
 
-    tokens.value = deriveTokens(nextCanvas)
+    sizes.value = deriveSizes(nextCanvas)
   }
 
   /**
@@ -400,7 +400,7 @@ export function useResponsiveScale(): ResponsiveScaleState {
   }
 
   return {
-    tokens: readonly(tokens) as Readonly<Ref<ResponsiveTokens>>,
+    sizes: readonly(sizes) as Readonly<Ref<ResponsiveSizes>>,
     viewport: readonly(viewport) as Readonly<Ref<ResponsiveViewport>>,
     dispose,
   }

@@ -1,10 +1,10 @@
 // @vitest-environment node
 
 /**
- * Test suite for the proportional-tokens layout solver.
+ * Test suite for the proportional-sizes layout solver.
  *
  * Coverage matrix: 5 viewports × 2 scenes = 10 cases. The new solver is a
- * pure function of (PhysicalViewport, ResponsiveTokens, scene) and produces
+ * pure function of (PhysicalViewport, ResponsiveSizes, scene) and produces
  * a single 1:1.6 stage rect (= result card on the reading scene), three
  * draw piles tiling the stage horizontally with `gap` breathing, and a
  * bottom-sheet drawer pinned to the stage's lower edge.
@@ -18,7 +18,7 @@ import {
   type SceneKind,
 } from '../app/src/core/sizing/layout_solver'
 import {
-  deriveTokens,
+  deriveSizes,
   pickCanvasWidth,
   CARD_ASPECT_RATIO,
   type PhysicalViewport,
@@ -77,7 +77,7 @@ const EPS = 1e-6
 // Tests
 // ---------------------------------------------------------------------------
 
-describe('layout_solver — proportional-tokens layout solver', () => {
+describe('layout_solver — proportional-sizes layout solver', () => {
   for (const fixture of VIEWPORTS) {
     for (const scene of SCENES) {
       it(`${fixture.label} / ${scene}: produces a valid layout`, () => {
@@ -87,8 +87,8 @@ describe('layout_solver — proportional-tokens layout solver', () => {
           fixture.safeAreaTop,
           fixture.safeAreaBottom,
         )
-        const tokens = deriveTokens(viewport.width)
-        const layout = solveLayout({ viewport, tokens, scene })
+        const sizes = deriveSizes(viewport.width)
+        const layout = solveLayout({ viewport, sizes, scene })
 
         // -------------------------------------------------------------------
         // (0) Sanity — all sizes positive and finite.
@@ -105,7 +105,7 @@ describe('layout_solver — proportional-tokens layout solver', () => {
         // -------------------------------------------------------------------
         expect(layout.stage.x).toBeCloseTo((viewport.width - layout.stage.width) / 2, 5)
         expect(layout.stage.y).toBeCloseTo(
-          viewport.safeAreaTop + tokens.margin + tokens.headerHeight,
+          viewport.safeAreaTop + sizes.margin + sizes.headerHeight,
           5,
         )
 
@@ -131,7 +131,7 @@ describe('layout_solver — proportional-tokens layout solver', () => {
         //     stageW = 3 × drawCardWidth + 4 × gap.
         // -------------------------------------------------------------------
         const reconstructedStageW =
-          3 * layout.drawCardWidth + 4 * tokens.gap
+          3 * layout.drawCardWidth + 4 * sizes.gap
         expect(reconstructedStageW).toBeCloseTo(layout.stage.width, 4)
         expect(layout.drawCardHeight / layout.drawCardWidth).toBeCloseTo(
           CARD_ASPECT_RATIO,
@@ -164,7 +164,7 @@ describe('layout_solver — proportional-tokens layout solver', () => {
         expect(layout.envelope.verticalSlots).toBe(1)
         expect(layout.envelope.cardWidth).toBeCloseTo(layout.drawCardWidth, 5)
         expect(layout.envelope.cardHeight).toBeCloseTo(layout.drawCardHeight, 5)
-        expect(layout.envelope.gap).toBe(tokens.gap)
+        expect(layout.envelope.gap).toBe(sizes.gap)
 
         // -------------------------------------------------------------------
         // (7) Cards array: single placeholder at stage center.
@@ -201,9 +201,9 @@ describe('layout_solver — proportional-tokens layout solver', () => {
         fixture.safeAreaTop,
         fixture.safeAreaBottom,
       )
-      const tokens = deriveTokens(viewport.width)
-      const draw = solveLayout({ viewport, tokens, scene: 'draw_stage' })
-      const result = solveLayout({ viewport, tokens, scene: 'reading_stage' })
+      const sizes = deriveSizes(viewport.width)
+      const draw = solveLayout({ viewport, sizes, scene: 'draw_stage' })
+      const result = solveLayout({ viewport, sizes, scene: 'reading_stage' })
       expect(result.drawCardWidth).toBeCloseTo(draw.drawCardWidth, 5)
       expect(result.drawCardHeight).toBeCloseTo(draw.drawCardHeight, 5)
     }
@@ -214,8 +214,8 @@ describe('layout_solver — proportional-tokens layout solver', () => {
     const desktop = makeViewport(1440, 900, 0, 0)
     expect(ipad.width).toBe(440)
     expect(desktop.width).toBe(440)
-    const ipadTokens = deriveTokens(ipad.width)
-    const desktopTokens = deriveTokens(desktop.width)
+    const ipadTokens = deriveSizes(ipad.width)
+    const desktopTokens = deriveSizes(desktop.width)
     expect(ipadTokens.canvasWidth).toBe(440)
     expect(desktopTokens.canvasWidth).toBe(440)
   })

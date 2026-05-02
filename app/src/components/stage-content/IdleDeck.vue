@@ -68,7 +68,7 @@ import { prefersReducedMotion } from '../../utils/accessibility'
 import { DECK_CLICK_SAFETY_MS } from '../../core/config/layout_constants'
 import { solveLayout } from '../../core/sizing/layout_solver'
 import {
-  deriveTokens,
+  deriveSizes,
   pickCanvasWidth,
   readViewport,
 } from '../../core/sizing/scale'
@@ -113,7 +113,7 @@ function resolveCardSize() {
     const viewport = { ...rawViewport, width: pickCanvasWidth(rawViewport.width) }
     const layout = solveLayout({
       viewport,
-      tokens: deriveTokens(viewport.width),
+      sizes: deriveSizes(viewport.width),
       scene: 'draw_stage',
     })
 

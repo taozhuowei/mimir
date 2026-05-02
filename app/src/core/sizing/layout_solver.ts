@@ -1,31 +1,31 @@
 /**
  * Name: core/sizing/layout_solver
  * Purpose: pure layout solver for the tarot reading flow. Given a viewport,
- *          ResponsiveTokens, and a scene kind, returns a fully described
+ *          ResponsiveSizes, and a scene kind, returns a fully described
  *          SceneLayout (card rects, drawer geometry, stage rect, animation
  *          envelope) — every value derived from a single 1:1.6 stage rect
  *          centered horizontally in the canvas.
  * Reason: previous versions held a tiered "physical reservations" budget
  *         (physical_reservations.ts) that branched on `viewport.isWide` and
  *         carried bespoke fields like `drawerWideWidth`, `drawerCardOverlap`,
- *         `cardSideMargin`. The proportional `ResponsiveTokens` model
+ *         `cardSideMargin`. The proportional `ResponsiveSizes` model
  *         (core/sizing/scale.ts) is now the single source of truth for
- *         spacing, so the solver becomes a flat function of those tokens
+ *         spacing, so the solver becomes a flat function of those sizes
  *         plus the viewport. The wide-split branching is gone — the drawer
  *         always overlays the bottom of the stage as a sheet; the wide-screen
  *         side-column UI is handled at the view layer (ReadingSplitView)
  *         and is not visible to the solver.
  *
  * Purity: pure function. No window access, no DOM, no global state. The
- *         caller is responsible for collecting the viewport and tokens.
+ *         caller is responsible for collecting the viewport and sizes.
  *
  * Data flow:
  *   readViewport(windowInfo) ──▶ pickCanvasWidth ──┐
- *                                                  ├──▶ solveLayout({viewport, tokens, scene}) ──▶ SceneLayout
- *   deriveTokens(canvasWidth) ──────────────────────┘
+ *                                                  ├──▶ solveLayout({viewport, sizes, scene}) ──▶ SceneLayout
+ *   deriveSizes(canvasWidth) ───────────────────────┘
  */
 
-import type { PhysicalViewport, ResponsiveTokens } from './scale'
+import type { PhysicalViewport, ResponsiveSizes } from './scale'
 import { CARD_ASPECT_RATIO } from './scale'
 
 // ---------------------------------------------------------------------------
@@ -136,7 +136,7 @@ export type SceneKind = 'draw_stage' | 'reading_stage'
 
 export interface SolveLayoutInput {
   viewport: PhysicalViewport
-  tokens: ResponsiveTokens
+  sizes: ResponsiveSizes
   scene: SceneKind
 }
 
@@ -153,15 +153,15 @@ export interface SolveLayoutInput {
  */
 function computeStage(
   viewport: PhysicalViewport,
-  tokens: ResponsiveTokens,
+  sizes: ResponsiveSizes,
 ): StageRect {
-  const availableW = viewport.width - 2 * tokens.margin
+  const availableW = viewport.width - 2 * sizes.margin
   const availableH =
     viewport.height -
     viewport.safeAreaTop -
     viewport.safeAreaBottom -
-    2 * tokens.margin -
-    tokens.headerHeight
+    2 * sizes.margin -
+    sizes.headerHeight
 
   // Largest 1:1.6 (height/width) rect that fits in (availableW × availableH).
   // If the canvas is wide-and-short, height is the limiting dimension.
@@ -172,7 +172,7 @@ function computeStage(
   // Centre the stage horizontally in the canvas; pin it below the header
   // (which itself sits below the safe-area top + page margin).
   const stageX = (viewport.width - stageW) / 2
-  const stageY = viewport.safeAreaTop + tokens.margin + tokens.headerHeight
+  const stageY = viewport.safeAreaTop + sizes.margin + sizes.headerHeight
 
   return { x: stageX, y: stageY, width: stageW, height: stageH }
 }
@@ -183,11 +183,11 @@ function computeStage(
  * between piles, so each pile gets `(stageW − 4 × gap) / 3`. The card is
  * still 1:1.6, so height follows.
  */
-function computeDrawCardSize(stage: StageRect, tokens: ResponsiveTokens): {
+function computeDrawCardSize(stage: StageRect, sizes: ResponsiveSizes): {
   width: number
   height: number
 } {
-  const width = (stage.width - 4 * tokens.gap) / 3
+  const width = (stage.width - 4 * sizes.gap) / 3
   return { width, height: width * CARD_ASPECT_RATIO }
 }
 
@@ -254,12 +254,12 @@ function computeEnvelope(
  *  5. Build the animation envelope from the draw card size.
  */
 export function solveLayout(input: SolveLayoutInput): SceneLayout {
-  const { viewport, tokens, scene } = input
+  const { viewport, sizes, scene } = input
 
-  const stage = computeStage(viewport, tokens)
-  const draw = computeDrawCardSize(stage, tokens)
+  const stage = computeStage(viewport, sizes)
+  const draw = computeDrawCardSize(stage, sizes)
   const drawer = computeDrawer(viewport, stage)
-  const envelope = computeEnvelope(draw.width, draw.height, tokens.gap)
+  const envelope = computeEnvelope(draw.width, draw.height, sizes.gap)
 
   // Result card == stage rect (single card fills the entire stage).
   const resultCardWidth = stage.width
