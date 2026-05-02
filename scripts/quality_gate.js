@@ -21,6 +21,24 @@ const stepsByMode = {
       quietOnSuccess: true,
     },
     { label: 'arch:check', command: 'npm', args: ['run', 'arch:check'] },
+    // Project-wide dead-code detection (knip): unused files, exports,
+    // dependencies, class members. Quiet-on-success because the warning
+    // output is verbose; on failure (any new dead code) it prints fully.
+    {
+      label: 'dead-code',
+      command: 'npx',
+      args: ['knip', '--no-progress'],
+      quietOnSuccess: true,
+    },
+    // Cross-file copy-paste detection (jscpd): finds duplicate code blocks
+    // ≥ 8 lines / 60 tokens. Threshold 5% — fails the gate if more than 5%
+    // of the codebase is duplicated.
+    {
+      label: 'duplicate-code',
+      command: 'npx',
+      args: ['jscpd', 'app/src', '--silent'],
+      quietOnSuccess: true,
+    },
   ],
   staged: [
     { label: 'quality-scan', command: 'node', args: ['scripts/quality_scan.js'] },

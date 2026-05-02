@@ -20,3 +20,6 @@ node_modules/
 /test/test-results/
 /test/playwright-report/
 /playwright-report/
+
+# Quality-tool reports (regenerable)
+/reports/

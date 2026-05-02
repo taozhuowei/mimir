@@ -1,0 +1,36 @@
+{
+  "$schema": "https://unpkg.com/knip@6/schema.json",
+  "workspaces": {
+    "app": {
+      "entry": [
+        "src/main.ts",
+        "src/App.vue",
+        "src/pages/main/index.vue",
+        "src/pages/fallback/index.vue"
+      ],
+      "project": [
+        "src/**/*.{ts,vue}",
+        "!src/**/*.d.ts"
+      ],
+      "ignore": [
+        "src/env.d.ts",
+        "src/shime-uni.d.ts"
+      ]
+    },
+    "server": {
+      "entry": ["src/server.ts"],
+      "project": ["src/**/*.ts"]
+    },
+    "test": {
+      "entry": ["**/*.test.ts", "**/*.spec.ts"],
+      "project": ["**/*.ts"]
+    }
+  },
+  "ignoreDependencies": [
+    "@dcloudio/uni-app-plus",
+    "@dcloudio/uni-components",
+    "@dcloudio/uni-h5",
+    "@dcloudio/uni-mp-weixin"
+  ],
+  "ignoreBinaries": []
+}

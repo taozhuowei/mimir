@@ -7,6 +7,7 @@
 import js from '@eslint/js'
 import tseslint from 'typescript-eslint'
 import pluginVue from 'eslint-plugin-vue'
+import sonarjs from 'eslint-plugin-sonarjs'
 
 /** DOM globals forbidden in Mini Program runtime */
 const FORBIDDEN_GLOBALS = [
@@ -29,6 +30,26 @@ export default tseslint.config(
 
   // Vue 3 essential (not recommended — avoids opinionated formatting rules)
   ...pluginVue.configs['flat/essential'],
+
+  // SonarJS — cognitive complexity, code smells, SOLID-adjacent rules.
+  // Applied to source code only (skips tests / configs).
+  // Initial integration: most rules at 'warn' so the existing baseline
+  // doesn't block CI; ratchet to 'error' once the codebase is cleaned up.
+  {
+    files: ['app/src/**/*.{ts,vue}', 'server/src/**/*.ts'],
+    plugins: { sonarjs: sonarjs },
+    rules: {
+      ...sonarjs.configs.recommended.rules,
+      // Downgraded to 'warn' for existing-codebase tolerance; revisit later:
+      'sonarjs/void-use': 'warn',
+      'sonarjs/no-small-switch': 'warn',
+      'sonarjs/no-nested-conditional': 'warn',
+      'sonarjs/no-all-duplicated-branches': 'warn',
+      'sonarjs/slow-regex': 'warn',
+      // Already covered by `no-warning-comments`, mute duplicate.
+      'sonarjs/todo-tag': 'off',
+    },
+  },
 
   // Vue files need typescript-eslint parser for <script lang="ts">
   {
