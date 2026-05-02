@@ -105,19 +105,19 @@
         </text>
       </view>
 
-      <!-- Safe frame toggle -->
+      <!-- Container borders toggle -->
       <view class="dev-tools-row">
         <view
           class="dev-tools-chip"
-          :class="{ active: showSafeFrame }"
+          :class="{ active: showContainerBorders }"
           role="button"
           tabindex="0"
-          aria-label="显示安全区"
-          @click="$emit('toggle-safe-frame')"
-          @keydown.enter="$emit('toggle-safe-frame')"
-          @keydown.space.prevent="$emit('toggle-safe-frame')"
+          aria-label="显示容器边框"
+          @click="$emit('toggle-container-borders')"
+          @keydown.enter="$emit('toggle-container-borders')"
+          @keydown.space.prevent="$emit('toggle-container-borders')"
         >
-          安全区
+          容器边框
         </view>
       </view>
     </view>
@@ -142,7 +142,7 @@ defineProps<{
   playbackRate: number
   isPaused: boolean
   isDevExpanded: boolean
-  showSafeFrame: boolean
+  showContainerBorders: boolean
 }>()
 
 defineEmits<{
@@ -154,7 +154,7 @@ defineEmits<{
   (e: 'step-forward'): void
   (e: 'step-backward'): void
   (e: 'toggle-dev-expanded'): void
-  (e: 'toggle-safe-frame'): void
+  (e: 'toggle-container-borders'): void
 }>()
 </script>
 
@@ -233,3 +233,4 @@ defineEmits<{
   margin-left: auto;
 }
 </style>
+

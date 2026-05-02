@@ -77,6 +77,22 @@
     />
 
     <NotificationHost />
+    <DevToolsPanel
+      :phase-steps="animationController.phaseSteps.value"
+      :playback-rate="animationController.playbackRate.value"
+      :is-paused="animationController.isPaused.value"
+      :is-dev-expanded="isDevExpanded"
+      :show-container-borders="showContainerBorders"
+      @replay="handleDevReplay"
+      @skip-to-reading="handleDevSkipToReading"
+      @playback-rate="handleDevPlaybackRate"
+      @pause="animationController.pauseAnimations"
+      @resume="animationController.resumeAnimations"
+      @step-forward="animationController.stepForward"
+      @step-backward="animationController.stepBackward"
+      @toggle-dev-expanded="isDevExpanded = !isDevExpanded"
+      @toggle-container-borders="toggleContainerBorders"
+    />
   </view>
 </template>
 
@@ -106,6 +122,7 @@ import DivinationView from '../../views/DivinationView.vue'
 import ReadingSplitView from '../../views/ReadingSplitView.vue'
 import ReadingDrawerView from '../../views/ReadingDrawerView.vue'
 import NotificationHost from '../../components/containers/NotificationHost.vue'
+import DevToolsPanel from '../../components/overlay/DevToolsPanel.vue'
 import { useAppPhase } from '../../composables/use_app_phase'
 import { useTarotStore } from '../../stores/tarot'
 import { useThemeStore } from '../../stores/theme'
@@ -304,6 +321,41 @@ function handleBackHome() {
 
 function handleRetry() {
   void readingController.retryReading({})
+}
+
+/* ── Dev tools (compiled out of production) ─────────────────────────── */
+
+const isDevExpanded = ref(true)
+const showContainerBorders = ref(false)
+
+function handleDevReplay(targetPhase: OverlayPhase): void {
+  animationController.replayFromPhase(targetPhase)
+}
+
+function handleDevSkipToReading(): void {
+  animationController.skipToReading()
+}
+
+function handleDevPlaybackRate(rate: number): void {
+  animationController.setPlaybackRate(rate)
+}
+
+function toggleContainerBorders(): void {
+  showContainerBorders.value = !showContainerBorders.value
+  // #ifdef H5
+  // Dev-only debug overlay; only meaningful in H5 where DOM exists.
+  // The lint rule against `document` keeps mini-program builds clean —
+  // this branch is compiled out for MP-WEIXIN.
+  // eslint-disable-next-line no-restricted-globals
+  if (typeof document === 'undefined') return
+  if (showContainerBorders.value) {
+    // eslint-disable-next-line no-restricted-globals, no-undef
+    document.documentElement.classList.add('dev-debug-borders')
+  } else {
+    // eslint-disable-next-line no-restricted-globals, no-undef
+    document.documentElement.classList.remove('dev-debug-borders')
+  }
+  // #endif
 }
 
 /* ── Lifecycle ─────────────────────────────────────────────────────── */
