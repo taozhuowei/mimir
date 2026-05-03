@@ -47,12 +47,6 @@ export interface ThemeImages {
   [key: string]: string | undefined
 }
 
-export interface ThemeSummary {
-  id: string
-  name: string
-  description: string
-}
-
 export interface ThemeData {
   id: string
   name: string
@@ -61,18 +55,6 @@ export interface ThemeData {
   ui: ThemeUI
   images: ThemeImages
   colors: ThemeColors
-}
-
-interface FetchThemesResponse {
-  themes: ThemeSummary[]
-}
-
-/**
- * Fetch list of all available themes
- */
-export async function fetchThemes(): Promise<ThemeSummary[]> {
-  const res = await request<FetchThemesResponse>('/api/v1/themes')
-  return res.themes
 }
 
 /**
