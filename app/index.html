@@ -2,7 +2,14 @@
 <html>
   <head>
     <meta charset="UTF-8" />
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self' http://localhost:* ws://localhost:*; font-src 'self';" />
+    <!--
+      CSP is enforced by the backend (server/src/app.ts via helmet) so it can
+      branch on dev vs prod (allowing http://localhost:* + data: in dev for the
+      Vite proxy at :4123 → express :3000, plus woff2/data URIs). A duplicate
+      <meta> CSP here would be intersected with the response header by the
+      browser, silently overriding the backend's config. Do not re-add a
+      CSP meta tag.
+    -->
     <script>
       var coverSupport = 'CSS' in window && typeof CSS.supports === 'function' && (CSS.supports('top: env(a)') ||
         CSS.supports('top: constant(a)'))
