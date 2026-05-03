@@ -2,13 +2,16 @@
  * Name: commands/skip_to_reading
  * Purpose: skip directly to the revealing phase, bypassing shuffle/cut/draw animations.
  * Reason: extracted from phase_pipeline to isolate skip logic as a standalone command.
- * Data flow: deps in → interrupts timeline, resets scene, jumps to revealing state.
+ *         Now reuses the manifest's snap-to-revealing-entry helper so the visual state
+ *         contract for revealing lives in one place (registry.ts) — previously this
+ *         command hand-rolled a draws[i] assignment loop that drifted from the contract.
+ * Data flow: deps in → interrupts timeline, resets scene, snaps to revealing entry
+ *         visual state via PHASE_MANIFEST, opens reading panel, fires onPipelineComplete.
  */
 
 import type { Ref } from 'vue'
-import type { DrawCardState } from '../../animation/types'
+import { getPhaseSnap, type PhaseSnapDeps } from '../../animation/phases/registry'
 import type { OverlayPhase } from '../../core/flow/types'
-import type { SceneKind, SceneLayout } from '../../core/sizing/layout_solver'
 
 export interface SkipToReadingCommandDeps {
   interruptCurrentAnimation: () => void
@@ -16,30 +19,22 @@ export interface SkipToReadingCommandDeps {
   resetOverlayScene: () => void
   transitionPhase: (phase: OverlayPhase) => void
   openReadingPanel: () => void
-  getSceneLayout: (scene: SceneKind) => SceneLayout
-  setDrawCardSizes: (layout: SceneLayout) => void
-  draws: DrawCardState[]
   refreshDraws: () => void
   onPipelineComplete: () => void
+  getPhaseSnapDeps: () => PhaseSnapDeps
 }
 
 export function skipToReadingCommand(deps: SkipToReadingCommandDeps): void {
   deps.interruptCurrentAnimation()
   deps.entryAnimationComplete.value = true
   deps.resetOverlayScene()
-  deps.transitionPhase('revealing')
-  deps.openReadingPanel()
 
-  const layout = deps.getSceneLayout('draw_stage')
-  deps.setDrawCardSizes(layout)
-  deps.draws.forEach((draw, index) => {
-    if (index >= layout.cards.length) return
-    draw.x = layout.cards[index].x
-    draw.y = layout.cards[index].y
-    draw.scale = 1
-    draw.opacity = 1
-  })
+  // Snap visual state to revealing entry — sets card sizes, positions
+  // each draw at its draw-stage target, hides unused draws and piles.
+  getPhaseSnap('revealing')(deps.getPhaseSnapDeps())
   deps.refreshDraws()
 
+  deps.transitionPhase('revealing')
+  deps.openReadingPanel()
   deps.onPipelineComplete()
 }
