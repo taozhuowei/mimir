@@ -1,13 +1,17 @@
 <template>
   <!--
     FallbackView — phase-2.1 skeleton.
-    Composition per PRD §7.2 #5: TitleArea(variant='fallback') + Stage
-    (FallbackOrbits). The PRD-mandated copy "宇宙信号微弱，暂无法接通"
-    (§7.3 #1 / §10.3 #4) is owned by TitleArea once the variant copy table
-    lands in 2.2; this view's job is just to wire the variant.
+    Composition per PRD §7.2 #5: HeaderArea(TitleContent variant='fallback')
+    + Stage(FallbackOrbits). The PRD-mandated copy "宇宙信号微弱，暂无法接通"
+    (§7.3 #1 / §10.3 #4) is owned by TitleContent's copy table; this
+    view's job is just to wire the variant. The header is wrapped in the
+    shared HeaderArea (task 8.3.1) so the fallback title sits at the same
+    y as idle / divination headers.
   -->
   <view class="fallback-view" role="region" aria-label="兜底视图">
-    <TitleArea variant="fallback" />
+    <HeaderArea role="banner">
+      <TitleContent variant="fallback" />
+    </HeaderArea>
     <Stage scene="fallback">
       <FallbackOrbits />
     </Stage>
@@ -28,7 +32,8 @@
  * Data flow: optional `errorMessage` is for diagnostic visibility only;
  *           it never replaces the canonical PRD-mandated title copy.
  */
-import TitleArea from '../components/containers/TitleArea.vue'
+import HeaderArea from '../components/containers/HeaderArea.vue'
+import TitleContent from '../components/containers/TitleContent.vue'
 import Stage from '../components/containers/Stage.vue'
 import FallbackOrbits from '../components/stage-content/FallbackOrbits.vue'
 
