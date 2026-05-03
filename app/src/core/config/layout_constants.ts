@@ -28,8 +28,15 @@ export const MAX_CARD_COUNT = 10
 /** Maximum number of cut piles the cut animation pre-allocates. */
 export const MAX_CUT_PILES = 8
 
-/** Delay between the draw landing and the auto-flip kick-off (ms). */
-export const AUTO_REVEAL_DELAY_MS = 800
+/**
+ * Delay between the draw landing and the auto-flip kick-off (ms).
+ *
+ * Per requirement N2 this is now 0 — the deal-stage already provides a
+ * settle beat (alignment tween + per-card settle), so an additional
+ * pre-flip pause is dead weight. Keep the constant in place so phase
+ * builders that read it stay configurable, but ship with no extra wait.
+ */
+export const AUTO_REVEAL_DELAY_MS = 0
 
 /**
  * Initial drawer height as a fraction of the viewport height (0..1).
