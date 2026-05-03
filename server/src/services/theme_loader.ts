@@ -298,11 +298,3 @@ export function listThemes(): ThemeSummary[] {
   return themes
 }
 
-/**
- * Get a cached theme without file system access
- * @param themeId - The theme identifier
- * @returns Cached ThemeData or undefined
- */
-export function getCachedTheme(themeId: string): ThemeData | undefined {
-  return themeCache.get(themeId)
-}
