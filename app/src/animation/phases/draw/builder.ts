@@ -117,11 +117,13 @@ export function buildDrawPhaseRunner(config: DrawPhaseConfig): PhaseRunner {
       const alignTime = lastCardLandingTime + 0.28
 
       // Flip is now owned by the reveal phase (see animation/atoms/flip).
-      // After alignment, the draw phase only needs a short settle beat
-      // before handing off to revealing — 1.0s leaves room for the player
-      // to register the landed deck before cards begin growing/flipping.
+      // Per requirement N2: the historical 1.0s "breath" between alignment
+      // and the reveal hand-off was dead weight on top of the alignment
+      // tween + per-card settle, so it has been removed. `revealDelay`
+      // (driven by AUTO_REVEAL_DELAY_MS) is also 0 by default — kept as a
+      // dial for future tuning without touching this builder.
       const revealDelay = autoRevealDelayMs / 1000
-      const revealingStart = alignTime + 1.0 + revealDelay
+      const revealingStart = alignTime + revealDelay
       const finishTime = revealingStart + 0.3
 
       const preRotations = Array.from({ length: cardCount }, () => jitterDeg(-7.5, 7.5))
