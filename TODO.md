@@ -75,15 +75,15 @@
 
 #### 8.1.F — sonarjs 5 条规则降为 warn（待 ratchet 升 error）
 
-`[ ]` **8.1.F.1** `sonarjs/void-use` 升 error（当前 0 命中，可立即升）
+`[x]` **8.1.F.1** `sonarjs/void-use` 升 error（当前 0 命中，可立即升）
 
-`[ ]` **8.1.F.2** `sonarjs/no-small-switch` 升 error（当前 0 命中）
+`[x]` **8.1.F.2** `sonarjs/no-small-switch` 升 error（当前 0 命中）
 
-`[ ]` **8.1.F.3** `sonarjs/no-nested-conditional` 升 error（当前 0 命中）
+`[x]` **8.1.F.3** `sonarjs/no-nested-conditional` 升 error（当前 0 命中）
 
-`[ ]` **8.1.F.4** `sonarjs/no-all-duplicated-branches` 升 error（当前 0 命中）
+`[x]` **8.1.F.4** `sonarjs/no-all-duplicated-branches` 升 error（当前 0 命中）
 
-`[ ]` **8.1.F.5** `sonarjs/slow-regex` 升 error（当前 0 命中）
+`[x]` **8.1.F.5** `sonarjs/slow-regex` 升 error（当前 0 命中）
 
 > 备注：deadline 待用户拍板（见 8.4.2）
 
@@ -173,9 +173,7 @@
 - 推荐配置：`main` 分支 Required status checks `verify` job、禁止 force push、禁止删除、PR 至少 1 名审阅者批准
 - 仓库管理员需在 GitHub Settings → Branches 启用
 
-`[!]` **8.4.2 sonarjs ratchet 升 error 的 deadline**
-- 5 条规则当前 0 命中，可立即升 error（防回归）
-- 用户回复 A/B/C 方案 + 日期后，PM 把日期回填到 8.1.F 各条 + ESLint 配置注释
+`[x]` **8.4.2 sonarjs ratchet 升 error 的 deadline** — 用户决定方案 A：5 条立即升 error。已在 `eslint.config.mjs` 落实，gate 通过。
 
 ---
 

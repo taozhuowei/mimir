@@ -34,35 +34,26 @@ export default tseslint.config(
   // SonarJS — cognitive complexity, code smells, SOLID-adjacent rules.
   // Applied to source code only (skips tests / configs).
   //
-  // Ratchet plan (TODO.md 阶段 8):
-  // The five rules below are at 'warn' to keep the existing baseline from
-  // blocking CI. Each will be ratcheted to 'error' on a fixed date once the
-  // remaining warnings are resolved (currently: ~9 across app/src + server/src).
-  // The ratchet schedule lives in TODO.md so the deadline is auditable; do
-  // not silently leave 'warn' here forever.
+  // Ratchet status (2026-05-03): the five rules previously kept at 'warn' are
+  // now at 'error'. All five had been driven to zero hits during phase 7
+  // cleanup (real fixes, not eslint-disable). Locking them as error prevents
+  // regressions — new code that triggers any of these fails the gate.
   //
-  //   void-use                      → error after the 3 fire-and-forget sites
-  //                                   are reviewed (real intent vs missing await).
-  //   no-small-switch               → error after the legacy switch in
-  //                                   reading_provider.ts is fully retired.
-  //   no-nested-conditional         → error after parseServerError-style
-  //                                   refactors land for the remaining 4 hits.
-  //   no-all-duplicated-branches    → error after no-small-switch is fixed
-  //                                   (paired finding).
-  //   slow-regex                    → error after the theme.ts regex is
-  //                                   already removed (now down to 0 hits;
-  //                                   keep guarding for future regressions).
+  // Recovery procedure if a future change legitimately needs to violate one:
+  // (1) prefer refactor; (2) inline `// eslint-disable-next-line ... -- reason: <why>`
+  // with a concrete justification; (3) only fall back to downgrading the
+  // rule severity if (2) is repeatedly insufficient — and document why in
+  // TODO.md so it doesn't silently revert to 'warn' indefinitely.
   {
     files: ['app/src/**/*.{ts,vue}', 'server/src/**/*.ts'],
     plugins: { sonarjs: sonarjs },
     rules: {
       ...sonarjs.configs.recommended.rules,
-      // Existing-codebase grandfather list. Track upgrades in TODO.md 阶段 8.
-      'sonarjs/void-use': 'warn',
-      'sonarjs/no-small-switch': 'warn',
-      'sonarjs/no-nested-conditional': 'warn',
-      'sonarjs/no-all-duplicated-branches': 'warn',
-      'sonarjs/slow-regex': 'warn',
+      'sonarjs/void-use': 'error',
+      'sonarjs/no-small-switch': 'error',
+      'sonarjs/no-nested-conditional': 'error',
+      'sonarjs/no-all-duplicated-branches': 'error',
+      'sonarjs/slow-regex': 'error',
       // Already covered by `no-warning-comments`, mute duplicate.
       'sonarjs/todo-tag': 'off',
     },
