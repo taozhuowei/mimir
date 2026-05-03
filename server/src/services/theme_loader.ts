@@ -299,14 +299,6 @@ export function listThemes(): ThemeSummary[] {
 }
 
 /**
- * Clear the theme cache
- * Useful for reloading themes during development
- */
-export function clearThemeCache(): void {
-  themeCache.clear()
-}
-
-/**
  * Get a cached theme without file system access
  * @param themeId - The theme identifier
  * @returns Cached ThemeData or undefined
