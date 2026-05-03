@@ -11,6 +11,13 @@ const stepsByMode = {
     { label: 'type-check', command: 'npm', args: ['run', 'quality:type-check'] },
     { label: 'test', command: 'npm', args: ['run', 'quality:test'] },
     { label: 'build:h5', command: 'npm', args: ['run', 'quality:build:h5'] },
+    // Browser-layer smoke gate (TODO 8.1.J): catches console.error,
+    // network 4xx/5xx, and CSP violations on SPA boot — all invisible
+    // to unit/integration tests because they don't run in a real
+    // browser. Runs after build:h5 so the prod bundle is in place;
+    // the playwright config's webServer block boots `start:prod` on
+    // :3000 and reuses an existing server locally.
+    { label: 'smoke', command: 'npm', args: ['run', 'quality:smoke'] },
     { label: 'perf-baseline', command: 'node', args: ['scripts/perf_baseline_gate.js'] },
     {
       label: 'audit',
