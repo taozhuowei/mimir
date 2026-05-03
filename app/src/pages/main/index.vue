@@ -137,6 +137,9 @@ import {
   useResponsiveScale,
 } from '../../core/sizing/scale'
 import type { OverlayPhase } from '../../core/flow/types'
+// #ifdef H5
+import { toggleContainerBorders as toggleContainerBordersH5 } from '../../utils/dev/container_borders'
+// #endif
 
 /* ── Stores + phase ─────────────────────────────────────────────────── */
 
@@ -346,18 +349,7 @@ function handleDevPlaybackRate(rate: number): void {
 function toggleContainerBorders(): void {
   showContainerBorders.value = !showContainerBorders.value
   // #ifdef H5
-  // Dev-only debug overlay; only meaningful in H5 where DOM exists.
-  // The lint rule against `document` keeps mini-program builds clean —
-  // this branch is compiled out for MP-WEIXIN.
-  // eslint-disable-next-line no-restricted-globals
-  if (typeof document === 'undefined') return
-  if (showContainerBorders.value) {
-    // eslint-disable-next-line no-restricted-globals, no-undef
-    document.documentElement.classList.add('dev-debug-borders')
-  } else {
-    // eslint-disable-next-line no-restricted-globals, no-undef
-    document.documentElement.classList.remove('dev-debug-borders')
-  }
+  toggleContainerBordersH5(showContainerBorders.value)
   // #endif
 }
 
