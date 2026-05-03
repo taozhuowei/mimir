@@ -1,12 +1,17 @@
 <template>
   <!--
     IdleView — phase-2.1 skeleton.
-    Composition per PRD §7.2 #1: TitleArea + Stage(IdleDeck). Business
-    logic (deck animation, header GSAP, layout solver) migrates from
-    pages/index/index.vue in 2.2.
+    Composition per PRD §7.2 #1: HeaderArea(TitleContent) + Stage(IdleDeck).
+    Business logic (deck animation, header GSAP, layout solver) migrates
+    from pages/index/index.vue in 2.2. The header is wrapped in
+    HeaderArea (task 8.3.1) so the slot geometry matches DivinationView's
+    progress header byte-for-byte and the idle ↔ divination swap does
+    not jump.
   -->
   <view class="idle-view" :class="{ 'idle-view--error': cardsLoadError }">
-    <TitleArea variant="idle" />
+    <HeaderArea role="banner">
+      <TitleContent variant="idle" />
+    </HeaderArea>
     <Stage scene="idle">
       <view
         v-if="cardsLoadError"
@@ -44,7 +49,8 @@
  *           `isCardsLoading`); the view emits `triggerDivination` and
  *           `retryLoadCards` so the page can drive store actions.
  */
-import TitleArea from '../components/containers/TitleArea.vue'
+import HeaderArea from '../components/containers/HeaderArea.vue'
+import TitleContent from '../components/containers/TitleContent.vue'
 import Stage from '../components/containers/Stage.vue'
 import IdleDeck from '../components/stage-content/IdleDeck.vue'
 
