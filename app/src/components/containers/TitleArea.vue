@@ -147,6 +147,13 @@ onUnmounted(() => {
 
 <style scoped>
 .title-area {
+  /* Push down to clear the WeChat Mini Program menu button (~87px from
+     viewport top on tall iPhones; safe-area-top + page padding only
+     reach ~63px). 32px margin sits the header below the capsule with a
+     small breathing buffer. H5 doesn't have a menu button, so this is
+     pure visual breathing on web — same value keeps the two platforms
+     visually aligned. Keep in lockstep with .progress-area. */
+  margin-top: 32px;
   height: var(--header-height);
   flex-shrink: 0;
   display: flex;

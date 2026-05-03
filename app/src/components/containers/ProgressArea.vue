@@ -45,6 +45,10 @@ const animCtrl = inject<UseAnimationControllerReturn>('animationController')!
 
 <style scoped>
 .progress-area {
+  /* Mirror .title-area's MP menu-button clearance so idle ↔ divination
+     header swap stays at the same y position. See TitleArea.vue for the
+     reasoning behind 32px. */
+  margin-top: 32px;
   height: var(--header-height);
   flex-shrink: 0;
   display: flex;
