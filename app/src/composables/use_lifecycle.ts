@@ -2,12 +2,15 @@
  * Name: use_lifecycle
  * Purpose: overlay animation lifecycle — entry settling, scene reset, animation interruption,
  *          and pipeline orchestration (start / skip / replay).
- * Reason: extracted from use_animation_controller to isolate lifecycle concerns.
+ * Reason: extracted from use_animation_controller to isolate lifecycle concerns. Owns the
+ *          construction of PhaseSnapDeps (closure over deps) so replay/skip can share the
+ *          same snap-to-entry-state contract from PHASE_MANIFEST.
  * Data flow: receives all deps via DI; mutates shared refs for cardsLanded, entryAnimationComplete.
  */
 
 import { nextTick } from 'vue'
 import { killAnimationTargets } from '../animation/adapters/gsap'
+import type { PhaseSnapDeps } from '../animation/phases/registry'
 import type { OverlayPhase } from '../core/flow/types'
 import { runPipelineCommand } from './commands/start'
 import { skipToReadingCommand } from './commands/skip_to_reading'
@@ -66,6 +69,30 @@ export function useLifecycle(deps: LifecycleDeps) {
     killAnimationTargets(deps.animState.getAllTargets())
   }
 
+  /**
+   * Build the dependency bundle consumed by PHASE_MANIFEST.snapToEntryState
+   * helpers. Read fresh on each call so layout/metric changes (orientation,
+   * resize) are picked up — the snap helpers themselves are pure functions.
+   */
+  function getPhaseSnapDeps(): PhaseSnapDeps {
+    const drawLayout = deps.getSceneLayout('draw_stage')
+    const metrics = deps.getMotionMetrics('draw_stage')
+    const { centerX, centerY } = deps.getDeckCenter()
+    return {
+      cardElements: deps.cardElements,
+      visible: deps.visible,
+      draws: deps.animState.draws,
+      deckGeometry: { centerX, centerY },
+      drawLayout,
+      cardCount: deps.cardCount.value,
+      cutPileCount: deps.cutPileCount,
+      shuffleSpreadX: metrics.shuffleSpreadX,
+      cutPileSpacing: metrics.cutPileSpacing,
+      cutAxis: metrics.cutAxis,
+      setDrawCardSizes: (layout) => deps.animState.setDrawCardSizes(layout),
+    }
+  }
+
   function runPipeline(startIndex = 0): void {
     runPipelineCommand(startIndex, {
       orchestrator: deps.orchestrator,
@@ -102,16 +129,14 @@ export function useLifecycle(deps: LifecycleDeps) {
       resetOverlayScene,
       transitionPhase: (p) => deps.transitionPhase(p, deps.callbacks.onPhaseChange),
       openReadingPanel: () => { deps.showResults.value = true },
-      getSceneLayout: deps.getSceneLayout,
-      setDrawCardSizes: (layout) => deps.animState.setDrawCardSizes(layout),
-      draws: deps.animState.draws,
       refreshDraws: deps.animState.refreshDraws,
       onPipelineComplete: deps.callbacks.onPipelineComplete,
+      getPhaseSnapDeps,
     })
   }
 
   function replayFromPhase(targetPhase: OverlayPhase): void {
-    replayFromPhaseCommand(targetPhase, {
+    void replayFromPhaseCommand(targetPhase, {
       interruptCurrentAnimation,
       entryAnimationComplete: deps.entryAnimationComplete,
       resetOverlayScene,
@@ -119,6 +144,7 @@ export function useLifecycle(deps: LifecycleDeps) {
       progressModel: deps.progressModel,
       onPhaseChange: (p) => deps.transitionPhase(p, deps.callbacks.onPhaseChange),
       runPipelineFn: runPipeline,
+      getPhaseSnapDeps,
     })
   }
 
