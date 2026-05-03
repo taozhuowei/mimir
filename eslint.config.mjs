@@ -81,6 +81,7 @@ export default tseslint.config(
         uni: 'readonly',
         UniApp: 'readonly',
         TouchEvent: 'readonly',
+        MouseEvent: 'readonly',
         KeyboardEvent: 'readonly',
         Touch: 'readonly',
         setTimeout: 'readonly',
