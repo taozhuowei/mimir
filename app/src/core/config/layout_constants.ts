@@ -11,12 +11,6 @@
  * reaching for one.
  */
 
-// ---- Responsive breakpoint -------------------------------------------------
-
-/** Minimum viewport width treated as "wide" (px). Below this we render the
- *  narrow / mobile layout. */
-export const WIDE_BREAKPOINT = 768
-
 // ---- Hero typewriter timing (ms) ------------------------------------------
 
 export const HERO_TITLE_START_DELAY = 180
