@@ -54,6 +54,7 @@ export {
   BASELINE_FONT_XS,
   CARD_ASPECT_RATIO,
   RESULT_CARD_FILL_RATIO,
+  MAX_CARD_WIDTH_PX,
   pickCanvasWidth,
   deriveScale,
 } from './responsive_breakpoints'

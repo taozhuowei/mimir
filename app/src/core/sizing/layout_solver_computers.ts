@@ -72,9 +72,11 @@ export function computeDrawCardSize(stage: StageRect, sizes: ResponsiveSizes): {
  * naturally hugs the (now-padded) result card on the reading scene.
  *
  * `cardHeight` is the card height to anchor against. On the reading scene
- * it equals `stage.height * RESULT_CARD_FILL_RATIO`; on the draw scene the
- * caller can pass `stage.height` to keep the original "drawer at stage
- * bottom" behaviour.
+ * it equals `stage.height * RESULT_CARD_FILL_RATIO` when the unclamped
+ * card width fits inside the MAX_CARD_WIDTH_PX phone-shell envelope, or
+ * `MAX_CARD_WIDTH_PX * CARD_ASPECT_RATIO` when the cap engages so the
+ * 1:1.6 proportion is preserved; on the draw scene the caller can pass
+ * `stage.height` to keep the original "drawer at stage bottom" behaviour.
  *
  * The card is centred vertically in the stage rect (stage layer doesn't
  * shift it), so cardTop = stage.y + (stage.height - cardHeight) / 2 and

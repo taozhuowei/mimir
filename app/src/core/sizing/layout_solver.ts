@@ -28,7 +28,7 @@
  *   deriveSizes(canvasWidth) ───────────────────────┘
  */
 
-import { RESULT_CARD_FILL_RATIO } from './scale'
+import { CARD_ASPECT_RATIO, MAX_CARD_WIDTH_PX, RESULT_CARD_FILL_RATIO } from './scale'
 import {
   computeDrawCardSize,
   computeDrawer,
@@ -72,11 +72,20 @@ export function solveLayout(input: SolveLayoutInput): SceneLayout {
   const envelope = computeEnvelope(draw.width, draw.height, sizes.gap)
 
   // Result card occupies RESULT_CARD_FILL_RATIO of the stage rect on each
-  // axis. Stage rect itself stays the same — the card now sits inside,
+  // axis, then clamped to MAX_CARD_WIDTH_PX (PRD §8.2 phone-shell
+  // envelope — the card never grows wider than 240 px regardless of how
+  // big the canvas / stage is). Height is derived from the clamped width
+  // via CARD_ASPECT_RATIO so the card preserves its 1:1.6 proportion when
+  // the cap engages on the largest supported canvases.
+  // Stage rect itself stays the same — the card sits centred inside,
   // padded uniformly. The card stays centred at (0, 0) in stage-relative
   // coordinates because the stage container is the anchor.
-  const resultCardWidth = stage.width * RESULT_CARD_FILL_RATIO
-  const resultCardHeight = stage.height * RESULT_CARD_FILL_RATIO
+  const unclampedCardWidth = stage.width * RESULT_CARD_FILL_RATIO
+  const resultCardWidth = Math.min(unclampedCardWidth, MAX_CARD_WIDTH_PX)
+  const resultCardHeight =
+    resultCardWidth === unclampedCardWidth
+      ? stage.height * RESULT_CARD_FILL_RATIO
+      : resultCardWidth * CARD_ASPECT_RATIO
 
   // Cards array: one centred placeholder. Concrete shuffle / cut / draw /
   // reveal phases position individual cards themselves; the solver only
