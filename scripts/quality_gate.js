@@ -27,7 +27,10 @@ const stepsByMode = {
     { label: 'type-check:app', command: 'npx', args: ['vue-tsc', '--noEmit', '-p', 'app/tsconfig.json'] },
     { label: 'type-check:server', command: 'npx', args: ['tsc', '--noEmit', '-p', 'server/tsconfig.json'] },
     { label: 'test', command: 'npm', args: ['run', 'test', '-w', 'test'] },
-    { label: 'perf-baseline', command: 'node', args: ['scripts/perf_baseline_gate.js'] },
+    // perf-baseline lives in the build pipeline (scripts/build/prod.js), not
+    // here — it needs `dist/build/h5/` populated to produce a real measurement.
+    // Running it from quality_gate / pre-push always saw 0 bytes because the
+    // build had not yet executed at that point.
     {
       label: 'audit',
       command: 'npm',
