@@ -34,6 +34,10 @@ jobs:
     timeout-minutes: 5
     steps:
       - uses: actions/checkout@v6
+        with:
+          # Full history is required for `gitleaks detect` to scan past
+          # commits — shallow clones (default fetch-depth: 1) miss them.
+          fetch-depth: 0
       - uses: actions/setup-node@v6
         with:
           node-version: '22'
@@ -42,6 +46,12 @@ jobs:
         run: npm ci
       - name: Commit lint
         uses: wagoid/commitlint-github-action@v6
+      - name: Gitleaks (full history)
+        # Detects credentials anywhere in the repo's git history. Pre-commit
+        # hooks only scan staged content; CI catches anything that was
+        # force-pushed, amended, or merged in from a fork. `gitleaks git`
+        # is the v8.30+ replacement for the deprecated `detect` command.
+        run: node scripts/gitleaks_run.js git --no-banner --redact --verbose
 
   e2e:
     runs-on: ubuntu-latest

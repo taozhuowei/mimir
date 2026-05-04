@@ -70,6 +70,19 @@ const stepsByMode = {
     // runs the full check, and CI (.github/workflows/ci.yml) mirrors it,
     // so type errors can't reach origin/main even if a developer commits
     // them locally.
+    //
+    // gitleaks runs first so a credential leak fails before any other
+    // expensive step touches the disk. `git --staged` only diffs files
+    // already in the index, finishing in ~0.3s on this repo. The full
+    // history scan (`gitleaks git`) lives in CI to catch sneak-ins via
+    // amend or rebase that bypass pre-commit. Using v8.30+ subcommand
+    // surface (`git`/`dir`); the older `protect`/`detect` aliases are
+    // deprecated upstream.
+    {
+      label: 'gitleaks',
+      command: 'node',
+      args: ['scripts/gitleaks_run.js', 'git', '--staged', '--no-banner', '--redact'],
+    },
     { label: 'quality-scan', command: 'node', args: ['scripts/quality_scan.js'] },
     {
       label: 'lint:fix',
