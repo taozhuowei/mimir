@@ -85,6 +85,13 @@ async function run_quality() {
   return run('quality gate (full)', 'node', ['scripts/quality_gate.js', 'full'])
 }
 
+async function run_perf_baseline() {
+  // Bundle-size regression check. Compares dist/build/h5/ against the
+  // committed perf_baseline.json. Lives here (not in quality_gate.js) because
+  // it needs the freshly-built h5 artifacts on disk.
+  return run('perf: baseline (bundle size)', 'node', ['scripts/perf_baseline_gate.js'])
+}
+
 module.exports = async function prodPipeline({ targets, skipQuality }) {
   if (!skipQuality) {
     await run_quality()
@@ -95,6 +102,12 @@ module.exports = async function prodPipeline({ targets, skipQuality }) {
   if (targets.includes('h5')) await build_h5()
   if (targets.includes('mp')) await build_mp()
   if (targets.includes('server')) await build_server()
+
+  // perf gate only meaningful once h5 produced output. Run it before smoke so
+  // a regression fails the pipeline before we burn time spinning up Playwright.
+  if (targets.includes('h5')) {
+    await run_perf_baseline()
+  }
 
   // Smoke needs both bundles. If the caller picked just `--target h5`, they're
   // doing a partial build (e.g. for asset inspection) and don't want smoke.
