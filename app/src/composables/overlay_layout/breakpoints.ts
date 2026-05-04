@@ -31,7 +31,7 @@ export const WIDE_SIDE_DRAWER_WIDTH_PX = 480
  * reason as `WIDE_SIDE_DRAWER_WIDTH_PX` — the wide-split UI cleanup is
  * deferred to a later step.
  */
-export const PC_BREAKPOINT = MAX_CANVAS_WIDTH + WIDE_SIDE_DRAWER_WIDTH_PX // 920
+const PC_BREAKPOINT = MAX_CANVAS_WIDTH + WIDE_SIDE_DRAWER_WIDTH_PX // 920
 
 /**
  * Read the mini-program capsule rect when running in WeChat MP. Returns

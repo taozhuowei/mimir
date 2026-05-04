@@ -28,7 +28,7 @@ import {
 import { buildFanTimeline } from '../animation/phases/fan/builder'
 
 /** Cards stacked in the idle deck (PRD §7.5.1). */
-export const DECK_SIZE = 12
+const DECK_SIZE = 12
 /** Cooldown after the exit tween before the click lock releases. */
 const DECK_CLICK_RELEASE_MS = 300
 

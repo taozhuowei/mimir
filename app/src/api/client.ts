@@ -17,8 +17,6 @@ let API_BASE = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:3000'
 API_BASE = ''
 // #endif
 
-export { API_BASE }
-
 /**
  * Resolve a server-returned asset path into a URL the current platform can load.
  *

@@ -2,11 +2,13 @@
   "$schema": "https://unpkg.com/knip@6/schema.json",
   "workspaces": {
     ".": {
-      "entry": ["scripts/*.js"]
+      "entry": [
+        "scripts/*.js",
+        "scripts/build/*.js"
+      ]
     },
     "app": {
       "entry": [
-        "src/main.ts",
         "src/App.vue",
         "src/pages/main/index.vue",
         "src/pages/fallback/index.vue"
@@ -17,6 +19,7 @@
       ]
     },
     "server": {
+      "entry": ["src/server.ts", "src/app.ts"],
       "project": ["src/**/*.ts"]
     },
     "test": {
@@ -33,7 +36,11 @@
     "@dcloudio/uni-cli-shared",
     "@dcloudio/uni-stacktracey",
     "@vue/runtime-core",
-    "jscpd"
+    "jscpd",
+    "concurrently",
+    "tsx",
+    "cross-env",
+    "vue-tsc"
   ],
   "ignoreExportsUsedInFile": false,
   "vite": true,
