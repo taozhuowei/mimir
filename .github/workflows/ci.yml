@@ -77,7 +77,10 @@ jobs:
         run: node scripts/build/index.js --prod --target h5,server --skip-quality
 
       - name: Install Playwright browser
-        run: npx playwright install --with-deps chromium
+        # Mobile device emulation (iPhone 13 in test/playwright.config.ts)
+        # uses chrome-headless-shell since Playwright 1.49+, which is a
+        # separate binary from chromium. Install both explicitly.
+        run: npx playwright install --with-deps chromium chromium-headless-shell
 
       - name: Run E2E tests
         # Direct playwright invocation; we don't expose `npm run e2e` as
