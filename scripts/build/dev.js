@@ -9,9 +9,11 @@
  *   3. quality gate (full) — same as pre-push, catches issues before
  *      a long-running watch eats your terminal
  *   4. concurrently start watchers per --target:
- *        - h5     : vite-plugin-uni watch (H5)        + vite-plugin-checker
- *        - mp     : vite-plugin-uni watch (mp-weixin)
- *        - server : tsx (auto-reload TS)
+ *        - h5     : vite dev server on :4123 (HMR)    + vite-plugin-checker
+ *        - mp     : vite-plugin-uni build --watch (mp-weixin only — the
+ *                   mini-program runtime can't consume an HTTP dev server,
+ *                   so it has to be disk-emit watch mode)
+ *        - server : tsx (auto-reload TS) on :4124
  *
  * vite-plugin-checker is wired only to the H5 dev pipeline (see
  * app/vite.config.ts) — it watches for vue-tsc / tsc / eslint errors and
@@ -57,9 +59,15 @@ function buildConcurrentlyArgs(targets) {
 
   if (targets.includes('h5')) {
     names.push('h5')
+    // Default uni subcommand (no `build`) starts vite's dev server with HMR
+    // — that's what we want during development. The previous `build --watch`
+    // pipeline only emitted disk artefacts, leaving :4123 unbound and forcing
+    // express to serve the prod bundle for SPA requests, which masked any
+    // freshly-edited code. Vite's dev server owns :4123, proxies /api +
+    // /static to express on :4124, and gives us module-level HMR.
     commands.push(
       'cross-env NODE_ENV=development UNI_INPUT_DIR=app/src VITE_ROOT_DIR=app ' +
-        `node ${VITE_BIN} build --watch --mode development --config app/vite.config.ts`,
+        `node ${VITE_BIN} --mode development --config app/vite.config.ts`,
     )
   }
   if (targets.includes('mp')) {
