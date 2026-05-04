@@ -11,14 +11,20 @@
  *   node scripts/perf_baseline_gate.js            # record new baseline
  *   PERF_COMPARE=1 node scripts/perf_baseline_gate.js  # compare against baseline
  *
- * Baseline stored in scripts/perf_baseline.json
+ * Baseline stored in reports/perf_baseline.json (gitignored).
+ *
+ * Why reports/ and not scripts/: the previous location produced
+ * non-declarative diffs because the pre-commit hook's `git add -u` step
+ * happily staged the regenerated baseline. Moving it under reports/ (which
+ * is in .gitignore) keeps the runtime artifact out of git entirely.
  */
 
-const { existsSync, readFileSync, writeFileSync } = require('fs')
-const { join } = require('path')
+const { existsSync, mkdirSync, readFileSync, writeFileSync } = require('fs')
+const { join, dirname } = require('path')
 const { execSync } = require('child_process')
 
-const BASELINE_PATH = join(__dirname, 'perf_baseline.json')
+const REPORTS_DIR = join(__dirname, '..', 'reports')
+const BASELINE_PATH = join(REPORTS_DIR, 'perf_baseline.json')
 const BUILD_DIR = join(__dirname, '..', 'app', 'dist', 'build', 'h5')
 
 const DEFAULT_BASELINE = {
@@ -43,6 +49,9 @@ function recordBaseline() {
     buildSizeBytes: buildSize ?? DEFAULT_BASELINE.buildSizeBytes,
     recordDate: new Date().toISOString(),
   }
+  // reports/ is gitignored but may not exist on a fresh clone — create it
+  // so the write doesn't ENOENT before anyone has run the SPA-boot smoke.
+  mkdirSync(dirname(BASELINE_PATH), { recursive: true })
   writeFileSync(BASELINE_PATH, JSON.stringify(baseline, null, 2))
   console.log(`[perf] Baseline recorded: build=${formatBytes(baseline.buildSizeBytes)}`)
 }
