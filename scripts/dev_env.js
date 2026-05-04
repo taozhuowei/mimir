@@ -8,7 +8,7 @@ const os = require('os')
 const fs = require('fs')
 const path = require('path')
 
-const port = process.env.PORT || 3000
+const port = process.env.PORT || 4124
 
 // Collect all non-internal IPv4 addresses, prefer common LAN ranges (192.168.x / 10.x / 172.16-31.x)
 const all_ipv4 = Object.values(os.networkInterfaces())

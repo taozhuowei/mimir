@@ -4,7 +4,7 @@ import { defineConfig, devices } from '@playwright/test'
  * Playwright config for end-to-end tests.
  *
  * - Tests live in test/e2e/*.spec.ts and run against the real server
- *   (Express + bundled H5 SPA at http://localhost:3000).
+ *   (Express + bundled H5 SPA at http://localhost:4124).
  * - The webServer block boots `node server/dist/server.js` directly with
  *   NODE_ENV=production; locally it is reused if you already have one
  *   running, in CI it is always started fresh so the build under test is
@@ -23,7 +23,7 @@ export default defineConfig({
   reporter: process.env.CI ? [['list'], ['html', { open: 'never' }]] : 'list',
 
   use: {
-    baseURL: 'http://localhost:3000',
+    baseURL: 'http://localhost:4124',
     trace: 'retain-on-failure',
     screenshot: 'only-on-failure',
     video: 'retain-on-failure',
@@ -51,7 +51,7 @@ export default defineConfig({
   webServer: {
     command: 'node server/dist/server.js',
     env: { NODE_ENV: 'production' },
-    url: 'http://localhost:3000/api/healthz',
+    url: 'http://localhost:4124/api/healthz',
     reuseExistingServer: !process.env.CI,
     timeout: 60_000,
     cwd: '..',

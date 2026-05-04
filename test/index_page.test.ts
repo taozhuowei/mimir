@@ -40,9 +40,9 @@ describe('homepage settings panel', () => {
         id: 'golden_dawn',
         name: 'Golden Dawn',
         ui: {
-          icon_settings: 'http://localhost:3000/static/themes/golden_dawn/ui/icon-settings.png',
+          icon_settings: 'http://localhost:4124/static/themes/golden_dawn/ui/icon-settings.png',
         },
-        images: { card_back: 'http://localhost:3000/static/themes/golden_dawn/tarot/card_back.jpeg' },
+        images: { card_back: 'http://localhost:4124/static/themes/golden_dawn/tarot/card_back.jpeg' },
         colors: {},
         fonts: {},
       })
@@ -51,7 +51,7 @@ describe('homepage settings panel', () => {
 
       // Should be able to get settings icon URL
       const settingsUrl = store.getUiAsset('icon_settings')
-      expect(settingsUrl).toBe('http://localhost:3000/static/themes/golden_dawn/ui/icon-settings.png')
+      expect(settingsUrl).toBe('http://localhost:4124/static/themes/golden_dawn/ui/icon-settings.png')
     })
 
     it('getUiAsset returns empty string for missing assets', async () => {
