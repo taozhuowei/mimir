@@ -64,6 +64,27 @@ export const CARD_ASPECT_RATIO = 1.6
  */
 export const RESULT_CARD_FILL_RATIO = 0.9
 
+/**
+ * Hard upper bound for the result-stage card's rendered width (px) — the
+ * "phone-shell envelope" cap referenced by PRD §8.2 and asserted by the
+ * viewport_smoke contract test (DEFAULT_MAX_CARD_WIDTH = 240).
+ *
+ * Why a flat px cap instead of letting RESULT_CARD_FILL_RATIO * stage.width
+ * win on its own: the stage rect grows up to the canvas cap (440 px) minus
+ * margins, which would put the result card around 350–367 px wide. That is
+ * too large to read alongside the drawer/sidebar text on phones — every
+ * tarot UI ships with a card that fits comfortably inside a thumb-reach
+ * hero zone, not an oversized poster. 240 px keeps the card visually
+ * proportional to a single column of body text on the largest supported
+ * mobile canvas (iPhone 17 Pro Max @ 440 px logical) and keeps the drawer's
+ * card-bottom anchor predictable.
+ *
+ * Height is derived from CARD_ASPECT_RATIO so the cap stays a single
+ * dimension; the layout solver applies Math.min(card, MAX_CARD_WIDTH_PX)
+ * before computing the height.
+ */
+export const MAX_CARD_WIDTH_PX = 240
+
 // ---------------------------------------------------------------------------
 // Pure functions — no Vue, no uni, no DOM. Trivially testable.
 // ---------------------------------------------------------------------------

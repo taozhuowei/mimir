@@ -21,6 +21,7 @@ import {
   deriveSizes,
   pickCanvasWidth,
   CARD_ASPECT_RATIO,
+  MAX_CARD_WIDTH_PX,
   RESULT_CARD_FILL_RATIO,
   type PhysicalViewport,
 } from '../app/src/core/sizing/scale'
@@ -158,8 +159,19 @@ describe('layout_solver — proportional-sizes layout solver', () => {
         // -------------------------------------------------------------------
         expect(layout.drawer.rightAligned).toBe(false)
         expect(layout.drawer.width).toBeCloseTo(viewport.width, 5)
+        // Result-scene card height tracks the MAX_CARD_WIDTH_PX clamp:
+        // when the unclamped width (stage.width × fill ratio) is below
+        // the cap the card still fills RESULT_CARD_FILL_RATIO of the
+        // stage, but on canvases where the unclamped width would
+        // exceed the cap the height is derived from the clamped width
+        // via CARD_ASPECT_RATIO so the card preserves its 1:1.6
+        // proportion. The drawer's `initialTop` follows from whichever
+        // height the solver actually emitted.
+        const unclampedCardWidth = layout.stage.width * RESULT_CARD_FILL_RATIO
         const expectedCardHeight = scene === 'reading_stage'
-          ? layout.stage.height * RESULT_CARD_FILL_RATIO
+          ? unclampedCardWidth <= MAX_CARD_WIDTH_PX
+            ? layout.stage.height * RESULT_CARD_FILL_RATIO
+            : MAX_CARD_WIDTH_PX * CARD_ASPECT_RATIO
           : layout.stage.height
         const expectedDrawerTop =
           layout.stage.y + (layout.stage.height + expectedCardHeight) / 2
@@ -196,13 +208,23 @@ describe('layout_solver — proportional-sizes layout solver', () => {
         // -------------------------------------------------------------------
         if (scene === 'reading_stage') {
           // Result card occupies RESULT_CARD_FILL_RATIO of the stage rect
-          // on each axis (90%). Stage rect itself is unchanged.
-          const expectedW = layout.stage.width * RESULT_CARD_FILL_RATIO
-          const expectedH = layout.stage.height * RESULT_CARD_FILL_RATIO
+          // on each axis (90%) — but capped at MAX_CARD_WIDTH_PX (PRD
+          // §8.2 phone-shell envelope). When the cap engages, height is
+          // derived from the clamped width via CARD_ASPECT_RATIO so the
+          // card stays 1:1.6.
+          const unclamped = layout.stage.width * RESULT_CARD_FILL_RATIO
+          const expectedW = Math.min(unclamped, MAX_CARD_WIDTH_PX)
+          const expectedH = unclamped <= MAX_CARD_WIDTH_PX
+            ? layout.stage.height * RESULT_CARD_FILL_RATIO
+            : MAX_CARD_WIDTH_PX * CARD_ASPECT_RATIO
           expect(layout.cardWidth).toBeCloseTo(expectedW, 5)
           expect(layout.cardHeight).toBeCloseTo(expectedH, 5)
           expect(layout.cards[0]?.width).toBeCloseTo(expectedW, 5)
           expect(layout.cards[0]?.height).toBeCloseTo(expectedH, 5)
+          // Hard contract: card width is never above the cap regardless
+          // of viewport. This is what viewport_smoke.spec.ts asserts at
+          // the DOM level — duplicated here for an early signal.
+          expect(layout.cardWidth).toBeLessThanOrEqual(MAX_CARD_WIDTH_PX)
         } else {
           // draw_stage: card size matches the 3-pile draw card.
           expect(layout.cardWidth).toBeCloseTo(layout.drawCardWidth, 5)
