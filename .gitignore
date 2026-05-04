@@ -28,3 +28,7 @@ node_modules/
 # scripts/perf_baseline_gate.js — DO NOT add it here. Any stale legacy copy
 # under scripts/ should be removed; the script no longer writes there.
 /scripts/perf_baseline.json
+
+# Gitleaks bootstrap cache. Binary is downloaded on demand by
+# scripts/gitleaks_run.js; the version is pinned in that file.
+/.gitleaks/
