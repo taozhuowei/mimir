@@ -2,6 +2,14 @@ import { defineConfig } from 'vite'
 import uni from '@dcloudio/vite-plugin-uni'
 import path from 'path'
 
+// Defensive: pin UNI_INPUT_DIR to this config's directory so tools that load
+// vite.config.ts from a different cwd (e.g. knip running from the repo root)
+// don't fail with ENOENT on src/manifest.json. uni()'s initEnv defaults this
+// to `path.resolve(process.cwd(), 'src')`, which only works when cwd === app/.
+if (!process.env.UNI_INPUT_DIR) {
+  process.env.UNI_INPUT_DIR = path.resolve(__dirname, 'src')
+}
+
 export default defineConfig(({ mode }) => {
   const isProduction = mode === 'production'
 
