@@ -5,9 +5,11 @@ import { defineConfig, devices } from '@playwright/test'
  *
  * - Tests live in test/e2e/*.spec.ts and run against the real server
  *   (Express + bundled H5 SPA at http://localhost:3000).
- * - The webServer block boots `npm run start:prod` automatically; locally
- *   it is reused if you already have one running, in CI it is always
- *   started fresh so the build under test is exercised.
+ * - The webServer block boots `node server/dist/server.js` directly with
+ *   NODE_ENV=production; locally it is reused if you already have one
+ *   running, in CI it is always started fresh so the build under test is
+ *   exercised. We invoke node directly (no `npm run start:prod`) to avoid
+ *   an implicit dependency on package.json scripts during the test run.
  * - chromium-only by default — CI cost grows linearly per project, and
  *   the H5 target is rendered by Chromium-class engines (Edge, mini
  *   program webview). Add Firefox/WebKit only if a regression motivates it.
@@ -47,7 +49,8 @@ export default defineConfig({
   ],
 
   webServer: {
-    command: 'npm run start:prod',
+    command: 'node server/dist/server.js',
+    env: { NODE_ENV: 'production' },
     url: 'http://localhost:3000/api/healthz',
     reuseExistingServer: !process.env.CI,
     timeout: 60_000,

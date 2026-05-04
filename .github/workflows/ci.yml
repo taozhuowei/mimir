@@ -62,13 +62,18 @@ jobs:
         run: npm ci
 
       - name: Build H5 + server
-        run: npm run build:h5
+        # Skip the quality gate here — the `verify` job already ran it on
+        # the same commit. --target h5,server keeps the e2e job lean (no
+        # mp-weixin bundle that we don't actually exercise).
+        run: node scripts/build/index.js --prod --target h5,server --skip-quality
 
       - name: Install Playwright browser
         run: npx playwright install --with-deps chromium
 
       - name: Run E2E tests
-        run: npm run e2e
+        # Direct playwright invocation; we don't expose `npm run e2e` as
+        # a public script anymore (the only legitimate caller is CI).
+        run: npx playwright test --config=test/playwright.config.ts
 
       - name: Upload Playwright report
         if: ${{ !cancelled() }}

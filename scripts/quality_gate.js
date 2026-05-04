@@ -3,6 +3,13 @@ const { spawnSync } = require('child_process')
 const mode = process.argv[2] || 'full'
 
 const stepsByMode = {
+  // The full gate is now pure code-checks (~30s):
+  //   lint, type-check, unit tests, audit, arch + dead/duplicate code.
+  // build (h5/mp/server) and the SPA-boot smoke run live in
+  // scripts/build/prod.js — they are part of the build pipeline, not
+  // the quality contract. CI runs both: `verify` job calls
+  // `npm run quality` (this file) and `e2e` job calls the build
+  // orchestrator with --skip-quality.
   full: [
     { label: 'quality-scan', command: 'node', args: ['scripts/quality_scan.js'] },
     { label: 'pr-size', command: 'node', args: ['scripts/pr_size_gate.js'] },
@@ -10,14 +17,6 @@ const stepsByMode = {
     { label: 'lint', command: 'npm', args: ['run', 'quality:lint'] },
     { label: 'type-check', command: 'npm', args: ['run', 'quality:type-check'] },
     { label: 'test', command: 'npm', args: ['run', 'quality:test'] },
-    { label: 'build:h5', command: 'npm', args: ['run', 'quality:build:h5'] },
-    // Browser-layer smoke gate (TODO 8.1.J): catches console.error,
-    // network 4xx/5xx, and CSP violations on SPA boot — all invisible
-    // to unit/integration tests because they don't run in a real
-    // browser. Runs after build:h5 so the prod bundle is in place;
-    // the playwright config's webServer block boots `start:prod` on
-    // :3000 and reuses an existing server locally.
-    { label: 'smoke', command: 'npm', args: ['run', 'quality:smoke'] },
     { label: 'perf-baseline', command: 'node', args: ['scripts/perf_baseline_gate.js'] },
     {
       label: 'audit',
