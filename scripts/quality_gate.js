@@ -53,8 +53,11 @@ const stepsByMode = {
       quietOnSuccess: true,
     },
     // Cross-file copy-paste detection (jscpd): finds duplicate code blocks
-    // ≥ 8 lines / 60 tokens. Threshold 5% — fails the gate if more than 5%
-    // of the codebase is duplicated.
+    // ≥ 5 lines / 50 tokens. Threshold 0.13% — fails the gate if more than
+    // 0.13% of the codebase is duplicated. Paired with sonarjs ESLint rules
+    // (no-identical-functions, no-duplicate-string) which catch
+    // structurally-similar but variable-renamed copies that jscpd's
+    // token-level scan would miss.
     {
       label: 'duplicate-code',
       command: 'npx',
