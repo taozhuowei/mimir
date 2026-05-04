@@ -35,8 +35,10 @@ npm install
 本地开发：
 
 ```bash
-npm run dev:h5
+npm run dev
 ```
+
+`npm run dev` 等价于 `node scripts/build/index.js --dev --target h5,mp,server`，会同时启动 H5 watch、mp-weixin watch 和 server。如果只想跑 H5 + server，可以直接调用 `node scripts/build/index.js --dev --target h5,server`。
 
 基础校验：
 
@@ -62,7 +64,9 @@ npm run prepare
 npm run quality
 ```
 
-`npm run quality` 当前会顺序执行 `lint`、`type-check`、`test`、`build:h5`、`audit`、`arch:check`、`dead-code` (knip)、`duplicate-code` (jscpd)。
+`npm run quality` 当前是纯代码检查（约 30s），按顺序执行：`quality-scan`、`pr-size`、`test-coupling`、`lint`、`type-check`、`test`、`perf-baseline`、`audit`、`arch:check`、`dead-code` (knip)、`duplicate-code` (jscpd)。
+
+构建产物（H5 / mp-weixin / server bundle）和浏览器层 SPA boot smoke 由 `npm run build` 负责（背后是 `scripts/build/prod.js`），它会先跑一次 quality 再依次产出三端产物并跑 smoke。CI 的 `verify` job 调用 `npm run quality`，`e2e` job 调用 `node scripts/build/index.js --prod --target h5,server --skip-quality` + `npx playwright test`。
 
 ### Git 钩子
 
