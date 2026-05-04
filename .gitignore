@@ -23,3 +23,10 @@ node_modules/
 
 # Quality-tool reports (regenerable)
 /reports/
+
+# perf_baseline_gate.js writes this on every quality run; it is a snapshot,
+# not a contract — staging it via the pre-commit `git add -u` step polluted
+# diffs with non-declarative changes (see commit ed075a8 / 012270c). The
+# gate now writes to reports/ instead, and any pre-existing tracked copy
+# under scripts/ should be removed.
+/scripts/perf_baseline.json
