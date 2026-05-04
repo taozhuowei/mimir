@@ -12,7 +12,7 @@
  * - H5: empty string (same-origin, server serves both API and SPA)
  * - MP: VITE_API_BASE_URL from .env (LAN IP for dev, HTTPS domain for production)
  */
-let API_BASE = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:3000'
+let API_BASE = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:4124'
 // #ifdef H5
 API_BASE = ''
 // #endif

@@ -49,7 +49,7 @@ export const config = Object.freeze({
   isProd: IS_PROD,
 
   host: process.env.HOST ?? (IS_PROD ? '127.0.0.1' : '0.0.0.0'),
-  port: parsePort(process.env.PORT, 3000),
+  port: parsePort(process.env.PORT, 4124),
 
   corsOrigins: parseCorsOrigins(process.env.CORS_ORIGIN),
 

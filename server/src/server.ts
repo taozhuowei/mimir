@@ -3,7 +3,7 @@
  *
  * Responsibilities beyond app.ts:
  *   - Bind to the configured host/port
- *   - In dev, fall forward to the next free port (3000 → 3001 → …) so
+ *   - In dev, fall forward to the next free port (4124 → 4125 → …) so
  *     concurrent watch builds don't collide with a stale instance.
  *   - In prod, fail loudly if the port is taken — systemd/k8s handle retry
  *     and we never want to silently drift to a different port in prod.

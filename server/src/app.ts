@@ -62,7 +62,7 @@ app.disable('x-powered-by')
 //     Production keeps the default HSTS so the reverse proxy + app are
 //     defense-in-depth.
 // CSP source list: in dev/test the SPA runs from Vite at localhost:4123 and
-// proxies /static/* to this server at :3000 — fonts/images/connect become
+// proxies /static/* to this server at :4124 — fonts/images/connect become
 // effectively cross-origin from the browser's POV. Allow common loopback
 // origins in non-prod so the dev server doesn't trip CSP. Production stays
 // strict ('self' only) because the SPA is served from this same origin

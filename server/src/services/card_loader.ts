@@ -1,7 +1,7 @@
 /**
  * Card Loader Service
  * Loads all 78 tarot cards from local JSON data files.
- * Constructs image URLs using STATIC_BASE_URL (default: http://localhost:3000).
+ * Constructs image URLs using STATIC_BASE_URL (default: http://localhost:4124).
  * Caches the result as a singleton — loaded once at server start.
  */
 

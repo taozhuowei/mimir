@@ -26,7 +26,7 @@ function makeCard(id: string, sentiment: 'positive' | 'negative' | 'neutral' = '
     nameEn: id,
     number: 0,
     type: 'major',
-    image: `http://localhost:3000/static/themes/golden_dawn/tarot/major/major_arcana_00_${id}.jpeg`,
+    image: `http://localhost:4124/static/themes/golden_dawn/tarot/major/major_arcana_00_${id}.jpeg`,
     upright: { keywords: [], meaning: `${id} upright`, sentiment },
     reversed: { keywords: [], meaning: `${id} reversed`, sentiment: sentiment === 'positive' ? 'negative' : 'positive' },
   }
