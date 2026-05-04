@@ -185,6 +185,21 @@
   /* MP-WeChat menu-button clearance (task 8.2.5). Bridge replaces with
      the live capsule bottom + 8px buffer on mp-weixin; H5 keeps 0. */
   --menu-clearance: 0px;
+
+  /* ── Safe-area insets ────────────────────────────────────────────────
+     Mirror the browser's `env(safe-area-inset-*)` constants as plain
+     CSS variables so any module — production CSS, dev panels, future
+     overlays — can read them via `var(--safe-area-inset-*)` and stay
+     correct on notched / home-indicator devices. The fallback `0px`
+     handles browsers that do not implement `env()` (older WebView /
+     desktop builds), so `parseFloat` consumers like
+     `utils/dev/draggable_panel.ts` always receive a numeric pixel
+     value. (P3 nit fix: previously read `--safe-area-inset-bottom`
+     from `:root` but the variable was never declared.) */
+  --safe-area-inset-top: env(safe-area-inset-top, 0px);
+  --safe-area-inset-right: env(safe-area-inset-right, 0px);
+  --safe-area-inset-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-area-inset-left: env(safe-area-inset-left, 0px);
 }
 
 /* H5 专用：响应式字体大小
