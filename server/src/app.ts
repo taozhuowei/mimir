@@ -226,43 +226,53 @@ app.use('/api', (_req, res) => {
 
 // ---------------------------------------------------------------------------
 // 6. H5 SPA
-// In production nginx is expected to serve this directory directly; the
-// Express fallback below is a safety net so booting the server directly
-// (`NODE_ENV=production node server/dist/server.js`) still serves the SPA
-// without nginx during smoke tests.
+//
+// Prod: nginx serves dist/build/h5 directly in real deployments; this
+// express static + catch-all is the safety net so `node server/dist/server.js`
+// still boots a fully-working SPA during smoke tests and ad-hoc prod runs.
+//
+// Dev: vite's dev server on :4123 owns the SPA (HMR, on-demand compile).
+// Express must NOT serve a stale dist/build/h5/index.html here — doing so
+// silently masks the developer's edits and (worse) lets people forget to
+// open :4123 at all. So in dev we skip both the static handler and the
+// catch-all entirely; /api and /static still work, anything else 404s,
+// which is the correct signal ("you're talking to the wrong port").
 // ---------------------------------------------------------------------------
 
-const devH5Dist = path.join(__dirname, '../../dist/dev/h5')
-const buildH5Dist = path.join(__dirname, '../../dist/build/h5')
+if (config.isProd) {
+  const buildH5Dist = path.join(__dirname, '../../dist/build/h5')
 
-function pickH5Dist(): string {
-  if (config.isProd) return buildH5Dist
-  return fs.existsSync(devH5Dist) ? devH5Dist : buildH5Dist
+  // Loud failure if the build artefact is missing — this catches the case
+  // where someone runs `node server/dist/server.js` without `npm run prod`
+  // first. Better to crash at boot than serve a 404 for every page request.
+  if (!fs.existsSync(path.join(buildH5Dist, 'index.html'))) {
+    throw new Error(
+      `[app] H5 build artefact missing at ${buildH5Dist}/index.html — run 'npm run prod' before starting the server`,
+    )
+  }
+
+  // Hashed asset files ship with a year-long immutable Cache-Control; the
+  // vite build emits everything under /assets/ with a content hash so this
+  // is safe. index.html is served below with no-cache.
+  app.use(
+    express.static(buildH5Dist, {
+      maxAge: '1y',
+      immutable: true,
+      etag: true,
+      index: false,
+      setHeaders: (res, filePath) => {
+        if (filePath.endsWith('index.html')) {
+          res.setHeader('Cache-Control', 'no-cache')
+        }
+      },
+    }),
+  )
+
+  app.get('*', (_req, res) => {
+    res.setHeader('Cache-Control', 'no-cache')
+    res.sendFile(path.join(buildH5Dist, 'index.html'))
+  })
 }
-
-const h5Dist = pickH5Dist()
-
-// Hashed asset files ship with a year-long immutable Cache-Control; the
-// vite build emits everything under /assets/ with a content hash so this
-// is safe. index.html is served below with no-cache.
-app.use(
-  express.static(h5Dist, {
-    maxAge: '1y',
-    immutable: true,
-    etag: true,
-    index: false,
-    setHeaders: (res, filePath) => {
-      if (filePath.endsWith('index.html')) {
-        res.setHeader('Cache-Control', 'no-cache')
-      }
-    },
-  }),
-)
-
-app.get('*', (_req, res) => {
-  res.setHeader('Cache-Control', 'no-cache')
-  res.sendFile(path.join(h5Dist, 'index.html'))
-})
 
 // ---------------------------------------------------------------------------
 // 7. Terminal error handler
