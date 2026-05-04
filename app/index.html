@@ -5,7 +5,7 @@
     <!--
       CSP is enforced by the backend (server/src/app.ts via helmet) so it can
       branch on dev vs prod (allowing http://localhost:* + data: in dev for the
-      Vite proxy at :4123 → express :3000, plus woff2/data URIs). A duplicate
+      Vite proxy at :4123 → express :4124, plus woff2/data URIs). A duplicate
       <meta> CSP here would be intersected with the response header by the
       browser, silently overriding the backend's config. Do not re-add a
       CSP meta tag.
