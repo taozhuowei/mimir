@@ -1,13 +1,17 @@
 <template>
   <!--
-    Main page route root (PRD §2.2 #1). Renders IdleView at phase 'idle'
-    and DivinationView for every other phase, with ReadingSplit/Drawer
-    overlaid in 'reading'/'decision'. NotificationHost lives on the route
-    root for cross-view alerts. The .canvas wrapper holds the divination
-    canvas (capped at MAX_CANVAS_WIDTH per PRD §8.2.1) and slides
-    flush-left when reading mode opens on a wide viewport.
-    Explicit v-if branches (rather than <component :is>) keep each view's
-    emit contract intact for vue-tsc.
+    Main page route root (PRD §2.2 #1). Renders the unified PlayView
+    across every divination phase, with ReadingSplit/Drawer overlaid in
+    'reading'/'decision'. NotificationHost lives on the route root for
+    cross-view alerts. The .canvas wrapper holds the divination canvas
+    (capped at MAX_CANVAS_WIDTH per PRD §8.2.1) and slides flush-left
+    when reading mode opens on a wide viewport.
+
+    Single PlayView instance — task 8.2.3 collapsed the legacy
+    IdleView ↔ DivinationView v-if/v-else split into one always-mounted
+    view, so the underlying Deck never unmounts. That removed the need
+    for the .view-switch cross-fade transition and the scale-1→1.5
+    push-fade exit tween that previously masked the unmount/mount gap.
   -->
   <view
     class="main-page"
@@ -15,16 +19,11 @@
     :style="cssVarStyle"
   >
     <view class="canvas">
-      <transition name="view-switch">
-        <IdleView
-          v-if="phase === 'idle'"
-          :cards-load-error="tarotStore.cardsLoadError"
-          :is-cards-loading="tarotStore.isCardsLoading"
-          @trigger-divination="handleTriggerDivination"
-          @retry-load-cards="handleRetryLoadCards"
-        />
-        <DivinationView v-else :key="'divination'" />
-      </transition>
+      <PlayView
+        :cards-load-error="tarotStore.cardsLoadError"
+        :is-cards-loading="tarotStore.isCardsLoading"
+        @retry-load-cards="handleRetryLoadCards"
+      />
     </view>
 
     <!-- Wide → split, narrow → drawer (PRD §2.3). Mounted only in 'reading'/'decision'. -->
@@ -91,8 +90,7 @@
  *     any descendant can inject them.
  */
 import { computed, provide, ref, onMounted, onUnmounted } from 'vue'
-import IdleView from '../../views/IdleView.vue'
-import DivinationView from '../../views/DivinationView.vue'
+import PlayView from '../../views/PlayView.vue'
 import ReadingSplitView from '../../views/ReadingSplitView.vue'
 import ReadingDrawerView from '../../views/ReadingDrawerView.vue'
 import NotificationHost from '../../components/containers/NotificationHost.vue'
@@ -166,10 +164,6 @@ const readingErrorMessage = computed(() => readingController.readingErrorMessage
 const currentQuestion = computed(() => tarotStore.currentQuestion)
 
 /* ── Event handlers ─────────────────────────────────────────────────── */
-
-function handleTriggerDivination() {
-  startDivination(tarotStore.currentQuestion)
-}
 
 function handleRetryLoadCards() {
   tarotStore.loadCards()
@@ -252,27 +246,11 @@ onUnmounted(() => { uni.offWindowResize(recomputeIsWide) })
   }
 }
 
-/* PRD §8.1.2 — idle ↔ divination view swap (~450ms; keep in sync with
-   DUR_IDLE_TO_DIV_MS in animation/easings.ts). Both views absolute so
-   they overlap cleanly during the transition. */
-.view-switch-enter-active,
-.view-switch-leave-active {
-  transition: opacity 450ms cubic-bezier(0.16, 1, 0.3, 1);
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-}
-
-.view-switch-enter-from,
-.view-switch-leave-to {
-  opacity: 0;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .view-switch-enter-active,
-  .view-switch-leave-active {
-    transition: none;
-  }
-}
+/*
+ * The legacy `.view-switch-*` 450 ms cross-fade transition was deleted
+ * in task 8.2.3 — the view is now a single always-mounted PlayView, so
+ * there is no swap to fade between. Keep DUR_IDLE_TO_DIV_MS in
+ * animation/easings.ts only as the divination-rig entrance budget; no
+ * CSS rule here references it any more.
+ */
 </style>
