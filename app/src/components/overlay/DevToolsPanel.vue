@@ -121,9 +121,33 @@ const isDragging = ref(false)
  *  be swallowed so the gesture doesn't toggle the panel. */
 let suppressNextClick = false
 
+/**
+ * Convert the stored top-left anchor into CSS positioning. When the
+ * collapsed handle sits in the right or bottom half of the viewport,
+ * pin the panel by its right / bottom edge so expansion grows back
+ * toward the centre instead of overflowing the viewport. The default
+ * mount position lands at bottom-right, so the expanded body opens
+ * up-and-left and stays inside the screen even on phone-shell widths.
+ *
+ * The viewport is sourced via `uni.getWindowInfo()` so this works on H5
+ * and mp-weixin alike — the same call the rest of the codebase uses for
+ * window metrics. We re-read on every recompute (cheap, ~µs) so a
+ * resize doesn't strand the panel against the wrong edge.
+ */
 const containerStyle = computed(() => {
   if (!position.value) return ''
-  return `left: ${position.value.x}px; top: ${position.value.y}px;`
+  const { x, y } = position.value
+  const win = uni.getWindowInfo()
+  const w = win.windowWidth ?? 0
+  const h = win.windowHeight ?? 0
+  const HANDLE_PX = 40
+  const horizontal = w > 0 && x + HANDLE_PX / 2 > w / 2
+    ? `right: ${Math.max(0, w - x - HANDLE_PX)}px`
+    : `left: ${x}px`
+  const vertical = h > 0 && y + HANDLE_PX / 2 > h / 2
+    ? `bottom: ${Math.max(0, h - y - HANDLE_PX)}px`
+    : `top: ${y}px`
+  return `${horizontal}; ${vertical};`
 })
 
 const dragger = createDraggablePanel({

@@ -57,7 +57,15 @@ export interface DevTools {
 }
 
 export function useDevTools(deps: UseDevToolsDeps): DevTools {
-  const isDevExpanded = ref(true)
+  // Mount collapsed (single 40 px circular icon at the bottom-right corner)
+  // so the panel never starts up half-overlapping the canvas. The user can
+  // tap the handle to expand it on demand. The previous default of
+  // `isDevExpanded = true` rendered the full 220 × 230 panel pinned to the
+  // bottom-right with the panel's right edge falling 160+ px outside the
+  // viewport on phone-shell widths — devs had to drag it back in or scroll
+  // sideways to see the controls. Defaulting to collapsed keeps the
+  // panel's footprint inside any supported canvas (375 → 1440 px).
+  const isDevExpanded = ref(false)
   const showContainerBorders = ref(false)
 
   function handleDevReplay(targetPhase: OverlayPhase): void {
