@@ -4,7 +4,7 @@
  *          `SceneLayout` for a given scene. Centralizes the
  *          window-info → readViewport → pickCanvasWidth → solveLayout
  *          pipeline that was previously duplicated across composables.
- * Reason: two composables (`use_active_view`, `use_idle_deck_animation`)
+ * Reason: two composables (`use_active_view`, `use_play_deck_animation`)
  *          repeated the same 11-line setup verbatim, triggering the
  *          jscpd duplicate-code gate. Extracting the common path keeps
  *          the call sites declarative — each one names the scene it
