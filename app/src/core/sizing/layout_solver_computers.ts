@@ -24,10 +24,18 @@ import type { DrawerGeometry, LayoutEnvelope, StageRect } from './layout_solver_
  * subtracting the header and the page margins on every side. The stage is
  * the visual region cards live in — it doubles as the result card rect on
  * the reading scene because there's exactly one card and the card fills it.
+ *
+ * `bottomReservation` (px, default 0) reserves additional vertical space at
+ * the bottom of the canvas. Used by the reading scene to subtract the
+ * drawer's initial height so the result card auto-shrinks and lifts up
+ * into the remaining stage area when the bottom drawer covers the lower
+ * portion of the viewport. The draw scene passes 0 — the draw stage uses
+ * the full available height because the drawer is closed during draw.
  */
 export function computeStage(
   viewport: PhysicalViewport,
   sizes: ResponsiveSizes,
+  bottomReservation = 0,
 ): StageRect {
   const availableW = viewport.width - 2 * sizes.margin
   const availableH =
@@ -35,11 +43,15 @@ export function computeStage(
     viewport.safeAreaTop -
     viewport.safeAreaBottom -
     2 * sizes.margin -
-    sizes.headerHeight
+    sizes.headerHeight -
+    Math.max(0, bottomReservation)
 
   // Largest 1:1.6 (height/width) rect that fits in (availableW × availableH).
   // If the canvas is wide-and-short, height is the limiting dimension.
-  const widthLimitedByH = availableH / CARD_ASPECT_RATIO
+  // Floor the available height at 1px so a degenerate viewport (very tall
+  // drawer, very short window) doesn't produce a negative stage size.
+  const safeAvailableH = Math.max(1, availableH)
+  const widthLimitedByH = safeAvailableH / CARD_ASPECT_RATIO
   const stageW = Math.min(availableW, widthLimitedByH)
   const stageH = stageW * CARD_ASPECT_RATIO
 

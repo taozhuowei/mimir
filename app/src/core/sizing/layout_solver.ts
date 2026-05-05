@@ -29,6 +29,7 @@
  */
 
 import { CARD_ASPECT_RATIO, MAX_CARD_WIDTH_PX, RESULT_CARD_FILL_RATIO } from './scale'
+import { INITIAL_DRAWER_HEIGHT_RATIO } from '../config/layout_constants'
 import {
   computeDrawCardSize,
   computeDrawer,
@@ -67,7 +68,20 @@ export type {
 export function solveLayout(input: SolveLayoutInput): SceneLayout {
   const { viewport, sizes, scene } = input
 
-  const stage = computeStage(viewport, sizes)
+  // The reading scene's drawer occupies the bottom INITIAL_DRAWER_HEIGHT_RATIO
+  // of the viewport on first reveal, and the ActionArea (decision-phase
+  // CTAs) sits below the drawer in the same bottom band. Reserve both
+  // when computing the reading stage so the result card auto-shrinks and
+  // lifts up into the remaining area instead of being half-covered by
+  // the drawer + buttons. The draw scene reserves 0 — the drawer is
+  // closed and the action area is hidden during shuffle/cut/draw, so
+  // the stage gets the full available height for animations.
+  const drawerReservation =
+    scene === 'reading_stage'
+      ? Math.round(viewport.height * INITIAL_DRAWER_HEIGHT_RATIO) +
+        sizes.actionAreaHeight
+      : 0
+  const stage = computeStage(viewport, sizes, drawerReservation)
   const draw = computeDrawCardSize(stage, sizes)
   const envelope = computeEnvelope(draw.width, draw.height, sizes.gap)
 

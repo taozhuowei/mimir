@@ -234,7 +234,12 @@ describe('layout_solver — proportional-sizes layout solver', () => {
     }
   }
 
-  it('drawCardWidth / drawCardHeight are identical between scenes on the same viewport', () => {
+  it('reading_stage shrinks below draw_stage so the result card lifts above the bottom drawer', () => {
+    // The reading scene reserves INITIAL_DRAWER_HEIGHT_RATIO × viewport.height
+    // at the bottom (the bottom drawer's initial footprint) — the stage
+    // therefore shrinks vs. the draw scene, the card shrinks with it, and
+    // the visual centre lifts up into the remaining area. Without this the
+    // drawer would cover the lower half of the result card on first reveal.
     for (const fixture of VIEWPORTS) {
       const viewport = makeViewport(
         fixture.actualWidth,
@@ -245,8 +250,16 @@ describe('layout_solver — proportional-sizes layout solver', () => {
       const sizes = deriveSizes(viewport.width)
       const draw = solveLayout({ viewport, sizes, scene: 'draw_stage' })
       const result = solveLayout({ viewport, sizes, scene: 'reading_stage' })
-      expect(result.drawCardWidth).toBeCloseTo(draw.drawCardWidth, 5)
-      expect(result.drawCardHeight).toBeCloseTo(draw.drawCardHeight, 5)
+      // Reading stage is strictly smaller than draw stage on every fixture
+      // — the drawer reservation (40 % × viewport.height) always exceeds 0.
+      expect(result.stage.height).toBeLessThan(draw.stage.height)
+      expect(result.stage.width).toBeLessThanOrEqual(draw.stage.width)
+      // Reading stage centre sits higher than draw stage centre (smaller y
+      // for the centre). Both scenes pin stage.y to the same header offset,
+      // so the centre difference is half the height delta.
+      const drawCentreY = draw.stage.y + draw.stage.height / 2
+      const resultCentreY = result.stage.y + result.stage.height / 2
+      expect(resultCentreY).toBeLessThan(drawCentreY)
     }
   })
 
