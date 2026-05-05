@@ -2,7 +2,7 @@
   <view
     class="divination-deck"
     :class="{ 'show-results': animCtrl.showResults.value }"
-    :style="animCtrl.overlayVarsStyle.value"
+    :style="rootStyle"
     role="img"
     aria-label="占卜牌堆"
   >
@@ -102,12 +102,56 @@ import { computed, inject, nextTick, onMounted, onUnmounted } from 'vue'
 import type { UseAnimationControllerReturn } from '../../composables/use_animation_controller'
 import { useTarotStore } from '../../stores/tarot'
 import { useThemeStore } from '../../stores/theme'
+import { RESULT_LIFT_MARGIN_PX } from '../../core/config/layout_constants'
 
 const animCtrl = inject<UseAnimationControllerReturn>('animationController')!
 const tarotStore = useTarotStore()
 const themeStore = useThemeStore()
+const isWide = inject<{ value: boolean }>('isWide', { value: false })
 
 const cardBack = computed(() => themeStore.cardBackImage)
+
+/**
+ * Vertical lift applied to the result-stage card when the bottom drawer
+ * opens. The reading_stage solver shrinks its stage rect by the drawer's
+ * initial height (see core/sizing/layout_solver_computers#computeStage)
+ * — the card therefore needs to translate up so it stays centred in the
+ * visible space above the drawer, otherwise the card stays anchored to
+ * the divination view's stage centre and the drawer covers its lower
+ * half. The lift equals half the drawer's initial height: that's the
+ * exact y-shift needed to move the card centre from the original stage
+ * centre (mid-viewport) to the centre of the visible space above the
+ * drawer (half a drawer height higher). The wide-screen branch keeps
+ * lift = 0 because the wide reading view is a side panel, not a bottom
+ * drawer, so the result card already sits above clean stage space.
+ */
+const resultCardLiftY = computed(() => {
+  if (!animCtrl.showResults.value || isWide.value) return 0
+  try {
+    const drawLayout = animCtrl.getSceneLayout('draw_stage')
+    // The .draw-container fills the divination view's stage region
+    // (drawLayout.stage.y to viewport.height − safeAreaBottom). The card
+    // sits at that container's centre when no lift is applied. The
+    // reading drawer covers the bottom `drawer.initialHeight` of the
+    // viewport on first reveal, so centring the card in the visible
+    // space above it equates to a translate-up of half the drawer
+    // height. The reading-stage solver already shrinks the result card
+    // so it fits comfortably in that visible band; here we only adjust
+    // the card's vertical position. RESULT_LIFT_MARGIN_PX keeps a
+    // hairline gap between the card's bottom edge and the drawer sheet
+    // so the two never touch on first reveal.
+    const lift = drawLayout.drawer.initialHeight / 2 + RESULT_LIFT_MARGIN_PX
+    return Math.max(0, lift)
+  } catch {
+    return 0
+  }
+})
+
+const rootStyle = computed(() => {
+  const base = animCtrl.overlayVarsStyle.value
+  const liftDecl = `--result-card-lift-y: ${resultCardLiftY.value}px`
+  return base ? `${base}; ${liftDecl}` : liftDecl
+})
 
 function getCardImg(idx: number): string {
   return tarotStore.drawnCards[idx]?.card.image || themeStore.cardBackImage
