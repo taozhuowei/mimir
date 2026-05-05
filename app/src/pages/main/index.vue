@@ -104,6 +104,7 @@ import { useActiveView } from '../../composables/use_active_view'
 import { useDevTools } from '../../composables/use_dev_tools'
 import { useCssVarBridge } from '../../composables/use_css_var_bridge'
 import { useMainHandlers } from '../../composables/use_main_handlers'
+import { useResultCardShrink } from '../../composables/use_result_card_shrink'
 import { MAX_CANVAS_WIDTH } from '../../core/sizing/scale'
 import type { OverlayPhase } from '../../core/flow/types'
 
@@ -157,6 +158,23 @@ provide('readingController', readingController)
 /* ── View picker + reading panel passthrough ───────────────────────── */
 
 const { showReadingView, resultDrawerGeometry } = useActiveView({ phase })
+
+/* ── Two-phase result-card sizing ──────────────────────────────────── */
+/**
+ * The reveal pipeline grows cards to their *full* safe-area size (the
+ * 240×384 phone-shell maximum on every supported canvas). When the
+ * drawer mounts (showReadingView false→true on narrow viewports) we
+ * animate the card down to the drawer-reserved size so the bottom
+ * sheet doesn't crop it. The tween lives in a focused composable so
+ * the shrink rules + GSAP cleanup stay auditable in one place.
+ */
+useResultCardShrink({
+  showReadingView,
+  isWide,
+  draws: animationController.draws,
+  getSceneLayout: animationController.getSceneLayout,
+  cardCount,
+})
 
 const readingPanelState = computed(() => readingController.readingPanelState.value)
 const readingResult = computed(() => readingController.readingResult.value)
