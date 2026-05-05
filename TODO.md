@@ -137,9 +137,7 @@
 `[!]` **8.2.3 IdleDeck `_scene.scale 1→1.5` scale 滥用** — agent 评估"容器尺寸过渡方案技术不可行，需重新评估方向"，待重新立项后再推进
 - 文件：`app/src/components/stage-content/IdleDeck.vue`
 
-`[!]` **8.2.5 mp-weixin 菜单按钮避让 TODO**
-- 位置：`app/src/pages/main/index.vue` cssVarStyle 注释里挂着
-- H5 主线不阻塞，仅当决定继续支持 mp-weixin 才需要做
+`[x]` **8.2.5 mp-weixin 菜单按钮避让** — 已通过 `--menu-clearance` CSS 变量实现（commit db113f8）。`HeaderArea.vue` 用 `max(32px, var(--menu-clearance, 0px))` 取 H5 / mp-weixin 中较大值；mp-weixin 通过 `getMenuButtonRect()` 返回真实胶囊高度，H5 fallback 为 0px。
 
 ### 8.3 容器统一 + 视觉对齐
 
