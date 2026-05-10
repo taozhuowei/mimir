@@ -20,7 +20,6 @@ Scales Tarot 是一个以 H5 为主要交付形态的单页塔罗体验项目。
 - 执行计划：[TODO.md](TODO.md)
 - 塔罗术语：[docs/tarot_glossary.md](docs/tarot_glossary.md)
 - 测试入口：[test/README.md](test/README.md)
-- AI 协作约束：[AGENTS.md](AGENTS.md)
 
 ---
 

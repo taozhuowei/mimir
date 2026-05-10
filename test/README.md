@@ -26,9 +26,3 @@ cd test && npx vitest run
 - 组件与集成：页面、组件、状态协作
 - 后端接口：健康检查、卡牌接口、解读接口、中间件行为
 - 脚本化验证：关键用户路径与异常路径
-
----
-
-## 规范入口
-
-测试层次、验证标准和协作规则以 [docs/technical_architecture.md](/home/tzw/projects/scales-tarot/docs/technical_architecture.md) 为准。
