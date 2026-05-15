@@ -1,25 +1,22 @@
 {
   "fileSize": [
-    "app/src/components/overlay/DivinationOverlay.vue:931",
-    "app/src/pages/index/index.vue:610",
     "server/src/services/theme_loader.ts:325"
   ],
   "functionSize": [
-    "app/src/animation/reconciler.ts::createStyleReconciler",
-    "app/src/animation/phases/draw/builder.ts::buildDrawPhaseRunner",
-    "app/src/animation/phases/draw/builder.ts::run",
+    "app/src/core/animation/reconciler.ts::createStyleReconciler",
+    "app/src/core/animation/phases/draw/builder.ts::buildDrawPhaseRunner",
+    "app/src/core/animation/phases/draw/builder.ts::run",
     "app/src/composables/use_animation_controller.ts::useAnimationController",
     "app/src/composables/use_overlay.ts::useOverlay",
-    "app/src/animation/phases/cut/builder.ts::buildCutPhaseRunner",
-    "app/src/animation/phases/shuffle/builder.ts::buildShufflePhaseRunner",
-    "app/src/animation/phases/shuffle/builder.ts::run",
+    "app/src/core/animation/phases/cut/builder.ts::buildCutPhaseRunner",
+    "app/src/core/animation/phases/shuffle/builder.ts::buildShufflePhaseRunner",
+    "app/src/core/animation/phases/shuffle/builder.ts::run",
     "app/src/composables/use_overlay_layout.ts::useOverlayLayout",
     "app/src/composables/use_animation_state.ts::useAnimationState",
-    "app/src/stores/reading.ts::createReadingState",
-    "app/src/stores/theme.ts::(arrow)",
-    "app/src/utils/overlay_layout/motion_metrics.ts::resolveMotionMetrics",
-    "app/src/utils/reading/reading_orchestrator.ts::createReadingOrchestrator",
-    "app/src/utils/typing/typewriter_model.ts::createTypewriterModel",
+    "app/src/shared/store/reading.ts::createReadingState",
+    "app/src/shared/store/theme.ts::(arrow)",
+    "app/src/core/utils/reading/reading_orchestrator.ts::createReadingOrchestrator",
+    "app/src/core/utils/typing/typewriter_model.ts::createTypewriterModel",
     "app/src/composables/use_lifecycle.ts::useLifecycle",
     "app/src/composables/commands/start.ts::runPipelineCommand",
     "app/src/composables/commands/pipeline_builder.ts::buildPhaseRunners"
@@ -27,6 +24,6 @@
   "complexity": [
     "app/src/composables/use_animation_controller.ts::useAnimationController",
     "app/src/composables/use_overlay.ts::useOverlay",
-    "app/src/utils/reading/reading_orchestrator.ts::createReadingOrchestrator"
+    "app/src/core/utils/reading/reading_orchestrator.ts::createReadingOrchestrator"
   ]
 }
