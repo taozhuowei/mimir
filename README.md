@@ -18,6 +18,7 @@ Scales Tarot 是一个以 H5 为主要交付形态的单页塔罗体验项目。
 
 - 产品需求：[PRD.md](docs/PRD.md)
 - 执行计划：[TODO.md](docs/TODO.md)
+- app 目录结构：[docs/app_structure.md](docs/app_structure.md)
 - 塔罗术语：[docs/tarot_glossary.md](docs/tarot_glossary.md)
 - 测试入口：见 [CLAUDE.md](CLAUDE.md) "Tests" 段（`app/test/` + `server/test/`）
 
@@ -215,3 +216,5 @@ scripts/  构建编排 + 质量门
 config/   工具配置（eslint / depcruise / jscpd / knip / commitlint / gitleaks）
 docs/     PRD、TODO、塔罗术语
 ```
+
+`app/src/` 内部目录结构（state-phase 架构）见 [docs/app_structure.md](docs/app_structure.md)。
