@@ -13,7 +13,7 @@ import type { TarotCardInfo } from '../src/core/utils/tarot_reading'
 // by these tests, so they need no further mocking.
 const mockFetchAllCards = vi.hoisted(() => vi.fn().mockResolvedValue([]))
 
-vi.mock('../src/api/cards', () => ({
+vi.mock('../src/core/api/cards', () => ({
   fetchAllCards: mockFetchAllCards,
 }))
 

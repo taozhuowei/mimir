@@ -13,7 +13,7 @@ import type { TarotCardInfo } from '../src/core/utils/tarot_reading'
 // mocking. setActivePinia runs in beforeEach.
 const mockFetchAllCards = vi.hoisted(() => vi.fn().mockResolvedValue([]))
 
-vi.mock('../src/api/cards', () => ({
+vi.mock('../src/core/api/cards', () => ({
   fetchAllCards: mockFetchAllCards,
 }))
 

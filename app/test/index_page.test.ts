@@ -12,11 +12,11 @@ import { useThemeStore } from '../src/shared/store/theme'
 const mockFetchTheme = vi.hoisted(() => vi.fn())
 const mockFetchAllCards = vi.hoisted(() => vi.fn())
 
-vi.mock('../src/api/themes', () => ({
+vi.mock('../src/core/api/themes', () => ({
   fetchTheme: mockFetchTheme,
 }))
 
-vi.mock('../src/api/cards', () => ({
+vi.mock('../src/core/api/cards', () => ({
   fetchAllCards: mockFetchAllCards,
 }))
 
