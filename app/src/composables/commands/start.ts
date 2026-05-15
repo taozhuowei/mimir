@@ -8,7 +8,7 @@
 
 import type { gsap } from 'gsap'
 import type { Ref } from 'vue'
-import { createPhasePipeline, type PipelinePhase } from '../../animation/pipeline'
+import { createPhasePipeline, type PipelinePhase } from '../../core/animation/pipeline'
 import type { PhaseContext, PhaseRunner, OverlayPhase } from '../../core/flow/types'
 import type { SceneLayout } from '../../core/sizing/layout_solver'
 import type { PipelineSharedDeps } from '../pipeline_shared_deps'

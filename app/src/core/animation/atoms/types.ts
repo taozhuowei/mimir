@@ -8,7 +8,7 @@
  * Data flow: phase builder constructs a timeline and calls atoms in order;
  *          each atom writes its own tweens into the shared timeline.
  */
-import type { PhaseContext } from '../../core/flow/types'
+import type { PhaseContext } from '../../flow/types'
 import type { gsap } from 'gsap'
 
 /** Subset of PhaseContext that atoms typically need. */

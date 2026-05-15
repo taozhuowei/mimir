@@ -16,7 +16,7 @@ import {
   getPhaseIndex,
   getPhaseSnap,
   type PhaseSnapDeps,
-} from '../../animation/phases/registry'
+} from '../../core/animation/phases/registry'
 import type { OverlayPhase } from '../../core/flow/types'
 import type { ProgressModel } from '../../core/utils/overlay_progress/phase_progress_model'
 

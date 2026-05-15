@@ -4,7 +4,7 @@
  * Reason: decouple phase execution order from individual phase logic.
  */
 
-import type { DrawCardState } from '../../animation/types'
+import type { DrawCardState } from '../animation/types'
 import type { DeckGeometry } from '../deck/types'
 import type { CardLayout } from '../sizing/layout_solver'
 

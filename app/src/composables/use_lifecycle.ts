@@ -9,8 +9,8 @@
  */
 
 import { nextTick } from 'vue'
-import { killAnimationTargets } from '../animation/adapters/gsap'
-import type { PhaseSnapDeps } from '../animation/phases/registry'
+import { killAnimationTargets } from '../core/animation/adapters/gsap'
+import type { PhaseSnapDeps } from '../core/animation/phases/registry'
 import type { OverlayPhase } from '../core/flow/types'
 import { runPipelineCommand } from './commands/start'
 import { skipToReadingCommand } from './commands/skip_to_reading'

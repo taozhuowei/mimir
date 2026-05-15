@@ -12,11 +12,11 @@
  *          looks up the entry-state setter for replay/skip dispatchers.
  */
 
-import type { OverlayPhase, PhaseContext } from '../../core/flow/types'
+import type { OverlayPhase, PhaseContext } from '../../flow/types'
 import type { DrawCardState } from '../types'
-import type { SceneLayout } from '../../core/sizing/layout_solver'
-import { MAX_CUT_PILES } from '../../core/config/layout_constants'
-export type { OverlayPhase } from '../../core/flow/types'
+import type { SceneLayout } from '../../sizing/layout_solver'
+import { MAX_CUT_PILES } from '../../config/layout_constants'
+export type { OverlayPhase } from '../../flow/types'
 
 export interface PhaseStep {
   phase: OverlayPhase

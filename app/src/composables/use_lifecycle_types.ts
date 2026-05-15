@@ -5,7 +5,7 @@
  */
 
 import type { Ref } from 'vue'
-import type { DrawCardState } from '../animation/types'
+import type { DrawCardState } from '../core/animation/types'
 import type { OverlayPhase } from '../core/flow/types'
 import type { SceneKind, SceneLayout } from '../core/sizing/layout_solver'
 import type { ProgressModel } from '../core/utils/overlay_progress/phase_progress_model'

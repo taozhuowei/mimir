@@ -10,9 +10,9 @@
 // gsap-core. Issue mitigated by gsap-core alias.
 import gsap from 'gsap'
 import type { AnimationTimeline } from '../../engine'
-import type { OverlayPhase, PhaseContext, PhaseRunner } from '../../../core/flow/types'
-import { prefersReducedMotion } from '../../../core/utils/accessibility'
-import { randomInRange } from '../../../core/utils/secure_random'
+import type { OverlayPhase, PhaseContext, PhaseRunner } from '../../../flow/types'
+import { prefersReducedMotion } from '../../../utils/accessibility'
+import { randomInRange } from '../../../utils/secure_random'
 
 /**
  * Cosmetic jitter (a few degrees of pre-flip rotation per card). Routed

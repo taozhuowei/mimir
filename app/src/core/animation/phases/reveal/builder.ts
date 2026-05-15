@@ -13,7 +13,7 @@
  */
 import gsap from 'gsap'
 import type { AnimationTimeline } from '../../engine'
-import type { OverlayPhase, PhaseContext, PhaseRunner } from '../../../core/flow/types'
+import type { OverlayPhase, PhaseContext, PhaseRunner } from '../../../flow/types'
 import { growAtom } from '../../atoms/grow'
 import { flipAtom } from '../../atoms/flip'
 

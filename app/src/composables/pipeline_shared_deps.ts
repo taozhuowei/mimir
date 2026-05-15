@@ -14,7 +14,7 @@
  *            orchestration code.
  */
 
-import type { TimelineOrchestrator } from '../animation/adapters/gsap'
+import type { TimelineOrchestrator } from '../core/animation/adapters/gsap'
 import type { PhaseContext } from '../core/flow/types'
 import type { SceneKind, SceneLayout } from '../core/sizing/layout_solver'
 import type { MotionMetrics } from './use_overlay_layout'
