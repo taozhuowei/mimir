@@ -90,9 +90,9 @@
  *     any descendant can inject them.
  */
 import { computed, provide, ref, onMounted, onUnmounted } from 'vue'
-import PlayView from '../../views/PlayView.vue'
-import ReadingSplitView from '../../views/ReadingSplitView.vue'
-import ReadingDrawerView from '../../views/ReadingDrawerView.vue'
+import PlayView from '../../shared/views/PlayView.vue'
+import ReadingSplitView from '../../shared/views/ReadingSplitView.vue'
+import ReadingDrawerView from '../../shared/views/ReadingDrawerView.vue'
 import NotificationHost from '../../shared/components/containers/NotificationHost.vue'
 import DevToolsPanel from '../../shared/components/overlay/DevToolsPanel.vue'
 import { useAppPhase } from '../../composables/use_app_phase'

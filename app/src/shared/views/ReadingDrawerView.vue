@@ -72,12 +72,12 @@
  *           page can persist the user's chosen height across re-renders.
  */
 import { ref, computed, watch, onMounted } from 'vue'
-import ReadingPanel from '../shared/components/containers/ReadingPanel.vue'
-import ActionArea from '../shared/components/containers/ActionArea.vue'
-import type { ReadingResult } from '../core/api/types'
-import type { ReadingStatus } from '../core/utils/reading/reading_orchestrator'
-import type { DivinationPhase } from '../shared/store/flow'
-import type { DrawerGeometry } from '../core/sizing/layout_solver'
+import ReadingPanel from '../components/containers/ReadingPanel.vue'
+import ActionArea from '../components/containers/ActionArea.vue'
+import type { ReadingResult } from '../../core/api/types'
+import type { ReadingStatus } from '../../core/utils/reading/reading_orchestrator'
+import type { DivinationPhase } from '../store/flow'
+import type { DrawerGeometry } from '../../core/sizing/layout_solver'
 
 const props = defineProps<{
   panelState: ReadingStatus
