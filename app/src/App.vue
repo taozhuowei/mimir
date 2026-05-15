@@ -23,8 +23,8 @@
  * use getCurrentPages() — at onLaunch time the stack is empty).
  */
 import { onLaunch } from '@dcloudio/uni-app'
-import { useTarotStore } from './stores/tarot'
-import { useThemeStore } from './stores/theme'
+import { useTarotStore } from './shared/store/tarot'
+import { useThemeStore } from './shared/store/theme'
 
 const tarotStore = useTarotStore()
 const themeStore = useThemeStore()

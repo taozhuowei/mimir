@@ -5,8 +5,8 @@
 
 import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest'
 import { createPinia, setActivePinia } from 'pinia'
-import { useTarotStore } from '../src/stores/tarot'
-import { useThemeStore } from '../src/stores/theme'
+import { useTarotStore } from '../src/shared/store/tarot'
+import { useThemeStore } from '../src/shared/store/theme'
 
 // Mock the API modules
 const mockFetchTheme = vi.hoisted(() => vi.fn())

@@ -173,7 +173,7 @@ describe('use_overlay_controller', () => {
 
   async function mountHarness() {
     const { useOverlayController } = await import('../src/composables/use_overlay_controller')
-    const { useTarotStore } = await import('../src/stores/tarot')
+    const { useTarotStore } = await import('../src/shared/store/tarot')
 
     // Real Pinia store so storeToRefs() works; seed the state the controller
     // reads, then spy on the methods the controller may call during tests
