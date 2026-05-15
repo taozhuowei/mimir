@@ -10,9 +10,9 @@
 // gsap-core. Issue mitigated by gsap-core alias.
 import gsap from 'gsap'
 import type { AnimationTimeline } from '../../engine'
-import type { OverlayPhase, PhaseContext, PhaseRunner } from '../../../core/flow/types'
-import { prefersReducedMotion } from '../../../core/utils/accessibility'
-import { SHUFFLE_SPREAD_X } from '../../../core/config/layout_constants'
+import type { OverlayPhase, PhaseContext, PhaseRunner } from '../../../flow/types'
+import { prefersReducedMotion } from '../../../utils/accessibility'
+import { SHUFFLE_SPREAD_X } from '../../../config/layout_constants'
 
 export interface ShufflePhaseConfig {
   spreadX: number

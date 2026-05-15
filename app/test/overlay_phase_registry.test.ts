@@ -7,7 +7,7 @@ import {
   getPhaseStep,
   isValidPhase,
   getNextPhase,
-} from '../src/animation/phases/registry'
+} from '../src/core/animation/phases/registry'
 import type { OverlayPhase } from '../src/core/flow/types'
 
 describe('overlay_animation/phase_registry', () => {

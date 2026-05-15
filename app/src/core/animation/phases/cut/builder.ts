@@ -10,8 +10,8 @@
 // gsap-core. Issue mitigated by gsap-core alias.
 import gsap from 'gsap'
 import type { AnimationTimeline } from '../../engine'
-import type { OverlayPhase, PhaseContext, PhaseRunner } from '../../../core/flow/types'
-import { prefersReducedMotion } from '../../../core/utils/accessibility'
+import type { OverlayPhase, PhaseContext, PhaseRunner } from '../../../flow/types'
+import { prefersReducedMotion } from '../../../utils/accessibility'
 
 export interface CutPhaseConfig {
   pileCount: number

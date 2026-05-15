@@ -10,8 +10,8 @@
 import { ref } from 'vue'
 import type { ComputedRef, Ref } from 'vue'
 import gsap from 'gsap'
-import type { DrawCardState } from '../animation/types'
-import type { StyleReconciler } from '../animation/reconciler'
+import type { DrawCardState } from '../core/animation/types'
+import type { StyleReconciler } from '../core/animation/reconciler'
 import { useTarotStore } from '../shared/store/tarot'
 import { useThemeStore } from '../shared/store/theme'
 import overlayConfig from '../config.json'
@@ -21,7 +21,7 @@ import { usePhases } from './use_phases'
 import { usePlayback } from './use_playback'
 import { usePresentation } from './use_presentation'
 import { useLifecycle } from './use_lifecycle'
-import { killAnimationTargets } from '../animation/adapters/gsap'
+import { killAnimationTargets } from '../core/animation/adapters/gsap'
 import {
   calculatePhaseProgress,
   presentProgressHeader,

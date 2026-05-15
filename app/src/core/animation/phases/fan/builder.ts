@@ -10,7 +10,7 @@
  */
 
 import gsap from 'gsap'
-import { prefersReducedMotion } from '../../../core/utils/accessibility'
+import { prefersReducedMotion } from '../../../utils/accessibility'
 
 export interface FanAnimTarget {
   x: number

@@ -10,7 +10,7 @@
  */
 
 import type { Ref } from 'vue'
-import { getPhaseSnap, type PhaseSnapDeps } from '../../animation/phases/registry'
+import { getPhaseSnap, type PhaseSnapDeps } from '../../core/animation/phases/registry'
 import type { OverlayPhase } from '../../core/flow/types'
 
 export interface SkipToReadingCommandDeps {
