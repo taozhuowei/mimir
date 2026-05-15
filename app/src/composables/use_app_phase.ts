@@ -22,10 +22,10 @@
  */
 
 import { storeToRefs } from 'pinia'
-import { useTarotStore } from '../stores/tarot'
-import type { DivinationPhase } from '../stores/flow'
+import { useTarotStore } from '../shared/store/tarot'
+import type { DivinationPhase } from '../shared/store/flow'
 
-export type { DivinationPhase } from '../stores/flow'
+export type { DivinationPhase } from '../shared/store/flow'
 
 export interface UseAppPhaseReturn {
   /** Reactive application-level phase ref, sourced from tarotStore. */

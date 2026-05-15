@@ -44,7 +44,7 @@
  *           reads `notifications` reactively and calls `dismiss(id)` from
  *           the placeholder close affordance.
  */
-import { useNotificationStore } from '../../stores/notification'
+import { useNotificationStore } from '../../shared/store/notification'
 
 const notificationStore = useNotificationStore()
 </script>

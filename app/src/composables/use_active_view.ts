@@ -14,7 +14,7 @@
 import { computed, type ComputedRef, type Ref } from 'vue'
 import type { DrawerGeometry } from '../core/sizing/layout_solver'
 import { solveLayoutFromWindow } from '../core/sizing/solve_from_window'
-import type { DivinationPhase } from '../stores/flow'
+import type { DivinationPhase } from '../shared/store/flow'
 
 export interface UseActiveViewDeps {
   /** Application phase ref (provided by useAppPhase). */

@@ -88,7 +88,7 @@ import ProgressContent from '../components/containers/ProgressContent.vue'
 import Stage from '../components/containers/Stage.vue'
 import Deck from '../components/stage-content/Deck.vue'
 import type { UseAnimationControllerReturn } from '../composables/use_animation_controller'
-import type { DivinationPhase } from '../stores/flow'
+import type { DivinationPhase } from '../shared/store/flow'
 
 const props = defineProps<{
   cardsLoadError: string | null

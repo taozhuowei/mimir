@@ -103,7 +103,7 @@ describe('use_overlay_controller result-zone sizing', () => {
     const isWideRef = isRef(isWide) ? isWide : ref(isWide)
 
     const { useOverlayController } = await import('../src/composables/use_overlay_controller')
-    const { useTarotStore } = await import('../src/stores/tarot')
+    const { useTarotStore } = await import('../src/shared/store/tarot')
 
     const tarotStore = useTarotStore()
     tarotStore.drawnCards = [{ card: makeCard(), position: 'upright' }]
