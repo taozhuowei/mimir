@@ -244,32 +244,60 @@ module.exports = {
 
     // ─── Architecture boundary rules (scales-tarot custom) ────────────────
 
+    // Layer model (post-composables-dissolution, enforced on the current
+    // intermediate architecture, not just the final one):
+    //   core/ (infra/framework leaf) ← state/, state/shared/, shared/,
+    //   tools/, pages/ depend downward onto it; nothing flows back up into
+    //   core/. tools/ is a dev-only sink consumed only by pages/.
+    {
+      name: 'core-is-leaf',
+      comment:
+        "core/ is the infra/framework/lib leaf domain. It must not depend " +
+        "on business orchestration (state/), shared UI (shared/, state/shared/), " +
+        "dev tooling (tools/) or route entries (pages/). Dependencies flow " +
+        "downward into core/, never back out.",
+      severity: 'error',
+      from: { path: '^app/src/core/' },
+      to: { path: '^app/src/(state|shared|tools|pages)/' },
+    },
     {
       name: 'animation-not-to-reading',
       comment:
-        "Animation engine must not depend on reading logic. " +
-        "This boundary prevents tight coupling between visual orchestration and business rules.",
+        "The animation engine must not depend on reading business logic. " +
+        "This boundary keeps visual orchestration decoupled from divination " +
+        "result rules (paths updated after Phase A: core/animation ⊥ " +
+        "core/utils/reading).",
       severity: 'error',
-      from: { path: '^app/src/animation/' },
-      to: { path: '^app/src/reading/' }
+      from: { path: '^app/src/core/animation/' },
+      to: { path: '^app/src/core/utils/reading/' },
     },
     {
-      name: 'components-not-to-server',
+      name: 'store-not-to-ui',
       comment:
-        "Components must not directly import server-side modules. " +
-        "Use API layer (app/src/api/) or stores for server communication.",
+        "Pinia stores are the data layer; UI components/views consume them, " +
+        "not vice versa. shared/store/ must not depend on shared/components|views/.",
       severity: 'error',
-      from: { path: '^app/src/components/' },
-      to: { path: '^server/src/' }
+      from: { path: '^app/src/shared/store/' },
+      to: { path: '^app/src/shared/(components|views)/' },
     },
     {
-      name: 'stores-not-to-components',
+      name: 'tools-is-dev-sink',
       comment:
-        "Stores must not depend on UI components. " +
-        "Stores are data layer; components consume them, not vice versa.",
+        "tools/ holds dev-only tooling and is a sink: only pages/ may wire " +
+        "it in (conditionally). Production layers (core/, state/, shared/) " +
+        "must never depend on tools/.",
       severity: 'error',
-      from: { path: '^app/src/stores/' },
-      to: { path: '^app/src/components/' }
+      from: { path: '^app/src/(core|state|shared)/' },
+      to: { path: '^app/src/tools/' },
+    },
+    {
+      name: 'app-not-to-server',
+      comment:
+        "Frontend app/src/ must not import server-side modules directly. " +
+        "Cross the boundary through the API layer (core/api/) only.",
+      severity: 'error',
+      from: { path: '^app/src/' },
+      to: { path: '^server/src/' },
     }
   ],
   options: {
