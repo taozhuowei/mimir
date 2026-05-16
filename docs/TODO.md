@@ -43,7 +43,7 @@ S1 已判定，S4 走**分支A（删除）**。依据：
   - 验收点：`app/src` 内对 `../state/use_overlay` 的 import 数为 0；类型检查通过
   - 验收方式：`grep -rn "state/use_overlay'" app/src` 无输出；`npx vue-tsc --noEmit -p app/tsconfig.json`
 
-- [ ] S4 按 S1 结论处置测试
+- [x] S4 按 S1 结论处置测试
   - 操作对象：`app/test/use_overlay.test.ts`、`app/test/overlay_sizing.test.ts`、`app/test/_helpers/overlay_card.ts`、`app/test/replay_from_phase.test.ts:82`
   - 操作步骤（S1 已定分支A）：删除 `use_overlay.test.ts`、`overlay_sizing.test.ts`；**保留** `_helpers/overlay_card.ts`（`makeCard` 被其它 4 测试共用）；更新 `replay_from_phase.test.ts:82` 注释移除对已删 `state/use_overlay.ts` 的提及
   - 影响范围：`app/test` 下 2 文件删除 + 1 文件注释更新；`_helpers/overlay_card.ts` 不动
@@ -63,7 +63,7 @@ S1 已判定，S4 走**分支A（删除）**。依据：
 
 ## 进度
 
-S1 完成（调研判定）。S2 完成（常量迁入 reading/composables，归属修正）。S3 完成（use_overlay.ts 已删，src vue-tsc exit 0、零引用）。进行中：S4。
+S1 完成（调研判定）。S2 完成（常量迁入 reading/composables，归属修正）。S3 完成（use_overlay.ts 已删，src vue-tsc exit 0、零引用）。S4 完成（两测试删除、replay 注释修订、helper 保留；app 21 文件 166 测试全绿）。进行中：S5。
 
 ## 搁置问题
 
