@@ -17,7 +17,6 @@ scripts/
 ├── quality_baseline.json # 质量基线
 ├── perf_baseline_gate.js # 包大小回归门禁
 ├── perf_baseline.json    # 性能基线
-├── pr_size_gate.js       # PR 体积门禁
 ├── gitleaks_run.js       # 密钥扫描
 └── dev_env.js            # 写 .env.development.local(注入 LAN IP)
 ```

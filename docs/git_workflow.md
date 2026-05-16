@@ -38,7 +38,7 @@ git branch -d feat/xxx
 node scripts/quality_gate.js full
 ```
 
-按序执行：`quality-scan`、`pr-size`、`lint`、`type-check:app`、`type-check:server`、`test`（vitest 单元/组件 + supertest）、`audit`、`arch:check`、`dead-code`（knip）、`duplicate-code`（jscpd）。CI `verify` job 调同一命令；`e2e` job 在 `--skip-quality` 下跑构建 + playwright。
+按序执行：`quality-scan`、`lint`、`type-check:app`、`type-check:server`、`test`（vitest 单元/组件 + supertest）、`audit`、`arch:check`、`dead-code`（knip）、`duplicate-code`（jscpd）。CI `verify` job 调同一命令；`e2e` job 在 `--skip-quality` 下跑构建 + playwright。
 
 前端类型检查必须用 `vue-tsc`，普通 `tsc` 漏 Vue SFC 级错误。
 

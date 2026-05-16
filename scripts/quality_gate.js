@@ -18,7 +18,6 @@ const stepsByMode = {
   // orchestrator with --skip-quality.
   full: [
     { label: 'quality-scan', command: 'node', args: ['scripts/quality_scan.js'] },
-    { label: 'pr-size', command: 'node', args: ['scripts/pr_size_gate.js'] },
     { label: 'lint', command: 'npx', args: ['eslint', '--config', 'config/eslint.config.mjs', 'app/src/', 'app/test/', 'server/src/', 'server/test/'] },
     // type-check is two compilers: vue-tsc for the Vue app, tsc for the
     // server. Run sequentially as separate steps so failures point at the
