@@ -5,7 +5,7 @@ import { mount } from '@vue/test-utils'
 import { defineComponent, h, nextTick, ref, isRef } from 'vue'
 import type { Ref } from 'vue'
 import { createPinia, setActivePinia } from 'pinia'
-import type { TarotCardInfo } from '../src/core/utils/tarot_reading'
+import { makeCard } from './_helpers/overlay_card'
 
 // The controller calls storeToRefs(tarotStore); mocking the cards API the
 // deck store reads at module init keeps useTarotStore() constructible
@@ -51,27 +51,6 @@ vi.mock('gsap', () => ({
   to: vi.fn().mockReturnValue({ kill: vi.fn() }),
   killTweensOf: vi.fn(),
 }))
-
-function makeCard(): TarotCardInfo {
-  return {
-    id: 'test_card',
-    name: 'Test Card',
-    nameEn: 'Test Card',
-    number: 0,
-    type: 'major',
-    image: '/test.jpg',
-    upright: {
-      keywords: ['test'],
-      meaning: 'Test upright meaning',
-      sentiment: 'positive',
-    },
-    reversed: {
-      keywords: ['test reversed'],
-      meaning: 'Test reversed meaning',
-      sentiment: 'negative',
-    },
-  }
-}
 
 describe('use_overlay result-zone sizing', () => {
   const windowHeight = 844
