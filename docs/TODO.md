@@ -37,7 +37,7 @@
   - 验收点：vue-tsc 通过；`solveLayout` reading/draw 分支求解顺序与参数不变；`fitResultCard` 浮点等值判断未改
   - 验收方式：`npx vue-tsc --noEmit -p app/tsconfig.json`；`npx vitest run --config app/vitest.config.ts --dir app/test layout_solver.test.ts`
 
-- [ ] S4 拆 `phase_progress_presenter.ts`
+- [x] S4 拆 `phase_progress_presenter.ts`
   - 操作对象：`app/src/core/utils/overlay_progress/phase_progress_presenter.ts`；新建同目录 `overlay_text.ts`
   - 操作步骤：原 `:42-56`（`OverlayText` 接口 + `DEFAULT_OVERLAY_TEXT`）迁 `overlay_text.ts`；presenter 保留三个 present* 函数 + 其余类型，新增 `export type { OverlayText } from './overlay_text'` 与 `export { DEFAULT_OVERLAY_TEXT } from './overlay_text'`（测试直连 presenter 取该常量，须 re-export）；`presentFooter` 不单拆（11 行、同关注点）；**barrel `overlay_progress/index.ts` 不得新增 `DEFAULT_OVERLAY_TEXT` re-export**（沿用本仓既有惯例）
   - 影响范围：新增 1 文件；presenter 内部缩减 + 两条 re-export；barrel 与测试路径符号零变更
@@ -68,7 +68,7 @@
 
 ## 进度
 
-S1 完成（`reading_panel_timing.ts` 拆出，引擎保留 + re-export；vue-tsc exit 0，typewriter 2 文件 16 测试全绿）。收尾修正：文件头 `TODO(...)` 关键字触发 `TodoFixme`/`no-warning-comments` 新告警，改为陈述句消除（不绕过、不弱化检查），amend 入 S1。S2 完成（`raf_shim.ts` 拆出，scale.ts 改 import + 文件头注释同步；vue-tsc exit 0，scale/layout_solver 2 文件 26 测试全绿）。S3 完成（`layout_solver_reading.ts` + `layout_solver_draw.ts` 拆出，原文件保留类型 re-export + `solveLayout` 调度、文件头同步；vue-tsc exit 0，layout_solver 12 测试全绿）。进行中：S4。
+S1 完成（`reading_panel_timing.ts` 拆出，引擎保留 + re-export；vue-tsc exit 0，typewriter 2 文件 16 测试全绿）。收尾修正：文件头 `TODO(...)` 关键字触发 `TodoFixme`/`no-warning-comments` 新告警，改为陈述句消除（不绕过、不弱化检查），amend 入 S1。S2 完成（`raf_shim.ts` 拆出，scale.ts 改 import + 文件头注释同步；vue-tsc exit 0，scale/layout_solver 2 文件 26 测试全绿）。S3 完成（`layout_solver_reading.ts` + `layout_solver_draw.ts` 拆出，原文件保留类型 re-export + `solveLayout` 调度、文件头同步；vue-tsc exit 0，layout_solver 12 测试全绿）。S4 完成（`overlay_text.ts` 拆出 `OverlayText`+`DEFAULT_OVERLAY_TEXT`，presenter import+re-export 二者、barrel 不动；vue-tsc exit 0，presenter 11 测试全绿）。进行中：S5。
 
 ## 搁置问题
 
