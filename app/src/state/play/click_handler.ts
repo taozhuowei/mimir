@@ -20,9 +20,9 @@
  */
 
 import type { Ref } from 'vue'
-import { useTarotStore } from '../../shared/store/tarot'
+import { useTarotStore } from '../../store/tarot'
 import { DECK_CLICK_SAFETY_MS } from '../../core/config/layout_constants'
-import type { DivinationPhase } from '../../shared/store/flow'
+import type { DivinationPhase } from '../../store/flow'
 import type { PlayDeckRuntime } from './play_deck_runtime_types'
 
 /** Cooldown after a click before the lock releases. Mirrors the legacy

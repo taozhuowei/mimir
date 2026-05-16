@@ -9,7 +9,7 @@
 
 import { computed, ref } from 'vue'
 import { storeToRefs } from 'pinia'
-import { useTarotStore } from '../shared/store/tarot'
+import { useTarotStore } from '../store/tarot'
 import { RuleBasedReadingProvider } from '../core/utils/reading/rule_based_reading_provider'
 import { createReadingOrchestrator } from '../core/utils/reading/reading_orchestrator'
 import type { ReadingRequest } from '../core/utils/reading/reading_provider'

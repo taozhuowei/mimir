@@ -7,8 +7,8 @@
  */
 
 import { computed, nextTick, onMounted, onUnmounted, type Ref } from 'vue'
-import { useTarotStore } from '../shared/store/tarot'
-import { useThemeStore } from '../shared/store/theme'
+import { useTarotStore } from '../store/tarot'
+import { useThemeStore } from '../store/theme'
 import { RESULT_LIFT_MARGIN_PX } from '../core/config/layout_constants'
 import { DEFAULT_OVERLAY_TEXT } from '../core/utils/overlay_progress'
 import type { OverlayPhase } from '../core/flow/types'
