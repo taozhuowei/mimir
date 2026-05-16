@@ -7,6 +7,11 @@
 
 import type { OverlayPhase } from '../../animation/phases/registry'
 import { getPhaseSteps } from '../../animation/phases/registry'
+import { DEFAULT_OVERLAY_TEXT, type OverlayText } from './overlay_text'
+
+// Re-exported so the overlay_progress barrel and the presenter test keep
+// importing OverlayText / DEFAULT_OVERLAY_TEXT from this module unchanged.
+export { DEFAULT_OVERLAY_TEXT, type OverlayText }
 
 export interface ProgressBarItem {
   phase: OverlayPhase
@@ -37,22 +42,6 @@ export interface FooterPresentation {
   showRestart: boolean
   showRevealingHint: boolean
   revealingText: string
-}
-
-export interface OverlayText {
-  positionReversed: string
-  positionUpright: string
-  restart: string
-  backHome: string
-  revealing: string
-}
-
-export const DEFAULT_OVERLAY_TEXT: OverlayText = {
-  positionReversed: '逆',
-  positionUpright: '正',
-  restart: '再占一次',
-  backHome: '回到首页',
-  revealing: '神谕显现中',
 }
 
 export function presentProgressHeader(
