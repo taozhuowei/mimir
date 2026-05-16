@@ -1,5 +1,5 @@
 /**
- * Name: composables/play/divination_rig
+ * Name: state/play/divination_rig
  * Purpose: start / tear-down / resize-attach controller for the
  *          divination GSAP rig. Owns the uni-app `onWindowResize` handle
  *          so the rig can be torn down cleanly when the user resets to
@@ -22,7 +22,7 @@
  */
 
 import type { UseAnimationControllerReturn } from '../use_animation_controller'
-import type { DivinationRig } from './types'
+import type { DivinationRig } from './play_deck_runtime_types'
 
 /**
  * Build the divination-rig controller. Wraps the controller calls that

@@ -1,5 +1,5 @@
 /**
- * Name: composables/overlay_layout/scene
+ * Name: core/sizing/overlay_layout/viewport_scene_layout
  * Purpose: scene + viewport derivation for the overlay-layout composable.
  *          Builds the physical viewport from `uni.getWindowInfo()`,
  *          exposes the legacy `ViewportMetrics` shape (stageWidth /
@@ -19,14 +19,14 @@ import type { Ref } from 'vue'
 import {
   solveLayout,
   type SceneLayout as SolverSceneLayout,
-} from '../../core/sizing/layout_solver'
+} from '../layout_solver'
 import {
   deriveSizes,
   pickCanvasWidth,
   readViewport,
   type PhysicalViewport,
   type ResponsiveSizes,
-} from '../../core/sizing/scale'
+} from '../scale'
 import { WIDE_SIDE_DRAWER_WIDTH_PX, getMenuButtonRect, resolveTopBarHeight } from './breakpoints'
 
 /** Scene = phase grouping the solver understands. */

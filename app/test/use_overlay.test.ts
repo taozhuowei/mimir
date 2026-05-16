@@ -140,7 +140,7 @@ function makeCard(): TarotCardInfo {
   }
 }
 
-describe('use_overlay_controller', () => {
+describe('use_overlay', () => {
   beforeEach(() => {
     setActivePinia(createPinia())
     vi.useFakeTimers()
@@ -172,7 +172,7 @@ describe('use_overlay_controller', () => {
   })
 
   async function mountHarness() {
-    const { useOverlayController } = await import('../src/composables/use_overlay_controller')
+    const { useOverlay } = await import('../src/state/use_overlay')
     const { useTarotStore } = await import('../src/shared/store/tarot')
 
     // Real Pinia store so storeToRefs() works; seed the state the controller
@@ -190,11 +190,11 @@ describe('use_overlay_controller', () => {
       getUiAsset: vi.fn((name: string) => `/icons/${name}.png`),
     }
 
-    let exposedController: ReturnType<typeof useOverlayController> | null = null
+    let exposedController: ReturnType<typeof useOverlay> | null = null
 
     const Harness = defineComponent({
       setup(_, { expose }) {
-        const controller = useOverlayController({
+        const controller = useOverlay({
           tarotStore: tarotStore as never,
           themeStore: themeStore as never,
           isWide: ref(false),

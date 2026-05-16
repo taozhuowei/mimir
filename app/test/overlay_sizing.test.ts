@@ -73,7 +73,7 @@ function makeCard(): TarotCardInfo {
   }
 }
 
-describe('use_overlay_controller result-zone sizing', () => {
+describe('use_overlay result-zone sizing', () => {
   const windowHeight = 844
   const windowWidth = 390
 
@@ -102,7 +102,7 @@ describe('use_overlay_controller result-zone sizing', () => {
   async function mountHarness(isWide: boolean | Ref<boolean> = false) {
     const isWideRef = isRef(isWide) ? isWide : ref(isWide)
 
-    const { useOverlayController } = await import('../src/composables/use_overlay_controller')
+    const { useOverlay } = await import('../src/state/use_overlay')
     const { useTarotStore } = await import('../src/shared/store/tarot')
 
     const tarotStore = useTarotStore()
@@ -116,11 +116,11 @@ describe('use_overlay_controller result-zone sizing', () => {
       getUiAsset: vi.fn((name: string) => `/icons/${name}.png`),
     }
 
-    let exposedController: ReturnType<typeof useOverlayController> | null = null
+    let exposedController: ReturnType<typeof useOverlay> | null = null
 
     const Harness = defineComponent({
       setup(_, { expose }) {
-        const controller = useOverlayController({
+        const controller = useOverlay({
           tarotStore: tarotStore as never,
           themeStore: themeStore as never,
           isWide: isWideRef as never,

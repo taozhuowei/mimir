@@ -1,12 +1,12 @@
 /**
- * Name: composables/play/types
+ * Name: state/play/play_deck_runtime_types
  * Purpose: shared internal types for the use_play_deck_animation
  *          composable and its extracted sub-controllers (fan_controller,
  *          divination_rig, click_handler).
  * Reason: P3-2 split — the main composable grew to 387 lines combining
  *          three independently-testable sub-systems (fan loop, divination
  *          rig start/teardown, click guard). Each lives in its own
- *          module under composables/play/; they share the runtime
+ *          module under state/play/; they share the runtime
  *          container shape defined here so the main file does not have
  *          to re-export it across module boundaries.
  * Data flow: pure type definitions — no runtime side-effects.

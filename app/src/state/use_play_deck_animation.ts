@@ -18,7 +18,7 @@
  *         P3-2 split: the file grew to 387 lines combining three
  *         independently-testable sub-systems (fan loop, divination
  *         rig start/teardown, click guard). Each sub-controller now
- *         lives in its own module under composables/play/; this file
+ *         lives in its own module under state/play/; this file
  *         holds the runtime container, lifecycle wiring, and the
  *         phase-driven state-machine watch. Behaviour-preserving — the
  *         extracted function bodies are byte-identical to their
@@ -46,7 +46,7 @@ import type { DivinationPhase } from '../shared/store/flow'
 import { createFanController } from './play/fan_controller'
 import { createDivinationRig } from './play/divination_rig'
 import { buildClickHandler } from './play/click_handler'
-import type { FanController, DivinationRig, PlayDeckRuntime } from './play/types'
+import type { FanController, DivinationRig, PlayDeckRuntime } from './play/play_deck_runtime_types'
 
 /** Cards stacked in the idle fan deck (docs/prd/animation.md（动画分帧）). */
 const DECK_SIZE = 12

@@ -11,7 +11,7 @@ import type { Ref } from 'vue'
 import { createPhasePipeline, type PipelinePhase } from '../../core/animation/pipeline'
 import type { PhaseContext, PhaseRunner, OverlayPhase } from '../../core/flow/types'
 import type { SceneLayout } from '../../core/sizing/layout_solver'
-import type { PipelineSharedDeps } from '../pipeline_shared_deps'
+import type { PipelineSharedDeps } from '../../core/flow/pipeline_shared_deps'
 import { buildPhaseContext, buildPhaseRunners } from './pipeline_builder'
 
 export interface RunPipelineCommandDeps extends PipelineSharedDeps {

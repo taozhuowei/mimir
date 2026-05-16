@@ -1,5 +1,5 @@
 /**
- * Name: composables/overlay_layout/motion
+ * Name: core/sizing/overlay_layout/motion_metrics
  * Purpose: motion-metrics derivation for the overlay-layout composable.
  *          Computes shuffle-spread / cut-pile spacing / motion-bounds /
  *          per-pile card counts from the solver's envelope so the
@@ -13,10 +13,10 @@
  */
 
 import type { Ref } from 'vue'
-import { solveLayout, type LayoutEnvelope } from '../../core/sizing/layout_solver'
-import { clamp } from '../../core/utils/math'
-import { SHUFFLE_EDGE_MARGIN } from '../../core/config/layout_constants'
-import { buildPhysicalViewport, getSizes, type Scene } from './scene'
+import { solveLayout, type LayoutEnvelope } from '../layout_solver'
+import { clamp } from '../../utils/math'
+import { SHUFFLE_EDGE_MARGIN } from '../../config/layout_constants'
+import { buildPhysicalViewport, getSizes, type Scene } from './viewport_scene_layout'
 
 /** Cut motion axis — horizontal on wide screens, vertical on narrow. */
 export type CutAxis = 'horizontal' | 'vertical'
