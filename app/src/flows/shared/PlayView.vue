@@ -82,13 +82,13 @@
  */
 import { computed, inject } from 'vue'
 import type { Ref } from 'vue'
-import HeaderArea from '../components/HeaderArea.vue'
-import TitleContent from '../components/TitleContent.vue'
-import ProgressContent from '../components/ProgressContent.vue'
-import Stage from '../components/Stage.vue'
-import Deck from '../components/Deck.vue'
-import type { UseAnimationControllerReturn } from '../state/use_animation_controller'
-import type { DivinationPhase } from '../store/flow'
+import HeaderArea from './HeaderArea.vue'
+import TitleContent from './TitleContent.vue'
+import ProgressContent from '../divination/views/ProgressContent.vue'
+import Stage from './Stage.vue'
+import Deck from './Deck.vue'
+import type { UseAnimationControllerReturn } from '../../state/use_animation_controller'
+import type { DivinationPhase } from '../../store/flow'
 
 const props = defineProps<{
   cardsLoadError: string | null
