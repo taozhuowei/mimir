@@ -15,11 +15,12 @@ export {
 export {
   presentProgressHeader,
   presentFooter,
-  // Note: `presentPositionBadge` is intentionally NOT re-exported here. It
-  // is currently consumed only by tests (which import from the inner module
-  // directly) and re-exporting it through the facade made knip flag it as a
-  // dead export. If a runtime caller ever needs it, add the re-export back.
-  DEFAULT_OVERLAY_TEXT,
+  // Note: `presentPositionBadge` and `DEFAULT_OVERLAY_TEXT` are intentionally
+  // NOT re-exported here. Both are consumed only by tests, which import from
+  // the inner module directly; the one runtime barrel consumer of
+  // DEFAULT_OVERLAY_TEXT (use_overlay.ts) was removed, so re-exporting it
+  // through the facade makes knip flag it as a dead export. Add the
+  // re-export back if a runtime caller ever needs it.
   type ProgressBarItem,
   type ProgressHeaderPresentation,
   type FooterPresentation,

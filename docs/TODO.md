@@ -16,7 +16,8 @@ S1 已判定，S4 走**分支A（删除）**。依据：
 
 - 死代码确认：`useOverlay` 在 `app/src` 零运行时调用；其 facade 独有派生（`cardsFocused`/`cardsDocked`/`resultCardLiftY`/`stageWidthPx`/`drawerWidthPx`/`overlayVarsStyle` 覆盖/`finish`/`skipToReading`/`replayFromPhase` 包装/`restart`）全仓无生产消费者，仅两测试经此入口断言。
 - 生产等价实现已在别处：playback/进度/phase/start 能力存活于 `useAnimationController`（`pages/main` 直接实例化），底层由 `overlay_progress_model` / `overlay_progress_presenter` / `use_animation_state` / `overlay_pipeline` / `overlay_timeline` 独立测试覆盖；`resultCardLiftY` 生产真相在 `Deck.vue:115,130`（自有 computed + `--result-card-lift-y`，`DeckRig.vue:178` 消费）；`restart` 生产真相在 `use_main_handlers.ts:75 handleRestart`。`use_overlay` 内同名实现均为死副本；`--stage-width`/`--drawer-width` 仅死代码产出、无消费者。
-- 测试处置：删 `use_overlay.test.ts`、`overlay_sizing.test.ts`（整体经死入口测试，独有断言覆盖死逻辑，转发能力底层已有独立覆盖）；**保留** `_helpers/overlay_card.ts`（`makeCard` 仍被 `tarot_store` / `reading_orchestrator` / `reading_orchestrator_retry` / `reading_result_presenter` 共用——修正原计划"可能一并删"判断）；更新 `replay_from_phase.test.ts:82` 注释移除对已删 `state/use_overlay.ts` 的提及。
+- 测试处置：删 `use_overlay.test.ts`、`overlay_sizing.test.ts`（整体经死入口测试，独有断言覆盖死逻辑，转发能力底层已有独立覆盖）；更新 `replay_from_phase.test.ts:82` 注释移除对已删 `state/use_overlay.ts` 的提及。
+- **S1 推断纠错（S5 实证）**：S1 据"`makeCard` 文件名 grep 命中 4 测试"推断 `_helpers/overlay_card.ts` 被共用须保留——属凭名臆测。S5 knip 报其为孤儿文件，精确核实 `tarot_store` / `reading_orchestrator` / `reading_orchestrator_retry` / `reading_result_presenter` 各自本地 `function makeCard`、无一 import 该 helper；其唯一 importers 是已删的两测试。结论纠正为 **删除** `_helpers/overlay_card.ts`。
 
 ## 任务清单
 
@@ -45,17 +46,17 @@ S1 已判定，S4 走**分支A（删除）**。依据：
 
 - [x] S4 按 S1 结论处置测试
   - 操作对象：`app/test/use_overlay.test.ts`、`app/test/overlay_sizing.test.ts`、`app/test/_helpers/overlay_card.ts`、`app/test/replay_from_phase.test.ts:82`
-  - 操作步骤（S1 已定分支A）：删除 `use_overlay.test.ts`、`overlay_sizing.test.ts`；**保留** `_helpers/overlay_card.ts`（`makeCard` 被其它 4 测试共用）；更新 `replay_from_phase.test.ts:82` 注释移除对已删 `state/use_overlay.ts` 的提及
-  - 影响范围：`app/test` 下 2 文件删除 + 1 文件注释更新；`_helpers/overlay_card.ts` 不动
+  - 操作步骤（S1 已定分支A）：删除 `use_overlay.test.ts`、`overlay_sizing.test.ts`；更新 `replay_from_phase.test.ts:82` 注释移除对已删 `state/use_overlay.ts` 的提及（`_helpers/overlay_card.ts` S4 误判为保留，S5 实证纠正为删除——见调研结论纠错条与 S5）
+  - 影响范围：`app/test` 下 2 文件删除 + 1 文件注释更新
   - 验收点：app 单测全绿，无跳过、无空断言；保留的测试覆盖真实生产逻辑，或已确认该逻辑随死代码消失
-  - 验收方式：`npx vitest run --config app/vitest.config.ts --dir app/test`
+  - 验收方式：`npx vitest run --config app/vitest.config.ts --dir app/test` — 21 文件 166 测试全绿
 
-- [ ] S5 全局回归
-  - 操作对象：前端全量
-  - 操作步骤：依次跑质量门禁、类型检查、app 单测、lint
-  - 影响范围：全仓校验，不改源码
-  - 验收点：四项全通过，无新增告警
-  - 验收方式：`node scripts/quality_gate.js full`；`npx vue-tsc --noEmit -p app/tsconfig.json`；`npx vitest run --config app/vitest.config.ts --dir app/test`；`npx eslint app/src/ app/test/`
+- [x] S5 全局回归 + 本次引入 dead-code 回归根因修复
+  - 操作对象：full gate 全仓；修复对象 `app/test/_helpers/overlay_card.ts`（删）、`app/src/core/utils/overlay_progress/index.ts`（barrel 收窄）
+  - 操作步骤：跑 `quality_gate full`，首跑 `dead-code`(knip) exit 1，定位为本次引入两项——`overlay_card.ts` 删两测试后成孤儿、`DEFAULT_OVERLAY_TEXT` 删 `use_overlay.ts` 后 barrel re-export 无消费者；实证根因后删孤儿文件、barrel 移除该 re-export（沿用同文件 `presentPositionBadge` 既有惯例，零逻辑变化，测试走 `phase_progress_presenter` 直接源不受影响）；重跑全绿
+  - 影响范围：全仓校验；额外删 1 测试 helper + 1 barrel 行收窄，运行行为不变
+  - 验收点：full gate 全步骤通过；knip exit 0
+  - 验收方式：`node scripts/quality_gate.js full` = exit 0，quality-scan / type-check:app(vue-tsc) / type-check:server / test:app / test:server / lint / audit / arch:check / duplicate-code / dead-code 全 passed（已覆盖并超出原列四项命令）
 
 ## 回滚
 
@@ -63,7 +64,14 @@ S1 已判定，S4 走**分支A（删除）**。依据：
 
 ## 进度
 
-S1 完成（调研判定）。S2 完成（常量迁入 reading/composables，归属修正）。S3 完成（use_overlay.ts 已删，src vue-tsc exit 0、零引用）。S4 完成（两测试删除、replay 注释修订、helper 保留；app 21 文件 166 测试全绿）。进行中：S5。
+S1–S5 全部完成。S1 调研判定；S2 常量迁入 `flows/reading/composables`（归属修正 + DuplicateExport consolidate）；S3 删 `use_overlay.ts`；S4 删两测试 + 修订 replay 注释；S5 full gate 全绿，并根因修复本次引入的 dead-code（删孤儿 `overlay_card.ts`、barrel 收窄）。S1 关于 helper 的臆测已纠正。
+
+## 验收
+
+- 全步骤 S1–S5 完成，禁止跳过约束满足；每步均"先文档→再 commit"，pre-commit 门禁逐次真实跑通，无 `--no-verify`/绕过。
+- 终态 `node scripts/quality_gate.js full` = exit 0：quality-scan、type-check:app(vue-tsc)、type-check:server、test:app、test:server、lint、audit、arch:check、duplicate-code、dead-code 全 passed。
+- 净效果：删生产死代码 `use_overlay.ts`（−224 行）+ 两死入口测试（−596 行）+ 孤儿 helper；存活常量 `RESULT_LIFT_MARGIN_PX` 落位 `flows/reading/composables/result_card_lift_margin.ts`（单一职责、命名自述）；barrel 收窄。无逻辑改动，纯拆解/移动/调路径/删死码。
+- 残留 knip 噪音（既有基线，不阻断门禁 exit 0，非本批职责）：`Unused exported types (110)`、`findOccupiers`(scripts/lib)；不在本批范围。
 
 ## 搁置问题
 
