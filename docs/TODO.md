@@ -30,7 +30,7 @@
   - 验收点：vue-tsc 通过；raf/caf 仍模块顶层一次性特性探测；抖动阈值/单例契约未改
   - 验收方式：`npx vue-tsc --noEmit -p app/tsconfig.json`；`npx vitest run --config app/vitest.config.ts --dir app/test scale.test.ts layout_solver.test.ts`
 
-- [ ] S3 拆 `layout_solver.ts`
+- [x] S3 拆 `layout_solver.ts`
   - 操作对象：`app/src/core/sizing/layout_solver.ts`；新建同目录 `layout_solver_reading.ts`、`layout_solver_draw.ts`
   - 操作步骤：原 `:64-163`（`readingStageReservation`/`fitResultCard`/`solveReadingStageLayout`）迁 `layout_solver_reading.ts`；原 `:171-209`（`solveDrawStageLayout`）迁 `layout_solver_draw.ts`，两文件 import 改从 `./layout_solver_types`/`./layout_solver_computers`/`./scale` 直取；`layout_solver.ts` 保留类型 re-export 段 + `solveLayout` 调度（改 import 两新文件），分支调用顺序与参数逐字保留
   - 影响范围：新增 2 文件；`layout_solver.ts` 内部缩减；11 处外部 import（取 `solveLayout` + 类型）零变更
@@ -68,7 +68,7 @@
 
 ## 进度
 
-S1 完成（`reading_panel_timing.ts` 拆出，引擎保留 + re-export；vue-tsc exit 0，typewriter 2 文件 16 测试全绿）。收尾修正：文件头 `TODO(...)` 关键字触发 `TodoFixme`/`no-warning-comments` 新告警，改为陈述句消除（不绕过、不弱化检查），amend 入 S1。S2 完成（`raf_shim.ts` 拆出，scale.ts 改 import + 文件头注释同步；vue-tsc exit 0，scale/layout_solver 2 文件 26 测试全绿）。进行中：S3。
+S1 完成（`reading_panel_timing.ts` 拆出，引擎保留 + re-export；vue-tsc exit 0，typewriter 2 文件 16 测试全绿）。收尾修正：文件头 `TODO(...)` 关键字触发 `TodoFixme`/`no-warning-comments` 新告警，改为陈述句消除（不绕过、不弱化检查），amend 入 S1。S2 完成（`raf_shim.ts` 拆出，scale.ts 改 import + 文件头注释同步；vue-tsc exit 0，scale/layout_solver 2 文件 26 测试全绿）。S3 完成（`layout_solver_reading.ts` + `layout_solver_draw.ts` 拆出，原文件保留类型 re-export + `solveLayout` 调度、文件头同步；vue-tsc exit 0，layout_solver 12 测试全绿）。进行中：S4。
 
 ## 搁置问题
 
