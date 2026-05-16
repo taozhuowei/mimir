@@ -18,7 +18,7 @@
  *          for the in-flight reading promise the page tracks so
  *          `settlePipeline` can `await` it before promoting to reading.
  */
-import type { useTarotStore } from '../shared/store/tarot'
+import type { useTarotStore } from '../store/tarot'
 import type { useAnimationController } from './use_animation_controller'
 import type { useReadingController } from './use_reading_controller'
 

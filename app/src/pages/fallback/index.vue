@@ -21,7 +21,7 @@
  *         level state, no controllers.
  * Data flow: stateless. The reLaunch decision happens upstream in App.vue.
  */
-import FallbackView from '../../shared/views/FallbackView.vue'
+import FallbackView from '../../views/FallbackView.vue'
 </script>
 
 <style scoped>

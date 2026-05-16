@@ -82,12 +82,12 @@
  */
 import { computed, inject } from 'vue'
 import type { Ref } from 'vue'
-import HeaderArea from '../../components/HeaderArea.vue'
-import TitleContent from '../../components/TitleContent.vue'
-import ProgressContent from '../../components/ProgressContent.vue'
-import Stage from '../../components/Stage.vue'
-import Deck from '../../components/Deck.vue'
-import type { UseAnimationControllerReturn } from '../../state/use_animation_controller'
+import HeaderArea from '../components/HeaderArea.vue'
+import TitleContent from '../components/TitleContent.vue'
+import ProgressContent from '../components/ProgressContent.vue'
+import Stage from '../components/Stage.vue'
+import Deck from '../components/Deck.vue'
+import type { UseAnimationControllerReturn } from '../state/use_animation_controller'
 import type { DivinationPhase } from '../store/flow'
 
 const props = defineProps<{
