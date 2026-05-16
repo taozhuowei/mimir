@@ -1,7 +1,7 @@
 <template>
   <!--
     TitleContent — header slot payload for the idle / fallback views.
-    Renders the heading copy described in PRD §7.3 #1:
+    Renders the heading copy described in docs/prd/view.md（容器与内容对应 #1）:
       - 'idle'     → 主标题 / 副标题 / 引导文字 with GSAP staggered entrance
       - 'fallback' → single neutral line "宇宙信号微弱，暂无法接通"
 

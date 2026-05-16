@@ -41,7 +41,7 @@ export interface MainHandlers {
    * split view is gated by phase ∈ {reading, decision} (see
    * useActiveView), so without this branch a failed
    * /api/v1/divinations response leaves the user stuck on the reveal
-   * animation with no error UI mounted (PRD §9.5 anomaly recovery;
+   * animation with no error UI mounted (docs/prd/state.md（异常与恢复） anomaly recovery;
    * verified by network_error.spec.ts). On error the ReadingPanel
    * renders its `.error-box` + ActionArea swaps the primary CTA to
    * "重试读取" so the user can recover.

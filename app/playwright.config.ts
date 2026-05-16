@@ -37,7 +37,7 @@ export default defineConfig({
   },
 
   projects: [
-    // The product is H5 mobile only (PRD §3). The codebase has a wide-layout
+    // The product is H5 mobile only (docs/prd/product.md（产品目标）). The codebase has a wide-layout
     // branch for browser windows >= 768px, but it's a responsive courtesy,
     // not a delivery target — we don't gate on it here.
     //

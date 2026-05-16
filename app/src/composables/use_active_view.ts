@@ -1,7 +1,7 @@
 /**
  * Name: use_active_view
  * Purpose: encapsulates the main page's view-picker state — the
- *          `showReadingView` gate (PRD §7.4) that overlays the reading
+ *          `showReadingView` gate (docs/prd/state.md（视图与应用级流程阶段的对应）) that overlays the reading
  *          split / drawer view on top of the divination view, and the
  *          `resultDrawerGeometry` used by the narrow-screen drawer view.
  * Reason: extracted from `pages/main/index.vue` (was 446 lines) so the
@@ -23,7 +23,7 @@ export interface UseActiveViewDeps {
 
 export interface ActiveView {
   /**
-   * Reading-view gate (PRD §7.4): the reading split / drawer view
+   * Reading-view gate (docs/prd/state.md（视图与应用级流程阶段的对应）): the reading split / drawer view
    * overlays the divination view only while the application is in
    * `reading` or `decision`. Idle and divination phases never show it.
    */

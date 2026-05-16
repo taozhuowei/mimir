@@ -1,9 +1,9 @@
 <template>
   <!--
     ReadingTextContainer — phase-2.2.b implementation.
-    Hosts the typewriter-rendered per-card meaning texts per PRD §2.4 #7 /
-    §7.5.3. Emits `typewriterComplete` after all text animations finish so the
-    application phase can advance from `reading` to `decision` (PRD §8.2).
+    Hosts the typewriter-rendered per-card meaning texts per docs/prd/glossary.md（容器 #7）/
+    docs/prd/animation.md（动画分帧）. Emits `typewriterComplete` after all text animations finish so the
+    application phase can advance from `reading` to `decision` (docs/prd/animation.md（视图过渡动画）).
   -->
   <view
     v-if="readingResult"
@@ -32,7 +32,7 @@
  * Name: ReadingTextContainer
  * Purpose: child of ReadingPanel; plays the typewriter animation over the
  *          per-card meanings and signals completion so the application
- *          phase can advance to `decision` (PRD §2.6.3 / §8.2.1 #2).
+ *          phase can advance to `decision` (docs/prd/state.md（决策阶段的出口） / docs/prd/animation.md（视图过渡动画 #2）).
  * Reason: isolating the typewriter into one container keeps timing logic
  *         local; the parent (ReadingPanel / main page) only needs to listen
  *         for the `typewriterComplete` event, not track individual fields.

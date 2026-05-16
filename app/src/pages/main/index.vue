@@ -1,10 +1,10 @@
 <template>
   <!--
-    Main page route root (PRD §2.2 #1). Renders the unified PlayView
+    Main page route root (docs/prd/glossary.md（路由 #1）). Renders the unified PlayView
     across every divination phase, with ReadingSplit/Drawer overlaid in
     'reading'/'decision'. NotificationHost lives on the route root for
     cross-view alerts. The .canvas wrapper holds the divination canvas
-    (capped at MAX_CANVAS_WIDTH per PRD §8.2.1) and slides flush-left
+    (capped at MAX_CANVAS_WIDTH per docs/prd/animation.md（视图过渡动画）) and slides flush-left
     when reading mode opens on a wide viewport.
 
     Single PlayView instance — task 8.2.3 collapsed the legacy
@@ -26,7 +26,7 @@
       />
     </view>
 
-    <!-- Wide → split, narrow → drawer (PRD §2.3). Mounted only in 'reading'/'decision'. -->
+    <!-- Wide → split, narrow → drawer (docs/prd/glossary.md（视图）). Mounted only in 'reading'/'decision'. -->
     <ReadingSplitView
       v-if="showReadingView && isWide"
       :panel-state="readingPanelState"
@@ -119,7 +119,7 @@ provide('appPhase', phase)
 /* ── Responsive width ──────────────────────────────────────────────── */
 
 /**
- * Wide-screen branch threshold (PRD §8.2.1). The divination canvas is
+ * Wide-screen branch threshold (docs/prd/animation.md（视图过渡动画）). The divination canvas is
  * capped at MAX_CANVAS_WIDTH (440 px); any viewport wider than that has
  * room for the side reading panel — split mode wins. Below/equal, the
  * drawer overlay wins.
@@ -237,7 +237,7 @@ onUnmounted(() => { uni.offWindowResize(recomputeIsWide) })
   background: var(--color-bg-page);
 }
 
-/* PRD §8.2.1 — canvas capped at MAX_CANVAS_WIDTH (440 px). Centered on
+/* docs/prd/animation.md（视图过渡动画） — canvas capped at MAX_CANVAS_WIDTH (440 px). Centered on
    wider viewports via translateX max-clamp; slides flush-left in
    .is-reading-wide so ReadingSplitView fills the right remainder. */
 .canvas {

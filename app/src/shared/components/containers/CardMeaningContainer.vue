@@ -2,7 +2,7 @@
   <!--
     CardMeaningContainer — phase-2.2.b implementation.
     Lists per-card name / nameEn / position / arcana / keywords per
-    PRD §2.4 #6. Gated by v-if for safe null pass.
+    docs/prd/glossary.md（容器 #6）. Gated by v-if for safe null pass.
   -->
   <view
     v-if="readingResult"
@@ -68,7 +68,7 @@
  * Name: CardMeaningContainer
  * Purpose: child of ReadingPanel; shows each drawn card's name, nameEn,
  *          position (upright / reversed), arcana, and keywords without a
- *          face image (PRD §2.4 #6).
+ *          face image (docs/prd/glossary.md（容器 #6）).
  * Reason: separating card metadata from the long-form interpretation matches
  *         the PRD's three-child contract; per-field typewriter timing stays
  *         local to this container.

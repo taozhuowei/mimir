@@ -8,7 +8,7 @@
     previously masked the unmount/mount visual gap.
 
     Header behaviour:
-      - In 'idle' phase the slot renders TitleContent (PRD §7.3 #1
+      - In 'idle' phase the slot renders TitleContent (docs/prd/view.md（容器与内容对应 #1）
         copy). HeaderArea has no inline transform — the title runs its
         own GSAP staggered entrance internally.
       - In every non-idle phase the slot renders ProgressContent (the

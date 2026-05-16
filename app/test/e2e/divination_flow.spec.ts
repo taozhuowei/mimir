@@ -4,7 +4,7 @@ import { test, expect } from '@playwright/test'
  * Happy path: home page → divination overlay → result panel.
  *
  * The flow auto-progresses through shuffle/cut/draw/reveal once the user
- * taps the idle deck (per PRD §6.3 "占卜流程应自动推进"). The 30-second
+ * taps the idle deck (per docs/prd/state.md（占卜流程要求） "占卜流程应自动推进"). The 30-second
  * timeout on the reading-panel assertion covers the full animation
  * pipeline plus the rule-based reading lookup.
  *

@@ -7,7 +7,7 @@
  *   - tarotStore.loadCards() — fetches the 78-card metadata
  *   - themeStore.loadTheme() — fetches the current theme bundle
  *
- * Per PRD §2.2 #2 (and the architecture spec for phase-2.1), if either
+ * Per docs/prd/glossary.md（路由 #2） (and the architecture spec for phase-2.1), if either
  * resource fails the app reLaunches to the fallback route; on success the
  * app must land on the main route. The dispatcher uses Promise.allSettled
  * so a partial failure on either resource still gives both store actions a

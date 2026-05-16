@@ -1,7 +1,7 @@
 <template>
   <!--
     ReadingDrawerView — phase-2.2.b wired (narrow-screen branch).
-    Composition per PRD §2.3 #4 / §7.2 #4: ReadingPanel + ActionArea inside
+    Composition per docs/prd/glossary.md（视图 #4）/ docs/prd/view.md（5 个视图与所属容器 #4）: ReadingPanel + ActionArea inside
     a bottom drawer whose geometry is supplied by the layout solver.
   -->
   <view
@@ -58,7 +58,7 @@
 <script setup lang="ts">
 /**
  * Name: ReadingDrawerView
- * Purpose: narrow-screen reading view (PRD §2.3 #4). Renders the reading
+ * Purpose: narrow-screen reading view (docs/prd/glossary.md（视图 #4）). Renders the reading
  *          panel inside a draggable bottom drawer plus the (always
  *          screen-bottom) action area. The drawer is bounded by the
  *          solver-supplied DrawerGeometry — this view doesn't re-derive
@@ -213,7 +213,7 @@ function onDrawerKeydown(e: KeyboardEvent) {
   container: result-drawer / inline-size;
   /* Prevents browser pull-to-refresh competing with drag handlers */
   touch-action: none;
-  /* PRD §8.2.2: drawer slides up from screen bottom on mount.
+  /* docs/prd/animation.md（视图过渡动画）: drawer slides up from screen bottom on mount.
      350ms = DUR_DIV_TO_READING_NARROW_MS in animation/easings.ts */
   animation: drawer-enter 350ms cubic-bezier(0.16, 1, 0.3, 1) both;
 }

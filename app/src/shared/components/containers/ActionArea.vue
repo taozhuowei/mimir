@@ -1,7 +1,7 @@
 <template>
   <!--
     ActionArea — phase-2.2.b implementation.
-    Per PRD §2.4 #8 and §10.3 #3 the action area only renders during the
+    Per docs/prd/glossary.md（容器 #8）and docs/prd/animation.md（动效规范 #3）the action area only renders during the
     `decision` phase or when the reading request failed. Real buttons
     migrated from ActionBar.vue with 350ms fade-in animation.
   -->
@@ -51,7 +51,7 @@
  * Name: ActionArea container
  * Purpose: hosts the restart / back-home / retry buttons; only mounted in
  *          the `decision` phase or while the reading request is in error
- *          state (per PRD §2.6.3). Migrated from ActionBar.vue.
+ *          state (per docs/prd/state.md（决策阶段的出口）). Migrated from ActionBar.vue.
  * Reason: keeping the visibility rule colocated with the container removes
  *         one source of phase coupling from views and makes the rule
  *         auditable in a single file.
@@ -74,7 +74,7 @@ defineEmits<{
 }>()
 
 /**
- * Visibility rule (PRD §2.4 #8): show only during `decision`, OR when the
+ * Visibility rule (docs/prd/glossary.md（容器 #8）): show only during `decision`, OR when the
  * reading itself failed (the retry affordance must be reachable mid-reading
  * if the request errored). All other phases hide the area entirely.
  */
@@ -90,7 +90,7 @@ const visible = computed(() =>
   align-items: center;
   justify-content: center;
   padding: 24rpx 24rpx calc(env(safe-area-inset-bottom, 0px) + 24rpx);
-  /* 350ms fade-in per PRD §10.3 #3 */
+  /* 350ms fade-in per docs/prd/animation.md（动效规范 #3） */
   animation: action-fade-in 350ms cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
