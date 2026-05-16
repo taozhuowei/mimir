@@ -12,13 +12,15 @@
 
 ## 调研结论
 
-> S1 执行后回填，作为 S4 测试处置的分支依据。
+S1 已判定，S4 走**分支A（删除）**。依据：
 
-- 待回填。
+- 死代码确认：`useOverlay` 在 `app/src` 零运行时调用；其 facade 独有派生（`cardsFocused`/`cardsDocked`/`resultCardLiftY`/`stageWidthPx`/`drawerWidthPx`/`overlayVarsStyle` 覆盖/`finish`/`skipToReading`/`replayFromPhase` 包装/`restart`）全仓无生产消费者，仅两测试经此入口断言。
+- 生产等价实现已在别处：playback/进度/phase/start 能力存活于 `useAnimationController`（`pages/main` 直接实例化），底层由 `overlay_progress_model` / `overlay_progress_presenter` / `use_animation_state` / `overlay_pipeline` / `overlay_timeline` 独立测试覆盖；`resultCardLiftY` 生产真相在 `Deck.vue:115,130`（自有 computed + `--result-card-lift-y`，`DeckRig.vue:178` 消费）；`restart` 生产真相在 `use_main_handlers.ts:75 handleRestart`。`use_overlay` 内同名实现均为死副本；`--stage-width`/`--drawer-width` 仅死代码产出、无消费者。
+- 测试处置：删 `use_overlay.test.ts`、`overlay_sizing.test.ts`（整体经死入口测试，独有断言覆盖死逻辑，转发能力底层已有独立覆盖）；**保留** `_helpers/overlay_card.ts`（`makeCard` 仍被 `tarot_store` / `reading_orchestrator` / `reading_orchestrator_retry` / `reading_result_presenter` 共用——修正原计划"可能一并删"判断）；更新 `replay_from_phase.test.ts:82` 注释移除对已删 `state/use_overlay.ts` 的提及。
 
 ## 任务清单
 
-- [ ] S1 判定死代码边界与测试覆盖性质
+- [x] S1 判定死代码边界与测试覆盖性质
   - 操作对象：`app/src/state/use_overlay.ts`、`app/test/use_overlay.test.ts`、`app/test/overlay_sizing.test.ts`、`app/test/replay_from_phase.test.ts`、`app/test/_helpers/overlay_card.ts`、生产编排 `app/src/pages/main/index.vue` + `app/src/state/use_animation_controller.ts`
   - 操作步骤：复核 `useOverlay` 在 `app/src`（含 `#ifdef` 平台条件块）零运行时调用；判定两测试所测 `resultCardLiftY` / `cardsFocused` / `resultCardScale` 等派生在生产编排路径是否有等价实现；确认 `replay_from_phase.test.ts:82` 仅注释提及、`_helpers/overlay_card.ts` 是否仅服务这两测试
   - 影响范围：仅判定，无源码改动
@@ -41,10 +43,8 @@
 
 - [ ] S4 按 S1 结论处置测试
   - 操作对象：`app/test/use_overlay.test.ts`、`app/test/overlay_sizing.test.ts`、`app/test/_helpers/overlay_card.ts`、`app/test/replay_from_phase.test.ts:82`
-  - 操作步骤：
-    - 分支A（生产无等价实现，测的是死逻辑）：删除 `use_overlay.test.ts`、`overlay_sizing.test.ts`；`_helpers/overlay_card.ts` 仅服务这两测试则一并删，否则保留；更新 `replay_from_phase.test.ts:82` 注释移除 `use_overlay` 提及
-    - 分支B（生产有等价实现）：将两测试重定向到生产编排路径（`pages/main` + `useAnimationController`）测同一派生，移除对 `useOverlay` 的 import
-  - 影响范围：`app/test` 下 2-3 文件
+  - 操作步骤（S1 已定分支A）：删除 `use_overlay.test.ts`、`overlay_sizing.test.ts`；**保留** `_helpers/overlay_card.ts`（`makeCard` 被其它 4 测试共用）；更新 `replay_from_phase.test.ts:82` 注释移除对已删 `state/use_overlay.ts` 的提及
+  - 影响范围：`app/test` 下 2 文件删除 + 1 文件注释更新；`_helpers/overlay_card.ts` 不动
   - 验收点：app 单测全绿，无跳过、无空断言；保留的测试覆盖真实生产逻辑，或已确认该逻辑随死代码消失
   - 验收方式：`npx vitest run --config app/vitest.config.ts --dir app/test`
 
@@ -61,4 +61,10 @@
 
 ## 进度
 
-未开始。
+S1 完成（调研判定，无源码改动）。进行中：S2。
+
+## 搁置问题
+
+> 影响中等且非本批次引入，留待后续专项处理，勿在本批次扩张范围。
+
+1. `usePlayback`（`app/src/core/animation/use_playback.ts`，34 行）playback 控制无独立单元测试。删除 `use_overlay.test.ts` 后，经 facade 间接覆盖的 playback spy 测试消失；该能力为纯转发 `TimelineOrchestrator`，时间线编排已由 `overlay_timeline` / `overlay_pipeline` 覆盖，回归风险低。补测试属新增逻辑，超出本批"仅拆解/重命名/调路径/移动"范围，搁置。
