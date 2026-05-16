@@ -4,7 +4,7 @@ import { mount } from '@vue/test-utils'
 import { defineComponent, h, nextTick, ref } from 'vue'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { createPinia, setActivePinia } from 'pinia'
-import type { TarotCardInfo } from '../src/core/utils/tarot_reading'
+import { makeCard } from './_helpers/overlay_card'
 
 // The controller calls storeToRefs(tarotStore), which requires a real Pinia
 // store. Mocking the cards API the deck store reads at module init keeps
@@ -118,27 +118,6 @@ vi.mock('gsap', () => {
     killTweensOf: vi.fn(),
   }
 })
-
-function makeCard(): TarotCardInfo {
-  return {
-    id: 'test_card',
-    name: 'Test Card',
-    nameEn: 'Test Card',
-    number: 0,
-    type: 'major',
-    image: '/test.jpg',
-    upright: {
-      keywords: ['test'],
-      meaning: 'Test upright meaning',
-      sentiment: 'positive',
-    },
-    reversed: {
-      keywords: ['test reversed'],
-      meaning: 'Test reversed meaning',
-      sentiment: 'negative',
-    },
-  }
-}
 
 describe('use_overlay', () => {
   beforeEach(() => {
