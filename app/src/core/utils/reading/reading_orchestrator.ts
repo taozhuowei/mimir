@@ -52,41 +52,65 @@ export interface ReadingOrchestratorDeps {
 const TIMEOUT_MS = 15000
 const RETRY_BACKOFF_MS = 1000
 
-export function createReadingOrchestrator(deps: ReadingOrchestratorDeps): ReadingOrchestrator {
-  const { provider, statusRef, resultRef, errorRef, drawnRef, errorMessage } = deps
-  let currentRequest: Promise<ReadingResult | null> | null = null
-  let lastRequest: ReadingRequest | null = null
-  let destroyed = false
+interface TimerRegistry {
+  delay(ms: number): Promise<void>
+  clearAll(): void
+}
+
+/**
+ * Self-tracking setTimeout registry: each delay() timer auto-untracks on
+ * fire; clearAll() cancels any still pending (used by destroy()).
+ * Extracted from createReadingOrchestrator verbatim — behaviour identical.
+ */
+function createTimerRegistry(): TimerRegistry {
   const pendingTimers: ReturnType<typeof setTimeout>[] = []
-
-  function getState(): ReadingOrchestratorState {
-    return {
-      status: statusRef.value,
-      result: resultRef.value,
-      error: errorRef.value,
-      isLoading: statusRef.value === 'loading',
-      canRetry: statusRef.value === 'error',
-    }
-  }
-
-  function trackTimer(id: ReturnType<typeof setTimeout>): void {
-    pendingTimers.push(id)
-  }
 
   function untrackTimer(id: ReturnType<typeof setTimeout>): void {
     const idx = pendingTimers.indexOf(id)
     if (idx >= 0) pendingTimers.splice(idx, 1)
   }
 
-  function delay(ms: number): Promise<void> {
-    return new Promise((resolve) => {
-      const id = setTimeout(() => {
-        untrackTimer(id)
-        resolve()
-      }, ms)
-      trackTimer(id)
-    })
+  return {
+    delay(ms: number): Promise<void> {
+      return new Promise((resolve) => {
+        const id = setTimeout(() => {
+          untrackTimer(id)
+          resolve()
+        }, ms)
+        pendingTimers.push(id)
+      })
+    },
+    clearAll(): void {
+      for (const id of pendingTimers) clearTimeout(id)
+      pendingTimers.length = 0
+    },
   }
+}
+
+/**
+ * Snapshot the orchestrator's public state from its refs. Extracted
+ * verbatim from the previous inline getState().
+ */
+function readOrchestratorState(
+  statusRef: Ref<ReadingStatus>,
+  resultRef: Ref<ReadingResult | null>,
+  errorRef: Ref<string | null>,
+): ReadingOrchestratorState {
+  return {
+    status: statusRef.value,
+    result: resultRef.value,
+    error: errorRef.value,
+    isLoading: statusRef.value === 'loading',
+    canRetry: statusRef.value === 'error',
+  }
+}
+
+export function createReadingOrchestrator(deps: ReadingOrchestratorDeps): ReadingOrchestrator {
+  const { provider, statusRef, resultRef, errorRef, drawnRef, errorMessage } = deps
+  let currentRequest: Promise<ReadingResult | null> | null = null
+  let lastRequest: ReadingRequest | null = null
+  let destroyed = false
+  const timers = createTimerRegistry()
 
   async function doRequest(request: ReadingRequest, retryCount: number): Promise<ReadingResult | null> {
     if (destroyed) return null
@@ -117,7 +141,7 @@ export function createReadingOrchestrator(deps: ReadingOrchestratorDeps): Readin
     } catch (err: unknown) {
       if (timeoutId) clearTimeout(timeoutId)
       if (retryCount < 1 && !destroyed) {
-        await delay(RETRY_BACKOFF_MS)
+        await timers.delay(RETRY_BACKOFF_MS)
         return doRequest(request, retryCount + 1)
       }
       errorRef.value = err instanceof Error ? err.message : errorMessage
@@ -144,7 +168,7 @@ export function createReadingOrchestrator(deps: ReadingOrchestratorDeps): Readin
 
   return {
     get state() {
-      return getState()
+      return readOrchestratorState(statusRef, resultRef, errorRef)
     },
     async start(request: ReadingRequest) {
       lastRequest = request
@@ -181,8 +205,7 @@ export function createReadingOrchestrator(deps: ReadingOrchestratorDeps): Readin
     },
     destroy() {
       destroyed = true
-      for (const id of pendingTimers) clearTimeout(id)
-      pendingTimers.length = 0
+      timers.clearAll()
       currentRequest = null
     },
   }
