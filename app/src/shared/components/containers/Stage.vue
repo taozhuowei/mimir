@@ -1,7 +1,7 @@
 <template>
   <!--
     Stage — phase-2.1 placeholder.
-    A position-only slot container; per PRD §2.4 #3 the stage exists purely
+    A position-only slot container; per docs/prd/glossary.md（容器 #3） the stage exists purely
     to host an animation. It does not own animation state — the parent view
     or the animation controller drives whatever is rendered through the
     default slot. The `scene` prop only annotates the DOM with a CSS class
@@ -22,7 +22,7 @@
 /**
  * Name: Stage container
  * Purpose: pure slot wrapper for the three stage scenes (idle / divination
- *          / fallback) per PRD §2.4 #3 and §7.2.
+ *          / fallback) per docs/prd/glossary.md（容器 #3） and docs/prd/view.md（5 个视图与所属容器）.
  * Reason: idle, divination, and fallback views all need a centred animation
  *         box. Centralising the geometry here keeps the per-view templates
  *         minimal. Animation logic is *not* hosted here — it lives in the

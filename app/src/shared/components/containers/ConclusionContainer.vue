@@ -2,7 +2,7 @@
   <!--
     ConclusionContainer — phase-2.2.b implementation.
     Renders the result-tendency conclusion (positive / negative / neutral)
-    per PRD §2.4 #5 and §7.3 #4. Gated by v-if so the parent can pass null
+    per docs/prd/glossary.md（容器 #5） and docs/prd/view.md（容器与内容对应 #4）. Gated by v-if so the parent can pass null
     safely during transitions.
   -->
   <view
@@ -40,7 +40,7 @@
 /**
  * Name: ConclusionContainer
  * Purpose: child of ReadingPanel; shows the result-tendency conclusion text
- *          for the current divination (PRD §2.4 #5).
+ *          for the current divination (docs/prd/glossary.md（容器 #5）).
  * Reason: splitting the hero into its own container matches the PRD's three-
  *         child contract (conclusion / card meaning / reading text) and keeps
  *         the tone-class and typewriter timing local.

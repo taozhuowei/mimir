@@ -5,7 +5,7 @@
  *          provide() a single phase ref to all views/containers and switch
  *          between idle / divination / reading / decision through a stable
  *          composable contract.
- * Reason: PRD §2.6.1 defines four application stages. The store already owns
+ * Reason: docs/prd/state.md（流程阶段;2.6.1 应用级流程） defines four application stages. The store already owns
  *         the underlying ref (see stores/flow.ts) and the transition helpers
  *         (`startDivination`, `setPhase`, `revealResult`, `enterDecision`,
  *         `reset`). This composable is the seam that views/containers will

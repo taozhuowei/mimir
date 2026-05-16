@@ -4,7 +4,7 @@
  *          state (phase, question, drawn cards).
  * Reason: separates flow concerns from deck and reading state. The flow
  *         layer now models the application-level 4 stages (idle /
- *         divination / reading / decision) per PRD §2.6; the in-divination
+ *         divination / reading / decision) per docs/prd/state.md（流程阶段）; the in-divination
  *         animation phases (shuffling / cutting / drawing / revealing) are
  *         a separate concept tracked by the overlay controller and progress
  *         icons, and are not represented here. Spread metadata (kind, card
@@ -53,7 +53,7 @@ export function createFlowState(reading: ReturnType<typeof createReadingState>) 
 
   /**
    * Promote the application-level stage from `reading` to `decision` so the
-   * action area can fade in. Per PRD §2.6.1 / §8.2 stage 3, the reading view
+   * action area can fade in. Per docs/prd/state.md（流程阶段;2.6.1 应用级流程） / docs/prd/animation.md（视图过渡动画） stage 3, the reading view
    * calls this when the typewriter animation finishes; until then the action
    * area remains hidden. Wiring of the actual typewriter `onComplete` hook
    * is scheduled for phase 2 of the refactor — this function is exported now

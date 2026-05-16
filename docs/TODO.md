@@ -115,5 +115,5 @@
 
 - **Phase A2 — 内部细分(h5)**:按 `app_structure.md` 完整结构细分(state 垂直化、`states/<state>/{view,phases,shared}`、`composables/` 分层、`core/{config→constants,deck/types→deck_geometry,flow 删}`、拆 `PlayView`、`reconciler→reconcile` 改名、建 controller/flow/task、删 `stores/{flow,reading}`);内部细分待决策点届时逐个与用户确认。
 - **Phase B — Bug 修复(h5)**:draw 末尾 `stage.y=0` 复位;reveal 合并 grow+flip 为单 tween;Phase A/A2 暴露的其他 bug。
-- **Phase D — 文档收口**:拆 `PRD.md`,`README.md` 重写为入口索引。
+- **Phase D — 文档收口**:PRD 已拆为 `docs/prd/`(product/state/view/animation/glossary),`docs/PRD.md` 保留为产品总述,`docs/README.md` 作 docs 索引,根 `README.md` 指向之。
 - **Phase C — 小程序验证**:mp-weixin 跑通,差异报告,逐项修复。

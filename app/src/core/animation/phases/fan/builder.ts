@@ -1,6 +1,6 @@
 /**
  * Name: animation/phases/fan/builder
- * Purpose: builds the idle-deck fan animation timeline (PRD §7.5.1).
+ * Purpose: builds the idle-deck fan animation timeline (docs/prd/animation.md（动画分帧）).
  * Reason: extracted from IdleDeck.vue so the timeline logic is testable and
  *         reusable without touching the component.
  * Data flow: caller supplies GSAP proxy targets and a flush callback; this
@@ -27,7 +27,7 @@ export interface FanBuilderOptions {
 }
 
 /**
- * Build the 5-frame looping fan timeline (PRD §7.5.1 fan animation).
+ * Build the 5-frame looping fan timeline (docs/prd/animation.md（动画分帧） fan animation).
  *
  * Frame 1 (0%):    stack centred — caller resets before calling this
  * Frame 2→3:       fan-out into symmetric arc, 1.0 s power2.inOut

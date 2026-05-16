@@ -1,7 +1,7 @@
 <template>
   <!--
     ReadingSplitView — phase-2.2.b wired (wide-screen branch).
-    Composition per PRD §7.2 #3: ReadingPanel + ActionArea, occupying the
+    Composition per docs/prd/view.md（5 个视图与所属容器 #3）: ReadingPanel + ActionArea, occupying the
     right half of the viewport, overlaid on the divination view's left
     half. The wide / narrow choice is owned by the main page.
   -->
@@ -32,7 +32,7 @@
 <script setup lang="ts">
 /**
  * Name: ReadingSplitView
- * Purpose: wide-screen reading view (PRD §2.3 #3). Renders the reading
+ * Purpose: wide-screen reading view (docs/prd/glossary.md（视图 #3）). Renders the reading
  *          panel + action area in a right-half-screen pane, overlaid on
  *          the divination view's left half.
  * Reason: splitting wide/narrow reading templates into two sibling views
@@ -84,7 +84,7 @@ defineEmits<{
   z-index: 1500;
   overflow: hidden;
   container: result-drawer / inline-size;
-  /* PRD §8.2.1: slide in from right on mount.
+  /* docs/prd/animation.md（视图过渡动画）: slide in from right on mount.
      450ms = DUR_DIV_TO_READING_WIDE_MS in animation/easings.ts.
      translateX(100%) is relative to this element's own width
      (viewport.width - 440), so the slide-in still appears to come from

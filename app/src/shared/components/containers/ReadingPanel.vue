@@ -1,7 +1,7 @@
 <template>
   <!--
     ReadingPanel — phase-2.2.b implementation.
-    Composes the three sub-containers per PRD §2.4 #4. Handles loading /
+    Composes the three sub-containers per docs/prd/glossary.md（容器 #4）. Handles loading /
     error / success states with a fade-slide transition.
   -->
   <view
@@ -63,7 +63,7 @@
  * Name: ReadingPanel container
  * Purpose: parent slot for the three reading sub-containers; lives inside
  *          ReadingSplitView (wide) or ReadingDrawerView (narrow) per
- *          PRD §2.3 #3-#4 and §2.4 #4. Handles loading / error / success
+ *          docs/prd/glossary.md（视图 #3-#4） and docs/prd/glossary.md（容器 #4）. Handles loading / error / success
  *          states with fade-slide transitions.
  * Reason: pulling the three children together at the panel level lets both
  *         viewports reuse the same composition without duplicating state

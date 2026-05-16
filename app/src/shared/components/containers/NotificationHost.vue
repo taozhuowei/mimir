@@ -1,7 +1,7 @@
 <template>
   <!--
     NotificationHost — phase-2.1 placeholder.
-    Renders the cross-view notification stack defined in PRD §2.4 #9. Real
+    Renders the cross-view notification stack defined in docs/prd/glossary.md（容器 #9）. Real
     styling, lifecycle, and dismiss behaviour land in 2.2; for now the host
     just enumerates the queue so the wiring is visible.
   -->
@@ -37,7 +37,7 @@
  * Name: NotificationHost
  * Purpose: subscribe to the notification store and render the queue at the
  *          page root, above all views.
- * Reason: PRD §2.4 #9 mandates a cross-view error overlay. Mounting this
+ * Reason: docs/prd/glossary.md（容器 #9） mandates a cross-view error overlay. Mounting this
  *         host once on the main page (and, after 2.2, the fallback page)
  *         keeps notifications visible regardless of which view is active.
  * Data flow: producers call `useNotificationStore().push()`; this host

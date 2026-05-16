@@ -66,7 +66,7 @@ export const RESULT_CARD_FILL_RATIO = 0.9
 
 /**
  * Hard upper bound for the result-stage card's rendered width (px) — the
- * "phone-shell envelope" cap referenced by PRD §8.2 and asserted by the
+ * "phone-shell envelope" cap referenced by docs/prd/animation.md（视图过渡动画） and asserted by the
  * viewport_smoke contract test (DEFAULT_MAX_CARD_WIDTH = 240).
  *
  * Why a flat px cap instead of letting RESULT_CARD_FILL_RATIO * stage.width

@@ -48,7 +48,7 @@ import { createDivinationRig } from './play/divination_rig'
 import { buildClickHandler } from './play/click_handler'
 import type { FanController, DivinationRig, PlayDeckRuntime } from './play/types'
 
-/** Cards stacked in the idle fan deck (PRD §7.5.1). */
+/** Cards stacked in the idle fan deck (docs/prd/animation.md（动画分帧）). */
 const DECK_SIZE = 12
 
 /** Reactive surface returned to Deck.vue. */

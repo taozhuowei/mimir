@@ -1,6 +1,6 @@
 <template>
   <!--
-    FallbackOrbits — phase-3 implementation (PRD §7.5.2).
+    FallbackOrbits — phase-3 implementation (docs/prd/animation.md（动画分帧）).
     Central glowing star + four 3D geometric planets (tetrahedron,
     parallelepiped, sphere, octahedron) orbiting on elliptical paths.
     Motion is driven by a GSAP ticker via startFallbackAnimation(); CSS
@@ -35,7 +35,7 @@
 /**
  * Name: FallbackOrbits (stage content)
  * Purpose: stage-content for the fallback view; renders the looping 3D-orbit
- *          animation (PRD §7.5.2).
+ *          animation (docs/prd/animation.md（动画分帧）).
  * Reason: encapsulating the orbit rig inside a dedicated stage-content
  *         component keeps FallbackView declarative. The component owns no
  *         business state — pure motion.

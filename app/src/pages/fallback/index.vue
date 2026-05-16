@@ -1,7 +1,7 @@
 <template>
   <!--
     Fallback page — phase-2.1 skeleton.
-    Per PRD §2.2 #2 the fallback route hosts only the FallbackView. The
+    Per docs/prd/glossary.md（路由 #2） the fallback route hosts only the FallbackView. The
     main route's startup dispatcher (App.vue's onLaunch) reLaunches here
     when a critical bootstrap resource fails to load.
   -->
@@ -14,7 +14,7 @@
 /**
  * Name: pages/fallback/index
  * Purpose: route root for the fallback experience. Renders the FallbackView
- *          and nothing else (PRD §10.3 #4: no toast, no notification —
+ *          and nothing else (docs/prd/animation.md（动效规范 #4）: no toast, no notification —
  *          the title line is the entire user-facing message).
  * Reason: keeping the fallback page intentionally minimal makes it easy
  *         to reason about the only-fallback-on-fallback rule. No route-

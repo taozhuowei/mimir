@@ -209,7 +209,7 @@ describe('layout_solver — proportional-sizes layout solver', () => {
         if (scene === 'reading_stage') {
           // Result card (shrunk) occupies RESULT_CARD_FILL_RATIO of the
           // stage rect on each axis (90 %) — but capped at
-          // MAX_CARD_WIDTH_PX (PRD §8.2 phone-shell envelope). When the
+          // MAX_CARD_WIDTH_PX (docs/prd/animation.md（视图过渡动画） phone-shell envelope). When the
           // cap engages, height is derived from the clamped width via
           // CARD_ASPECT_RATIO so the card stays 1:1.6.
           const unclamped = layout.stage.width * RESULT_CARD_FILL_RATIO

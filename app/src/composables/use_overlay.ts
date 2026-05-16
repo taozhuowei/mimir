@@ -46,7 +46,7 @@ export function useOverlay(deps: UseOverlayDeps) {
       onPhaseChange: (_p: OverlayPhase) => {
         // OverlayPhase (shuffling/cutting/drawing/revealing) and DivinationPhase
         // (idle/divination/reading/decision) are two layers of the same flow
-        // (PRD §2.6). All four overlay phases run inside the application-level
+        // (docs/prd/state.md（流程阶段）). All four overlay phases run inside the application-level
         // `divination` stage, so a phase advance never changes the app stage —
         // we just keep the store pinned to `divination` for the duration of
         // the animation pipeline.
