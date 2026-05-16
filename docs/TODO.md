@@ -16,7 +16,7 @@
 
 ## 任务清单
 
-- [ ] S1 拆 `typewriter_model.ts`
+- [x] S1 拆 `typewriter_model.ts`
   - 操作对象：`app/src/core/utils/typing/typewriter_model.ts`；新建同目录 `reading_panel_timing.ts`
   - 操作步骤：将原 `:120-153`（`TypewriterFieldTiming` / `calculateFieldTiming` / `calculateKeywordTiming`）整块迁入 `reading_panel_timing.ts`（文件头注明语义属 reading、加 `TODO(flows-batch)` 待迁注释；不带入 `prefersReducedMotion` import）；`typewriter_model.ts` 保留引擎 `:1-118` 并新增 `export { calculateFieldTiming, calculateKeywordTiming, type TypewriterFieldTiming } from './reading_panel_timing'`
   - 影响范围：新增 1 文件；`typewriter_model.ts` 内部缩减 + 加 re-export；`TypewriterText.vue`/`use_reading_panel_controller.ts`/`typewriter_model.test.ts` import 零变更
@@ -68,7 +68,7 @@
 
 ## 进度
 
-未开始。
+S1 完成（`reading_panel_timing.ts` 拆出，引擎保留 + re-export；vue-tsc exit 0，typewriter 2 文件 16 测试全绿）。收尾修正：文件头 `TODO(...)` 关键字触发 `TodoFixme`/`no-warning-comments` 新告警，改为陈述句消除（不绕过、不弱化检查），amend 入 S1。进行中：S2。
 
 ## 搁置问题
 
