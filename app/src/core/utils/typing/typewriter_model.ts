@@ -117,37 +117,11 @@ export function createTypewriterModel(
   }
 }
 
-/**
- * Calculate staggered delays for result panel fields.
- */
-export interface TypewriterFieldTiming {
-  startDelay: number
-  charInterval: number
-}
-
-export function calculateFieldTiming(
-  cardIndex: number,
-  fieldStep: number,
-  baseDelay: number = 100,
-  cardDelay: number = 200,
-  stepDelay: number = 50,
-): TypewriterFieldTiming {
-  return {
-    startDelay: baseDelay + cardIndex * cardDelay + fieldStep * stepDelay,
-    charInterval: 18,
-  }
-}
-
-export function calculateKeywordTiming(
-  cardIndex: number,
-  keywordIndex: number,
-  baseDelay: number = 100,
-  cardDelay: number = 200,
-  keywordDelay: number = 40,
-): TypewriterFieldTiming {
-  const field4Delay = baseDelay + cardIndex * cardDelay + 3 * 50
-  return {
-    startDelay: field4Delay + 50 + keywordIndex * keywordDelay,
-    charInterval: 16,
-  }
-}
+// Reading-panel field/keyword stagger timing was split into its own
+// single-responsibility module; re-exported here so existing import paths
+// (use_reading_panel_controller, typewriter_model.test) stay unchanged.
+export {
+  calculateFieldTiming,
+  calculateKeywordTiming,
+  type TypewriterFieldTiming,
+} from './reading_panel_timing'
