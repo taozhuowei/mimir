@@ -78,8 +78,8 @@ function makeSnapDeps(): PhaseSnapDeps {
 }
 
 /**
- * Minimal stand-in for the dev replay wrapper that lives at the call site
- * (pages/main/index.vue + state/use_overlay.ts). The wrapper's only
+ * Minimal stand-in for the dev replay wrapper at its production call site
+ * (dev tools wired through pages/main/index.vue). The wrapper's only
  * non-trivial behaviour is the `revealing` boundary case: when the dev tool
  * jumps past `drawing`, the `onDrawingStart` hook never fires, so the
  * wrapper must seed the reading request itself.
