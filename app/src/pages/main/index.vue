@@ -90,11 +90,11 @@
  *     any descendant can inject them.
  */
 import { computed, provide, ref, onMounted, onUnmounted } from 'vue'
-import PlayView from '../../views/PlayView.vue'
-import ReadingSplitView from '../../views/ReadingSplitView.vue'
-import ReadingDrawerView from '../../views/ReadingDrawerView.vue'
-import NotificationHost from '../../components/NotificationHost.vue'
-import DevToolsPanel from '../../components/DevToolsPanel.vue'
+import PlayView from '../../flows/shared/PlayView.vue'
+import ReadingSplitView from '../../flows/reading/views/ReadingSplitView.vue'
+import ReadingDrawerView from '../../flows/reading/views/ReadingDrawerView.vue'
+import NotificationHost from '../../flows/shared/NotificationHost.vue'
+import DevToolsPanel from '../../flows/shared/DevToolsPanel.vue'
 import { useAppPhase } from '../../state/use_app_phase'
 import { useTarotStore } from '../../store/tarot'
 import { useThemeStore } from '../../store/theme'
