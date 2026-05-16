@@ -44,7 +44,7 @@
   - 验收点：vue-tsc 通过；`DEFAULT_OVERLAY_TEXT` 字面量逐字未改；默认参数仍解析同一常量
   - 验收方式：`npx vue-tsc --noEmit -p app/tsconfig.json`；`npx vitest run --config app/vitest.config.ts --dir app/test overlay_progress_presenter.test.ts`
 
-- [ ] S5 拆 `registry.ts`（最复杂，含隐式契约）
+- [x] S5 拆 `registry.ts`（最复杂，含隐式契约）
   - 操作对象：`app/src/core/animation/phases/registry.ts`；新建同目录 `phase_types.ts`、`phase_entry_snaps.ts`、`phase_manifest.ts`
   - 操作步骤：类型/常量契约（原 `:15-28`+`:50-75`：`OverlayPhase` 转发、`MAX_CUT_PILES`、`PhaseStep`、`PhaseSnapDeps`、`PhaseManifest`）→ `phase_types.ts`；三个 `snapTo*Entry`（原 `:77-191`，含不变式 JSDoc 原样）→ `phase_entry_snaps.ts`；`PHASE_MANIFEST`+`PHASE_STEPS`+查询/调度（原 `:193-279`）→ `phase_manifest.ts`（`snapToEntryState` 箭头包装原样引用 snap 函数，`PHASE_MANIFEST` 须在 `PHASE_STEPS` 前定义）；`registry.ts` 清空主体转 facade，re-export `phase_types`+`phase_manifest` 全部对外符号（含 `export type { OverlayPhase }`），snap 三函数不 re-export（无外部消费者）
   - 影响范围：新增 3 文件；`registry.ts` 转 facade；8 处外部 import + 3 测试路径符号零变更
@@ -68,7 +68,7 @@
 
 ## 进度
 
-S1 完成（`reading_panel_timing.ts` 拆出，引擎保留 + re-export；vue-tsc exit 0，typewriter 2 文件 16 测试全绿）。收尾修正：文件头 `TODO(...)` 关键字触发 `TodoFixme`/`no-warning-comments` 新告警，改为陈述句消除（不绕过、不弱化检查），amend 入 S1。S2 完成（`raf_shim.ts` 拆出，scale.ts 改 import + 文件头注释同步；vue-tsc exit 0，scale/layout_solver 2 文件 26 测试全绿）。S3 完成（`layout_solver_reading.ts` + `layout_solver_draw.ts` 拆出，原文件保留类型 re-export + `solveLayout` 调度、文件头同步；vue-tsc exit 0，layout_solver 12 测试全绿）。S4 完成（`overlay_text.ts` 拆出 `OverlayText`+`DEFAULT_OVERLAY_TEXT`，presenter import+re-export 二者、barrel 不动；vue-tsc exit 0，presenter 11 测试全绿）。进行中：S5。
+S1 完成（`reading_panel_timing.ts` 拆出，引擎保留 + re-export；vue-tsc exit 0，typewriter 2 文件 16 测试全绿）。收尾修正：文件头 `TODO(...)` 关键字触发 `TodoFixme`/`no-warning-comments` 新告警，改为陈述句消除（不绕过、不弱化检查），amend 入 S1。S2 完成（`raf_shim.ts` 拆出，scale.ts 改 import + 文件头注释同步；vue-tsc exit 0，scale/layout_solver 2 文件 26 测试全绿）。S3 完成（`layout_solver_reading.ts` + `layout_solver_draw.ts` 拆出，原文件保留类型 re-export + `solveLayout` 调度、文件头同步；vue-tsc exit 0，layout_solver 12 测试全绿）。S4 完成（`overlay_text.ts` 拆出 `OverlayText`+`DEFAULT_OVERLAY_TEXT`，presenter import+re-export 二者、barrel 不动；vue-tsc exit 0，presenter 11 测试全绿）。S5 完成（`registry.ts` 三拆 `phase_types`+`phase_entry_snaps`+`phase_manifest`，原文件转 facade、manifest→snap 箭头包装与求值顺序保留、snap 不 re-export；vue-tsc exit 0，registry/snap/replay/progress/pipeline 5 文件 45 测试全绿）。进行中：S6。
 
 ## 搁置问题
 
