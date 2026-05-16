@@ -205,9 +205,9 @@ function scanTimerLeaks(file, content) {
  *   - await delay(...) in orchestrator files
  */
 function scanNakedAwait(file, content) {
-  // Only scan frontend composables and components where defensive handling matters most.
-  // API layer (api/*), stores, and server are excluded by convention.
-  if (!file.includes('/composables/') && !file.includes('/components/')) return
+  // Only scan frontend business state and components where defensive handling matters most.
+  // API layer (api/*), stores, core infra, and server are excluded by convention.
+  if (!file.includes('/state/') && !file.includes('/components/')) return
 
   const sourceFile = ts.createSourceFile(file, content, ts.ScriptTarget.ESNext, true, ts.ScriptKind.TS)
 
@@ -333,7 +333,7 @@ function scanCssVariables() {
  * Flags access to _prefixed properties on IMPORTED objects.
  * Excludes:
  *   - animation/engine/*  (internal engine modules are tightly coupled by design)
- *   - composables/use_animation_state.ts  (defines the state being accessed)
+ *   - core/animation/use_animation_state.ts  (defines the state being accessed)
  *   - receiver === 'this'
  */
 function scanExternalPrivateAccess(file, content) {

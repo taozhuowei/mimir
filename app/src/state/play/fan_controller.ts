@@ -1,5 +1,5 @@
 /**
- * Name: composables/play/fan_controller
+ * Name: state/play/fan_controller
  * Purpose: imperative GSAP plumbing for the idle 12-card fan loop. Owns
  *          the timeline reference, the per-card transform flush, and the
  *          reset-to-stack snap used during phase hand-off.
@@ -21,7 +21,7 @@
 import { gsap } from 'gsap'
 import { prefersReducedMotion } from '../../core/utils/accessibility'
 import { buildFanTimeline } from '../../core/animation/phases/fan/builder'
-import type { FanController, PlayDeckRuntime } from './types'
+import type { FanController, PlayDeckRuntime } from './play_deck_runtime_types'
 
 /**
  * Build the fan-loop controller around a runtime container. All

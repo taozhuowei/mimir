@@ -15,7 +15,7 @@
  *          custom properties ──▶ `:style="cssVarStyle"` on the root view.
  */
 import { computed, type ComputedRef } from 'vue'
-import { useResponsiveScale } from '../core/sizing/scale'
+import { useResponsiveScale } from './scale'
 import { getMenuClearancePx } from './overlay_layout/breakpoints'
 
 export function useCssVarBridge(): ComputedRef<Record<string, string>> {

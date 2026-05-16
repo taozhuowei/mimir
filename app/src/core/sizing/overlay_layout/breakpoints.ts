@@ -1,5 +1,5 @@
 /**
- * Name: composables/overlay_layout/breakpoints
+ * Name: core/sizing/overlay_layout/breakpoints
  * Purpose: holds the breakpoint constants and helpers used by the
  *          overlay-layout composable: the wide-screen side-drawer width,
  *          the PC-mode threshold, the mini-program menu-button rect
@@ -13,7 +13,7 @@
  *            resolveTopBarHeight ──▶ topBarHeight metric.
  */
 
-import { MAX_CANVAS_WIDTH } from '../../core/sizing/scale'
+import { MAX_CANVAS_WIDTH } from '../scale'
 
 /**
  * Side-column drawer width (px) used by the wide-screen reading layout.

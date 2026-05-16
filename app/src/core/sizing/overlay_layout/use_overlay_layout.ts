@@ -21,19 +21,19 @@
  */
 
 import type { Ref } from 'vue'
-import { checkWidth as checkWidthHelper } from './overlay_layout/breakpoints'
+import { checkWidth as checkWidthHelper } from './breakpoints'
 import {
   getSceneLayout,
   getViewportMetrics,
   type SceneLayout,
   type Scene,
   type ViewportMetrics,
-} from './overlay_layout/scene'
+} from './viewport_scene_layout'
 import {
   getMotionMetrics as resolveMotionMetrics,
   type CutAxis,
   type MotionMetrics,
-} from './overlay_layout/motion'
+} from './motion_metrics'
 
 // Re-export the public types so existing importers keep compiling.
 export type { SceneLayout, ViewportMetrics, MotionMetrics, CutAxis }

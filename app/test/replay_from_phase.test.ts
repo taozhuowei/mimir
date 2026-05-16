@@ -15,7 +15,7 @@
 
 import { describe, expect, it, vi } from 'vitest'
 import { ref } from 'vue'
-import { replayFromPhaseCommand } from '../src/composables/commands/replay_from_phase'
+import { replayFromPhaseCommand } from '../src/state/commands/replay_from_phase'
 import type { OverlayPhase } from '../src/core/flow/types'
 import type { PhaseSnapDeps } from '../src/core/animation/phases/registry'
 import { MAX_CARD_COUNT, MAX_CUT_PILES } from '../src/core/config/layout_constants'
@@ -79,7 +79,7 @@ function makeSnapDeps(): PhaseSnapDeps {
 
 /**
  * Minimal stand-in for the dev replay wrapper that lives at the call site
- * (pages/main/index.vue + composables/use_overlay.ts). The wrapper's only
+ * (pages/main/index.vue + state/use_overlay.ts). The wrapper's only
  * non-trivial behaviour is the `revealing` boundary case: when the dev tool
  * jumps past `drawing`, the `onDrawingStart` hook never fires, so the
  * wrapper must seed the reading request itself.

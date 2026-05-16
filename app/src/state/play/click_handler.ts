@@ -1,5 +1,5 @@
 /**
- * Name: composables/play/click_handler
+ * Name: state/play/click_handler
  * Purpose: build the idle-tap click handler with the double-tap lock
  *          guard. Releases the lock after `DECK_CLICK_RELEASE_MS` and
  *          falls back to a safety timer (`DECK_CLICK_SAFETY_MS`) so the
@@ -23,7 +23,7 @@ import type { Ref } from 'vue'
 import { useTarotStore } from '../../shared/store/tarot'
 import { DECK_CLICK_SAFETY_MS } from '../../core/config/layout_constants'
 import type { DivinationPhase } from '../../shared/store/flow'
-import type { PlayDeckRuntime } from './types'
+import type { PlayDeckRuntime } from './play_deck_runtime_types'
 
 /** Cooldown after a click before the lock releases. Mirrors the legacy
  *  idle composable so double-tap protection is preserved. */

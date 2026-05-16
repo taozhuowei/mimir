@@ -15,7 +15,7 @@ import { buildRevealPhaseRunner } from '../../core/animation/phases/reveal/build
 import { PHASE_MANIFEST } from '../../core/animation/phases/registry'
 import type { PhaseContext, PhaseRunner, OverlayPhase } from '../../core/flow/types'
 import type { SceneKind, SceneLayout } from '../../core/sizing/layout_solver'
-import type { MotionMetrics } from '../use_overlay_layout'
+import type { MotionMetrics } from '../../core/sizing/overlay_layout/use_overlay_layout'
 
 export function buildPhaseContext(deps: {
   getDeckCenter: () => { centerX: number; centerY: number }
