@@ -18,20 +18,20 @@
  *     stable visual scale.
  */
 
-import { computed, inject, onMounted, onUnmounted, ref, watch } from 'vue'
+import { computed, inject, onMounted, onUnmounted, watch } from 'vue'
 import type { ComputedRef, Ref } from 'vue'
 import { gsap } from 'gsap'
-import { prefersReducedMotion } from '../core/utils/accessibility'
-import { solveLayoutFromWindow } from '../core/sizing/solve_from_window'
 import type { UseAnimationControllerReturn } from './flows/divination/use_animation_controller'
 import type { DivinationPhase } from '../core/store/flow'
-import { createFanController } from './fan_controller'
-import { createDivinationRig } from './divination_rig'
-import { buildClickHandler } from './click_handler'
-import type { FanController, DivinationRig, PlayDeckRuntime } from './play_deck_runtime_types'
-
-/** Cards stacked in the idle fan deck (docs/prd/animation.md（动画分帧）). */
-const DECK_SIZE = 12
+import { DECK_SIZE, createPlayDeckRuntime } from './flows/idle/deck_runtime'
+import type { PlayDeckRuntime } from './flows/idle/deck_runtime'
+import { resolveDeckCardSize } from './flows/idle/deck_card_size'
+import { runEntranceHint } from './flows/idle/entrance_hint'
+import { createFanController } from './flows/idle/fan_controller'
+import type { FanController } from './flows/idle/fan_controller'
+import { buildClickHandler } from './flows/idle/click_handler'
+import { createDivinationRig } from './flows/divination/divination_rig'
+import type { DivinationRig } from './flows/divination/divination_rig'
 
 /** Reactive surface returned to Deck.vue. */
 export interface PlayDeckAnimation {
@@ -55,57 +55,6 @@ export interface PlayDeckAnimationDeps {
    * sees it and kicks off the divination rig.
    */
   onTriggerDivination: () => void
-}
-
-/** Build the runtime container — refs + mutable holders only. */
-function createPlayDeckRuntime(): PlayDeckRuntime {
-  return {
-    cardWidth: ref(100),
-    cardHeight: ref(160),
-    cardsStyle: ref<Record<string, string>[]>(Array(DECK_SIZE).fill({})),
-    hintOpacity: ref(0),
-    isStartingDivination: ref(false),
-    cards: Array(DECK_SIZE).fill(0).map(() => ({ x: 0, y: 0, rotation: 0, scale: 1 })),
-    hintState: { opacity: 0 },
-    timelineHolder: { value: null },
-    animatingHolder: { value: false },
-    lockTimerHolder: { value: null },
-  }
-}
-
-/**
- * Resolve the fan-stack card width/height from the draw stage layout
- * solver. Mirrors the legacy idle composable so idle → divination keeps
- * stable card size with no visual jump.
- */
-function resolveDeckCardSize(): { cardWidth: number; cardHeight: number } {
-  try {
-    const { layout } = solveLayoutFromWindow('draw_stage')
-    return {
-      cardWidth: layout.drawCardWidth,
-      cardHeight: layout.drawCardHeight,
-    }
-  } catch {
-    return { cardWidth: 100, cardHeight: 160 }
-  }
-}
-
-/**
- * Touch-hint fade — runs once per idle entrance so it doesn't compete
- * with the title GSAP entrance. Honors reduced-motion.
- */
-function runEntranceHint(hintOpacity: Ref<number>, hintState: { opacity: number }): void {
-  hintState.opacity = 0
-  if (prefersReducedMotion()) {
-    hintOpacity.value = 0.6
-    return
-  }
-  gsap.to(hintState, {
-    opacity: 0.6,
-    duration: 0.8,
-    delay: 0.6,
-    onUpdate: () => { hintOpacity.value = hintState.opacity },
-  })
 }
 
 /**

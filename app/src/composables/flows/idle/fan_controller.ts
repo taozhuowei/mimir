@@ -19,9 +19,17 @@
  */
 
 import { gsap } from 'gsap'
-import { prefersReducedMotion } from '../core/utils/accessibility'
-import { buildFanTimeline } from './flows/idle/fan'
-import type { FanController, PlayDeckRuntime } from './play_deck_runtime_types'
+import { prefersReducedMotion } from '../../../core/utils/accessibility'
+import { buildFanTimeline } from './fan'
+import type { PlayDeckRuntime } from './deck_runtime'
+
+/** Reactive surface for the fan-loop sub-system. */
+export interface FanController {
+  flushCardsStyle: () => void
+  resetCardsToStack: () => void
+  killFanTimeline: () => void
+  startFanLoop: () => void
+}
 
 /**
  * Build the fan-loop controller around a runtime container. All

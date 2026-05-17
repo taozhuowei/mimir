@@ -20,9 +20,9 @@
  */
 
 import type { Ref } from 'vue'
-import { useTarotStore } from '../core/store/tarot'
-import type { DivinationPhase } from '../core/store/flow'
-import type { PlayDeckRuntime } from './play_deck_runtime_types'
+import { useTarotStore } from '../../../core/store/tarot'
+import type { DivinationPhase } from '../../../core/store/flow'
+import type { PlayDeckRuntime } from './deck_runtime'
 
 /** Minimum gap between deck-click events to debounce double-taps (ms). */
 const DECK_CLICK_SAFETY_MS = 2000
