@@ -1,28 +1,10 @@
 /**
  * Name: use_play_deck_animation
- * Purpose: drives the unified Deck stage-content (idle fan loop + divination
- *          rig) for the always-mounted PlayView. Replaces
- *          `use_idle_deck_animation` after task 8.2.3 collapsed the two
- *          stage-content components (IdleDeck + DivinationDeck) into one
- *          persistent instance under a single Stage.
- *
- * Reason: keeping a single Deck instance mounted across phases removes the
- *         scene-push-fade exit tween that the legacy idle deck used to
- *         hand off to a freshly mounted divination deck. The previous
- *         approach (`scale 1 → 1.5` + opacity fade out) was a workaround
- *         for the unmount/mount visual gap and never matched the new
- *         single-card spread visual language. Now the same deck simply
- *         transitions from fan-loop to shuffle directly — no exit tween,
- *         no new component mount.
- *
- *         P3-2 split: the file grew to 387 lines combining three
- *         independently-testable sub-systems (fan loop, divination
- *         rig start/teardown, click guard). Each sub-controller now
- *         lives in its own module under state/play/; this file
- *         holds the runtime container, lifecycle wiring, and the
- *         phase-driven state-machine watch. Behaviour-preserving — the
- *         extracted function bodies are byte-identical to their
- *         inlined predecessors.
+ * Purpose: drives the single persistent Deck stage-content (idle fan loop +
+ *          divination rig). Holds the runtime container, lifecycle wiring,
+ *          and the phase-driven state-machine watch; the fan loop, the
+ *          divination rig start/teardown, and the click guard each live in
+ *          their own sibling composable.
  *
  * Data flow:
  *   - injected `appPhase` (Ref<DivinationPhase>) watched to switch between
@@ -218,7 +200,7 @@ export function usePlayDeckAnimation(deps: PlayDeckAnimationDeps): PlayDeckAnima
       rt.lockTimerHolder.value = null
     }
     gsap.killTweensOf(rt.hintState)
-    // The Deck is always-mounted with PlayView, so onUnmounted only
+    // The Deck stays mounted for the whole route, so onUnmounted only
     // fires on full app teardown (route swap / fallback). Tear the
     // divination rig down too if it was running.
     if (phase.value !== 'idle') {

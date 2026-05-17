@@ -1,17 +1,14 @@
 <template>
   <!--
-    Main page route root (docs/prd/glossary.md（路由 #1）). Renders the unified PlayView
-    across every divination phase, with ReadingSplit/Drawer overlaid in
-    'reading'/'decision'. NotificationHost lives on the route root for
-    cross-view alerts. The .canvas wrapper holds the divination canvas
-    (capped at MAX_CANVAS_WIDTH per docs/prd/animation.md（视图过渡动画）) and slides flush-left
-    when reading mode opens on a wide viewport.
-
-    Single PlayView instance — task 8.2.3 collapsed the legacy
-    IdleView ↔ DivinationView v-if/v-else split into one always-mounted
-    view, so the underlying Deck never unmounts. That removed the need
-    for the .view-switch cross-fade transition and the scale-1→1.5
-    push-fade exit tween that previously masked the unmount/mount gap.
+    Main page route root (docs/prd/glossary.md（路由 #1）). Composes the
+    divination surface — HeaderArea (TitleContent ↔ ProgressContent by
+    phase) + Stage (CardsLoadError | Deck) — with ReadingSplit/Drawer
+    overlaid in 'reading'/'decision'. NotificationHost sits on the route
+    root for cross-view alerts. The .canvas wrapper caps the divination
+    canvas at MAX_CANVAS_WIDTH (docs/prd/animation.md（视图过渡动画）) and
+    slides it flush-left when reading opens on a wide viewport. The single
+    Deck instance stays mounted across idle ↔ divination, so the swap is a
+    header-content change only.
   -->
   <view
     class="main-page"
@@ -19,11 +16,25 @@
     :style="cssVarStyle"
   >
     <view class="canvas">
-      <PlayView
-        :cards-load-error="tarotStore.cardsLoadError"
-        :is-cards-loading="tarotStore.isCardsLoading"
-        @retry-load-cards="handleRetryLoadCards"
-      />
+      <!--
+        Header presentation comes from useHeaderPresentation. The idle
+        card-load error band is its own component, gated by v-if/v-else
+        against Deck so Deck is not mounted while erroring at idle.
+      -->
+      <view class="play-view" :class="{ 'play-view--error': isIdle && cardsLoadError }">
+        <HeaderArea
+          :role="headerRole"
+          :aria-valuetext="headerAriaValuetext"
+          :style="headerStyle"
+        >
+          <TitleContent v-if="isIdle" variant="idle" />
+          <ProgressContent v-else />
+        </HeaderArea>
+        <Stage :scene="isIdle ? 'idle' : 'divination'">
+          <CardsLoadError v-if="isIdle && cardsLoadError" />
+          <Deck v-else />
+        </Stage>
+      </view>
     </view>
 
     <!-- Wide → split, narrow → drawer (docs/prd/glossary.md（视图）). Mounted only in 'reading'/'decision'. -->
@@ -76,156 +87,43 @@
 <script setup lang="ts">
 /**
  * Name: pages/main/index
- * Purpose: route root for the main divination flow. Owns app-level phase
- *          (via `useAppPhase`), the `isWide` ref, and the animation +
- *          reading controllers. Provides all of these to descendant views
- *          via Vue provide/inject. View-picker derivation, dev tools, and
- *          the CSS-variable bridge live in dedicated composables so the
- *          SFC body stays focused on orchestration.
- * Data flow:
- *   - tarotStore.phase ──▶ useAppPhase ──▶ provide('appPhase') ──▶ views
- *   - uni.getWindowInfo + onWindowResize ──▶ isWide ──▶ provide('isWide')
- *   - useAnimationController + useReadingController are wired here via
- *     callbacks (onDrawingStart / onPipelineComplete) and provided so
- *     any descendant can inject them.
+ * Purpose: route root for the main divination flow. Instantiates the
+ *          orchestration graph via useMainStage, provides phase / isWide /
+ *          the two controllers to descendant components, derives header
+ *          presentation + the idle card-load error, and composes the
+ *          divination surface (HeaderArea + Stage(Deck)) with the reading
+ *          split/drawer overlay, notifications and dev tools.
  */
-import { computed, provide, ref, onMounted, onUnmounted } from 'vue'
-import PlayView from '../../components/PlayView.vue'
+import { provide } from 'vue'
+import HeaderArea from '../../components/HeaderArea.vue'
+import TitleContent from '../../components/TitleContent.vue'
+import ProgressContent from '../../components/ProgressContent.vue'
+import Stage from '../../components/Stage.vue'
+import Deck from '../../components/Deck.vue'
+import CardsLoadError from '../../components/CardsLoadError.vue'
 import ReadingSplitView from '../../components/ReadingSplitView.vue'
 import ReadingDrawerView from '../../components/ReadingDrawerView.vue'
 import NotificationHost from '../../components/NotificationHost.vue'
 import DevToolsPanel from '../../components/DevToolsPanel.vue'
-import { useAppPhase } from '../../composables/use_app_phase'
-import { useTarotStore } from '../../core/store/tarot'
-import { useThemeStore } from '../../core/store/theme'
-import { useAnimationController } from '../../composables/use_animation_controller'
-import { useReadingController } from '../../composables/use_reading_controller'
-import { useActiveView } from '../../composables/use_active_view'
-import { useDevTools } from '../../composables/use_dev_tools'
-import { useCssVarBridge } from '../../core/sizing/use_css_var_bridge'
-import { useMainHandlers } from '../../composables/use_main_handlers'
-import { useResultCardShrink } from '../../composables/use_result_card_shrink'
-import { MAX_CANVAS_WIDTH } from '../../core/sizing/scale'
-import type { OverlayPhase } from '../../core/flow/types'
+import { useMainStage } from '../../composables/use_main_stage'
+import { useHeaderPresentation } from '../../composables/use_header_presentation'
+import { useCardsLoadError } from '../../composables/use_cards_load_error'
 
-/* ── Stores + phase ─────────────────────────────────────────────────── */
-
-const tarotStore = useTarotStore()
-const themeStore = useThemeStore()
-const { phase, startDivination, enterDecision, resetToIdle } = useAppPhase()
+const {
+  phase, isWide, cssVarStyle, animationController, readingController, devTools,
+  showReadingView, resultDrawerGeometry, readingPanelState, readingResult,
+  readingErrorMessage, currentQuestion, handleRestart, handleBackHome,
+  handleRetry, handleTypewriterComplete,
+} = useMainStage()
 
 provide('appPhase', phase)
-
-/* ── Responsive width ──────────────────────────────────────────────── */
-
-/**
- * Wide-screen branch threshold (docs/prd/animation.md（视图过渡动画）). The divination canvas is
- * capped at MAX_CANVAS_WIDTH (440 px); any viewport wider than that has
- * room for the side reading panel — split mode wins. Below/equal, the
- * drawer overlay wins.
- */
-const isWide = ref(false)
-function recomputeIsWide() {
-  const { windowWidth } = uni.getWindowInfo()
-  isWide.value = windowWidth > MAX_CANVAS_WIDTH
-}
 provide('isWide', isWide)
-
-/* ── CSS variable bridge: ResponsiveSizes → custom properties on root ─ */
-const cssVarStyle = useCssVarBridge()
-
-/* ── Controller instances (single_card spread → cardCount = 1) ─────── */
-const cardCount = computed(() => 1)
-const readingController = useReadingController({ tarotStore })
-let currentReadingPromise: Promise<unknown> | null = null
-const animationController = useAnimationController({
-  tarotStore,
-  themeStore,
-  isWide,
-  cardCount,
-  callbacks: {
-    onDrawingStart: () => { currentReadingPromise = readingController.startReading({}) },
-    onPipelineComplete: () => { void settlePipeline() },
-    onPhaseChange: (_p: OverlayPhase) => { tarotStore.setPhase('divination') },
-    onResetReading: () => { readingController.resetReading() },
-    onDestroyReading: () => { readingController.destroyReading() },
-  },
-})
-// Provided so descendant views can inject without re-instantiating.
 provide('animationController', animationController)
 provide('readingController', readingController)
 
-/* ── View picker + reading panel passthrough ───────────────────────── */
-
-const { showReadingView, resultDrawerGeometry } = useActiveView({ phase })
-
-/* ── Two-phase result-card sizing ──────────────────────────────────── */
-/**
- * The reveal pipeline grows cards to their *full* safe-area size (the
- * 240×384 phone-shell maximum on every supported canvas). When the
- * drawer mounts (showReadingView false→true on narrow viewports) we
- * animate the card down to the drawer-reserved size so the bottom
- * sheet doesn't crop it. The tween lives in a focused composable so
- * the shrink rules + GSAP cleanup stay auditable in one place.
- */
-useResultCardShrink({
-  showReadingView,
-  isWide,
-  draws: animationController.draws,
-  getSceneLayout: animationController.getSceneLayout,
-  cardCount,
-})
-
-const readingPanelState = computed(() => readingController.readingPanelState.value)
-const readingResult = computed(() => readingController.readingResult.value)
-const readingErrorMessage = computed(() => readingController.readingErrorMessage.value)
-const currentQuestion = computed(() => tarotStore.currentQuestion)
-
-/* ── Event handlers ─────────────────────────────────────────────────── */
-
-function handleRetryLoadCards() {
-  tarotStore.loadCards()
-}
-
-const { settlePipeline, handleRestart } = useMainHandlers({
-  tarotStore,
-  animationController,
-  readingController,
-  getReadingPromise: () => currentReadingPromise,
-  setReadingPromise: (next) => { currentReadingPromise = next },
-  startDivination,
-})
-
-function handleTypewriterComplete() {
-  enterDecision()
-}
-
-function handleBackHome() {
-  resetToIdle()
-}
-
-function handleRetry() {
-  // Fire-and-forget: the click handler must return synchronously, but
-  // retryReading is async. Surface failures via console.error rather than
-  // letting them silently disappear (the previous `void` pattern hid them).
-  readingController.retryReading({}).catch((err) => {
-    console.error('[main] retryReading failed', err)
-  })
-}
-
-/* ── Dev tools (compiled out of production) ─────────────────────────── */
-const devTools = useDevTools({
-  animationController,
-  readingController,
-  setReadingPromise: (promise) => { currentReadingPromise = promise },
-})
-
-/* ── Lifecycle ─────────────────────────────────────────────────────── */
-onMounted(() => {
-  recomputeIsWide()
-  uni.onWindowResize(recomputeIsWide)
-})
-onUnmounted(() => { uni.offWindowResize(recomputeIsWide) })
+const { isIdle, headerRole, headerAriaValuetext, headerStyle } =
+  useHeaderPresentation(phase, animationController)
+const { cardsLoadError } = useCardsLoadError()
 </script>
 
 <style scoped>
@@ -258,17 +156,26 @@ onUnmounted(() => { uni.offWindowResize(recomputeIsWide) })
   transform: translateX(0);
 }
 
+/* Divination surface root: flex column with uniform safe-area + margin
+   padding. `--margin` is set on the main-page root via the scale bridge,
+   so the same value scales across iPhone 8 → 17 Pro Max. */
+.play-view {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  width: 100%;
+  min-height: 0;
+  padding-top: calc(env(safe-area-inset-top, 0px) + var(--margin));
+  padding-bottom: calc(env(safe-area-inset-bottom, 0px) + var(--margin));
+  padding-left: var(--margin);
+  padding-right: var(--margin);
+  box-sizing: border-box;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .canvas {
     transition: none;
   }
 }
-
-/*
- * The legacy `.view-switch-*` 450 ms cross-fade transition was deleted
- * in task 8.2.3 — the view is now a single always-mounted PlayView, so
- * there is no swap to fade between. Keep DUR_IDLE_TO_DIV_MS in
- * animation/easings.ts only as the divination-rig entrance budget; no
- * CSS rule here references it any more.
- */
 </style>
