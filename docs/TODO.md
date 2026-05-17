@@ -92,7 +92,7 @@ app/src/composables/flows/fallback/
   - 验收：`npx vue-tsc --noEmit -p app/tsconfig.json`（纯类型移动，tsc 全覆盖）；`npx vitest run --config app/vitest.config.ts --dir app/test`；`grep -rn "core/flow/types\|animation/types'\|animation/atoms/types" app --include=*.ts --include=*.vue`（空）；full gate = exit 0。
   - 影响：新增 2 文件、删 3 文件、~25 处 import。回滚：恢复 3 文件 + 反向 import。
 
-- [ ] P3 迁 shared/animations 运行时
+- [x] P3 迁 shared/animations 运行时
   - 上下文：[state.ts](../app/src/core/animation/state.ts) [reconciler.ts](../app/src/core/animation/reconciler.ts) [visibility.ts](../app/src/core/animation/visibility.ts) [initial_states.ts](../app/src/core/animation/initial_states.ts) [use_animation_state.ts](../app/src/core/animation/use_animation_state.ts) [use_playback.ts](../app/src/core/animation/use_playback.ts) [pipeline.ts](../app/src/core/animation/pipeline.ts) [atoms/flip.ts](../app/src/core/animation/atoms/flip.ts) [atoms/grow.ts](../app/src/core/animation/atoms/grow.ts)。
   - 操作：
     1. `git mv` 上 9 文件 → `composables/shared/animations/`，`reconciler.ts`→`style_sync.ts`（仅文件名；导出名 `createStyleReconciler` 不改），`atoms/flip.ts`→`flip.ts`、`atoms/grow.ts`→`grow.ts`。
@@ -146,7 +146,7 @@ app/src/composables/flows/fallback/
 
 ## 进度
 
-P0–P2 完成。P3 待开始。
+P0–P3 完成。P4 待开始。
 
 ## 搁置问题
 

@@ -6,8 +6,8 @@
  */
 
 import { ref } from 'vue'
-import { createTimelineOrchestrator } from '../gsap/timeline'
-import type { TimelineOrchestrator } from '../gsap/timeline'
+import { createTimelineOrchestrator } from '../../../core/gsap/timeline'
+import type { TimelineOrchestrator } from '../../../core/gsap/timeline'
 
 export function usePlayback() {
   const isPaused = ref(false)

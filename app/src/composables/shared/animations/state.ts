@@ -10,7 +10,7 @@ import {
   createCutInitialStates,
   createDrawInitialStates,
 } from './initial_states'
-import type { CardState, CenterCardState, DrawCardState, InnerState } from '../../composables/shared/animations/card_state'
+import type { CardState, CenterCardState, DrawCardState, InnerState } from './card_state'
 
 /** Maximum number of result cards a future spread could ever ask for. The
  *  animation state allocates this many GSAP targets up front to keep

@@ -9,7 +9,7 @@ import {
   MAX_CUT_PILES,
   type PhaseSnapDeps,
 } from '../src/core/animation/phases/registry'
-import { MAX_CARD_COUNT } from '../src/core/animation/state'
+import { MAX_CARD_COUNT } from '../src/composables/shared/animations/state'
 import type { SceneLayout } from '../src/core/sizing/layout_solver'
 
 /**

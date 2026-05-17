@@ -7,7 +7,7 @@
  */
 import { describe, it, expect } from 'vitest'
 import gsap from 'gsap'
-import { growAtom } from '../src/core/animation/atoms/grow'
+import { growAtom } from '../src/composables/shared/animations/grow'
 import type { AtomContext } from '../src/composables/shared/animations/contracts'
 
 function makeContext(cardCount = 1): {

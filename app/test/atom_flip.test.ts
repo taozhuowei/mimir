@@ -7,7 +7,7 @@
  */
 import { describe, it, expect } from 'vitest'
 import gsap from 'gsap'
-import { flipAtom } from '../src/core/animation/atoms/flip'
+import { flipAtom } from '../src/composables/shared/animations/flip'
 import type { AtomContext } from '../src/composables/shared/animations/contracts'
 
 function makeContext(cardCount = 1): {
