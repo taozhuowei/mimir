@@ -29,7 +29,7 @@
  * Data flow: useCardsLoadError() ──▶ cardsLoadError / isCardsLoading /
  *          retry; the mount gate lives in the parent template.
  */
-import { useCardsLoadError } from '../composables/use_cards_load_error'
+import { useCardsLoadError } from '../core/composables/use_cards_load_error'
 
 const { cardsLoadError, isCardsLoading, retry } = useCardsLoadError()
 </script>
