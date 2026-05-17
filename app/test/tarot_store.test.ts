@@ -15,7 +15,7 @@
 
 import { describe, expect, it, beforeEach } from 'vitest'
 import { createPinia, setActivePinia } from 'pinia'
-import { useTarotStore } from '../src/store/tarot'
+import { useTarotStore } from '../src/core/store/tarot'
 import type { DrawnResult, ReadingResult, TarotCardInfo } from '../src/core/utils/tarot_reading'
 
 // Helper to create minimal valid TarotCardInfo
