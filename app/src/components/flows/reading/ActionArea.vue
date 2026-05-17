@@ -60,7 +60,7 @@
  *           translates into store transitions.
  */
 import { computed } from 'vue'
-import type { DivinationPhase } from '../core/store/flow'
+import type { DivinationPhase } from '../../../core/store/flow'
 
 const props = defineProps<{
   phase: DivinationPhase

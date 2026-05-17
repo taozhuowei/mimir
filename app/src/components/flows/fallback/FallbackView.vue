@@ -32,9 +32,9 @@
  * Data flow: optional `errorMessage` is for diagnostic visibility only;
  *           it never replaces the canonical PRD-mandated title copy.
  */
-import HeaderArea from './HeaderArea.vue'
-import TitleContent from './TitleContent.vue'
-import Stage from './Stage.vue'
+import HeaderArea from '../../shared/HeaderArea.vue'
+import TitleContent from '../../shared/TitleContent.vue'
+import Stage from '../../shared/Stage.vue'
 import FallbackOrbits from './FallbackOrbits.vue'
 
 defineProps<{
