@@ -1,8 +1,8 @@
 // @vitest-environment node
 
 import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest'
-import { createPhasePipeline } from '../src/core/animation/pipeline'
-import type { PipelinePhase } from '../src/core/animation/pipeline'
+import { createPhasePipeline } from '../src/composables/shared/animations/pipeline'
+import type { PipelinePhase } from '../src/composables/shared/animations/pipeline'
 import type { TimelineOrchestrator } from '../src/core/gsap/timeline'
 import type { OverlayPhase } from '../src/composables/shared/animations/contracts'
 

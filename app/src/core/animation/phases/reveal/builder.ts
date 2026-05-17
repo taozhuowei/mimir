@@ -14,8 +14,8 @@
 import gsap from 'gsap'
 import type { AnimationTimeline } from '../../../../composables/shared/animations/card_state'
 import type { OverlayPhase, PhaseContext, PhaseRunner } from '../../../../composables/shared/animations/contracts'
-import { growAtom } from '../../atoms/grow'
-import { flipAtom } from '../../atoms/flip'
+import { growAtom } from '../../../../composables/shared/animations/grow'
+import { flipAtom } from '../../../../composables/shared/animations/flip'
 
 export interface RevealPhaseConfig {
   cardCount: number

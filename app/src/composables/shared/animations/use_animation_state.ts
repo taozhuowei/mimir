@@ -6,7 +6,7 @@
  */
 
 import { createAnimationState } from './state'
-import { createStyleReconciler } from './reconciler'
+import { createStyleReconciler } from './style_sync'
 import { createVisibilityController } from './visibility'
 import type { AnimationState } from './state'
 
