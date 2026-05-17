@@ -4,7 +4,7 @@ import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest'
 import { createPhasePipeline } from '../src/core/animation/pipeline'
 import type { PipelinePhase } from '../src/core/animation/pipeline'
 import type { TimelineOrchestrator } from '../src/core/gsap/timeline'
-import type { OverlayPhase } from '../src/core/flow/types'
+import type { OverlayPhase } from '../src/composables/shared/animations/contracts'
 
 function createMockOrchestrator(): TimelineOrchestrator {
   const timelines: unknown[] = []

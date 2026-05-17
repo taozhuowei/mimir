@@ -11,7 +11,7 @@
 
 import type { Ref } from 'vue'
 import { getPhaseSnap, type PhaseSnapDeps } from '../core/animation/phases/registry'
-import type { OverlayPhase } from '../core/flow/types'
+import type { OverlayPhase } from './shared/animations/contracts'
 
 export interface SkipToReadingCommandDeps {
   interruptCurrentAnimation: () => void

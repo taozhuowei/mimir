@@ -10,7 +10,7 @@
  *          on `inners` state objects (rotationY).
  */
 import { prefersReducedMotion } from '../../utils/accessibility'
-import type { AtomFn } from './types'
+import type { AtomFn } from '../../../composables/shared/animations/contracts'
 
 export interface FlipAtomConfig {
   cardCount: number

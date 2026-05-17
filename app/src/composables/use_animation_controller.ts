@@ -10,7 +10,7 @@
 import { ref } from 'vue'
 import type { ComputedRef, Ref } from 'vue'
 import gsap from 'gsap'
-import type { DrawCardState } from '../core/animation/types'
+import type { DrawCardState } from './shared/animations/card_state'
 import type { StyleReconciler } from '../core/animation/reconciler'
 import { useTarotStore } from '../core/store/tarot'
 import { useThemeStore } from '../core/store/theme'
@@ -27,7 +27,7 @@ import {
   presentProgressHeader,
   presentFooter,
 } from '../core/utils/overlay_progress/index'
-import type { OverlayPhase } from '../core/flow/types'
+import type { OverlayPhase } from './shared/animations/contracts'
 import { MAX_CARD_COUNT } from '../core/animation/state'
 import { MAX_CUT_PILES } from '../core/animation/phases/registry'
 

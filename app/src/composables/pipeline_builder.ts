@@ -13,7 +13,7 @@ import { buildCutPhaseRunner } from '../core/animation/phases/cut/builder'
 import { buildDrawPhaseRunner } from '../core/animation/phases/draw/builder'
 import { buildRevealPhaseRunner } from '../core/animation/phases/reveal/builder'
 import { PHASE_MANIFEST } from '../core/animation/phases/registry'
-import type { PhaseContext, PhaseRunner, OverlayPhase } from '../core/flow/types'
+import type { PhaseContext, PhaseRunner, OverlayPhase } from './shared/animations/contracts'
 import type { SceneKind, SceneLayout } from '../core/sizing/layout_solver'
 import type { MotionMetrics } from '../core/sizing/overlay_layout/use_overlay_layout'
 
