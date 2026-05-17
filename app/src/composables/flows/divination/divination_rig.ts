@@ -21,8 +21,14 @@
  *            listener.
  */
 
-import type { UseAnimationControllerReturn } from './flows/divination/use_animation_controller'
-import type { DivinationRig } from './play_deck_runtime_types'
+import type { UseAnimationControllerReturn } from './use_animation_controller'
+
+/** Reactive surface for the divination-rig sub-system. */
+export interface DivinationRig {
+  start: () => void
+  tearDown: () => void
+  detachResize: () => void
+}
 
 /**
  * Build the divination-rig controller. Wraps the controller calls that

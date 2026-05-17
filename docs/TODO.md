@@ -90,7 +90,7 @@ app/src/composables/flows/idle/                   （迁入 2 + 新建 3）
   - 验收：vue-tsc；`vitest --dir app/test` 全量；`grep -rn "composables/use_animation_controller\|composables/use_lifecycle\b\|composables/use_phases\|composables/use_presentation\|composables/start'\|composables/pipeline_builder\|composables/skip_to_reading\|composables/replay_from_phase\|composables/use_lifecycle_types" app --include=*.ts --include=*.vue`（仅 flows/divination 新路径）；`node scripts/quality_gate.js full`（函数大小豁免须命中新路径，exit 0）。
   - 影响：9 迁移 + 内外 import + quality_baseline 2 行。回滚：反向 `git mv` + 还原 import + 还原 baseline。
 
-- [ ] P4 状态机簇单一职责拆解 + 按消费者归位
+- [x] P4 状态机簇单一职责拆解 + 按消费者归位
   - 上下文：[play_deck_runtime_types.ts](../app/src/composables/play_deck_runtime_types.ts)（`PlayDeckRuntime`/`FanController`/`DivinationRig` 三接口）；[fan_controller.ts](../app/src/composables/fan_controller.ts)（import gsap、`../core/utils/accessibility`、`./flows/idle/fan`、`./play_deck_runtime_types`）；[click_handler.ts](../app/src/composables/click_handler.ts)（import `../core/store/tarot`、`../core/store/flow`、`./play_deck_runtime_types`）；[divination_rig.ts](../app/src/composables/divination_rig.ts)（import `./use_animation_controller`、`./play_deck_runtime_types`；全程不引用 `rt`）；[use_play_deck_animation.ts](../app/src/composables/use_play_deck_animation.ts)（`DECK_SIZE=12`:34；`createPlayDeckRuntime`:61-74；`resolveDeckCardSize`:81-91；`runEntranceHint`:97-109；`watchPhaseStateMachine`:128-152；`usePlayDeckAnimation`:155-218；唯一消费者 [Deck.vue:73](../app/src/components/Deck.vue)）。`DECK_SIZE` 被 `createPlayDeckRuntime`(:65,:68) 与残留 `:212 deckSize:DECK_SIZE` 共用 → 随 `deck_runtime.ts`，残留反向 import（合理拆分，无逻辑变更）。
   - 操作：
     1. 新建 `flows/idle/deck_runtime.ts`：逐字搬入 `const DECK_SIZE=12`、`PlayDeckRuntime` 接口（from play_deck_runtime_types，含 `Ref`/`gsap` type import 按新位置算）、`createPlayDeckRuntime()` 函数体（from use_play_deck_animation:61-74，逐字）；导出三者。
@@ -123,7 +123,7 @@ app/src/composables/flows/idle/                   （迁入 2 + 新建 3）
 
 ## 进度
 
-P0–P3 完成。P1：core/composables 2 文件。P2：flows/reading 4 文件。P3：9 文件迁 flows/divination，内部 import 规则化重写 + 8 外部 consumer + quality_baseline + replay_from_phase.test.ts 同步，full gate exit 0。P4 进行中。
+P0–P4 完成。P1：core/composables 2 文件。P2：flows/reading 4 文件。P3：flows/divination 9 文件。P4：新建 flows/idle/{deck_runtime,deck_card_size,entrance_hint}（逐字抽 DECK_SIZE/PlayDeckRuntime/createPlayDeckRuntime/resolveDeckCardSize/runEntranceHint），fan_controller/click_handler→flows/idle（内联 FanController），divination_rig→flows/divination（内联 DivinationRig），删 play_deck_runtime_types，use_play_deck_animation 留根编排器残留；full gate exit 0。P5 进行中。
 
 ## 搁置问题
 
