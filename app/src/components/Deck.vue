@@ -71,7 +71,7 @@ import type { UseAnimationControllerReturn } from '../composables/use_animation_
 import { useTarotStore } from '../core/store/tarot'
 import { useThemeStore } from '../core/store/theme'
 import { usePlayDeckAnimation } from '../composables/use_play_deck_animation'
-import { RESULT_LIFT_MARGIN_PX } from '../composables/result_card_lift_margin'
+import { RESULT_LIFT_MARGIN_PX } from '../composables/flows/reading/result_card_lift_margin'
 import type { DivinationPhase } from '../core/store/flow'
 import DeckFanStack from './DeckFanStack.vue'
 import DeckRig from './DeckRig.vue'
