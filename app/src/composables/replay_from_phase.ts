@@ -17,7 +17,7 @@ import {
   getPhaseSnap,
   type PhaseSnapDeps,
 } from '../core/animation/phases/registry'
-import type { OverlayPhase } from '../core/flow/types'
+import type { OverlayPhase } from './shared/animations/contracts'
 import type { ProgressModel } from '../core/utils/overlay_progress/phase_progress_model'
 
 export interface ReplayFromPhaseCommandDeps {

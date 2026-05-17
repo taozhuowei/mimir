@@ -1,12 +1,17 @@
 /**
- * Name: core/flow/types
- * Purpose: flow orchestration and phase runner types.
- * Reason: decouple phase execution order from individual phase logic.
+ * Name: composables/shared/animations/contracts
+ * Purpose: flow-orchestration + phase-runner + animation-atom type contracts.
+ * Reason: decouple phase execution order from individual phase logic, and
+ *   give atoms a shared signature. Merged verbatim from the former
+ *   core/flow/types.ts and core/animation/atoms/types.ts during the
+ *   core→composables layered refactor; contracts live with the animation
+ *   base layer that defines them.
  */
 
-import type { DrawCardState } from '../animation/types'
-import type { DeckGeometry } from '../deck/types'
-import type { CardLayout } from '../sizing/layout_solver'
+import type { DrawCardState } from './card_state'
+import type { DeckGeometry } from '../../../core/deck/types'
+import type { CardLayout } from '../../../core/sizing/layout_solver'
+import type { gsap } from 'gsap'
 
 export type OverlayPhase = 'shuffling' | 'cutting' | 'drawing' | 'revealing'
 
@@ -41,3 +46,22 @@ export interface PhaseRunner {
   name: OverlayPhase
   run(context: PhaseContext, onComplete: () => void): unknown
 }
+
+/** Subset of PhaseContext that atoms typically need. */
+export interface AtomContext {
+  cardElements: PhaseContext['cardElements']
+  visible: PhaseContext['visible']
+}
+
+/**
+ * An atom is a pure function that writes its tweens into the given timeline
+ * starting at `startAt` (a GSAP position parameter — number, label, or
+ * relative offset like "+=0.1" / ">"). Atoms do NOT return the timeline —
+ * the caller composes by calling multiple atoms in sequence.
+ */
+export type AtomFn<TConfig> = (
+  timeline: gsap.core.Timeline,
+  ctx: AtomContext,
+  config: TConfig,
+  startAt?: number | string,
+) => void

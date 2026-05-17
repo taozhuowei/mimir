@@ -12,7 +12,7 @@ import {
   presentProgressHeader,
   presentFooter,
 } from '../core/utils/overlay_progress/index'
-import type { OverlayPhase } from '../core/flow/types'
+import type { OverlayPhase } from './shared/animations/contracts'
 
 export interface UsePresentationOptions {
   phase: Ref<OverlayPhase>

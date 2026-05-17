@@ -75,7 +75,7 @@
  *   one-to-one.
  */
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
-import type { OverlayPhase } from '../core/flow/types'
+import type { OverlayPhase } from '../composables/shared/animations/contracts'
 import {
   createDraggablePanel,
   type Position,

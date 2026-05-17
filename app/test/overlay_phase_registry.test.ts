@@ -8,7 +8,7 @@ import {
   isValidPhase,
   getNextPhase,
 } from '../src/core/animation/phases/registry'
-import type { OverlayPhase } from '../src/core/flow/types'
+import type { OverlayPhase } from '../src/composables/shared/animations/contracts'
 
 describe('overlay_animation/phase_registry', () => {
   describe('PHASE_STEPS', () => {

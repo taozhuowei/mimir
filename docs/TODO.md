@@ -81,7 +81,7 @@ app/src/composables/flows/fallback/
   - 验收：`npx vue-tsc --noEmit -p app/tsconfig.json`；`npx vitest run --config app/vitest.config.ts --dir app/test overlay_timeline.test.ts overlay_pipeline.test.ts use_animation_state.test.ts`；`grep -rn "animation/adapters" app --include=*.ts --include=*.vue`（空）；`node scripts/quality_gate.js full` = exit 0。
   - 影响：新增 2 文件、删 adapters、7 处 import、1 处内联。回滚：反向恢复 adapters + 还原 import/内联。
 
-- [ ] P2 契约归位（解散 core/flow/types、合并类型）
+- [x] P2 契约归位（解散 core/flow/types、合并类型）
   - 上下文：[core/flow/types.ts](../app/src/core/flow/types.ts)（OverlayPhase/PhaseContext/PhaseRunner）、[core/animation/atoms/types.ts](../app/src/core/animation/atoms/types.ts)（AtomFn/AtomContext）、[core/animation/types.ts](../app/src/core/animation/types.ts)（CardState/CenterCardState/DrawCardState/InnerState/AnimationTimeline）。
   - 操作：
     1. 新建 `composables/shared/animations/card_state.ts`：逐字搬入 `core/animation/types.ts` 全部声明（无外部依赖）。
@@ -146,7 +146,7 @@ app/src/composables/flows/fallback/
 
 ## 进度
 
-P0–P1 完成。P2 待开始。
+P0–P2 完成。P3 待开始。
 
 ## 搁置问题
 

@@ -8,10 +8,10 @@
  *          manifest both build on without import cycles.
  */
 
-import type { OverlayPhase, PhaseContext } from '../../flow/types'
-import type { DrawCardState } from '../types'
+import type { OverlayPhase, PhaseContext } from '../../../composables/shared/animations/contracts'
+import type { DrawCardState } from '../../../composables/shared/animations/card_state'
 import type { SceneLayout } from '../../sizing/layout_solver'
-export type { OverlayPhase } from '../../flow/types'
+export type { OverlayPhase } from '../../../composables/shared/animations/contracts'
 
 /** Maximum number of cut piles the cut animation pre-allocates. */
 export const MAX_CUT_PILES = 8

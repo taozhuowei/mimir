@@ -1,7 +1,8 @@
 /**
- * Name: animation/types
- * Purpose: shared animation state types for overlay animations.
- * Reason: keep animation state contracts explicit and reusable.
+ * Name: composables/shared/animations/card_state
+ * Purpose: shared animation state shapes for overlay animations.
+ * Reason: keep animation state contracts explicit and reusable; lives in the
+ *   shared animation base layer (migrated verbatim from core/animation/types).
  */
 
 export interface CardState {
