@@ -62,9 +62,9 @@ app/src/components/
   - 验收：`grep -rnE "components/[A-Z][A-Za-z]+\.vue'" app --include=*.ts --include=*.vue | grep -vE "components/(shared|flows/(index|idle|divination|fallback|reading))/"`（空，无旧根路径）；`npx vue-tsc --noEmit -p app/tsconfig.json`；`node scripts/quality_gate.js full` = exit 0。
   - 影响：6 新目录 + 24 git mv + 组件内/间 + 2 pages 的 import。回滚：反向 `git mv` + 还原 import + 删空目录。
 
-- [ ] C2 组件头注释路径对齐 + 全局回归
+- [x] C2 组件头注释路径对齐 + 全局回归
   - 操作：
-    1. 24 组件文件头 `Name:`/路径注释对齐新位置（仅注释，零代码/模板/样式）。
+    1. 核查结论（已 grep 实证）：组件头 `Name:` 惯例为「裸组件名 + 角色」（如 `Name: Deck (stage content)`），非路径形式；注释内无 `components/` 路径串。本次移动未引入过期路径注释，无组件注释需改（保持组件既有命名一致性，与 composables 路径式 `Name:` 惯例本就不同）。
     2. 全局回归：`npx vue-tsc --noEmit -p app/tsconfig.json`；`npx vitest run --config app/vitest.config.ts --dir app/test`；`npx vitest run --config server/vitest.config.ts --dir server/test`；`npx eslint app/src/ app/test/ server/src/ server/test/`；`node scripts/quality_gate.js full`；H5 构建 `node scripts/build/index.js --prod --target h5 --skip-quality`。
   - 验收：上述全 exit 0；H5 DONE 且 perf Δ0.0%；更新「进度」。
   - 影响：24 文件注释 + 全量回归。回滚：还原注释。
@@ -79,7 +79,7 @@ app/src/components/
 
 ## 进度
 
-C0–C1 完成。C1：建 6 目录 + 24 组件 git mv（shared 4 / flows index 7、idle 2、divination 2、fallback 2、reading 7）+ 组件自身深度规则化重写 + 组件间跨目录互引 + pages 11 处 + typewriter_text.test.ts 同步，grep 旧路径空、vue-tsc、full gate exit 0。C2 进行中。
+C0–C2 全部完成。24 组件聚类结束：components/{shared 4, flows/{index 7, idle 2, divination 2, fallback 2, reading 7}}，与 composables/flows 完全对称。import 全量重写（组件自身深度 + 组件间跨目录互引 + pages 11 处 + 1 测试）。C2 核查：组件 Name 惯例为裸名+角色、注释无 components/ 路径串，移动未引入过期注释，无注释需改。全程纯移动零逻辑/模板/样式变更。回归：vue-tsc + app/server 全量单测 + eslint + full gate（arch/dead-code/dup/audit）+ H5 prod 构建 perf Δ0.0% 全绿。components 根目录已无散落 .vue。
 
 ## 搁置问题
 
