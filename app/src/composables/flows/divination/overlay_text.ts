@@ -1,5 +1,5 @@
 /**
- * Name: overlay_text
+ * Name: composables/flows/divination/overlay_text
  * Purpose: static UI copy for the divination overlay (position badges,
  *          restart / back-home / revealing labels) and the `OverlayText`
  *          shape they conform to.

@@ -1,5 +1,5 @@
 /**
- * Name: animation/reconciler
+ * Name: composables/shared/animations/style_sync
  * Purpose: synchronize GSAP-mutated state objects into Vue style refs.
  * Reason: decouple style computation and watch bindings from raw state management.
  */

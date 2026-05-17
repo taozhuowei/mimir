@@ -1,5 +1,5 @@
 /**
- * Name: use_playback
+ * Name: composables/shared/animations/use_playback
  * Purpose: GSAP timeline playback controls — pause/resume/seek/step/rate.
  * Reason: extracted from use_animation_controller to isolate playback concerns.
  * Data flow: self-contained; creates TimelineOrchestrator internally.

@@ -1,5 +1,5 @@
 /**
- * Name: animation/phases/phase_entry_snaps
+ * Name: composables/flows/divination/phase_entry_snapshots
  * Purpose: per-phase "snap to entry visual state" helpers used by the
  *          replay / skip flows (cutting / drawing / revealing).
  * Reason: split out of registry.ts so the replay entry-state logic is one

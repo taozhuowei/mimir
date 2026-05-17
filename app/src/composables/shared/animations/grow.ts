@@ -1,5 +1,5 @@
 /**
- * Name: animation/atoms/grow
+ * Name: composables/shared/animations/grow
  * Purpose: animate cards' DOM width/height from current value to a target
  *          size. Used by the revealing phase to grow drawn cards from
  *          drawCardSize to resultCardSize.

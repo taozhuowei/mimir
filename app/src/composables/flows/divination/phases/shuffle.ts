@@ -1,5 +1,5 @@
 /**
- * Name: core/flow/phases/shuffle_phase
+ * Name: composables/flows/divination/phases/shuffle
  * Purpose: PhaseRunner implementation for the shuffle phase.
  * Reason: migrated from utils/overlay_animation/phases/shuffle_phase.ts to consume PhaseContext.
  */

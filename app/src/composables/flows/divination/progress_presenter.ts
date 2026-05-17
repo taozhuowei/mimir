@@ -1,5 +1,5 @@
 /**
- * Name: phase_progress_presenter
+ * Name: composables/flows/divination/progress_presenter
  * Purpose: transform progress model state into view-ready presentation data.
  * Reason: decouple progress state from specific rendering decisions.
  * Data flow: progress state flows in; presentation data flows out.

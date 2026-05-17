@@ -1,5 +1,5 @@
 /**
- * Name: animation/phases/fan/builder
+ * Name: composables/flows/idle/fan
  * Purpose: builds the idle-deck fan animation timeline (docs/prd/animation.md（动画分帧）).
  * Reason: extracted from IdleDeck.vue so the timeline logic is testable and
  *         reusable without touching the component.

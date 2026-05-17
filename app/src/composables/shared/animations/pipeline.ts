@@ -1,5 +1,5 @@
 /**
- * Name: animation/pipeline
+ * Name: composables/shared/animations/pipeline
  * Purpose: phase pipeline composer.
  * Reason: the controller provides an ordered phase list and the pipeline executes them
  *   in sequence; inserting or removing a phase does not require rewriting controller flow.

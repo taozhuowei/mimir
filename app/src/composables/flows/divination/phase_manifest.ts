@@ -1,5 +1,5 @@
 /**
- * Name: animation/phases/phase_manifest
+ * Name: composables/flows/divination/phase_manifest
  * Purpose: single source of truth for phase ordering + metadata
  *          (PHASE_MANIFEST), its backward-compat progress-UI projection
  *          (PHASE_STEPS), and the derived lookup / sequence helpers.

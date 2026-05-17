@@ -1,5 +1,5 @@
 /**
- * Name: core/flow/phases/cut_phase
+ * Name: composables/flows/divination/phases/cut
  * Purpose: PhaseRunner implementation for the cut phase.
  * Reason: migrated from utils/overlay_animation/phases/cut_phase.ts to consume PhaseContext.
  */

@@ -1,5 +1,5 @@
 /**
- * Name: animation/state
+ * Name: composables/shared/animations/state
  * Purpose: GSAP target object management decoupled from Vue view layer.
  * Reason: centralize all animation state objects that GSAP mutates.
  */

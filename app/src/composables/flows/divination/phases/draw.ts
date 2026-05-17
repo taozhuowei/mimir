@@ -1,5 +1,5 @@
 /**
- * Name: core/animation/phases/draw/builder
+ * Name: composables/flows/divination/phases/draw
  * Purpose: PhaseRunner wrapper for the draw phase — a thin dispatcher
  *          that picks the reduced-motion vs full animated timeline.
  * Reason: timeline construction lives in ./draw_timeline so this file

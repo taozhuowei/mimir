@@ -125,7 +125,7 @@ app/src/composables/flows/fallback/
   - 验收：vue-tsc；`vitest --dir app/test` 全量；`grep -rn "core/animation" app --include=*.ts --include=*.vue`（空）；`test ! -d app/src/core/animation && test ! -d app/src/core/flow`；full gate = exit 0。
   - 影响：2 文件迁移 + 2 importer + 删空目录。回滚：反向 `git mv` + 还原 import。
 
-- [ ] P6 收尾：守卫规则 / 文件头注释 / 文档对齐 / 全局回归
+- [x] P6 收尾：守卫规则 / 文件头注释 / 文档对齐 / 全局回归
   - 上下文：全仓。各迁移文件头 `Name:` 注释多为旧路径（如 `Name: animation/...`、`core/flow/...`）；[docs/README.md](README.md)、[README.md](../README.md)、`app/src/**/README.md`；架构守卫 [config/dependency-cruiser.cjs:252-273](../config/dependency-cruiser.cjs)（`core-is-leaf` 的 `to` 未含 composables；`animation-not-to-reading` 的 `from` 仍为 `^app/src/core/animation/`）、[scripts/quality_scan.js:341](../scripts/quality_scan.js)（`animation/engine` 失效死豁免；`use_animation_state.ts` 按文件名豁免，迁移后仍有效不动）。说明：P1–P5 期间不动这两文件——`core-is-leaf` 的 `to` 不含 composables，故中间态 `core/animation/*→composables/shared/animations` 不被拦；`animation-not-to-reading` 的 `from=core/animation` 在其存在期间继续有效守卫；P5 后 core 内已无指向 composables 的依赖，此时收紧规则不会误拦。
   - 操作：
     1. 更新 [dependency-cruiser.cjs](../config/dependency-cruiser.cjs)：`core-is-leaf` 的 `to` path 增加 `composables`（收紧为 core 不得依赖 composables，守护本次建立的分层）；`animation-not-to-reading` 的 `from` 由 `^app/src/core/animation/` 改为新动画位置正则（`^app/src/core/gsap/`、`^app/src/composables/shared/animations/`、`^app/src/composables/flows/divination/`），`to` 按 reading 业务实际位置核定，注释同步。规则语义不弱化、不删除。
@@ -146,7 +146,7 @@ app/src/composables/flows/fallback/
 
 ## 进度
 
-P0–P5 完成。P6 待开始。
+P0–P6 全部完成。core/animation→gsap 分层重构结束：core/gsap 仅 GSAP 封装，动画基建在 composables/shared/animations，占卜/待机/降级编排在 composables/flows/{divination,idle,fallback}，registry/phase_types/overlay_progress 壳已删，core/flow 解散，core→composables 反向依赖消除并由 dependency-cruiser core-is-leaf 守卫。回归：vue-tsc + app 166/server 54 单测 + full gate（含 arch:check/knip）+ H5 构建 perf Δ0.0% 全绿。
 
 ## 搁置问题
 
