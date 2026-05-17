@@ -7,7 +7,7 @@
  *          dispatches loadCards(), and is a no-op while a load is in flight.
  */
 import { storeToRefs } from 'pinia'
-import { useTarotStore } from '../core/store/tarot'
+import { useTarotStore } from '../store/tarot'
 
 export interface CardsLoadError {
   /** Non-null when card resources failed to load (idle-only band trigger). */

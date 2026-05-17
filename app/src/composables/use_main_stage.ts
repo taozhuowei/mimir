@@ -11,7 +11,7 @@
  *          so the inject contract is visible at the route root.
  */
 import { computed, ref, onMounted, onUnmounted, type ComputedRef, type Ref } from 'vue'
-import { useAppPhase } from './use_app_phase'
+import { useAppPhase } from '../core/composables/use_app_phase'
 import { useTarotStore } from '../core/store/tarot'
 import { useThemeStore } from '../core/store/theme'
 import { useAnimationController } from './use_animation_controller'

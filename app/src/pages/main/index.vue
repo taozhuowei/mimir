@@ -107,7 +107,7 @@ import NotificationHost from '../../components/NotificationHost.vue'
 import DevToolsPanel from '../../components/DevToolsPanel.vue'
 import { useMainStage } from '../../composables/use_main_stage'
 import { useHeaderPresentation } from '../../composables/use_header_presentation'
-import { useCardsLoadError } from '../../composables/use_cards_load_error'
+import { useCardsLoadError } from '../../core/composables/use_cards_load_error'
 
 const {
   phase, isWide, cssVarStyle, animationController, readingController, devTools,

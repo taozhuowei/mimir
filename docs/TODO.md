@@ -59,13 +59,13 @@ app/src/composables/flows/idle/                   （迁入 2 + 新建 3）
   - 验收：本文件为新计划；`node scripts/quality_gate.js full` = exit 0。
   - 影响：仅文档。回滚：`git checkout -- docs/TODO.md`。
 
-- [ ] P1 建 core/composables，迁 use_app_phase + use_cards_load_error
+- [x] P1 建 core/composables，迁 use_app_phase + use_cards_load_error
   - 上下文：[use_app_phase.ts](../app/src/composables/use_app_phase.ts)（import `../core/store/tarot`、`../core/store/flow`，含 `export type { DivinationPhase }` re-export）、[use_cards_load_error.ts](../app/src/composables/use_cards_load_error.ts)（import `../core/store/tarot`）。消费者：`use_app_phase`←[use_main_stage.ts:14](../app/src/composables/use_main_stage.ts)；`use_cards_load_error`←[CardsLoadError.vue](../app/src/components/CardsLoadError.vue)、[pages/main/index.vue](../app/src/pages/main/index.vue)。
   - 操作：
     1. `mkdir -p app/src/core/composables`。
     2. `git mv app/src/composables/use_app_phase.ts app/src/composables/use_cards_load_error.ts app/src/core/composables/`。
     3. 改两文件内部 import：`../core/store/tarot`→`../store/tarot`、`../core/store/flow`→`../store/flow`（含 re-export 那行）。
-    4. 改消费者 import 路径：`use_main_stage.ts` 的 `./use_app_phase`→`../core/composables/use_app_phase`；`CardsLoadError.vue` 的 `../composables/use_cards_load_error`→`../composables/core/composables/use_cards_load_error`；`pages/main/index.vue` 的 `../../composables/use_cards_load_error`→`../../composables/core/composables/use_cards_load_error`。
+    4. 改消费者 import 路径：`use_main_stage.ts` 的 `./use_app_phase`→`../core/composables/use_app_phase`；`CardsLoadError.vue` 的 `../composables/use_cards_load_error`→`../core/composables/use_cards_load_error`；`pages/main/index.vue` 的 `../../composables/use_cards_load_error`→`../../core/composables/use_cards_load_error`。
   - 验收：`npx vue-tsc --noEmit -p app/tsconfig.json`；`npx vitest run --config app/vitest.config.ts --dir app/test`；`grep -rn "composables/use_app_phase\|composables/use_cards_load_error" app --include=*.ts --include=*.vue`（仅 core/composables 新路径，无旧根路径）；`node scripts/quality_gate.js full` = exit 0。
   - 影响：新建目录 + 2 迁移 + 各文件 import。回滚：反向 `git mv` + 还原 import + 删空目录。
 
@@ -122,7 +122,7 @@ app/src/composables/flows/idle/                   （迁入 2 + 新建 3）
 
 ## 进度
 
-P0 完成（TODO 重写，full gate exit 0）。P1 进行中。
+P0–P1 完成。P1：use_app_phase/use_cards_load_error 迁入 core/composables，4 处 import 改向（含修正 core/composables 非 composables 子目录的路径误判），full gate exit 0。P2 进行中。
 
 ## 搁置问题
 
