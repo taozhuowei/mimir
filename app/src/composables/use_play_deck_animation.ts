@@ -1,0 +1,236 @@
+/**
+ * Name: use_play_deck_animation
+ * Purpose: drives the unified Deck stage-content (idle fan loop + divination
+ *          rig) for the always-mounted PlayView. Replaces
+ *          `use_idle_deck_animation` after task 8.2.3 collapsed the two
+ *          stage-content components (IdleDeck + DivinationDeck) into one
+ *          persistent instance under a single Stage.
+ *
+ * Reason: keeping a single Deck instance mounted across phases removes the
+ *         scene-push-fade exit tween that the legacy idle deck used to
+ *         hand off to a freshly mounted divination deck. The previous
+ *         approach (`scale 1 → 1.5` + opacity fade out) was a workaround
+ *         for the unmount/mount visual gap and never matched the new
+ *         single-card spread visual language. Now the same deck simply
+ *         transitions from fan-loop to shuffle directly — no exit tween,
+ *         no new component mount.
+ *
+ *         P3-2 split: the file grew to 387 lines combining three
+ *         independently-testable sub-systems (fan loop, divination
+ *         rig start/teardown, click guard). Each sub-controller now
+ *         lives in its own module under state/play/; this file
+ *         holds the runtime container, lifecycle wiring, and the
+ *         phase-driven state-machine watch. Behaviour-preserving — the
+ *         extracted function bodies are byte-identical to their
+ *         inlined predecessors.
+ *
+ * Data flow:
+ *   - injected `appPhase` (Ref<DivinationPhase>) watched to switch between
+ *     fan loop ('idle') and the divination pipeline (any non-idle phase).
+ *   - tarotStore consulted for the click guard (already animating? skip).
+ *   - injected animationController owns the divination GSAP rig — this
+ *     composable kicks it off on idle→divination via `animCtrl.start()`,
+ *     and tears it down on phase→idle reset.
+ *   - layout solver (`solve_from_window('draw_stage')`) gives the fan
+ *     stack the same card size as the draw card so idle→shuffle keeps
+ *     stable visual scale.
+ */
+
+import { computed, inject, onMounted, onUnmounted, ref, watch } from 'vue'
+import type { ComputedRef, Ref } from 'vue'
+import { gsap } from 'gsap'
+import { prefersReducedMotion } from '../core/utils/accessibility'
+import { solveLayoutFromWindow } from '../core/sizing/solve_from_window'
+import type { UseAnimationControllerReturn } from './use_animation_controller'
+import type { DivinationPhase } from '../core/store/flow'
+import { createFanController } from './fan_controller'
+import { createDivinationRig } from './divination_rig'
+import { buildClickHandler } from './click_handler'
+import type { FanController, DivinationRig, PlayDeckRuntime } from './play_deck_runtime_types'
+
+/** Cards stacked in the idle fan deck (docs/prd/animation.md（动画分帧）). */
+const DECK_SIZE = 12
+
+/** Reactive surface returned to Deck.vue. */
+export interface PlayDeckAnimation {
+  /** Number of fan-stack cards (template v-for). */
+  deckSize: number
+  /** Fan stack container width/height (matches draw card size). */
+  deckContainerStyle: ComputedRef<{ width: string; height: string }>
+  /** Per-card transform inline styles for the fan stack. */
+  cardsStyle: Ref<Record<string, string>[]>
+  /** Touch-hint opacity (0 → 0.6 entrance fade, idle only). */
+  hintOpacity: Ref<number>
+  /** Click handler: starts divination on idle taps; no-op otherwise. */
+  handleClick: () => void
+}
+
+/** Dependencies the SFC injects. */
+export interface PlayDeckAnimationDeps {
+  /**
+   * Called the moment a valid idle-phase tap is registered. The parent
+   * promotes the application phase synchronously so the watch below
+   * sees it and kicks off the divination rig.
+   */
+  onTriggerDivination: () => void
+}
+
+/** Build the runtime container — refs + mutable holders only. */
+function createPlayDeckRuntime(): PlayDeckRuntime {
+  return {
+    cardWidth: ref(100),
+    cardHeight: ref(160),
+    cardsStyle: ref<Record<string, string>[]>(Array(DECK_SIZE).fill({})),
+    hintOpacity: ref(0),
+    isStartingDivination: ref(false),
+    cards: Array(DECK_SIZE).fill(0).map(() => ({ x: 0, y: 0, rotation: 0, scale: 1 })),
+    hintState: { opacity: 0 },
+    timelineHolder: { value: null },
+    animatingHolder: { value: false },
+    lockTimerHolder: { value: null },
+  }
+}
+
+/**
+ * Resolve the fan-stack card width/height from the draw stage layout
+ * solver. Mirrors the legacy idle composable so idle → divination keeps
+ * stable card size with no visual jump.
+ */
+function resolveDeckCardSize(): { cardWidth: number; cardHeight: number } {
+  try {
+    const { layout } = solveLayoutFromWindow('draw_stage')
+    return {
+      cardWidth: layout.drawCardWidth,
+      cardHeight: layout.drawCardHeight,
+    }
+  } catch {
+    return { cardWidth: 100, cardHeight: 160 }
+  }
+}
+
+/**
+ * Touch-hint fade — runs once per idle entrance so it doesn't compete
+ * with the title GSAP entrance. Honors reduced-motion.
+ */
+function runEntranceHint(hintOpacity: Ref<number>, hintState: { opacity: number }): void {
+  hintState.opacity = 0
+  if (prefersReducedMotion()) {
+    hintOpacity.value = 0.6
+    return
+  }
+  gsap.to(hintState, {
+    opacity: 0.6,
+    duration: 0.8,
+    delay: 0.6,
+    onUpdate: () => { hintOpacity.value = hintState.opacity },
+  })
+}
+
+/**
+ * Build the phase-driven state-machine watcher.
+ *
+ * Phase transitions:
+ *   idle             → fan loop running, hint visible
+ *   divination/...   → fan killed (cards snapped to rest), divination
+ *                       rig kicked off the FIRST time we leave idle
+ *                       (subsequent reading/decision phases keep the
+ *                       rig running — animationController is one-shot
+ *                       per pipeline, restarted only on reset-to-idle).
+ *   idle (re-entry)  → divination rig torn down, fan loop restarted
+ *
+ * Watching `phase` (rather than maintaining a parallel boolean) keeps a
+ * single source of truth — the store value is what the rest of the UI
+ * sees, so any drift between the deck and the rest of the app is
+ * impossible by construction.
+ */
+function watchPhaseStateMachine(
+  rt: PlayDeckRuntime,
+  phase: Ref<DivinationPhase>,
+  fan: FanController,
+  rig: DivinationRig,
+): void {
+  watch(phase, (next, prev) => {
+    if (next === 'idle' && prev !== 'idle' && prev !== undefined) {
+      rig.tearDown()
+      runEntranceHint(rt.hintOpacity, rt.hintState)
+      fan.startFanLoop()
+      return
+    }
+    if (prev === 'idle' && next !== 'idle') {
+      // Force-flush cards to rest so the visual hand-off into shuffle
+      // has no micro-jump (GSAP target arrays are about to change).
+      fan.killFanTimeline()
+      fan.resetCardsToStack()
+      rig.start()
+    }
+    // All other transitions (divination → reading → decision) keep
+    // the divination rig alive; it manages its own internal state via
+    // the animationController's pipeline.
+  })
+}
+
+/** Build the full PlayDeck animation surface for Deck.vue. */
+export function usePlayDeckAnimation(deps: PlayDeckAnimationDeps): PlayDeckAnimation {
+  const rt = createPlayDeckRuntime()
+  const animCtrl = inject<UseAnimationControllerReturn>('animationController')
+  if (!animCtrl) {
+    throw new Error('[use_play_deck_animation] animationController not provided')
+  }
+  const phase = inject<Ref<DivinationPhase>>('appPhase')
+  if (!phase) {
+    throw new Error('[use_play_deck_animation] appPhase not provided')
+  }
+
+  const deckContainerStyle = computed(() => ({
+    width: `${rt.cardWidth.value}px`,
+    height: `${rt.cardHeight.value}px`,
+  }))
+
+  function resolveCardSize(): void {
+    const resolved = resolveDeckCardSize()
+    rt.cardWidth.value = resolved.cardWidth
+    rt.cardHeight.value = resolved.cardHeight
+  }
+
+  const fan = createFanController(rt)
+  const rig = createDivinationRig(animCtrl)
+  const handleResize = (): void => { resolveCardSize() }
+
+  onMounted(() => {
+    resolveCardSize()
+    uni.onWindowResize(handleResize)
+    if (phase.value === 'idle') {
+      fan.startFanLoop()
+      runEntranceHint(rt.hintOpacity, rt.hintState)
+    }
+  })
+
+  watchPhaseStateMachine(rt, phase, fan, rig)
+
+  const handleClick = buildClickHandler(rt, phase, deps.onTriggerDivination)
+
+  onUnmounted(() => {
+    uni.offWindowResize(handleResize)
+    rig.detachResize()
+    fan.killFanTimeline()
+    if (rt.lockTimerHolder.value !== null) {
+      clearTimeout(rt.lockTimerHolder.value)
+      rt.lockTimerHolder.value = null
+    }
+    gsap.killTweensOf(rt.hintState)
+    // The Deck is always-mounted with PlayView, so onUnmounted only
+    // fires on full app teardown (route swap / fallback). Tear the
+    // divination rig down too if it was running.
+    if (phase.value !== 'idle') {
+      rig.tearDown()
+    }
+  })
+
+  return {
+    deckSize: DECK_SIZE,
+    deckContainerStyle,
+    cardsStyle: rt.cardsStyle,
+    hintOpacity: rt.hintOpacity,
+    handleClick,
+  }
+}

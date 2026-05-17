@@ -1,0 +1,27 @@
+/**
+ * Name: use_phases
+ * Purpose: manage OverlayPhase lifecycle and progress model.
+ * Reason: extracted from use_animation_controller to isolate phase transition concerns.
+ * Data flow: receives no external deps; exposes phase ref, progress model, and transitionPhase command.
+ */
+
+import { ref } from 'vue'
+import { createProgressModel } from '../core/utils/overlay_progress/index'
+import type { OverlayPhase } from '../core/flow/types'
+import type { ProgressModel } from '../core/utils/overlay_progress/phase_progress_model'
+
+export function usePhases() {
+  const phase = ref<OverlayPhase>('shuffling')
+  const progressModel: ProgressModel = createProgressModel('shuffling')
+
+  function transitionPhase(
+    nextPhase: OverlayPhase,
+    onPhaseChange: (p: OverlayPhase) => void,
+  ): void {
+    phase.value = nextPhase
+    progressModel.transitionTo(nextPhase)
+    onPhaseChange(nextPhase)
+  }
+
+  return { phase, progressModel, transitionPhase }
+}
