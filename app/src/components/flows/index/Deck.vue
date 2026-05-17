@@ -67,14 +67,14 @@
  */
 import { computed, inject } from 'vue'
 import type { Ref } from 'vue'
-import type { UseAnimationControllerReturn } from '../composables/flows/divination/use_animation_controller'
-import { useTarotStore } from '../core/store/tarot'
-import { useThemeStore } from '../core/store/theme'
-import { usePlayDeckAnimation } from '../composables/flows/index/use_play_deck_animation'
-import { RESULT_LIFT_MARGIN_PX } from '../composables/flows/reading/result_card_lift_margin'
-import type { DivinationPhase } from '../core/store/flow'
-import DeckFanStack from './DeckFanStack.vue'
-import DeckRig from './DeckRig.vue'
+import type { UseAnimationControllerReturn } from '../../../composables/flows/divination/use_animation_controller'
+import { useTarotStore } from '../../../core/store/tarot'
+import { useThemeStore } from '../../../core/store/theme'
+import { usePlayDeckAnimation } from '../../../composables/flows/index/use_play_deck_animation'
+import { RESULT_LIFT_MARGIN_PX } from '../../../composables/flows/reading/result_card_lift_margin'
+import type { DivinationPhase } from '../../../core/store/flow'
+import DeckFanStack from '../idle/DeckFanStack.vue'
+import DeckRig from '../divination/DeckRig.vue'
 
 const animCtrl = inject<UseAnimationControllerReturn>('animationController')!
 const phase = inject<Ref<DivinationPhase>>('appPhase')!

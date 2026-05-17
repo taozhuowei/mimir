@@ -44,9 +44,9 @@
  */
 import ReadingPanel from './ReadingPanel.vue'
 import ActionArea from './ActionArea.vue'
-import type { ReadingResult } from '../core/api/types'
-import type { ReadingStatus } from '../core/utils/reading/reading_orchestrator'
-import type { DivinationPhase } from '../core/store/flow'
+import type { ReadingResult } from '../../../core/api/types'
+import type { ReadingStatus } from '../../../core/utils/reading/reading_orchestrator'
+import type { DivinationPhase } from '../../../core/store/flow'
 
 defineProps<{
   panelState: ReadingStatus

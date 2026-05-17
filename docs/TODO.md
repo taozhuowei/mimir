@@ -51,13 +51,14 @@ app/src/components/
   - 验收：本文件为新计划；`node scripts/quality_gate.js full` = exit 0。
   - 影响：仅文档。回滚：`git checkout -- docs/TODO.md`。
 
-- [ ] C1 建目录 + 全量 git mv + import 重写
+- [x] C1 建目录 + 全量 git mv + import 重写
   - 操作：
     1. `mkdir -p app/src/components/shared app/src/components/flows/{index,idle,divination,fallback,reading}`。
     2. 按「最终分类」`git mv` 24 组件至对应目录。
     3. 组件自身 `../composables/`、`../core/` 深度规则化重写（基准 components/ 根）：移入 `flows/<flow>/` 者 `../`→`../../../`（深 +2）；移入 `shared/` 者 `../`→`../../`（深 +1）。先 `grep -nE "from '(\.\./|\./)"` 全量列出实算复核。
     4. 组件间 `./X.vue` 互引按双方新目录精确重写（引用图见上，逐条 Edit）。
     5. `pages/main/index.vue`（10 处）、`pages/fallback/index.vue`（1 处）的 `../../components/X.vue` → `../../components/{shared|flows/<flow>}/X.vue`，逐处 Read+Edit。
+    6. 测试 consumer 同步（grep `app/test` 实排）：[typewriter_text.test.ts:6](../app/test/typewriter_text.test.ts) `../src/components/TypewriterText.vue`→`../src/components/shared/TypewriterText.vue`（app/test 其余无组件引用，已 grep 证）。
   - 验收：`grep -rnE "components/[A-Z][A-Za-z]+\.vue'" app --include=*.ts --include=*.vue | grep -vE "components/(shared|flows/(index|idle|divination|fallback|reading))/"`（空，无旧根路径）；`npx vue-tsc --noEmit -p app/tsconfig.json`；`node scripts/quality_gate.js full` = exit 0。
   - 影响：6 新目录 + 24 git mv + 组件内/间 + 2 pages 的 import。回滚：反向 `git mv` + 还原 import + 删空目录。
 
@@ -78,7 +79,7 @@ app/src/components/
 
 ## 进度
 
-C0 完成（TODO 重写，full gate exit 0）。C1 进行中。
+C0–C1 完成。C1：建 6 目录 + 24 组件 git mv（shared 4 / flows index 7、idle 2、divination 2、fallback 2、reading 7）+ 组件自身深度规则化重写 + 组件间跨目录互引 + pages 11 处 + typewriter_text.test.ts 同步，grep 旧路径空、vue-tsc、full gate exit 0。C2 进行中。
 
 ## 搁置问题
 

@@ -75,11 +75,11 @@
  *   one-to-one.
  */
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
-import type { OverlayPhase } from '../composables/shared/animations/contracts'
+import type { OverlayPhase } from '../../../composables/shared/animations/contracts'
 import {
   createDraggablePanel,
   type Position,
-} from '../core/utils/dev/draggable_panel'
+} from '../../../core/utils/dev/draggable_panel'
 import DevToolsCollapsedHandle from './DevToolsCollapsedHandle.vue'
 import DevToolsPhaseRow from './DevToolsPhaseRow.vue'
 import DevToolsPlaybackRow from './DevToolsPlaybackRow.vue'

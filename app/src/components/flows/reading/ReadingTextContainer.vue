@@ -42,10 +42,10 @@
  *           card's meaning text finishes rendering.
  */
 import { onMounted, onUnmounted } from 'vue'
-import { useReadingPanelController } from '../composables/flows/reading/use_reading_panel_controller'
-import { prefersReducedMotion } from '../core/utils/accessibility'
-import TypewriterText from './TypewriterText.vue'
-import type { ReadingResult } from '../core/api/types'
+import { useReadingPanelController } from '../../../composables/flows/reading/use_reading_panel_controller'
+import { prefersReducedMotion } from '../../../core/utils/accessibility'
+import TypewriterText from '../../shared/TypewriterText.vue'
+import type { ReadingResult } from '../../../core/api/types'
 
 const props = defineProps<{
   readingResult: ReadingResult | null

@@ -74,10 +74,10 @@
 import { ref, computed, watch, onMounted } from 'vue'
 import ReadingPanel from './ReadingPanel.vue'
 import ActionArea from './ActionArea.vue'
-import type { ReadingResult } from '../core/api/types'
-import type { ReadingStatus } from '../core/utils/reading/reading_orchestrator'
-import type { DivinationPhase } from '../core/store/flow'
-import type { DrawerGeometry } from '../core/sizing/layout_solver'
+import type { ReadingResult } from '../../../core/api/types'
+import type { ReadingStatus } from '../../../core/utils/reading/reading_orchestrator'
+import type { DivinationPhase } from '../../../core/store/flow'
+import type { DrawerGeometry } from '../../../core/sizing/layout_solver'
 
 const props = defineProps<{
   panelState: ReadingStatus
