@@ -20,7 +20,7 @@
  */
 import type { useTarotStore } from '../core/store/tarot'
 import type { useAnimationController } from './use_animation_controller'
-import type { useReadingController } from './use_reading_controller'
+import type { useReadingController } from './flows/reading/use_reading_controller'
 
 export interface UseMainHandlersDeps {
   tarotStore: ReturnType<typeof useTarotStore>

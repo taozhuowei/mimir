@@ -6,18 +6,18 @@
  */
 
 import { computed, reactive } from 'vue'
-import type { ReadingResult } from '../core/utils/tarot_reading'
+import type { ReadingResult } from '../../../core/utils/tarot_reading'
 import {
   presentReadingResult,
   presentResultHero,
   type ResultHeroViewModel,
   type CardDetailViewModel,
-} from '../core/utils/reading/reading_result_presenter'
+} from '../../../core/utils/reading/reading_result_presenter'
 import {
   calculateFieldTiming,
   calculateKeywordTiming,
   type TypewriterFieldTiming,
-} from '../core/utils/typing/typewriter_model'
+} from '../../../core/utils/typing/typewriter_model'
 
 export interface UseReadingPanelControllerProps {
   readingResult: ReadingResult

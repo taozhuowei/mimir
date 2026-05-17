@@ -69,7 +69,7 @@ app/src/composables/flows/idle/                   （迁入 2 + 新建 3）
   - 验收：`npx vue-tsc --noEmit -p app/tsconfig.json`；`npx vitest run --config app/vitest.config.ts --dir app/test`；`grep -rn "composables/use_app_phase\|composables/use_cards_load_error" app --include=*.ts --include=*.vue`（仅 core/composables 新路径，无旧根路径）；`node scripts/quality_gate.js full` = exit 0。
   - 影响：新建目录 + 2 迁移 + 各文件 import。回滚：反向 `git mv` + 还原 import + 删空目录。
 
-- [ ] P2 建 flows/reading，迁解读流程 4 文件
+- [x] P2 建 flows/reading，迁解读流程 4 文件
   - 上下文：[use_reading_controller.ts](../app/src/composables/use_reading_controller.ts)、[use_reading_panel_controller.ts](../app/src/composables/use_reading_panel_controller.ts)、[use_result_card_shrink.ts](../app/src/composables/use_result_card_shrink.ts)、[result_card_lift_margin.ts](../app/src/composables/result_card_lift_margin.ts)（纯常量无 import）。消费者：`use_reading_controller`←[use_main_handlers.ts](../app/src/composables/use_main_handlers.ts)、[use_main_stage.ts](../app/src/composables/use_main_stage.ts)；`use_reading_panel_controller`←[ConclusionContainer.vue](../app/src/components/ConclusionContainer.vue)、[CardMeaningContainer.vue](../app/src/components/CardMeaningContainer.vue)、[ReadingTextContainer.vue](../app/src/components/ReadingTextContainer.vue)；`use_result_card_shrink`←`use_main_stage`；`result_card_lift_margin`←[Deck.vue](../app/src/components/Deck.vue)。
   - 操作：
     1. `mkdir -p app/src/composables/flows/reading`。
@@ -122,7 +122,7 @@ app/src/composables/flows/idle/                   （迁入 2 + 新建 3）
 
 ## 进度
 
-P0–P1 完成。P1：use_app_phase/use_cards_load_error 迁入 core/composables，4 处 import 改向（含修正 core/composables 非 composables 子目录的路径误判），full gate exit 0。P2 进行中。
+P0–P2 完成。P1：use_app_phase/use_cards_load_error 迁 core/composables。P2：解读 4 文件迁 flows/reading，10 处 import 改向，full gate exit 0。P3 进行中。
 
 ## 搁置问题
 
