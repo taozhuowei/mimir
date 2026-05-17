@@ -1,12 +1,10 @@
 <template>
   <!--
-    Deck — unified stage-content for the always-mounted PlayView (task 8.2.3).
-    Replaces the previous IdleDeck + DivinationDeck pair. One persistent
-    instance carries the user from idle (fan loop) → divination (shuffle /
-    cut / draw / reveal) → reading without unmounting, so there is no
-    visual gap or scale-1→1.5 push-fade hand-off between the two scenes.
+    Deck — single persistent stage-content instance. Stays mounted from
+    idle (fan loop) → divination (shuffle / cut / draw / reveal) →
+    reading, so the idle ↔ divination swap has no visual gap.
 
-    Composition (P3-1 split — file-size cap):
+    Composition:
       - DeckFanStack  — idle fan-loop visuals (12-card stack + bottom hint).
                         Visible only during phase === 'idle'.
       - DeckRig       — divination GSAP rig (initials/shuffle halves/cut
@@ -18,8 +16,7 @@
       - In idle the wrapper carries `role="button"` so screen readers
         announce the tap target.
       - In divination the wrapper drops the button role and exposes the
-        deck as `role="img"` with the divination label, mirroring the
-        legacy DivinationDeck semantics.
+        deck as `role="img"` with the divination label.
   -->
   <view
     class="deck"
@@ -54,23 +51,11 @@
 <script setup lang="ts">
 /**
  * Name: Deck (stage content)
- * Purpose: unified deck/card surface for the always-mounted PlayView.
- *          Renders the idle fan loop in phase 'idle' and the full
- *          shuffle/cut/draw/reveal rig in every other phase, all from a
- *          single persistent instance so there is no exit-tween hand-off
- *          between scenes.
- * Reason: replaces IdleDeck + DivinationDeck (task 8.2.3). The legacy pair
- *          unmounted/mounted on every idle ↔ divination flip, which forced
- *          the idle deck to run a `_scene.scale 1 → 1.5` push-fade exit
- *          tween to mask the visual gap. With a single instance the gap
- *          does not exist and the exit tween was deleted.
- *
- *          P3-1 split: the file grew to 437 lines combining idle + rig
- *          DOM. The visuals are now delegated to DeckFanStack +
- *          DeckRig; this file is the assembly + click/keyboard handler
- *          + reactive plumbing for the GSAP fan controller. Behaviour
- *          is byte-identical — DOM, classes, inline styles, and
- *          animation target keys are unchanged.
+ * Purpose: single persistent deck/card surface. Renders the idle fan loop
+ *          in phase 'idle' and the full shuffle/cut/draw/reveal rig in
+ *          every other phase; the visuals are delegated to DeckFanStack +
+ *          DeckRig while this file is the assembly + click/keyboard
+ *          handler + reactive plumbing for the GSAP fan controller.
  * Data flow:
  *          - injected animationController owns the shuffle/cut/draw/reveal
  *            state surfaces (deckCtnStyle, initialsStyle, drawsStyle, …).
@@ -78,8 +63,7 @@
  *            fan stack / hint.
  *          - usePlayDeckAnimation drives the fan loop and click handler;
  *            the SFC is declarative.
- *          - tarotStore / themeStore imported directly for card images
- *            (matches the legacy DivinationDeck pattern).
+ *          - tarotStore / themeStore imported directly for card images.
  */
 import { computed, inject } from 'vue'
 import type { Ref } from 'vue'
