@@ -1,5 +1,5 @@
 /**
- * Name: core/animation/phases/draw/draw_timeline
+ * Name: composables/flows/divination/phases/draw_timeline
  * Purpose: GSAP timeline construction for the draw phase — timing
  *          derivation, the reduced-motion snap path, and the full
  *          animated path (stage lift → deck exit → per-card deal →

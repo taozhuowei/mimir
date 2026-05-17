@@ -1,5 +1,5 @@
 /**
- * Name: animation/atoms/flip
+ * Name: composables/shared/animations/flip
  * Purpose: animate cards' inner 3D rotationY from 0 to 180 (or any target),
  *          flipping the cards from face-down to face-up.
  * Reason: previously inline in the drawing phase. Extracting as an atom

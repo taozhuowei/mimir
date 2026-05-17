@@ -1,5 +1,5 @@
 /**
- * Name: use_animation_state
+ * Name: composables/shared/animations/use_animation_state
  * Purpose: own all GSAP target objects, visibility flags, style refs, refresh callbacks, and per-group reset functions.
  * Reason: separates animation state management from the overlay controller for better modularity.
  * Data flow: receives layout results and options; returns reactive styles, states, and helpers.

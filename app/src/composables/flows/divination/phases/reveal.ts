@@ -1,5 +1,5 @@
 /**
- * Name: animation/phases/reveal
+ * Name: composables/flows/divination/phases/reveal
  * Purpose: revealing phase = compose growAtom (resize cards to result size)
  *          + flipAtom (rotate inners 0→180 to show face). Per design rule
  *          "card already enlarged before flipping": grow runs first, flip

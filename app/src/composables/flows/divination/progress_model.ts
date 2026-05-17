@@ -1,5 +1,5 @@
 /**
- * Name: phase_progress_model
+ * Name: composables/flows/divination/progress_model
  * Purpose: pure state model for overlay progress tracking.
  * Reason: keep progress state independent from rendering and animation orchestration.
  * Data flow: phase changes flow in; progress state flows out.

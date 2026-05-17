@@ -332,13 +332,10 @@ function scanCssVariables() {
 /**
  * Flags access to _prefixed properties on IMPORTED objects.
  * Excludes:
- *   - animation/engine/*  (internal engine modules are tightly coupled by design)
- *   - core/animation/use_animation_state.ts  (defines the state being accessed)
+ *   - use_animation_state.ts  (defines the state being accessed)
  *   - receiver === 'this'
  */
 function scanExternalPrivateAccess(file, content) {
-  // Skip animation engine internal files
-  if (file.includes('animation/engine')) return
   if (file.includes('use_animation_state.ts')) return
 
   const sourceFile = ts.createSourceFile(file, content, ts.ScriptTarget.ESNext, true, ts.ScriptKind.TS)

@@ -253,22 +253,24 @@ module.exports = {
       name: 'core-is-leaf',
       comment:
         "core/ is the infra/framework/lib leaf domain. It must not depend " +
-        "on business orchestration (state/), shared UI (shared/, state/shared/), " +
-        "dev tooling (tools/) or route entries (pages/). Dependencies flow " +
-        "downward into core/, never back out.",
+        "on composables/ orchestration, components/ UI or pages/ route " +
+        "entries. Dependencies flow downward into core/, never back out. " +
+        "(to-path tightened after the core/animation→gsap layered refactor " +
+        "so core can never reach back into composables.)",
       severity: 'error',
       from: { path: '^app/src/core/' },
-      to: { path: '^app/src/(state|shared|tools|pages)/' },
+      to: { path: '^app/src/(composables|components|pages)/' },
     },
     {
       name: 'animation-not-to-reading',
       comment:
         "The animation engine must not depend on reading business logic. " +
         "This boundary keeps visual orchestration decoupled from divination " +
-        "result rules (paths updated after Phase A: core/animation ⊥ " +
-        "core/utils/reading).",
+        "result rules (from-path updated after the core/animation→gsap " +
+        "layered refactor: gsap lib + shared animation base + flow " +
+        "orchestration ⊥ core/utils/reading).",
       severity: 'error',
-      from: { path: '^app/src/core/animation/' },
+      from: { path: '^app/src/(core/gsap|composables/shared/animations|composables/flows/(divination|idle|fallback))/' },
       to: { path: '^app/src/core/utils/reading/' },
     },
     {

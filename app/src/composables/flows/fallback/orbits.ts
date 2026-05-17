@@ -1,5 +1,5 @@
 /**
- * Name: animation/phases/fallback/builder
+ * Name: composables/flows/fallback/orbits
  * Purpose: builds the fallback orbital animation (docs/prd/animation.md（动画分帧）).
  * Reason: extracted into a builder so FallbackOrbits.vue stays declarative.
  *         Uses parametric trig (x = rx·cos θ, y = ry·sin θ) instead of

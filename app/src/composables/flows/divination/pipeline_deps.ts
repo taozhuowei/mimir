@@ -1,5 +1,5 @@
 /**
- * Name: pipeline_shared_deps
+ * Name: composables/flows/divination/pipeline_deps
  * Purpose: shared dependency-injection contract used by both the
  *          lifecycle composable (`use_lifecycle`) and the run-pipeline
  *          command (`commands/start`). Both surfaces orchestrate the
