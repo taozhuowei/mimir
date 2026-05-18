@@ -34,7 +34,7 @@
  *          with the chosen phase, which the parent forwards to the
  *          overlay controller.
  */
-import type { OverlayPhase } from '../../shared/composables/animations/contracts'
+import type { OverlayPhase } from '../../shared/composables/animations/phase_contracts'
 
 defineProps<{
   phaseSteps: { phase: OverlayPhase; label: string }[]

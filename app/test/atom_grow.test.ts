@@ -8,7 +8,7 @@
 import { describe, it, expect } from 'vitest'
 import gsap from 'gsap'
 import { growAtom } from '../src/flows/shared/composables/animations/grow'
-import type { AtomContext } from '../src/flows/shared/composables/animations/contracts'
+import type { AtomContext } from '../src/flows/shared/composables/animations/phase_contracts'
 
 function makeContext(cardCount = 1): {
   cardElements: { draws: { x: number; y: number; rotation: number; scale: number; opacity: number; zIndex: number; width: number; height: number }[] }

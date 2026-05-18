@@ -1,5 +1,5 @@
 /**
- * Name: flows/divination/composables/divination_rig
+ * Name: flows/divination/composables/rig_lifecycle
  * Purpose: start / tear-down / resize-attach controller for the
  *          divination GSAP rig. Owns the uni-app `onWindowResize` handle
  *          so the rig can be torn down cleanly when the user resets to

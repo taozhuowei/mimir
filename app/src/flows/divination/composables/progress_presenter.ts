@@ -5,8 +5,8 @@
  * Data flow: progress state flows in; presentation data flows out.
  */
 
-import type { OverlayPhase } from '../../shared/composables/animations/contracts'
-import { getPhaseSteps } from './phase_manifest'
+import type { OverlayPhase } from '../../shared/composables/animations/phase_contracts'
+import { getPhaseSteps } from './phase_registry'
 import { DEFAULT_OVERLAY_TEXT, type OverlayText } from './overlay_text'
 
 // Re-exported so the overlay_progress barrel and the presenter test keep

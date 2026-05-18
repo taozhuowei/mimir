@@ -12,8 +12,8 @@
  *          then growAtom + flipAtom compose into the timeline.
  */
 import gsap from 'gsap'
-import type { AnimationTimeline } from '../../../shared/composables/animations/card_state'
-import type { OverlayPhase, PhaseContext, PhaseRunner } from '../../../shared/composables/animations/contracts'
+import type { AnimationTimeline } from '../../../shared/composables/animations/state_types'
+import type { OverlayPhase, PhaseContext, PhaseRunner } from '../../../shared/composables/animations/phase_contracts'
 import { growAtom } from '../../../shared/composables/animations/grow'
 import { flipAtom } from '../../../shared/composables/animations/flip'
 

@@ -1,5 +1,5 @@
 /**
- * Name: flows/idle/composables/click_handler
+ * Name: flows/idle/composables/deck_click_guard
  * Purpose: build the idle-tap click handler with the double-tap lock
  *          guard. Releases the lock after `DECK_CLICK_RELEASE_MS` and
  *          falls back to a safety timer (`DECK_CLICK_SAFETY_MS`) so the
@@ -21,7 +21,7 @@
 
 import type { Ref } from 'vue'
 import { useTarotStore } from '../../../core/store/tarot'
-import type { DivinationPhase } from '../../../core/store/flow'
+import type { DivinationPhase } from '../../../core/store/slices/flow'
 import type { PlayDeckRuntime } from './deck_runtime'
 
 /** Minimum gap between deck-click events to debounce double-taps (ms). */

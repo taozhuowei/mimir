@@ -1,5 +1,5 @@
 /**
- * Name: flows/index/composables/use_main_handlers
+ * Name: flows/index/composables/create_main_transition_handlers
  * Purpose: extracts the two longest event handlers from `MainSurface.vue`
  *          (`handleRestart` + `settlePipeline`) so that SFC can stay
  *          inside the 300-line file cap. Both functions orchestrate
@@ -20,7 +20,7 @@
  */
 import type { useTarotStore } from '../../../core/store/tarot'
 import type { useAnimationController } from '../../divination/composables/use_animation_controller'
-import type { useReadingController } from '../../reading/composables/use_reading_controller'
+import type { useReadingController } from '../../reading/composables/use_reading_request_controller'
 
 export interface UseMainHandlersDeps {
   tarotStore: ReturnType<typeof useTarotStore>

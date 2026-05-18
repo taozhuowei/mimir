@@ -11,7 +11,7 @@
 
 <script setup lang="ts">
 /**
- * Name: DevToolsCollapsedHandle
+ * Name: DevToolsCollapsedIcon
  * Purpose: render the lightning-bolt icon shown inside the 40px circular
  *          handle when the DevToolsPanel is in its collapsed state.
  * Reason: extracted from DevToolsPanel.vue (P3 nit fix — file was 382

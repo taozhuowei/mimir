@@ -9,8 +9,8 @@
 // function exports (to, timeline, killTweensOf) are not available from
 // gsap-core. Issue mitigated by gsap-core alias.
 import gsap from 'gsap'
-import type { AnimationTimeline } from '../../../shared/composables/animations/card_state'
-import type { OverlayPhase, PhaseContext, PhaseRunner } from '../../../shared/composables/animations/contracts'
+import type { AnimationTimeline } from '../../../shared/composables/animations/state_types'
+import type { OverlayPhase, PhaseContext, PhaseRunner } from '../../../shared/composables/animations/phase_contracts'
 import { prefersReducedMotion } from '../../../../core/utils/accessibility'
 
 /** Default horizontal spread of the shuffle fan when motion-metrics

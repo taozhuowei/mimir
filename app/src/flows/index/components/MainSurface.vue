@@ -2,12 +2,12 @@
   <!--
     Main divination surface (docs/prd/glossary.md（路由 #1）). Composes the
     divination surface — HeaderArea (TitleContent ↔ ProgressContent by
-    phase) + Stage (CardsLoadError | Deck) — with ReadingSplit/Drawer
+    phase) + Stage (CardsLoadError | StageDeck) — with ReadingSplit/Drawer
     overlaid in 'reading'/'decision'. NotificationHost sits on the surface
     root for cross-view alerts. The .canvas wrapper caps the divination
     canvas at MAX_CANVAS_WIDTH (docs/prd/animation.md（视图过渡动画）) and
     slides it flush-left when reading opens on a wide viewport. The single
-    Deck instance stays mounted across idle ↔ divination, so the swap is a
+    StageDeck instance stays mounted across idle ↔ divination, so the swap is a
     header-content change only. Mounted by pages/index.vue only when
     bootstrap did not fail (the fallback view is its mutually-exclusive
     sibling) — so useMainStage is never constructed in the failed state.
@@ -21,7 +21,7 @@
       <!--
         Header presentation comes from useHeaderPresentation. The idle
         card-load error band is its own component, gated by v-if/v-else
-        against Deck so Deck is not mounted while erroring at idle.
+        against StageDeck so StageDeck is not mounted while erroring at idle.
       -->
       <view class="play-view" :class="{ 'play-view--error': isIdle && cardsLoadError }">
         <HeaderArea
@@ -34,7 +34,7 @@
         </HeaderArea>
         <Stage :scene="isIdle ? 'idle' : 'divination'">
           <CardsLoadError v-if="isIdle && cardsLoadError" />
-          <Deck v-else />
+          <StageDeck v-else />
         </Stage>
       </view>
     </view>
@@ -93,7 +93,7 @@
  *          graph via useMainStage, provides phase / isWide / the two
  *          controllers to descendant components, derives header
  *          presentation + the idle card-load error, and composes the
- *          divination surface (HeaderArea + Stage(Deck)) with the reading
+ *          divination surface (HeaderArea + Stage(StageDeck)) with the reading
  *          split/drawer overlay, notifications and dev tools.
  * Reason: extracted out of pages/index.vue so that page is a pure
  *         boot shell — it mounts this surface only when bootstrap
@@ -105,7 +105,7 @@ import HeaderArea from '../../shared/components/HeaderArea.vue'
 import TitleContent from '../../shared/components/TitleContent.vue'
 import ProgressContent from '../../divination/components/ProgressContent.vue'
 import Stage from '../../shared/components/Stage.vue'
-import Deck from './Deck.vue'
+import StageDeck from './StageDeck.vue'
 import CardsLoadError from '../../idle/components/CardsLoadError.vue'
 import ReadingSplitView from '../../reading/components/ReadingSplitView.vue'
 import ReadingDrawerView from '../../reading/components/ReadingDrawerView.vue'

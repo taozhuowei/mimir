@@ -37,7 +37,7 @@
  */
 import { watch, onUnmounted, type Ref } from 'vue'
 import gsap from 'gsap'
-import type { DrawCardState } from '../../shared/composables/animations/card_state'
+import type { DrawCardState } from '../../shared/composables/animations/state_types'
 import type { useOverlayLayout } from '../../../core/sizing/overlay_layout/use_overlay_layout'
 
 export interface UseResultCardShrinkDeps {

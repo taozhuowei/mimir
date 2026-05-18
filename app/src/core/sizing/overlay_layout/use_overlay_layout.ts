@@ -4,7 +4,7 @@
  *          pure `solveLayout` solver and exposes scene + motion + deck
  *          metrics to the controllers and components. Acts as a facade
  *          over three internal modules:
- *            - `overlay_layout/breakpoints` — wide-screen threshold +
+ *            - `overlay_layout/wide_breakpoint_and_chrome` — wide-screen threshold +
  *              mini-program chrome adapter.
  *            - `overlay_layout/scene` — viewport + scene-layout
  *              derivation.
@@ -21,7 +21,7 @@
  */
 
 import type { Ref } from 'vue'
-import { checkWidth as checkWidthHelper } from './breakpoints'
+import { checkWidth as checkWidthHelper } from './wide_breakpoint_and_chrome'
 import {
   getSceneLayout,
   getViewportMetrics,

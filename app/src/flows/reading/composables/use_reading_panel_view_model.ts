@@ -1,12 +1,12 @@
 /**
- * Name: flows/reading/composables/use_reading_panel_controller
+ * Name: flows/reading/composables/use_reading_panel_view_model
  * Purpose: provide presentation-ready data for reading panel rendering.
  * Reason: separate reading data transformation from UI rendering.
  * Data flow: reading result flows in; view-model data flows out.
  */
 
 import { computed, reactive } from 'vue'
-import type { ReadingResult } from '../../../core/utils/tarot_reading'
+import type { ReadingResult } from '../../../core/utils/tarot_reading_types_shim'
 import {
   presentReadingResult,
   presentResultHero,
@@ -17,7 +17,7 @@ import {
   calculateFieldTiming,
   calculateKeywordTiming,
   type TypewriterFieldTiming,
-} from '../../../core/utils/typing/typewriter_model'
+} from './reading_panel_timing'
 
 export interface UseReadingPanelControllerProps {
   readingResult: ReadingResult

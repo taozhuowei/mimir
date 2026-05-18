@@ -1,5 +1,5 @@
 /**
- * Name: flows/divination/composables/use_phases
+ * Name: flows/divination/composables/use_phase_state
  * Purpose: manage OverlayPhase lifecycle and progress model.
  * Reason: extracted from use_animation_controller to isolate phase transition concerns.
  * Data flow: receives no external deps; exposes phase ref, progress model, and transitionPhase command.
@@ -7,7 +7,7 @@
 
 import { ref } from 'vue'
 import { createProgressModel } from './progress_model'
-import type { OverlayPhase } from '../../shared/composables/animations/contracts'
+import type { OverlayPhase } from '../../shared/composables/animations/phase_contracts'
 import type { ProgressModel } from './progress_model'
 
 export function usePhases() {

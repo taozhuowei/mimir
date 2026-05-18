@@ -1,5 +1,5 @@
 /**
- * Name: flows/shared/composables/animations/state
+ * Name: flows/shared/composables/animations/animation_targets
  * Purpose: GSAP target object management decoupled from Vue view layer.
  * Reason: centralize all animation state objects that GSAP mutates.
  */
@@ -10,7 +10,7 @@ import {
   createCutInitialStates,
   createDrawInitialStates,
 } from './initial_states'
-import type { CardState, CenterCardState, DrawCardState, InnerState } from './card_state'
+import type { CardState, CenterCardState, DrawCardState, InnerState } from './state_types'
 
 /** Maximum number of result cards a future spread could ever ask for. The
  *  animation state allocates this many GSAP targets up front to keep

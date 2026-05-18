@@ -1,11 +1,11 @@
 /**
- * Name: flows/divination/composables/phase_entry_snapshots
+ * Name: flows/divination/composables/phase_entry_snap
  * Purpose: per-phase "snap to entry visual state" helpers used by the
  *          replay / skip flows (cutting / drawing / revealing).
  * Reason: split out of registry.ts so the replay entry-state logic is one
  *          focused module, separate from the type contract and the
  *          manifest. Bound into PHASE_MANIFEST.snapToEntryState by
- *          phase_manifest.ts.
+ *          phase_registry.ts.
  * Flow ownership: semantically a divination-flow concern (dev replay /
  *          skip of the shuffle→reveal pipeline). The flows migration batch
  *          will relocate this into the divination flow; kept in core for
@@ -13,8 +13,8 @@
  *          moves).
  */
 
-import type { PhaseContext } from '../../shared/composables/animations/contracts'
-import type { DrawCardState } from '../../shared/composables/animations/card_state'
+import type { PhaseContext } from '../../shared/composables/animations/phase_contracts'
+import type { DrawCardState } from '../../shared/composables/animations/state_types'
 import type { SceneLayout } from '../../../core/sizing/layout_solver'
 
 /** Maximum number of cut piles the cut animation pre-allocates.

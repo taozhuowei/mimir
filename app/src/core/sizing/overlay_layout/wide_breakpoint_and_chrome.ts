@@ -1,5 +1,5 @@
 /**
- * Name: core/sizing/overlay_layout/breakpoints
+ * Name: core/sizing/overlay_layout/wide_breakpoint_and_chrome
  * Purpose: holds the breakpoint constants and helpers used by the
  *          overlay-layout composable: the wide-screen side-drawer width,
  *          the PC-mode threshold, the mini-program menu-button rect

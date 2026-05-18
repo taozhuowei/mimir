@@ -5,10 +5,10 @@
  * Data flow: receives layout results and options; returns reactive styles, states, and helpers.
  */
 
-import { createAnimationState } from './state'
+import { createAnimationState } from './animation_targets'
 import { createStyleReconciler } from './style_sync'
 import { createVisibilityController } from './visibility'
-import type { AnimationState } from './state'
+import type { AnimationState } from './animation_targets'
 
 /**
  * Flatten every tweenable target into one array. Inlined verbatim from the

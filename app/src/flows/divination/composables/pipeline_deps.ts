@@ -15,7 +15,7 @@
  */
 
 import type { TimelineOrchestrator } from '../../../core/gsap/timeline'
-import type { PhaseContext } from '../../shared/composables/animations/contracts'
+import type { PhaseContext } from '../../shared/composables/animations/phase_contracts'
 import type { SceneKind, SceneLayout } from '../../../core/sizing/layout_solver'
 import type { MotionMetrics } from '../../../core/sizing/overlay_layout/use_overlay_layout'
 

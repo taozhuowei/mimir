@@ -11,7 +11,7 @@
  */
 import { computed, type ComputedRef, type Ref } from 'vue'
 import type { UseAnimationControllerReturn } from '../../divination/composables/use_animation_controller'
-import type { DivinationPhase } from '../../../core/store/flow'
+import type { DivinationPhase } from '../../../core/store/slices/flow'
 
 export interface HeaderPresentation {
   /** Idle gate — selects TitleContent vs ProgressContent + ARIA semantics. */

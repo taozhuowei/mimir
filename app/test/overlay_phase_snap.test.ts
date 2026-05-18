@@ -6,12 +6,12 @@ import {
   PHASE_MANIFEST,
   getPhaseSnap,
   getPhaseOrder,
-} from '../src/flows/divination/composables/phase_manifest'
+} from '../src/flows/divination/composables/phase_registry'
 import {
   MAX_CUT_PILES,
   type PhaseSnapDeps,
-} from '../src/flows/divination/composables/phase_entry_snapshots'
-import { MAX_CARD_COUNT } from '../src/flows/shared/composables/animations/state'
+} from '../src/flows/divination/composables/phase_entry_snap'
+import { MAX_CARD_COUNT } from '../src/flows/shared/composables/animations/animation_targets'
 import type { SceneLayout } from '../src/core/sizing/layout_solver'
 
 /**

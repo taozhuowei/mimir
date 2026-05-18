@@ -7,7 +7,7 @@
 import { computed, ref, watch } from 'vue'
 import type { Ref, ComputedRef } from 'vue'
 import type { SceneLayout as SceneLayoutResult } from '../../../../core/sizing/layout_solver'
-import type { AnimationState } from './state'
+import type { AnimationState } from './animation_targets'
 
 export interface StyleReconcilerOptions {
   shuffleHalfCount: number

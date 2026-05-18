@@ -1,7 +1,8 @@
 /**
- * Name: flow state module
- * Purpose: pure function module managing application-level divination flow
- *          state (phase, question, drawn cards).
+ * Name: core/store/slices/flow
+ * Purpose: state-slice factory managing application-level divination flow
+ *          state (phase, question, drawn cards). Composed by the `tarot`
+ *          Pinia store — this module is a pure factory, not a store itself.
  * Reason: separates flow concerns from deck and reading state. The flow
  *         layer now models the application-level 4 stages (idle /
  *         divination / reading / decision) per docs/prd/state.md（流程阶段）; the in-divination
@@ -16,7 +17,7 @@
  */
 
 import { computed, ref } from 'vue'
-import type { DrawnResult } from '../api/types'
+import type { DrawnResult } from '../../api/types'
 import type { createReadingState } from './reading'
 
 export type DivinationPhase = 'idle' | 'divination' | 'reading' | 'decision'

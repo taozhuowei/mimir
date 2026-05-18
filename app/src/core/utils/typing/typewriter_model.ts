@@ -116,12 +116,3 @@ export function createTypewriterModel(
     isRunning,
   }
 }
-
-// Reading-panel field/keyword stagger timing was split into its own
-// single-responsibility module; re-exported here so existing import paths
-// (use_reading_panel_controller, typewriter_model.test) stay unchanged.
-export {
-  calculateFieldTiming,
-  calculateKeywordTiming,
-  type TypewriterFieldTiming,
-} from './reading_panel_timing'

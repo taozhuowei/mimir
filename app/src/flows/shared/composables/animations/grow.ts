@@ -11,7 +11,7 @@
  *          animation.
  */
 import { prefersReducedMotion } from '../../../../core/utils/accessibility'
-import type { AtomFn } from './contracts'
+import type { AtomFn } from './phase_contracts'
 
 export interface GrowAtomConfig {
   cardCount: number

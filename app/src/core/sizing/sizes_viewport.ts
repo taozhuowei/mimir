@@ -1,5 +1,5 @@
 /**
- * Name: core/sizing/responsive_sizes
+ * Name: core/sizing/sizes_viewport
  * Purpose: pixel-valued sizes derived from the canvas width via `k`,
  *          plus the platform-window-info adapter (`readViewport`) that
  *          turns `uni.getWindowInfo()` shaped data into a `PhysicalViewport`.
@@ -29,7 +29,7 @@ import {
   BASELINE_HEADER_HEIGHT,
   BASELINE_MARGIN,
   deriveScale,
-} from './responsive_breakpoints'
+} from './scale_constants'
 
 // ---------------------------------------------------------------------------
 // Sizes interface — the single source of truth for derived px values.

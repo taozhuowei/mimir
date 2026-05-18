@@ -21,7 +21,7 @@
       @keydown.enter="$emit('toggle-dev-expanded')"
       @keydown.space.prevent="$emit('toggle-dev-expanded')"
     >
-      <DevToolsCollapsedHandle v-if="!isDevExpanded" />
+      <DevToolsCollapsedIcon v-if="!isDevExpanded" />
       <template v-else>
         <text class="dev-tools-title">Dev Tools</text>
         <text class="dev-tools-toggle" aria-hidden="true">▲</text>
@@ -75,12 +75,12 @@
  *   one-to-one.
  */
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
-import type { OverlayPhase } from '../../shared/composables/animations/contracts'
+import type { OverlayPhase } from '../../shared/composables/animations/phase_contracts'
 import {
   createDraggablePanel,
   type Position,
 } from '../../../core/utils/dev/draggable_panel'
-import DevToolsCollapsedHandle from './DevToolsCollapsedHandle.vue'
+import DevToolsCollapsedIcon from './DevToolsCollapsedIcon.vue'
 import DevToolsPhaseRow from './DevToolsPhaseRow.vue'
 import DevToolsPlaybackRow from './DevToolsPlaybackRow.vue'
 import DevToolsControlRow from './DevToolsControlRow.vue'

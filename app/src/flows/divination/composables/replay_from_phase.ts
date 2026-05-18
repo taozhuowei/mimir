@@ -12,9 +12,9 @@
  */
 
 import { nextTick, type Ref } from 'vue'
-import { getPhaseIndex, getPhaseSnap } from './phase_manifest'
-import type { PhaseSnapDeps } from './phase_entry_snapshots'
-import type { OverlayPhase } from '../../shared/composables/animations/contracts'
+import { getPhaseIndex, getPhaseSnap } from './phase_registry'
+import type { PhaseSnapDeps } from './phase_entry_snap'
+import type { OverlayPhase } from '../../shared/composables/animations/phase_contracts'
 import type { ProgressModel } from './progress_model'
 
 export interface ReplayFromPhaseCommandDeps {
