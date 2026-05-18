@@ -69,7 +69,7 @@ defineEmits<{
   position: absolute;
   top: 0;
   /* The divination canvas is anchored flush-left at MAX_CANVAS_WIDTH
-     (440 px) in wide+reading mode (see pages/main/index.vue .canvas).
+     (440 px) in wide+reading mode (see MainSurface.vue .canvas).
      The split view fills everything to the right of that. Width is
      therefore implicit (= viewport.width - 440) — no explicit width
      so the layout adapts to any wide viewport. */

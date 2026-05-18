@@ -1,12 +1,12 @@
 /**
  * Name: composables/flows/index/use_active_view
- * Purpose: encapsulates the main page's view-picker state — the
+ * Purpose: encapsulates MainSurface's view-picker state — the
  *          `showReadingView` gate (docs/prd/state.md（视图与应用级流程阶段的对应）) that overlays the reading
  *          split / drawer view on top of the divination view, and the
  *          `resultDrawerGeometry` used by the narrow-screen drawer view.
- * Reason: extracted from `pages/main/index.vue` (was 446 lines) so the
- *          phase → view selection logic stays in one composable. The
- *          page wires the returned refs/computed into its template
+ * Reason: extracted from `MainSurface.vue` (was 446 lines) so the
+ *          phase → view selection logic stays in one composable.
+ *          MainSurface wires the returned refs/computed into its template
  *          instead of carrying the derivation inline.
  * Data flow: phase ref + window info ──▶ showReadingView,
  *          resultDrawerGeometry ──▶ template.

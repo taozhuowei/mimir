@@ -4,12 +4,12 @@
  *          `document.documentElement`, enabling a CSS overlay that draws
  *          colored outlines around major layout containers. Used by the
  *          DevToolsPanel "borders" toggle (tracked under task 8.3.3).
- * Reason: previously inlined inside `pages/main/index.vue`, where it forced
+ * Reason: previously inlined inside `MainSurface.vue`, where it forced
  *         three `// eslint-disable-next-line no-restricted-globals / no-undef`
  *         comments around `document.documentElement` access. Extracting the
  *         logic into a dedicated H5-only utility lets the eslint-disable be
  *         declared once at module scope with a justified `-- reason:` block,
- *         and keeps the page component free of platform-conditional plumbing.
+ *         and keeps MainSurface free of platform-conditional plumbing.
  *         Mirrors the pattern used by `utils/accessibility.ts::prefersReducedMotion`.
  *
  * Platform behavior:

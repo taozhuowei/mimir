@@ -23,9 +23,10 @@
 <script setup lang="ts">
 /**
  * Name: FallbackView
- * Purpose: the only view inside the fallback route (docs/prd/glossary.md（视图 #5）). Conveys
- *          the "no signal" state through the title slot's mystery copy +
- *          the orbiting stage animation.
+ * Purpose: the view the boot shell mounts on a critical bootstrap failure
+ *          (docs/prd/glossary.md（视图 #5）), mutually exclusive with the
+ *          main surface. Conveys the "no signal" state through the title
+ *          slot's mystery copy + the orbiting stage animation.
  * Reason: keeping the fallback view minimal — title + stage — matches
  *         docs/prd/animation.md（动效规范 #4）: no toasts, no notifications, the title line is the
  *         entire user-facing message.

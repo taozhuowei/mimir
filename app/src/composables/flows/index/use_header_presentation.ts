@@ -7,7 +7,7 @@
  *            - non-idle  → role=progressbar, aria-valuetext=active step
  *                          label, headerStyle slide-in tween applied
  * Data flow: phase ref + animationController ──▶ reactive role / aria /
- *          style consumed by HeaderArea in pages/main/index.vue.
+ *          style consumed by HeaderArea in MainSurface.vue.
  */
 import { computed, type ComputedRef, type Ref } from 'vue'
 import type { UseAnimationControllerReturn } from '../divination/use_animation_controller'

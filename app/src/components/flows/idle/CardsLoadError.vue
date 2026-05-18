@@ -2,7 +2,7 @@
   <!--
     CardsLoadError — idle-only card-resource load error band (message +
     retry). The idle && cardsLoadError mount gate lives in
-    pages/main/index.vue (`<CardsLoadError v-if/> <Deck v-else/>` under
+    MainSurface.vue (`<CardsLoadError v-if/> <Deck v-else/>` under
     Stage), so Deck is not mounted while erroring at idle.
   -->
   <view class="cards-load-error">

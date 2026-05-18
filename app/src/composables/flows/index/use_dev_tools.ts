@@ -1,7 +1,7 @@
 /**
  * Name: composables/flows/index/use_dev_tools
  * Purpose: encapsulates the dev-tools state + event handlers wired into
- *          the main page (DevToolsPanel). Owns the local toggles
+ *          MainSurface (DevToolsPanel). Owns the local toggles
  *          (`isDevExpanded`, `showContainerBorders`) and the handlers the
  *          panel emits (replay, skip-to-reading, playback rate, container
  *          border toggle). Reading is normally seeded by the animation
@@ -9,9 +9,9 @@
  *          path skips the drawing builder entirely, so this composable
  *          mirrors the skipToReading flow before delegating to the
  *          animation controller.
- * Reason: extracted from `pages/main/index.vue` (was 446 lines) so the
- *          dev-tools surface stays self-contained — the page only has to
- *          spread the returned object onto DevToolsPanel's props +
+ * Reason: extracted from `MainSurface.vue` (was 446 lines) so the
+ *          dev-tools surface stays self-contained — MainSurface only has
+ *          to spread the returned object onto DevToolsPanel's props +
  *          listeners.
  * Data flow: animation + reading controllers feed in; reactive flags +
  *          handler functions flow out for the SFC to bind.

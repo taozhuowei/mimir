@@ -183,7 +183,7 @@ function onDrawerKeydown(e: KeyboardEvent) {
      either side of the sheet. The drawer is conceptually a screen-bottom
      surface — not part of the phone-shell canvas — so it now owns the full
      viewport. The result card above it stays inside the phone-shell cap
-     (`.canvas` in pages/main/index.vue handles that), so this only changes
+     (`.canvas` in MainSurface.vue handles that), so this only changes
      the sheet itself. */
   position: absolute;
   left: 0;

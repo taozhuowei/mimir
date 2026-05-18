@@ -13,8 +13,7 @@
     "app": {
       "entry": [
         "src/App.vue",
-        "src/pages/main/index.vue",
-        "src/pages/fallback/index.vue",
+        "src/pages/index.vue",
         "test/*.test.ts",
         "test/e2e/*.spec.ts",
         "vitest.config.ts",
