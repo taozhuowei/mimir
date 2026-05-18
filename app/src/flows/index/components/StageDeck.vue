@@ -1,6 +1,6 @@
 <template>
   <!--
-    Deck — single persistent stage-content instance. Stays mounted from
+    StageDeck — single persistent stage-content instance. Stays mounted from
     idle (fan loop) → divination (shuffle / cut / draw / reveal) →
     reading, so the idle ↔ divination swap has no visual gap.
 
@@ -50,7 +50,7 @@
 
 <script setup lang="ts">
 /**
- * Name: Deck (stage content)
+ * Name: StageDeck (stage content)
  * Purpose: single persistent deck/card surface. Renders the idle fan loop
  *          in phase 'idle' and the full shuffle/cut/draw/reveal rig in
  *          every other phase; the visuals are delegated to DeckFanStack +
@@ -72,7 +72,7 @@ import { useTarotStore } from '../../../core/store/tarot'
 import { useThemeStore } from '../../../core/store/theme'
 import { usePlayDeckAnimation } from '../composables/use_play_deck_animation'
 import { RESULT_LIFT_MARGIN_PX } from '../../reading/composables/result_card_lift_margin'
-import type { DivinationPhase } from '../../../core/store/flow'
+import type { DivinationPhase } from '../../../core/store/slices/flow'
 import DeckFanStack from '../../idle/components/DeckFanStack.vue'
 import DeckRig from '../../divination/components/DeckRig.vue'
 

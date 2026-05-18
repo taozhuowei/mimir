@@ -27,7 +27,7 @@ import {
   type PhysicalViewport,
   type ResponsiveSizes,
 } from '../scale'
-import { WIDE_SIDE_DRAWER_WIDTH_PX, getMenuButtonRect, resolveTopBarHeight } from './breakpoints'
+import { WIDE_SIDE_DRAWER_WIDTH_PX, getMenuButtonRect, resolveTopBarHeight } from './wide_breakpoint_and_chrome'
 
 /** Scene = phase grouping the solver understands. */
 export type Scene = 'draw_stage' | 'reading_stage'

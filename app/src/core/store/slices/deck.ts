@@ -1,12 +1,14 @@
 /**
- * Name: deck store module
- * Purpose: manage the tarot card deck loaded from the backend.
+ * Name: core/store/slices/deck
+ * Purpose: state-slice factory holding the tarot card deck loaded from the
+ *          backend. Composed by the `tarot` Pinia store — this module is a
+ *          pure factory, not a store itself.
  * Reason: separates deck data concerns from divination flow and reading state.
  */
 
 import { ref } from 'vue'
-import { fetchAllCards } from '../api/cards'
-import type { TarotCardInfo } from '../utils/tarot_reading'
+import { fetchAllCards } from '../../api/cards'
+import type { TarotCardInfo } from '../../api/types'
 
 export function createDeckState() {
   const allCards = ref<TarotCardInfo[]>([])

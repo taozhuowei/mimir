@@ -76,7 +76,7 @@
  *           useReadingPanelController for the view model including per-field
  *           timing. Null guard is internal — parent may pass null briefly.
  */
-import { useReadingPanelController } from '../composables/use_reading_panel_controller'
+import { useReadingPanelController } from '../composables/use_reading_panel_view_model'
 import TypewriterText from '../../shared/components/TypewriterText.vue'
 import type { ReadingResult } from '../../../core/api/types'
 

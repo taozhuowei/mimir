@@ -12,7 +12,7 @@
  * Reason: the previous monolithic 473-line `scale.ts` mixed five concerns
  *          (constants, canvas clamp, sizes derivation, viewport adapter,
  *          Vue composable). Splitting the pure pieces into
- *          `responsive_breakpoints.ts` + `responsive_sizes.ts` (and the
+ *          `scale_constants.ts` + `sizes_viewport.ts` (and the
  *          rAF/cAF shim into `raf_shim.ts`) keeps the public API stable
  *          for downstream importers while letting each file stay focused
  *          and well below the 300-line file budget.
@@ -27,13 +27,13 @@ import type { Ref } from 'vue'
 import {
   deriveScale,
   pickCanvasWidth,
-} from './responsive_breakpoints'
+} from './scale_constants'
 import {
   deriveSizes,
   readViewport,
   type ResponsiveSizes,
   type PhysicalViewport,
-} from './responsive_sizes'
+} from './sizes_viewport'
 import { raf, caf } from './raf_shim'
 
 // Re-export the public surface from the split modules so existing importers
@@ -60,14 +60,14 @@ export {
   MAX_CARD_WIDTH_PX,
   pickCanvasWidth,
   deriveScale,
-} from './responsive_breakpoints'
+} from './scale_constants'
 export {
   deriveSizes,
   readViewport,
   type ResponsiveSizes,
   type PhysicalViewport,
   type WindowInfoShape,
-} from './responsive_sizes'
+} from './sizes_viewport'
 
 /**
  * Sub-pixel jitter threshold. If a recomputed `k` differs from the previous

@@ -1,5 +1,5 @@
 /**
- * Name: core/deck/types
+ * Name: core/deck/deck_geometry
  * Purpose: deck geometry types for layout calculations.
  * Reason: decouple deck positioning from animation state.
  */

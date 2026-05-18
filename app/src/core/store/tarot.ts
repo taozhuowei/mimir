@@ -2,11 +2,11 @@
 
 import { defineStore } from 'pinia'
 import type { DrawnResult } from '../api/types'
-import { createDeckState } from './deck'
-import { createReadingState } from './reading'
-import { createFlowState } from './flow'
+import { createDeckState } from './slices/deck'
+import { createReadingState } from './slices/reading'
+import { createFlowState } from './slices/flow'
 
-export type { DivinationPhase } from './flow'
+export type { DivinationPhase } from './slices/flow'
 
 export const useTarotStore = defineStore('tarot', () => {
   const deck = createDeckState()

@@ -1,11 +1,11 @@
 // @vitest-environment node
 
 import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest'
+import { createTypewriterModel } from '../src/core/utils/typing/typewriter_model'
 import {
-  createTypewriterModel,
   calculateFieldTiming,
   calculateKeywordTiming,
-} from '../src/core/utils/typing/typewriter_model'
+} from '../src/flows/reading/composables/reading_panel_timing'
 
 describe('typewriter_model', () => {
   beforeEach(() => {

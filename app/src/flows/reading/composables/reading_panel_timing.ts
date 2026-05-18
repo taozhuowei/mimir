@@ -1,14 +1,11 @@
 /**
- * Name: reading_panel_timing
+ * Name: flows/reading/composables/reading_panel_timing
  * Purpose: staggered start-delay / char-interval timing for the reading
  *          result panel's per-field and per-keyword typewriter reveal.
- * Reason: split out of typewriter_model.ts so the generic typewriter engine
- *         stays domain-free. These functions encode reading-panel field /
- *         keyword semantics, so they belong to the reading flow.
- * Flow ownership: semantically a reading-flow concern. The flows migration
- *         batch will relocate this into the reading flow; it is kept in core
- *         for now (this batch is a core-internal single-responsibility split
- *         only, no cross-flow moves).
+ * Reason: these functions encode reading-panel field / keyword semantics,
+ *         so they live with the reading flow rather than the generic
+ *         typewriter engine (core/utils/typing/typewriter_model), which
+ *         stays domain-free and no longer re-exports them.
  */
 
 /**

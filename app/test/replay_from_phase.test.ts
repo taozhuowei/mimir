@@ -16,9 +16,9 @@
 import { describe, expect, it, vi } from 'vitest'
 import { ref } from 'vue'
 import { replayFromPhaseCommand } from '../src/flows/divination/composables/replay_from_phase'
-import type { OverlayPhase } from '../src/flows/shared/composables/animations/contracts'
-import { MAX_CUT_PILES, type PhaseSnapDeps } from '../src/flows/divination/composables/phase_entry_snapshots'
-import { MAX_CARD_COUNT } from '../src/flows/shared/composables/animations/state'
+import type { OverlayPhase } from '../src/flows/shared/composables/animations/phase_contracts'
+import { MAX_CUT_PILES, type PhaseSnapDeps } from '../src/flows/divination/composables/phase_entry_snap'
+import { MAX_CARD_COUNT } from '../src/flows/shared/composables/animations/animation_targets'
 import type { SceneLayout } from '../src/core/sizing/layout_solver'
 
 /**

@@ -17,7 +17,7 @@
  *          handler functions flow out for the SFC to bind.
  */
 import { ref, type Ref } from 'vue'
-import type { OverlayPhase } from '../../shared/composables/animations/contracts'
+import type { OverlayPhase } from '../../shared/composables/animations/phase_contracts'
 // #ifdef H5
 import { toggleContainerBorders as toggleContainerBordersH5 } from '../../../core/utils/dev/container_borders'
 // #endif

@@ -6,7 +6,7 @@
  * Reason: split out of use_play_deck_animation so the cross-flow
  *          orchestrator residue keeps only the phase state-machine. The
  *          runtime container is a single-responsibility idle-deck concern
- *          consumed by fan_controller and click_handler (both flows/idle).
+ *          consumed by fan_controller and deck_click_guard (both flows/idle).
  *          Behaviour-preserving: the interface and factory body are
  *          byte-identical to their inlined originals.
  * Data flow: pure state container — createPlayDeckRuntime() builds refs +

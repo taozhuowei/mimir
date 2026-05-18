@@ -1,5 +1,5 @@
 /**
- * Name: core/sizing/responsive_breakpoints
+ * Name: core/sizing/scale_constants
  * Purpose: holds the baseline pixel constants and the canvas-width clamp
  *          (`pickCanvasWidth`) plus the scale factor derivation
  *          (`deriveScale`) that drive the proportional sizing system.

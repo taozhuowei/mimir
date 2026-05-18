@@ -1,5 +1,5 @@
 /**
- * Name: flows/divination/composables/phase_manifest
+ * Name: flows/divination/composables/phase_registry
  * Purpose: single source of truth for phase ordering + metadata
  *          (PHASE_MANIFEST), its backward-compat progress-UI projection
  *          (PHASE_STEPS), and the derived lookup / sequence helpers.
@@ -11,13 +11,13 @@
  *          looks up the entry-state setter for replay/skip dispatchers.
  */
 
-import type { OverlayPhase } from '../../shared/composables/animations/contracts'
-import type { PhaseSnapDeps } from './phase_entry_snapshots'
+import type { OverlayPhase } from '../../shared/composables/animations/phase_contracts'
+import type { PhaseSnapDeps } from './phase_entry_snap'
 import {
   snapToCuttingEntry,
   snapToDrawingEntry,
   snapToRevealingEntry,
-} from './phase_entry_snapshots'
+} from './phase_entry_snap'
 
 /**
  * Progress-bar metadata for one phase. Absorbed verbatim from the former

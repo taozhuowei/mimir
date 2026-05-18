@@ -1,13 +1,13 @@
 /**
- * Name: flows/shared/composables/animations/contracts
+ * Name: flows/shared/composables/animations/phase_contracts
  * Purpose: flow-orchestration + phase-runner + animation-atom type contracts.
  * Reason: decouple phase execution order from individual phase logic, and
  *   give atoms a shared signature; contracts live with the animation
  *   base layer that defines them.
  */
 
-import type { DrawCardState } from './card_state'
-import type { DeckGeometry } from '../../../../core/deck/types'
+import type { DrawCardState } from './state_types'
+import type { DeckGeometry } from '../../../../core/deck/deck_geometry'
 import type { CardLayout } from '../../../../core/sizing/layout_solver'
 import type { gsap } from 'gsap'
 

@@ -16,7 +16,7 @@
  */
 import { computed, type ComputedRef } from 'vue'
 import { useResponsiveScale } from './scale'
-import { getMenuClearancePx } from './overlay_layout/breakpoints'
+import { getMenuClearancePx } from './overlay_layout/wide_breakpoint_and_chrome'
 
 export function useCssVarBridge(): ComputedRef<Record<string, string>> {
   const { sizes } = useResponsiveScale()

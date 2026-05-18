@@ -1,5 +1,5 @@
 /**
- * Name: flows/shared/composables/animations/card_state
+ * Name: flows/shared/composables/animations/state_types
  * Purpose: shared animation state shapes for overlay animations.
  * Reason: keep animation state contracts explicit and reusable; lives in the
  *   shared animation base layer that all flows consume.

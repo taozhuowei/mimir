@@ -4,7 +4,7 @@
  * Reason: these pure factories are consumed by use_animation_state.ts.
  */
 
-import type { CardState, CenterCardState, DrawCardState, InnerState } from './card_state'
+import type { CardState, CenterCardState, DrawCardState, InnerState } from './state_types'
 
 export interface ShuffleInitialStates {
   initials: CardState[]

@@ -1,5 +1,5 @@
 <template>
-  <text class="typewriter-text">{{ displayed_text }}</text>
+  <text class="typewriter-text">{{ displayedText }}</text>
 </template>
 
 <script setup lang="ts">
@@ -18,7 +18,7 @@ const props = withDefaults(defineProps<{
   instant: false,
 })
 
-const displayed_text = ref('')
+const displayedText = ref('')
 
 // Create typewriter model
 let typewriterModel: ReturnType<typeof createTypewriterModel> | null = null
@@ -33,7 +33,7 @@ function createModel() {
     },
     {
       onUpdate: (text) => {
-        displayed_text.value = text
+        displayedText.value = text
       },
       onComplete: () => {
         // Animation complete - no-op since we update via onUpdate
@@ -53,7 +53,7 @@ watch(
       createModel()
       typewriterModel?.start()
     } else {
-      displayed_text.value = ''
+      displayedText.value = ''
     }
   },
 )

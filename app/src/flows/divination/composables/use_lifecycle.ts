@@ -10,9 +10,9 @@
 
 import { nextTick } from 'vue'
 import { killAnimationTargets } from '../../../core/gsap/tween'
-import type { PhaseSnapDeps } from './phase_entry_snapshots'
-import type { OverlayPhase } from '../../shared/composables/animations/contracts'
-import { runPipelineCommand } from './start'
+import type { PhaseSnapDeps } from './phase_entry_snap'
+import type { OverlayPhase } from '../../shared/composables/animations/phase_contracts'
+import { runPipelineCommand } from './run_pipeline_command'
 import { skipToReadingCommand } from './skip_to_reading'
 import { replayFromPhaseCommand } from './replay_from_phase'
 import type { LifecycleDeps } from './use_lifecycle_types'
