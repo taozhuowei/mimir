@@ -126,7 +126,7 @@
 
   /* ── Proportional scale system ──────────────────────────────────────
      Static fallbacks for the runtime CSS variable bridge defined on
-     `pages/main/index.vue`'s root view (uses useResponsiveScale). The
+     `MainSurface.vue`'s root view (uses useResponsiveScale). The
      bridge overrides these with proportional values derived from canvas
      width × k. Static defaults match the iPhone 8 baseline (k = 1) so
      any descendant scoped CSS that ships before the bridge mounts still
@@ -682,7 +682,7 @@ page {
    Dev-only: container border overlay (toggled by DevToolsPanel)
    ========================================
    Activated when documentElement gets the `dev-debug-borders` class
-   (set in pages/main/index.vue's toggleContainerBorders handler).
+   (set in MainSurface.vue's toggleContainerBorders handler).
    Inert when class is absent — zero visual cost in production.
    Rules are global (no scoped CSS) because they need to reach DOM
    nodes inside scoped child components. */

@@ -1,16 +1,16 @@
 /**
  * Name: composables/flows/index/use_main_handlers
- * Purpose: extracts the two longest event handlers from `pages/main/index.vue`
- *          (`handleRestart` + `settlePipeline`) so the page SFC can stay
+ * Purpose: extracts the two longest event handlers from `MainSurface.vue`
+ *          (`handleRestart` + `settlePipeline`) so that SFC can stay
  *          inside the 300-line file cap. Both functions orchestrate
  *          multi-step transitions that have to keep the animation
  *          controller, reading controller, and tarot store in lock-step,
  *          which is why they're worth a named home rather than inline
  *          closures.
- * Reason: `pages/main/index.vue` was crossing the 300-line file cap by
+ * Reason: `MainSurface.vue` was crossing the 300-line file cap by
  *          ~6 lines because the restart sequence and the pipeline-settle
  *          handler both spelled out their full step-by-step flow inline.
- *          Pulling them into a composable keeps the page focused on
+ *          Pulling them into a composable keeps MainSurface focused on
  *          orchestration wiring while the step list stays auditable in
  *          one place.
  * Data flow: caller passes the same controller refs the page already

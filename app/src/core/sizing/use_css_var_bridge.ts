@@ -8,7 +8,7 @@
  *          so the SFC that owns the page root is the only place that
  *          needs to call this for the bridge to work — descendants stay
  *          declarative.
- * Reason: extracted from `pages/main/index.vue` so the page setup body
+ * Reason: extracted from `MainSurface.vue` so the surface setup body
  *          stays focused on phase + controllers + view picker. The
  *          variable list is the single source of truth for the bridge.
  * Data flow: useResponsiveScale().sizes ──▶ computed object of CSS

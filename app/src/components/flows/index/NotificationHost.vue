@@ -36,10 +36,11 @@
 /**
  * Name: NotificationHost
  * Purpose: subscribe to the notification store and render the queue at the
- *          page root, above all views.
+ *          surface root, above all main-surface views.
  * Reason: docs/prd/glossary.md（容器 #9） mandates a cross-view error overlay. Mounting this
- *         host once on the main page (and, after 2.2, the fallback page)
- *         keeps notifications visible regardless of which view is active.
+ *         host once inside MainSurface keeps notifications visible across
+ *         every main-surface view; the fallback view has none by design
+ *         (docs/prd/animation.md（动效规范 #4）).
  * Data flow: producers call `useNotificationStore().push()`; this host
  *           reads `notifications` reactively and calls `dismiss(id)` from
  *           the placeholder close affordance.

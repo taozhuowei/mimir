@@ -1,14 +1,14 @@
 /**
  * Name: composables/flows/index/use_main_stage
- * Purpose: aggregate the main-page orchestration so pages/main/index.vue
+ * Purpose: aggregate the main-surface orchestration so MainSurface
  *          stays a pure entry. Owns stores, app phase, responsive width +
  *          resize lifecycle, the CSS-var bridge, the animation + reading
  *          controllers (and their callback wiring), the view picker,
  *          two-phase result-card sizing, reading passthrough, the main
  *          event handlers, and dev tools.
  * Data flow: constructs the controller graph and lifecycle → returns refs /
- *          computeds / handlers the page binds; provide() stays in the page
- *          so the inject contract is visible at the route root.
+ *          computeds / handlers MainSurface binds; provide() stays in
+ *          MainSurface so the inject contract is visible at the surface root.
  */
 import { computed, ref, onMounted, onUnmounted, type ComputedRef, type Ref } from 'vue'
 import { useAppPhase } from '../../../core/composables/use_app_phase'
