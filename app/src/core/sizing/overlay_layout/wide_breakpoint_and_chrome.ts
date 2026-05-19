@@ -16,20 +16,24 @@
 import { MAX_CANVAS_WIDTH } from '../scale'
 
 /**
- * Side-column drawer width (px) used by the wide-screen reading layout.
- * The wide split is rendered by ReadingSplitView at the view layer and is
- * not visible to the solver — the constant lives here so `getViewportMetrics`
- * can still expose `stageWidth = viewport.width − sideDrawerWidth` for the
- * legacy callers until that UI is removed in a later step.
+ * Legacy wide-screen breakpoint addend (px). It once was the
+ * ReadingSplitView side-column width; that UI and the stage-width shrink
+ * it drove are gone. The value is now decoupled from any UI element —
+ * it survives only as the addend that, with the canvas cap, fixes the
+ * `isWide` responsive threshold at 920 (see `PC_BREAKPOINT`). The
+ * `*_DRAWER_*` name is now a misnomer (no drawer); a rename is parked as
+ * pivot layout-logic debt and is out of this step's scope.
  */
 export const WIDE_SIDE_DRAWER_WIDTH_PX = 480
 
 /**
- * PC-mode breakpoint (px). Below this the bottom-sheet drawer wins; at or
- * above it the side-column reading layout wins. Equal to the canvas cap
- * (440) plus the side-column drawer width (480). Stays here for the same
- * reason as `WIDE_SIDE_DRAWER_WIDTH_PX` — the wide-split UI cleanup is
- * deferred to a later step.
+ * `isWide` responsive breakpoint (px) = canvas cap (440) + the legacy
+ * addend (480) = 920. Above it `isWide` flips true; today `isWide` only
+ * drives the cut-animation axis (motion_metrics) — no split/drawer UI
+ * branches on it anymore. NOTE: a second writer, use_main_stage's
+ * recomputeIsWide, sets the same ref at a different threshold
+ * (> MAX_CANVAS_WIDTH = 440); reconciling the dual threshold is parked
+ * as pivot layout-logic debt — not touched here.
  */
 const PC_BREAKPOINT = MAX_CANVAS_WIDTH + WIDE_SIDE_DRAWER_WIDTH_PX // 920
 
@@ -84,10 +88,9 @@ export function getMenuClearancePx(): number {
  * Returns true iff `isWide` actually changed so the caller can short-
  * circuit redundant relayouts.
  *
- * The threshold is `PC_BREAKPOINT` (920 = phone-stage 440 + side drawer
- * 480), the smallest viewport on which the side-column reading layout
- * fits next to the phone-sized stage. Below 920 we render the bottom-
- * sheet drawer; above we render the side column.
+ * The threshold is `PC_BREAKPOINT` (920). The split/drawer UI it used to
+ * gate is gone; crossing it now only flips `isWide`, which solely drives
+ * the cut-animation axis. Kept as a stable breakpoint, not a UI switch.
  */
 export function checkWidth(isWide: { value: boolean }, windowWidth: number): boolean {
   const wasWide = isWide.value

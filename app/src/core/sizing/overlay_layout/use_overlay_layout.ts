@@ -55,7 +55,7 @@ export function useOverlayLayout(deps: UseOverlayLayoutDeps) {
    * use today.
    */
   function getViewport(showResults: boolean): ViewportMetrics {
-    return getViewportMetrics(deps.isWide, showResults)
+    return getViewportMetrics(showResults)
   }
 
   /**

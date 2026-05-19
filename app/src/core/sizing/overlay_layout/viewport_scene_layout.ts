@@ -15,7 +15,6 @@
  *            controller consumers.
  */
 
-import type { Ref } from 'vue'
 import {
   solveLayout,
   type SceneLayout as SolverSceneLayout,
@@ -27,7 +26,7 @@ import {
   type PhysicalViewport,
   type ResponsiveSizes,
 } from '../scale'
-import { WIDE_SIDE_DRAWER_WIDTH_PX, getMenuButtonRect, resolveTopBarHeight } from './wide_breakpoint_and_chrome'
+import { getMenuButtonRect, resolveTopBarHeight } from './wide_breakpoint_and_chrome'
 
 /** Scene = phase grouping the solver understands. */
 export type Scene = 'draw_stage' | 'reading_stage'
@@ -107,13 +106,14 @@ export function buildPhysicalViewport(): PhysicalViewport {
  * Public viewport metrics — combines the physical viewport with the legacy
  * `stageWidth/stageHeight/stageContainerHeight/topBarHeight` keys that
  * downstream consumers (animation controller, overlay components) still
- * use today. Wide-screen branch retained for the legacy ReadingSplitView
- * pipeline (will be dropped when the wide-split UI is cleaned up).
+ * use today. The wide-screen stage-width shrink for the old
+ * ReadingSplitView side column was removed in the pivot cleanup — the
+ * answer is inline now, so the stage is always the full canvas width.
+ * The `isWide` parameter was removed along with that branch.
  */
-export function getViewportMetrics(isWide: Ref<boolean>, showResults: boolean): ViewportMetrics {
+export function getViewportMetrics(showResults: boolean): ViewportMetrics {
   const viewport = buildPhysicalViewport()
-  const wide = isWide.value
-  const stageWidth = showResults && wide ? viewport.width - WIDE_SIDE_DRAWER_WIDTH_PX : viewport.width
+  const stageWidth = viewport.width
   const stageHeight = viewport.height
   const stageContainerHeight = showResults ? stageHeight : viewport.height
   return {
