@@ -11,8 +11,8 @@
 
 import { describe, expect, it, vi, beforeEach } from 'vitest'
 import { ref } from 'vue'
-import { createReadingOrchestrator } from '../src/core/utils/reading/reading_orchestrator'
-import type { ReadingProvider } from '../src/core/utils/reading/reading_provider'
+import { createAnswerOrchestrator } from '../src/core/utils/reading/reading_orchestrator'
+import type { AnswerProvider } from '../src/core/utils/reading/reading_provider'
 import type { DrawnResult, AnswerResult, TarotCardInfo } from '../src/core/api/types'
 import type { Divination } from '../src/core/api/divinations'
 
@@ -31,7 +31,7 @@ function makeDrawn(id = 'card_a'): DrawnResult[] {
   return [{ card: makeCard(id), position: 'upright' }]
 }
 
-function makeReadingResult(): AnswerResult {
+function makeAnswerResult(): AnswerResult {
   return {
     cardDetails: [
       {
@@ -47,14 +47,14 @@ function makeReadingResult(): AnswerResult {
   }
 }
 
-function makeDivination(drawn: DrawnResult[] = makeDrawn(), answer: AnswerResult = makeReadingResult()): Divination {
+function makeDivination(drawn: DrawnResult[] = makeDrawn(), answer: AnswerResult = makeAnswerResult()): Divination {
   return { spreadKind: 'single_card', drawn, answer }
 }
 
-function makeMockProvider(divination: Divination | null = null, shouldReject = false): ReadingProvider {
+function makeMockProvider(divination: Divination | null = null, shouldReject = false): AnswerProvider {
   return {
     type: 'rule_based',
-    requestReading: vi.fn().mockImplementation(() => {
+    requestAnswer: vi.fn().mockImplementation(() => {
       if (shouldReject) {
         return Promise.reject(new Error('Test error'))
       }
@@ -80,7 +80,7 @@ describe('reading_orchestrator', () => {
   describe('state', () => {
     it('reflects initial idle state', () => {
       const provider = makeMockProvider()
-      const orchestrator = createReadingOrchestrator({
+      const orchestrator = createAnswerOrchestrator({
         provider,
         statusRef,
         resultRef,
@@ -96,7 +96,7 @@ describe('reading_orchestrator', () => {
 
     it('reflects loading state', async () => {
       const provider = makeMockProvider(makeDivination())
-      const orchestrator = createReadingOrchestrator({
+      const orchestrator = createAnswerOrchestrator({
         provider,
         statusRef,
         resultRef,
@@ -115,9 +115,9 @@ describe('reading_orchestrator', () => {
 
     it('reflects success state and populates drawnRef + resultRef', async () => {
       const drawn = makeDrawn('the_fool')
-      const reading = makeReadingResult()
+      const reading = makeAnswerResult()
       const provider = makeMockProvider(makeDivination(drawn, reading))
-      const orchestrator = createReadingOrchestrator({
+      const orchestrator = createAnswerOrchestrator({
         provider,
         statusRef,
         resultRef,
@@ -139,7 +139,7 @@ describe('reading_orchestrator', () => {
 
     it('reflects error state', async () => {
       const provider = makeMockProvider(null, true)
-      const orchestrator = createReadingOrchestrator({
+      const orchestrator = createAnswerOrchestrator({
         provider,
         statusRef,
         resultRef,
@@ -161,7 +161,7 @@ describe('reading_orchestrator', () => {
   describe('reset', () => {
     it('clears all state', async () => {
       const provider = makeMockProvider(makeDivination())
-      const orchestrator = createReadingOrchestrator({
+      const orchestrator = createAnswerOrchestrator({
         provider,
         statusRef,
         resultRef,
@@ -181,11 +181,11 @@ describe('reading_orchestrator', () => {
 
   describe('start with existing result', () => {
     it('returns existing result without calling provider', async () => {
-      const existingResult = makeReadingResult()
+      const existingResult = makeAnswerResult()
       resultRef.value = existingResult
 
       const provider = makeMockProvider()
-      const orchestrator = createReadingOrchestrator({
+      const orchestrator = createAnswerOrchestrator({
         provider,
         statusRef,
         resultRef,
@@ -197,7 +197,7 @@ describe('reading_orchestrator', () => {
       const result = await orchestrator.start({ spreadKind: 'single_card' })
 
       expect(result).toStrictEqual(existingResult)
-      expect(provider.requestReading).not.toHaveBeenCalled()
+      expect(provider.requestAnswer).not.toHaveBeenCalled()
       expect(orchestrator.state.status).toBe('success')
     })
   })

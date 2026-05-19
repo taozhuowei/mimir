@@ -12,20 +12,20 @@
 import type { Divination } from '../../api/divinations'
 import type { SpreadKind } from '../../api/types'
 
-export type ReadingProviderType = 'rule_based' | 'ai'
+export type AnswerProviderType = 'rule_based' | 'ai'
 
 /**
  * Request parameters for a divination. The spread kind is optional and
  * defaults to `single_card` so existing call sites that pass an empty
  * object keep working.
  */
-export interface ReadingRequest {
+export interface AnswerRequest {
   spreadKind?: SpreadKind
 }
 
-export interface ReadingProvider {
-  readonly type: ReadingProviderType
-  requestReading(request: ReadingRequest): Promise<Divination>
+export interface AnswerProvider {
+  readonly type: AnswerProviderType
+  requestAnswer(request: AnswerRequest): Promise<Divination>
   isAvailable(): boolean
 }
 

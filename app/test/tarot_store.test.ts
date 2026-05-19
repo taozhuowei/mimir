@@ -5,7 +5,7 @@
  * `POST /api/v1/divinations` returns `{ drawn, reading }` and the orchestrator
  * writes both into the store. The store therefore only exposes:
  *   - `setDrawnCards(drawn)` for the orchestrator to push drawn cards in
- *   - `readingResult` as a writable ref (for tests / direct consumers)
+ *   - `answerResult` as a writable ref (for tests / direct consumers)
  *   - phase transition primitives (`startDivination`, `setPhase`,
  *     `revealResult`, `reset`)
  *
@@ -34,7 +34,7 @@ function makeDrawn(id = 'card_a'): DrawnResult[] {
   return [{ card: makeCard(id), position: 'upright' }]
 }
 
-function makeReadingResult(drawn: DrawnResult[]): AnswerResult {
+function makeAnswerResult(drawn: DrawnResult[]): AnswerResult {
   return {
     cardDetails: drawn.map(d => ({
       card: d.card,
@@ -85,30 +85,30 @@ describe('tarot store - drawn cards and reading flow', () => {
     })
   })
 
-  describe('readingResult ref', () => {
+  describe('answerResult ref', () => {
     it('is null by default and writable for direct injection', () => {
       const store = useTarotStore()
-      expect(store.readingResult).toBeNull()
+      expect(store.answerResult).toBeNull()
 
       const drawn = makeDrawn()
       store.setDrawnCards(drawn)
-      const result = makeReadingResult(drawn)
+      const result = makeAnswerResult(drawn)
       // The reading ref is exposed as a writable ref so tests / direct
       // consumers can drive UI without going through the orchestrator.
-      store.readingResult = result
+      store.answerResult = result
 
-      expect(store.readingResult).toEqual(result)
+      expect(store.answerResult).toEqual(result)
     })
 
-    it('reset clears readingResult', () => {
+    it('reset clears answerResult', () => {
       const store = useTarotStore()
       const drawn = makeDrawn()
       store.setDrawnCards(drawn)
-      store.readingResult = makeReadingResult(drawn)
+      store.answerResult = makeAnswerResult(drawn)
 
       store.reset()
 
-      expect(store.readingResult).toBeNull()
+      expect(store.answerResult).toBeNull()
     })
   })
 
@@ -128,14 +128,14 @@ describe('tarot store - drawn cards and reading flow', () => {
 
       store.revealResult()
       expect(store.phase).toBe('reading')
-      // isResultVisible is false because readingResult is null (no result loaded yet)
+      // isResultVisible is false because answerResult is null (no result loaded yet)
       expect(store.isResultVisible).toBe(false)
 
       store.enterDecision()
       expect(store.phase).toBe('decision')
     })
 
-    it('isResultVisible requires both phase=reading AND readingResult', () => {
+    it('isResultVisible requires both phase=reading AND answerResult', () => {
       const store = useTarotStore()
 
       // Initially not visible
@@ -145,10 +145,10 @@ describe('tarot store - drawn cards and reading flow', () => {
       store.revealResult()
       expect(store.isResultVisible).toBe(false)
 
-      // Need both phase='reading' AND readingResult
+      // Need both phase='reading' AND answerResult
       const drawn = makeDrawn()
       store.setDrawnCards(drawn)
-      store.readingResult = makeReadingResult(drawn)
+      store.answerResult = makeAnswerResult(drawn)
 
       expect(store.isResultVisible).toBe(true)
     })
@@ -157,13 +157,13 @@ describe('tarot store - drawn cards and reading flow', () => {
       const store = useTarotStore()
       const drawn = makeDrawn()
       store.setDrawnCards(drawn)
-      store.readingResult = makeReadingResult(drawn)
+      store.answerResult = makeAnswerResult(drawn)
 
       store.startDivination('Fresh question')
 
       expect(store.phase).toBe('divination')
       expect(store.drawnCards).toHaveLength(0)
-      expect(store.readingResult).toBeNull()
+      expect(store.answerResult).toBeNull()
       expect(store.currentQuestion).toBe('Fresh question')
     })
 
@@ -173,13 +173,13 @@ describe('tarot store - drawn cards and reading flow', () => {
       store.startDivination('Test question')
       store.setDrawnCards(makeDrawn())
       store.setPhase('revealing')
-      store.readingResult = makeReadingResult(store.drawnCards)
+      store.answerResult = makeAnswerResult(store.drawnCards)
 
       store.reset()
 
       expect(store.phase).toBe('idle')
       expect(store.drawnCards).toHaveLength(0)
-      expect(store.readingResult).toBeNull()
+      expect(store.answerResult).toBeNull()
       expect(store.currentQuestion).toBe('')
       expect(store.isIdle).toBe(true)
     })

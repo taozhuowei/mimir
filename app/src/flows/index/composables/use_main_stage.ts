@@ -15,14 +15,14 @@ import { useAppPhase } from '../../../core/composables/use_app_phase'
 import { useTarotStore } from '../../../core/store/tarot'
 import { useThemeStore } from '../../../core/store/theme'
 import { useAnimationController } from '../../divination/composables/use_animation_controller'
-import { useReadingController } from '../../reading/composables/use_reading_request_controller'
+import { useAnswerController } from '../../reading/composables/use_reading_request_controller'
 import { useDevTools } from './use_dev_tools'
 import { useCssVarBridge } from '../../../core/sizing/use_css_var_bridge'
 import { useMainHandlers } from './create_main_transition_handlers'
 import { MAX_CANVAS_WIDTH } from '../../../core/sizing/scale'
 import type { OverlayPhase } from '../../shared/composables/animations/phase_contracts'
 import type { UseAnimationControllerReturn } from '../../divination/composables/use_animation_controller'
-import type { useReadingController as UseReadingControllerFn } from '../../reading/composables/use_reading_request_controller'
+import type { useAnswerController as UseAnswerControllerFn } from '../../reading/composables/use_reading_request_controller'
 import type { useDevTools as UseDevToolsFn } from './use_dev_tools'
 import type { DivinationPhase } from '../../../core/store/slices/flow'
 
@@ -31,19 +31,19 @@ export interface MainStage {
   isWide: Ref<boolean>
   cssVarStyle: ReturnType<typeof useCssVarBridge>
   animationController: UseAnimationControllerReturn
-  readingController: ReturnType<typeof UseReadingControllerFn>
+  answerController: ReturnType<typeof UseAnswerControllerFn>
   devTools: ReturnType<typeof UseDevToolsFn>
   /** Gate for the below-card answer (phase ∈ {reading, decision}). The
    *  old split/drawer overlay + its `useActiveView` picker were removed;
    *  the answer is now inline under the card, so this is a one-liner. */
   showAnswer: ComputedRef<boolean>
-  readingPanelState: ComputedRef<ReturnType<typeof UseReadingControllerFn>['readingPanelState']['value']>
-  readingResult: ComputedRef<ReturnType<typeof UseReadingControllerFn>['readingResult']['value']>
-  readingErrorMessage: ComputedRef<ReturnType<typeof UseReadingControllerFn>['readingErrorMessage']['value']>
+  answerPanelState: ComputedRef<ReturnType<typeof UseAnswerControllerFn>['answerPanelState']['value']>
+  answerResult: ComputedRef<ReturnType<typeof UseAnswerControllerFn>['answerResult']['value']>
+  answerErrorMessage: ComputedRef<ReturnType<typeof UseAnswerControllerFn>['answerErrorMessage']['value']>
   handleRestart: () => void
   handleBackHome: () => void
   handleRetry: () => void
-  handleTypewriterComplete: () => void
+  handleAnswerRevealed: () => void
 }
 
 export function useMainStage(): MainStage {
@@ -66,19 +66,19 @@ export function useMainStage(): MainStage {
 
   /* Controllers (single_card spread → cardCount = 1) */
   const cardCount = computed(() => 1)
-  const readingController = useReadingController({ tarotStore })
-  let currentReadingPromise: Promise<unknown> | null = null
+  const answerController = useAnswerController({ tarotStore })
+  let currentAnswerPromise: Promise<unknown> | null = null
   const animationController = useAnimationController({
     tarotStore,
     themeStore,
     isWide,
     cardCount,
     callbacks: {
-      onDrawingStart: () => { currentReadingPromise = readingController.startReading({}) },
+      onDrawingStart: () => { currentAnswerPromise = answerController.startAnswer({}) },
       onPipelineComplete: () => { void settlePipeline() },
       onPhaseChange: (_p: OverlayPhase) => { tarotStore.setPhase('divination') },
-      onResetReading: () => { readingController.resetReading() },
-      onDestroyReading: () => { readingController.destroyReading() },
+      onResetAnswer: () => { answerController.resetAnswer() },
+      onDestroyAnswer: () => { answerController.destroyAnswer() },
     },
   })
 
@@ -88,36 +88,36 @@ export function useMainStage(): MainStage {
     () => phase.value === 'reading' || phase.value === 'decision',
   )
 
-  const readingPanelState = computed(() => readingController.readingPanelState.value)
-  const readingResult = computed(() => readingController.readingResult.value)
-  const readingErrorMessage = computed(() => readingController.readingErrorMessage.value)
+  const answerPanelState = computed(() => answerController.answerPanelState.value)
+  const answerResult = computed(() => answerController.answerResult.value)
+  const answerErrorMessage = computed(() => answerController.answerErrorMessage.value)
 
   /* Event handlers */
   const { settlePipeline, handleRestart } = useMainHandlers({
     tarotStore,
     animationController,
-    readingController,
-    getReadingPromise: () => currentReadingPromise,
-    setReadingPromise: (next) => { currentReadingPromise = next },
+    answerController,
+    getAnswerPromise: () => currentAnswerPromise,
+    setAnswerPromise: (next) => { currentAnswerPromise = next },
     startDivination,
   })
 
-  function handleTypewriterComplete() { enterDecision() }
+  function handleAnswerRevealed() { enterDecision() }
   function handleBackHome() { resetToIdle() }
   function handleRetry() {
     // Fire-and-forget: the click handler must return synchronously, but
-    // retryReading is async. Surface failures via console.error rather than
+    // retryAnswer is async. Surface failures via console.error rather than
     // letting them silently disappear (the previous `void` pattern hid them).
-    readingController.retryReading({}).catch((err) => {
-      console.error('[main] retryReading failed', err)
+    answerController.retryAnswer({}).catch((err) => {
+      console.error('[main] retryAnswer failed', err)
     })
   }
 
   /* Dev tools (compiled out of production) */
   const devTools = useDevTools({
     animationController,
-    readingController,
-    setReadingPromise: (promise) => { currentReadingPromise = promise },
+    answerController,
+    setAnswerPromise: (promise) => { currentAnswerPromise = promise },
   })
 
   /* Lifecycle */
@@ -132,15 +132,15 @@ export function useMainStage(): MainStage {
     isWide,
     cssVarStyle,
     animationController,
-    readingController,
+    answerController,
     devTools,
     showAnswer,
-    readingPanelState,
-    readingResult,
-    readingErrorMessage,
+    answerPanelState,
+    answerResult,
+    answerErrorMessage,
     handleRestart,
     handleBackHome,
     handleRetry,
-    handleTypewriterComplete,
+    handleAnswerRevealed,
   }
 }

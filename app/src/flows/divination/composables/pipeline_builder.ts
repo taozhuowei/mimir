@@ -103,7 +103,7 @@ function buildRevealingRunner(deps: PhaseRunnerDeps): PhaseRunner {
       // Grow cards to the *full* safe-area size (typically the 240×384
       // phone-shell maximum on every supported canvas). The bottom
       // drawer mounts after the reveal phase completes; main page's
-      // showReadingView watcher animates the card down to the
+      // showAnswerView watcher animates the card down to the
       // drawer-reserved size at that point so the drawer doesn't crop
       // the card. Using cardWidth/cardHeight here would pre-shrink the
       // card to the drawer-reserved size and produce the regression

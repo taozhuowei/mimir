@@ -15,29 +15,29 @@
 import type { Ref } from 'vue'
 import type { DrawnResult, AnswerResult } from '../../api/types'
 import type { Divination } from '../../api/divinations'
-import type { ReadingProvider, ReadingRequest } from './reading_provider'
+import type { AnswerProvider, AnswerRequest } from './reading_provider'
 
-export type ReadingStatus = 'idle' | 'loading' | 'success' | 'error'
+export type AnswerStatus = 'idle' | 'loading' | 'success' | 'error'
 
-export interface ReadingOrchestratorState {
-  status: ReadingStatus
+export interface AnswerOrchestratorState {
+  status: AnswerStatus
   result: AnswerResult | null
   error: string | null
   isLoading: boolean
   canRetry: boolean
 }
 
-export interface ReadingOrchestrator {
-  state: ReadingOrchestratorState
-  start(request: ReadingRequest): Promise<AnswerResult | null>
-  retry(request?: ReadingRequest): Promise<AnswerResult | null>
+export interface AnswerOrchestrator {
+  state: AnswerOrchestratorState
+  start(request: AnswerRequest): Promise<AnswerResult | null>
+  retry(request?: AnswerRequest): Promise<AnswerResult | null>
   reset(): void
   destroy(): void
 }
 
-export interface ReadingOrchestratorDeps {
-  provider: ReadingProvider
-  statusRef: Ref<ReadingStatus>
+export interface AnswerOrchestratorDeps {
+  provider: AnswerProvider
+  statusRef: Ref<AnswerStatus>
   resultRef: Ref<AnswerResult | null>
   errorRef: Ref<string | null>
   /**
@@ -60,7 +60,7 @@ interface TimerRegistry {
 /**
  * Self-tracking setTimeout registry: each delay() timer auto-untracks on
  * fire; clearAll() cancels any still pending (used by destroy()).
- * Extracted from createReadingOrchestrator verbatim — behaviour identical.
+ * Extracted from createAnswerOrchestrator verbatim — behaviour identical.
  */
 function createTimerRegistry(): TimerRegistry {
   const pendingTimers: ReturnType<typeof setTimeout>[] = []
@@ -92,10 +92,10 @@ function createTimerRegistry(): TimerRegistry {
  * verbatim from the previous inline getState().
  */
 function readOrchestratorState(
-  statusRef: Ref<ReadingStatus>,
+  statusRef: Ref<AnswerStatus>,
   resultRef: Ref<AnswerResult | null>,
   errorRef: Ref<string | null>,
-): ReadingOrchestratorState {
+): AnswerOrchestratorState {
   return {
     status: statusRef.value,
     result: resultRef.value,
@@ -105,14 +105,14 @@ function readOrchestratorState(
   }
 }
 
-export function createReadingOrchestrator(deps: ReadingOrchestratorDeps): ReadingOrchestrator {
+export function createAnswerOrchestrator(deps: AnswerOrchestratorDeps): AnswerOrchestrator {
   const { provider, statusRef, resultRef, errorRef, drawnRef, errorMessage } = deps
   let currentRequest: Promise<AnswerResult | null> | null = null
-  let lastRequest: ReadingRequest | null = null
+  let lastRequest: AnswerRequest | null = null
   let destroyed = false
   const timers = createTimerRegistry()
 
-  async function doRequest(request: ReadingRequest, retryCount: number): Promise<AnswerResult | null> {
+  async function doRequest(request: AnswerRequest, retryCount: number): Promise<AnswerResult | null> {
     if (destroyed) return null
 
     let timeoutId: ReturnType<typeof setTimeout> | null = null
@@ -122,7 +122,7 @@ export function createReadingOrchestrator(deps: ReadingOrchestratorDeps): Readin
 
     try {
       const divination: Divination = await Promise.race([
-        provider.requestReading(request),
+        provider.requestAnswer(request),
         timeoutPromise,
       ])
       if (timeoutId) clearTimeout(timeoutId)
@@ -150,7 +150,7 @@ export function createReadingOrchestrator(deps: ReadingOrchestratorDeps): Readin
     }
   }
 
-  async function executeRequest(request: ReadingRequest): Promise<AnswerResult | null> {
+  async function executeRequest(request: AnswerRequest): Promise<AnswerResult | null> {
     if (destroyed) return null
     if (currentRequest) {
       return currentRequest
@@ -170,7 +170,7 @@ export function createReadingOrchestrator(deps: ReadingOrchestratorDeps): Readin
     get state() {
       return readOrchestratorState(statusRef, resultRef, errorRef)
     },
-    async start(request: ReadingRequest) {
+    async start(request: AnswerRequest) {
       lastRequest = request
       // If a result already exists, return it without re-requesting.
       // Callers must call reset() first if they want a fresh reading.
@@ -187,7 +187,7 @@ export function createReadingOrchestrator(deps: ReadingOrchestratorDeps): Readin
      * reading — there is no longer a way to keep the same draw and
      * re-interpret it.
      */
-    async retry(request?: ReadingRequest) {
+    async retry(request?: AnswerRequest) {
       const requestToUse = request ?? lastRequest
       if (!requestToUse) {
         return null

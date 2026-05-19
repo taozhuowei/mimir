@@ -32,7 +32,7 @@
       >再占一次</view>
     </template>
 
-    <template v-else-if="isReadingFailed">
+    <template v-else-if="isAnswerFailed">
       <view
         class="btn btn-primary"
         role="button"
@@ -64,7 +64,7 @@ import type { DivinationPhase } from '../../../core/store/slices/flow'
 
 const props = defineProps<{
   phase: DivinationPhase
-  isReadingFailed?: boolean
+  isAnswerFailed?: boolean
 }>()
 
 defineEmits<{
@@ -79,7 +79,7 @@ defineEmits<{
  * if the request errored). All other phases hide the area entirely.
  */
 const visible = computed(() =>
-  props.phase === 'decision' || props.isReadingFailed === true,
+  props.phase === 'decision' || props.isAnswerFailed === true,
 )
 </script>
 

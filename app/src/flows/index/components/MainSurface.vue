@@ -42,14 +42,14 @@
              resolves (phase ∈ reading/decision). No split / drawer overlay. -->
         <view v-if="showAnswer" class="answer-zone">
           <AnswerInscription
-            :state="readingPanelState"
-            :reading-result="readingResult"
-            :error-message="readingErrorMessage"
-            @typewriter-complete="handleTypewriterComplete"
+            :state="answerPanelState"
+            :answer-result="answerResult"
+            :error-message="answerErrorMessage"
+            @answer-revealed="handleAnswerRevealed"
           />
           <ActionArea
             :phase="phase"
-            :is-reading-failed="readingPanelState === 'error'"
+            :is-answer-failed="answerPanelState === 'error'"
             @restart="handleRestart"
             @back-home="handleBackHome"
             @retry="handleRetry"
@@ -85,8 +85,9 @@
  *          graph via useMainStage, provides phase / isWide / the two
  *          controllers to descendant components, derives header
  *          presentation + the idle card-load error, and composes the
- *          divination surface (HeaderArea + Stage(StageDeck)) with the reading
- *          split/drawer overlay, notifications and dev tools.
+ *          divination surface (HeaderArea + Stage(StageDeck)) with the
+ *          inline answer zone (AnswerInscription + ActionArea),
+ *          notifications and dev tools.
  * Reason: extracted out of pages/index.vue so that page is a pure
  *         boot shell — it mounts this surface only when bootstrap
  *         succeeded (or is pending), and the fallback view otherwise, so
@@ -108,15 +109,15 @@ import { useHeaderPresentation } from '../composables/use_header_presentation'
 import { useCardsLoadError } from '../../../core/composables/use_cards_load_error'
 
 const {
-  phase, isWide, cssVarStyle, animationController, readingController, devTools,
-  showAnswer, readingPanelState, readingResult, readingErrorMessage,
-  handleRestart, handleBackHome, handleRetry, handleTypewriterComplete,
+  phase, isWide, cssVarStyle, animationController, answerController, devTools,
+  showAnswer, answerPanelState, answerResult, answerErrorMessage,
+  handleRestart, handleBackHome, handleRetry, handleAnswerRevealed,
 } = useMainStage()
 
 provide('appPhase', phase)
 provide('isWide', isWide)
 provide('animationController', animationController)
-provide('readingController', readingController)
+provide('answerController', answerController)
 
 const { isIdle, headerRole, headerAriaValuetext, headerStyle } =
   useHeaderPresentation(phase, animationController)

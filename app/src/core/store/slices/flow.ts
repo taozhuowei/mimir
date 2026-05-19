@@ -18,11 +18,11 @@
 
 import { computed, ref } from 'vue'
 import type { DrawnResult } from '../../api/types'
-import type { createReadingState } from './reading'
+import type { createAnswerState } from './reading'
 
 export type DivinationPhase = 'idle' | 'divination' | 'reading' | 'decision'
 
-export function createFlowState(reading: ReturnType<typeof createReadingState>) {
+export function createFlowState(reading: ReturnType<typeof createAnswerState>) {
   const phase = ref<DivinationPhase>('idle')
   const drawnCards = ref<DrawnResult[]>([])
   const currentQuestion = ref('')
@@ -34,7 +34,7 @@ export function createFlowState(reading: ReturnType<typeof createReadingState>) 
   // `isResultVisible` is preserved here; a naming codemod is scheduled for
   // phase 4 to align it with the new two-layer terminology.
   const isResultVisible = computed(() =>
-    (phase.value === 'reading' || phase.value === 'decision') && reading.readingResult.value !== null,
+    (phase.value === 'reading' || phase.value === 'decision') && reading.answerResult.value !== null,
   )
 
   function startDivination(question: string) {

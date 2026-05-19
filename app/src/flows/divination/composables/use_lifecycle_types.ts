@@ -49,8 +49,8 @@ export interface LifecycleDeps extends PipelineSharedDeps {
     onPhaseChange: (p: OverlayPhase) => void
     onPipelineComplete: () => void
     onDrawingStart?: () => void
-    onResetReading: () => void
-    onDestroyReading: () => void
+    onResetAnswer: () => void
+    onDestroyAnswer: () => void
   }
   resumeAnimations: () => void
 }

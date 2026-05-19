@@ -21,7 +21,7 @@ export interface RunPipelineCommandDeps extends PipelineSharedDeps {
   cardsLandedRef: Ref<boolean>
   onPhaseChange: (phase: OverlayPhase) => void
   settleEntryAnimation: () => void
-  openReadingPanel: () => void
+  openAnswer: () => void
   onDrawingStart?: () => void
   onPipelineComplete: () => void
 }
@@ -61,7 +61,7 @@ export function runPipelineCommand(startIndex: number, deps: RunPipelineCommandD
       deps.onPhaseChange(startedPhase)
       if (startedPhase === 'shuffling') deps.settleEntryAnimation()
       if (startedPhase === 'drawing') deps.onDrawingStart?.()
-      if (startedPhase === 'revealing') deps.openReadingPanel()
+      if (startedPhase === 'revealing') deps.openAnswer()
     },
     onPipelineComplete: () => { deps.onPipelineComplete() },
   })

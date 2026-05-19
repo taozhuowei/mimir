@@ -8,48 +8,48 @@
  *         The orchestrator (see `utils/reading/reading_orchestrator.ts`)
  *         owns the request lifecycle now — this store only exposes the
  *         shared refs it writes into, so the rest of the app can subscribe.
- * Data flow: orchestrator writes `readingResult`/`isReadingLoading`/
- *           `readingError`; templates and other stores read them.
+ * Data flow: orchestrator writes `answerResult`/`isAnswerLoading`/
+ *           `answerError`; templates and other stores read them.
  */
 
 import { ref } from 'vue'
 import type { AnswerResult } from '../../api/types'
 
-export function createReadingState() {
-  const readingResult = ref<AnswerResult | null>(null)
-  const isReadingLoading = ref(false)
-  const readingError = ref<string | null>(null)
+export function createAnswerState() {
+  const answerResult = ref<AnswerResult | null>(null)
+  const isAnswerLoading = ref(false)
+  const answerError = ref<string | null>(null)
 
   // A monotonic counter consumers can bump to ignore stale in-flight
   // responses (e.g. when restarting a divination mid-request).
-  const currentReadingRequestId = ref<number>(0)
-  let pendingReadingPromise: Promise<AnswerResult | null> | null = null
+  const currentAnswerRequestId = ref<number>(0)
+  let pendingAnswerPromise: Promise<AnswerResult | null> | null = null
 
-  function invalidateReadingRequest() {
-    currentReadingRequestId.value += 1
-    pendingReadingPromise = null
-    isReadingLoading.value = false
+  function invalidateAnswerRequest() {
+    currentAnswerRequestId.value += 1
+    pendingAnswerPromise = null
+    isAnswerLoading.value = false
   }
 
-  function waitForReadingResult(): Promise<AnswerResult | null> {
-    if (pendingReadingPromise) {
-      return pendingReadingPromise
+  function waitForAnswerResult(): Promise<AnswerResult | null> {
+    if (pendingAnswerPromise) {
+      return pendingAnswerPromise
     }
-    return Promise.resolve(readingResult.value)
+    return Promise.resolve(answerResult.value)
   }
 
   function reset() {
-    readingResult.value = null
-    readingError.value = null
-    invalidateReadingRequest()
+    answerResult.value = null
+    answerError.value = null
+    invalidateAnswerRequest()
   }
 
   return {
-    readingResult,
-    isReadingLoading,
-    readingError,
-    waitForReadingResult,
-    invalidateReadingRequest,
+    answerResult,
+    isAnswerLoading,
+    answerError,
+    waitForAnswerResult,
+    invalidateAnswerRequest,
     reset,
   }
 }

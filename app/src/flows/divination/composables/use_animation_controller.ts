@@ -50,8 +50,8 @@ export interface UseAnimationControllerCallbacks {
   onDrawingStart?: () => void
   onPipelineComplete: () => void
   onPhaseChange: (phase: OverlayPhase) => void
-  onResetReading: () => void
-  onDestroyReading: () => void
+  onResetAnswer: () => void
+  onDestroyAnswer: () => void
 }
 
 export interface UseAnimationControllerDeps {
@@ -113,7 +113,7 @@ export interface UseAnimationControllerReturn extends ReconcilerPublic {
   resetOverlayScene: () => void
   start: () => void
   updateLayout: () => void
-  openReadingPanel: () => void
+  openAnswer: () => void
   setDrawCardSizes: ReturnType<typeof useAnimationState>['setDrawCardSizes']
   clearTimeline: () => void
   killTimeline: () => void
@@ -214,8 +214,8 @@ export function useAnimationController(deps: UseAnimationControllerDeps): UseAni
       onPhaseChange: deps.callbacks.onPhaseChange,
       onPipelineComplete: deps.callbacks.onPipelineComplete,
       onDrawingStart: deps.callbacks.onDrawingStart,
-      onResetReading: deps.callbacks.onResetReading,
-      onDestroyReading: deps.callbacks.onDestroyReading,
+      onResetAnswer: deps.callbacks.onResetAnswer,
+      onDestroyAnswer: deps.callbacks.onDestroyAnswer,
     },
     resumeAnimations,
   })
@@ -234,7 +234,7 @@ export function useAnimationController(deps: UseAnimationControllerDeps): UseAni
     refreshDraws()
   }
 
-  function openReadingPanel() {
+  function openAnswer() {
     if (showResults.value) return
     showResults.value = true
   }
@@ -260,7 +260,7 @@ export function useAnimationController(deps: UseAnimationControllerDeps): UseAni
     skipToReading: lifecycle.skipToReading,
     resetOverlayScene: lifecycle.resetOverlayScene,
     start: lifecycle.start,
-    updateLayout, openReadingPanel,
+    updateLayout, openAnswer,
     setDrawCardSizes,
     clearTimeline,
     killTimeline,
