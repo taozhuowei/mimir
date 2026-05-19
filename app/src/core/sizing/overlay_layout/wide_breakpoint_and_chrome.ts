@@ -10,7 +10,7 @@
  *          that left the cut-animation axis non-deterministic in the
  *          440–920 viewport band. The file keeps its name for now; a
  *          rename to drop the now-stale `wide_breakpoint` part is parked
- *          as docs/TODO.md debt.
+ *          as layout-logic cleanup debt.
  * Data flow: mini-program capsule rect ──▶ resolveTopBarHeight ──▶
  *            topBarHeight / menu-clearance metric.
  */

@@ -110,7 +110,7 @@ export function buildPhysicalViewport(): PhysicalViewport {
  * is now just the canvas dimension (the old wide-split width shrink and
  * the `showResults` stage-container branch were removed — both collapsed
  * to identity). None of these keys is read at runtime today; the fields
- * are retained as the output contract (parked, docs/TODO.md).
+ * are retained as the output contract (parked layout-logic debt).
  */
 export function getViewportMetrics(): ViewportMetrics {
   const viewport = buildPhysicalViewport()

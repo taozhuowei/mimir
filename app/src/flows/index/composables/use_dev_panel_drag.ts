@@ -4,7 +4,7 @@
  *          dragging flag, edge-aware containerStyle, pointer handlers, and
  *          the drag-tail click suppression — so the panel shell only
  *          concerns itself with layout + visibility.
- * Reason: F3 of the parked-debt cleanup (docs/TODO.md). The shell
+ * Reason: F3 of the parked-debt cleanup. The shell
  *          previously inlined ~80 lines of drag plumbing alongside its
  *          markup; extracting it keeps the SFC a thin shell. The drag
  *          *algorithm* still lives in core/utils/dev/draggable_panel.ts
