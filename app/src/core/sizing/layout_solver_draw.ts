@@ -5,7 +5,7 @@
  *          shuffle / cut / draw, but geometry still emitted for consumers
  *          that branch on it).
  * Reason: split out of layout_solver.ts so the draw-scene assembly is a
- *          single concern, separate from the reading-scene solver and the
+ *          single concern, separate from the answer-scene solver and the
  *          dispatch facade. Consumed only by `layout_solver.solveLayout`.
  * Purity: pure function. No window access, no DOM, no global state.
  */

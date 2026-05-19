@@ -59,7 +59,7 @@
 - [x] C1 文档/注释（详见上）。提交 `d1c1f3d`。
 - [x] C2 化简宽屏分栏死 stageWidth 分支 + 删死 isWide 参数 + 过时注释（实证收敛：常量保留，见上）。
 - [x] C3 请求管道/控制器/store/事件改名（25 文件，含 kebab + 一处 C1 漏网注释）。
-- [ ] C4 `reading_stage`→`answer_stage` 场景全链。message：`refactor(naming): rename reading_stage scene to answer_stage`。
+- [x] C4 `reading_stage`→`answer_stage` 场景全链（8 文件：SceneKind/Scene/solveLayout dispatch/getSceneLayout 调用/solveAnswerStageLayout/answerStageReservation/注释；C5 文件名与 import 路径未碰）。
 - [ ] C5 文件/目录重命名 + import + 配置。message：`refactor(naming): move reading files/dirs to answer + repoint imports & arch rule`。
 - [ ] C6 应用阶段标识 `reading→answer`。message：`refactor(naming): rename app phase identifier reading→answer`。
 - [ ] C7 docs 去括注 + 收口。message：`docs: drop reading naming-debt annotations after rename`。
@@ -70,14 +70,14 @@
 
 ## 进度
 
-S1（数据契约+协议字段）提交 `85e4360`；旧 S2 因冻结映射不完整回滚重排为 C1–C7。C1（文档+注释）`d1c1f3d`；C2（化简死 stageWidth 分支+删死 isWide 参数）`61c0f0c`；C3（请求管道/控制器/store/事件改名）已全套验收（full 门禁+prod+e2e 15/15）待提交。C4–C7 未启动。注：本会话出现一次 npm registry 网络超时致 audit 步瞬时失败，重试即恢复，非代码问题。
+S1（数据契约+协议字段）提交 `85e4360`；旧 S2 因冻结映射不完整回滚重排为 C1–C7。C1（文档+注释）`d1c1f3d`；C2（化简死 stageWidth 分支+删死 isWide 参数）`61c0f0c`；C3（请求管道/控制器/store/事件改名）提交 `211d144`；C4（`reading_stage`→`answer_stage` 场景全链）已全套验收（full 门禁+prod+e2e 15/15）待提交。C5–C7 未启动。注：本会话出现一次 npm registry 网络超时致 audit 步瞬时失败，重试即恢复，非代码问题。
 
 ## 搁置问题（已登记，未排期）
 
 1. 组件职责拆分债：
    a. [`TitleContent.vue`](../app/src/flows/shared/components/TitleContent.vue)：`variant: idle|fallback` 一组件三职责。应拆为纯文案渲染 + 入场动画驱动 + 按 variant 薄包装。
    b. [`DevToolsPanel.vue`](../app/src/flows/index/components/DevToolsPanel.vue)：可拖拽折叠壳 + 10+ 纯 `$emit` 透传 + 拖拽/点击手势消歧混合。透传收敛、拖拽抽 composable、壳只管布局可见性。
-2. `cardWidthFull/cardHeightFull` 双卡尺寸语义债：pivot 删抽屉后「抽屉挂载前/后」双尺寸概念已无实际区分（`cardWidthFull` 仍被 `pipeline_builder` 当 `resultCardWidth` 用）。本计划只改名/注释不动逻辑；是否将其与 `cardWidth` 合一属布局逻辑简化，单列另案。
+2. `cardWidthFull/cardHeightFull` 双卡尺寸语义债：pivot 删抽屉后「抽屉挂载前/后」双尺寸概念已无实际区分（`cardWidthFull` 仍被 `pipeline_builder` 当 `resultCardWidth` 用）。本计划只改名/注释不动逻辑；是否将其与 `cardWidth` 合一属布局逻辑简化，单列另案。同源 pivot「抽屉」措辞残留待清：[`layout_solver.test.ts`](../app/test/layout_solver.test.ts) 第 266 行测试名「lifts above the bottom drawer」、`SceneLayout.cardWidth`/`stageShiftY`/`DrawerGeometry` 等注释仍按抽屉模型描述（抽屉已删，应改述为「为下方行内答案区让位」）；属文档/注释债，与 C7 一并梳理或单列。
 3. pivot 布局逻辑残留债（C2 实证发现，均属动逻辑/产品判断，本计划不碰）：
    a. `isWide` 双写阈值矛盾：[`use_main_stage.ts`](../app/src/flows/index/composables/use_main_stage.ts) `recomputeIsWide` 用 `> MAX_CANVAS_WIDTH`(440)，[`wide_breakpoint_and_chrome.ts`](../app/src/core/sizing/overlay_layout/wide_breakpoint_and_chrome.ts) `checkWidth` 用 `>= PC_BREAKPOINT`(920)，两者写同一 `isWide` ref，阈值不一致（pivot 前 920 是 split 断点）。需产品判断 `isWide`（现仅驱动切牌轴向）应采哪个阈值并去重。
    b. `WIDE_SIDE_DRAWER_WIDTH_PX` 误导命名：已与 UI 解耦、仅作 `isWide` 断点 480 加数，名仍含 `DRAWER`。改名牵动 `PC_BREAKPOINT` 可读性，单列。

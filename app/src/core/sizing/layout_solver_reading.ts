@@ -3,7 +3,7 @@
  * Purpose: pure reading-stage layout solver — bottom-band reservation,
  *          result-card sizing (shrunk + full), and the assembled reading
  *          SceneLayout (single centred card + drawer anchored to its edge).
- * Reason: split out of layout_solver.ts so the reading-scene assembly is a
+ * Reason: split out of layout_solver.ts so the answer-scene assembly is a
  *          single concern, separate from the draw-scene solver and the
  *          dispatch facade. Consumed only by `layout_solver.solveLayout`.
  * Purity: pure functions. No window access, no DOM, no global state.
@@ -34,7 +34,7 @@ import type {
  * stage rect shrinks by the correct amount and the result card auto-fits
  * the remaining visible area instead of landing under the drawer.
  */
-export function readingStageReservation(
+export function answerStageReservation(
   viewport: PhysicalViewport,
   sizes: ResponsiveSizes,
 ): number {
@@ -90,7 +90,7 @@ function fitResultCard(stage: StageRect): { width: number; height: number } {
  * full rect's stage is taller, so the full card is taller too (and the
  * shrunk card sits above the drawer instead of being clipped by it).
  */
-export function solveReadingStageLayout(
+export function solveAnswerStageLayout(
   viewport: PhysicalViewport,
   sizes: ResponsiveSizes,
   stageShrunk: StageRect,

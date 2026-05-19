@@ -37,8 +37,8 @@ import type {
   SolveLayoutInput,
 } from './layout_solver_types'
 import {
-  readingStageReservation,
-  solveReadingStageLayout,
+  answerStageReservation,
+  solveAnswerStageLayout,
 } from './layout_solver_reading'
 import { solveDrawStageLayout } from './layout_solver_draw'
 
@@ -67,15 +67,15 @@ export type {
  *     centred horizontally and pinned below the header.
  *  2. Compute the 3-pile draw card size from the stage (one card per pile).
  *  3. Dispatch to the per-scene composer:
- *     - reading_stage: `solveReadingStageLayout` (single result card +
+ *     - answer_stage: `solveAnswerStageLayout` (single result card +
  *       bottom drawer anchored to its bottom edge).
  *     - draw_stage: `solveDrawStageLayout` (one centered slot + drawer
  *       anchored to the stage bottom).
  */
 export function solveLayout(input: SolveLayoutInput): SceneLayout {
   const { viewport, sizes, scene } = input
-  if (scene === 'reading_stage') {
-    // Two stage rects feed the reading scene:
+  if (scene === 'answer_stage') {
+    // Two stage rects feed the answer scene:
     //   - stageShrunk: the safe-area minus the bottom drawer reservation
     //     (= INITIAL_DRAWER_HEIGHT_RATIO × viewport.height + actionAreaH).
     //     This is the rect the result card lives in *while the drawer is
@@ -86,11 +86,11 @@ export function solveLayout(input: SolveLayoutInput): SceneLayout {
     //     This is the rect the result card grows into right after reveal,
     //     before the drawer mounts. Used only to derive `cardWidthFull` /
     //     `cardHeightFull`.
-    const reservation = readingStageReservation(viewport, sizes)
+    const reservation = answerStageReservation(viewport, sizes)
     const stageShrunk = computeStage(viewport, sizes, reservation)
     const stageFull = computeStage(viewport, sizes, 0)
     const draw = computeDrawCardSize(stageShrunk, sizes)
-    return solveReadingStageLayout(viewport, sizes, stageShrunk, stageFull, draw)
+    return solveAnswerStageLayout(viewport, sizes, stageShrunk, stageFull, draw)
   }
   const stage = computeStage(viewport, sizes, 0)
   const draw = computeDrawCardSize(stage, sizes)
