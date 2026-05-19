@@ -33,7 +33,7 @@ export interface MainStage {
   animationController: UseAnimationControllerReturn
   answerController: ReturnType<typeof UseAnswerControllerFn>
   devTools: ReturnType<typeof UseDevToolsFn>
-  /** Gate for the below-card answer (phase ∈ {reading, decision}). The
+  /** Gate for the below-card answer (phase ∈ {answer, decision}). The
    *  old split/drawer overlay + its `useActiveView` picker were removed;
    *  the answer is now inline under the card, so this is a one-liner. */
   showAnswer: ComputedRef<boolean>
@@ -83,9 +83,9 @@ export function useMainStage(): MainStage {
   })
 
   /* The answer is shown inline under the card once the app reaches the
-     reading phase (and stays through decision). No overlay view picker. */
+     answer phase (and stays through decision). No overlay view picker. */
   const showAnswer = computed(
-    () => phase.value === 'reading' || phase.value === 'decision',
+    () => phase.value === 'answer' || phase.value === 'decision',
   )
 
   const answerPanelState = computed(() => answerController.answerPanelState.value)

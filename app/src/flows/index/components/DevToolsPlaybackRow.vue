@@ -1,7 +1,7 @@
 <template>
   <!--
     Skip + playback-rate chips. The skip chip jumps directly to the
-    reading phase; the rate chips set the global playback rate (active
+    answer phase; the rate chips set the global playback rate (active
     state shows the currently-applied multiplier).
   -->
   <view class="dev-tools-row">
@@ -10,9 +10,9 @@
       role="button"
       tabindex="0"
       aria-label="跳到解读"
-      @click="$emit('skip-to-reading')"
-      @keydown.enter="$emit('skip-to-reading')"
-      @keydown.space.prevent="$emit('skip-to-reading')"
+      @click="$emit('skip-to-answer')"
+      @keydown.enter="$emit('skip-to-answer')"
+      @keydown.space.prevent="$emit('skip-to-answer')"
     >
       直接解读
     </view>
@@ -36,21 +36,21 @@
 <script setup lang="ts">
 /**
  * Name: DevToolsPlaybackRow
- * Purpose: render the skip-to-reading + playback-rate chips inside
+ * Purpose: render the skip-to-answer + playback-rate chips inside
  *          DevToolsPanel.
  * Reason: extracted from DevToolsPanel.vue (P3 nit fix — file was 382
  *          lines, capped at 300). The list of supported rates lives here
  *          since it is private to this row's UI affordance — adding a new
  *          rate is a one-file change.
  * Data flow: parent owns the current `playbackRate`; this row emits
- *          `playback-rate` and `skip-to-reading`.
+ *          `playback-rate` and `skip-to-answer`.
  */
 defineProps<{
   playbackRate: number
 }>()
 
 defineEmits<{
-  (e: 'skip-to-reading'): void
+  (e: 'skip-to-answer'): void
   (e: 'playback-rate', rate: number): void
 }>()
 

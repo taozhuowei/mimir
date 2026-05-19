@@ -32,7 +32,7 @@
       <DevToolsPhaseRow :phase-steps="phaseSteps" @replay="(p) => $emit('replay', p)" />
       <DevToolsPlaybackRow
         :playback-rate="playbackRate"
-        @skip-to-reading="$emit('skip-to-reading')"
+        @skip-to-answer="$emit('skip-to-answer')"
         @playback-rate="(r) => $emit('playback-rate', r)"
       />
       <DevToolsControlRow
@@ -97,7 +97,7 @@ defineProps<{
 
 const emit = defineEmits<{
   (e: 'replay', phase: OverlayPhase): void
-  (e: 'skip-to-reading'): void
+  (e: 'skip-to-answer'): void
   (e: 'playback-rate', rate: number): void
   (e: 'pause'): void
   (e: 'resume'): void

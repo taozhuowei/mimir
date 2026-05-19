@@ -4,7 +4,7 @@
     divination surface — HeaderArea (TitleContent ↔ ProgressContent by
     phase) + Stage (CardsLoadError | StageDeck) — with the inline answer
     zone (AnswerInscription + ActionArea) struck below the result card in
-    'reading'/'decision'; no split / drawer / side panel. NotificationHost
+    'answer'/'decision'; no split / drawer / side panel. NotificationHost
     sits on the surface root for cross-view alerts. The .canvas wrapper
     caps the divination canvas at MAX_CANVAS_WIDTH
     (docs/prd/animation.md（视图过渡动画）), centered, and no longer slides
@@ -39,7 +39,7 @@
         </Stage>
 
         <!-- The answer is struck directly below the card once the draw
-             resolves (phase ∈ reading/decision). No split / drawer overlay. -->
+             resolves (phase ∈ answer/decision). No split / drawer overlay. -->
         <view v-if="showAnswer" class="answer-zone">
           <AnswerInscription
             :state="answerPanelState"
@@ -66,7 +66,7 @@
       :is-dev-expanded="devTools.isDevExpanded.value"
       :show-container-borders="devTools.showContainerBorders.value"
       @replay="devTools.handleDevReplay"
-      @skip-to-reading="devTools.handleDevSkipToReading"
+      @skip-to-answer="devTools.handleDevSkipToAnswer"
       @playback-rate="devTools.handleDevPlaybackRate"
       @pause="animationController.pauseAnimations"
       @resume="animationController.resumeAnimations"

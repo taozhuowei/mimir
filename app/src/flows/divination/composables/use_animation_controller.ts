@@ -109,7 +109,7 @@ export interface UseAnimationControllerReturn extends ReconcilerPublic {
   stepBackward: () => void
   seek: (position: number | string) => void
   replayFromPhase: (targetPhase: OverlayPhase) => void
-  skipToReading: () => void
+  skipToAnswer: () => void
   resetOverlayScene: () => void
   start: () => void
   updateLayout: () => void
@@ -257,7 +257,7 @@ export function useAnimationController(deps: UseAnimationControllerDeps): UseAni
     setPlaybackRate, pauseAnimations, resumeAnimations,
     stepForward, stepBackward, seek,
     replayFromPhase: lifecycle.replayFromPhase,
-    skipToReading: lifecycle.skipToReading,
+    skipToAnswer: lifecycle.skipToAnswer,
     resetOverlayScene: lifecycle.resetOverlayScene,
     start: lifecycle.start,
     updateLayout, openAnswer,

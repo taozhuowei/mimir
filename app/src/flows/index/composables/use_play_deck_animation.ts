@@ -64,7 +64,7 @@ export interface PlayDeckAnimationDeps {
  *   idle             → fan loop running, hint visible
  *   divination/...   → fan killed (cards snapped to rest), divination
  *                       rig kicked off the FIRST time we leave idle
- *                       (subsequent reading/decision phases keep the
+ *                       (subsequent answer/decision phases keep the
  *                       rig running — animationController is one-shot
  *                       per pipeline, restarted only on reset-to-idle).
  *   idle (re-entry)  → divination rig torn down, fan loop restarted
@@ -94,7 +94,7 @@ function watchPhaseStateMachine(
       fan.resetCardsToStack()
       rig.start()
     }
-    // All other transitions (divination → reading → decision) keep
+    // All other transitions (divination → answer → decision) keep
     // the divination rig alive; it manages its own internal state via
     // the animationController's pipeline.
   })
