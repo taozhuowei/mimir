@@ -10,12 +10,12 @@
  */
 
 import { requestDivination, type Divination } from '../../api/divinations'
-import type { ReadingProvider, ReadingRequest } from './reading_provider'
+import type { AnswerProvider, AnswerRequest } from './reading_provider'
 
-export class RuleBasedReadingProvider implements ReadingProvider {
+export class RuleBasedAnswerProvider implements AnswerProvider {
   readonly type = 'rule_based' as const
 
-  async requestReading(request: ReadingRequest): Promise<Divination> {
+  async requestAnswer(request: AnswerRequest): Promise<Divination> {
     // No client-side fallback to 'single_card' here — when `spreadKind` is
     // missing, the server's zod default fills it in. Single source of truth.
     return requestDivination(request.spreadKind)

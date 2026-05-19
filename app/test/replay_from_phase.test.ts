@@ -9,7 +9,7 @@
  *         stale element refs). Both paths sit between layers and lack
  *         coverage in the per-phase or full-controller tests.
  * Data flow: the command test mocks every dep and asserts the call order;
- *          the wrapper test exercises the conditional `startReading` seed
+ *          the wrapper test exercises the conditional `startAnswer` seed
  *          for the `revealing` boundary case described in P1 (TODO 8.2.2).
  */
 
@@ -85,73 +85,73 @@ function makeSnapDeps(): PhaseSnapDeps {
  * wrapper must seed the reading request itself.
  */
 function makeDevReplayWrapper(
-  readingController: { resetReading: () => void; startReading: (req: unknown) => Promise<unknown> },
+  answerController: { resetAnswer: () => void; startAnswer: (req: unknown) => Promise<unknown> },
   animController: { replayFromPhase: (phase: OverlayPhase) => void },
 ) {
   return function devReplay(targetPhase: OverlayPhase) {
     if (targetPhase === 'revealing') {
-      readingController.resetReading()
-      void readingController.startReading({})
+      answerController.resetAnswer()
+      void answerController.startAnswer({})
     }
     animController.replayFromPhase(targetPhase)
   }
 }
 
 describe('dev replay wrapper (P1: revealing boundary case)', () => {
-  it('seeds startReading when target is revealing', () => {
-    const readingController = {
-      resetReading: vi.fn(),
-      startReading: vi.fn().mockResolvedValue(null),
+  it('seeds startAnswer when target is revealing', () => {
+    const answerController = {
+      resetAnswer: vi.fn(),
+      startAnswer: vi.fn().mockResolvedValue(null),
     }
     const animController = { replayFromPhase: vi.fn() }
-    const devReplay = makeDevReplayWrapper(readingController, animController)
+    const devReplay = makeDevReplayWrapper(answerController, animController)
 
     devReplay('revealing')
 
     // Reset must precede start so the previous run's promise can't resolve
     // against the new run.
-    expect(readingController.resetReading).toHaveBeenCalledTimes(1)
-    expect(readingController.startReading).toHaveBeenCalledTimes(1)
-    expect(readingController.startReading).toHaveBeenCalledWith({})
-    expect(readingController.resetReading.mock.invocationCallOrder[0])
-      .toBeLessThan(readingController.startReading.mock.invocationCallOrder[0])
+    expect(answerController.resetAnswer).toHaveBeenCalledTimes(1)
+    expect(answerController.startAnswer).toHaveBeenCalledTimes(1)
+    expect(answerController.startAnswer).toHaveBeenCalledWith({})
+    expect(answerController.resetAnswer.mock.invocationCallOrder[0])
+      .toBeLessThan(answerController.startAnswer.mock.invocationCallOrder[0])
     // Animation controller is invoked after the reading is seeded so the
     // pipeline's onPhaseStart('revealing') opens the panel against an
     // already-loading orchestrator.
     expect(animController.replayFromPhase).toHaveBeenCalledWith('revealing')
   })
 
-  it('does NOT seed startReading when target is drawing', () => {
+  it('does NOT seed startAnswer when target is drawing', () => {
     // Drawing's own builder fires onDrawingStart, which the animation
-    // controller wires to readingController.startReading via its callbacks.
+    // controller wires to answerController.startAnswer via its callbacks.
     // Seeding here would double-start the request.
-    const readingController = {
-      resetReading: vi.fn(),
-      startReading: vi.fn().mockResolvedValue(null),
+    const answerController = {
+      resetAnswer: vi.fn(),
+      startAnswer: vi.fn().mockResolvedValue(null),
     }
     const animController = { replayFromPhase: vi.fn() }
-    const devReplay = makeDevReplayWrapper(readingController, animController)
+    const devReplay = makeDevReplayWrapper(answerController, animController)
 
     devReplay('drawing')
 
-    expect(readingController.resetReading).not.toHaveBeenCalled()
-    expect(readingController.startReading).not.toHaveBeenCalled()
+    expect(answerController.resetAnswer).not.toHaveBeenCalled()
+    expect(answerController.startAnswer).not.toHaveBeenCalled()
     expect(animController.replayFromPhase).toHaveBeenCalledWith('drawing')
   })
 
   it.each(['shuffling', 'cutting'] as const)(
-    'does NOT seed startReading when target is %s',
+    'does NOT seed startAnswer when target is %s',
     (target) => {
-      const readingController = {
-        resetReading: vi.fn(),
-        startReading: vi.fn().mockResolvedValue(null),
+      const answerController = {
+        resetAnswer: vi.fn(),
+        startAnswer: vi.fn().mockResolvedValue(null),
       }
       const animController = { replayFromPhase: vi.fn() }
-      const devReplay = makeDevReplayWrapper(readingController, animController)
+      const devReplay = makeDevReplayWrapper(answerController, animController)
 
       devReplay(target)
 
-      expect(readingController.startReading).not.toHaveBeenCalled()
+      expect(answerController.startAnswer).not.toHaveBeenCalled()
       expect(animController.replayFromPhase).toHaveBeenCalledWith(target)
     },
   )

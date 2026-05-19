@@ -7,7 +7,7 @@
     carved below it on aged parchment.
 
     Owns its own loading / error / success states (the panel host that used
-    to do this was removed). On success it emits `typewriterComplete` after
+    to do this was removed). On success it emits `answerRevealed` after
     the staged reveal settles so the app phase still advances reading →
     decision and ActionArea (回到首页 / 再占一次 / 重试) appears unchanged.
   -->
@@ -39,8 +39,8 @@
  *          inline under the card, so its state machine and reveal timing
  *          live here rather than in a deleted host.
  * Data flow: MainSurface passes `state` (reading request status),
- *          `readingResult`, `errorMessage`. single_card is the only spread,
- *          so the Answer is `cardDetails[0]`. Emits `typewriterComplete`
+ *          `answerResult`, `errorMessage`. single_card is the only spread,
+ *          so the Answer is `cardDetails[0]`. Emits `answerRevealed`
  *          once the success reveal settles → use_main_stage.enterDecision().
  */
 import { computed, onMounted, onUnmounted, watch } from 'vue'
@@ -51,15 +51,15 @@ type RequestState = 'idle' | 'loading' | 'success' | 'error'
 
 const props = defineProps<{
   state: RequestState
-  readingResult: AnswerResult | null
+  answerResult: AnswerResult | null
   errorMessage?: string
 }>()
 
 const emit = defineEmits<{
-  (event: 'typewriterComplete'): void
+  (event: 'answerRevealed'): void
 }>()
 
-const answer = computed(() => props.readingResult?.cardDetails[0]?.answer ?? null)
+const answer = computed(() => props.answerResult?.cardDetails[0]?.answer ?? null)
 
 // Staged-reveal total: source line starts at 460ms, its rise is 560ms;
 // +90ms so the completion signal fires after the last glyph has fully
@@ -80,7 +80,7 @@ function signalWhenRevealed(): void {
   clearTimer()
   if (props.state !== 'success' || !answer.value) return
   const delay = prefersReducedMotion() ? 0 : REVEAL_TOTAL_MS
-  completionTimer = setTimeout(() => emit('typewriterComplete'), delay)
+  completionTimer = setTimeout(() => emit('answerRevealed'), delay)
 }
 
 onMounted(signalWhenRevealed)

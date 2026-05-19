@@ -30,21 +30,21 @@ export interface DevAnimationController {
 }
 
 /** Reading controller surface this composable touches. */
-export interface DevReadingController {
-  resetReading: () => void
-  startReading: (args: Record<string, unknown>) => Promise<unknown>
+export interface DevAnswerController {
+  resetAnswer: () => void
+  startAnswer: (args: Record<string, unknown>) => Promise<unknown>
 }
 
 export interface UseDevToolsDeps {
   animationController: DevAnimationController
-  readingController: DevReadingController
+  answerController: DevAnswerController
   /**
    * Setter for the page-owned in-flight reading promise. The replay path
    * for `revealing` synchronously kicks off a new reading (because the
    * drawing builder is skipped) and the page needs to await the same
    * promise in `settlePipeline`.
    */
-  setReadingPromise: (promise: Promise<unknown> | null) => void
+  setAnswerPromise: (promise: Promise<unknown> | null) => void
 }
 
 export interface DevTools {
@@ -79,8 +79,8 @@ export function useDevTools(deps: UseDevToolsDeps): DevTools {
     // in-flight reading is reset first to avoid resolving against the
     // previous run.
     if (targetPhase === 'revealing') {
-      deps.readingController.resetReading()
-      deps.setReadingPromise(deps.readingController.startReading({}))
+      deps.answerController.resetAnswer()
+      deps.setAnswerPromise(deps.answerController.startAnswer({}))
     }
     deps.animationController.replayFromPhase(targetPhase)
   }

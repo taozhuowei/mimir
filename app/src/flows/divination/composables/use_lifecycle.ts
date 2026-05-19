@@ -40,7 +40,7 @@ export function useLifecycle(deps: LifecycleDeps) {
   function resetOverlayScene(): void {
     deps.showResults.value = false
     deps.cardsLanded.value = false
-    deps.callbacks.onResetReading()
+    deps.callbacks.onResetAnswer()
     const { animState } = deps
     animState.bg.opacity = 1
     animState.stage.y = 0
@@ -63,7 +63,7 @@ export function useLifecycle(deps: LifecycleDeps) {
   }
 
   function interruptCurrentAnimation(): void {
-    deps.callbacks.onDestroyReading()
+    deps.callbacks.onDestroyAnswer()
     deps.resumeAnimations()
     deps.orchestrator.clear()
     killAnimationTargets(deps.animState.getAllTargets())
@@ -109,7 +109,7 @@ export function useLifecycle(deps: LifecycleDeps) {
       cardsLandedRef: deps.cardsLanded,
       onPhaseChange: (p) => deps.transitionPhase(p, deps.callbacks.onPhaseChange),
       settleEntryAnimation,
-      openReadingPanel: () => { deps.showResults.value = true },
+      openAnswer: () => { deps.showResults.value = true },
       onDrawingStart: deps.callbacks.onDrawingStart,
       onPipelineComplete: deps.callbacks.onPipelineComplete,
     })
@@ -128,7 +128,7 @@ export function useLifecycle(deps: LifecycleDeps) {
       entryAnimationComplete: deps.entryAnimationComplete,
       resetOverlayScene,
       transitionPhase: (p) => deps.transitionPhase(p, deps.callbacks.onPhaseChange),
-      openReadingPanel: () => { deps.showResults.value = true },
+      openAnswer: () => { deps.showResults.value = true },
       refreshDraws: deps.animState.refreshDraws,
       onPipelineComplete: deps.callbacks.onPipelineComplete,
       getPhaseSnapDeps,

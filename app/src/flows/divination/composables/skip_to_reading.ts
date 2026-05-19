@@ -19,7 +19,7 @@ export interface SkipToReadingCommandDeps {
   entryAnimationComplete: Ref<boolean>
   resetOverlayScene: () => void
   transitionPhase: (phase: OverlayPhase) => void
-  openReadingPanel: () => void
+  openAnswer: () => void
   refreshDraws: () => void
   onPipelineComplete: () => void
   getPhaseSnapDeps: () => PhaseSnapDeps
@@ -36,6 +36,6 @@ export function skipToReadingCommand(deps: SkipToReadingCommandDeps): void {
   deps.refreshDraws()
 
   deps.transitionPhase('revealing')
-  deps.openReadingPanel()
+  deps.openAnswer()
   deps.onPipelineComplete()
 }

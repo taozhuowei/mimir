@@ -20,16 +20,16 @@
  */
 import type { useTarotStore } from '../../../core/store/tarot'
 import type { useAnimationController } from '../../divination/composables/use_animation_controller'
-import type { useReadingController } from '../../reading/composables/use_reading_request_controller'
+import type { useAnswerController } from '../../reading/composables/use_reading_request_controller'
 
 export interface UseMainHandlersDeps {
   tarotStore: ReturnType<typeof useTarotStore>
   animationController: ReturnType<typeof useAnimationController>
-  readingController: ReturnType<typeof useReadingController>
+  answerController: ReturnType<typeof useAnswerController>
   /** Read the current in-flight reading promise (or null). */
-  getReadingPromise: () => Promise<unknown> | null
+  getAnswerPromise: () => Promise<unknown> | null
   /** Replace the in-flight reading promise (called after settle clears it). */
-  setReadingPromise: (next: Promise<unknown> | null) => void
+  setAnswerPromise: (next: Promise<unknown> | null) => void
   /** Application-phase entry to (re)start a divination with the same question. */
   startDivination: (question: string) => void
 }
@@ -59,24 +59,24 @@ export interface MainHandlers {
 export function useMainHandlers(deps: UseMainHandlersDeps): MainHandlers {
   async function settlePipeline(): Promise<void> {
     try {
-      await (deps.getReadingPromise() ?? Promise.resolve(null))
+      await (deps.getAnswerPromise() ?? Promise.resolve(null))
     } catch (err) {
       console.error('[main] settlePipeline failed', err)
     }
-    deps.setReadingPromise(null)
-    const status = deps.readingController.readingPanelState.value
+    deps.setAnswerPromise(null)
+    const status = deps.answerController.answerPanelState.value
     const hasResolvedSuccess =
-      status === 'success' && deps.readingController.readingResult.value !== null
+      status === 'success' && deps.answerController.answerResult.value !== null
     if (hasResolvedSuccess || status === 'error') {
       deps.tarotStore.revealResult()
     }
   }
 
   function handleRestart(): void {
-    const { animationController, readingController } = deps
+    const { animationController, answerController } = deps
     animationController.resumeAnimations()
     animationController.setPlaybackRate(1)
-    readingController.resetReading()
+    answerController.resetAnswer()
     animationController.clearTimeline()
     animationController.seek(0)
     animationController.showResults.value = false

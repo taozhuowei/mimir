@@ -3,14 +3,14 @@
 import { defineStore } from 'pinia'
 import type { DrawnResult } from '../api/types'
 import { createDeckState } from './slices/deck'
-import { createReadingState } from './slices/reading'
+import { createAnswerState } from './slices/reading'
 import { createFlowState } from './slices/flow'
 
 export type { DivinationPhase } from './slices/flow'
 
 export const useTarotStore = defineStore('tarot', () => {
   const deck = createDeckState()
-  const reading = createReadingState()
+  const reading = createAnswerState()
   const flow = createFlowState(reading)
 
   /**
@@ -39,11 +39,11 @@ export const useTarotStore = defineStore('tarot', () => {
     loadCards: deck.loadCards,
 
     // Reading
-    isReadingLoading: reading.isReadingLoading,
-    readingResult: reading.readingResult,
-    readingError: reading.readingError,
-    waitForReadingResult: reading.waitForReadingResult,
-    getReadingResult: () => reading.readingResult.value,
+    isAnswerLoading: reading.isAnswerLoading,
+    answerResult: reading.answerResult,
+    answerError: reading.answerError,
+    waitForAnswerResult: reading.waitForAnswerResult,
+    getAnswerResult: () => reading.answerResult.value,
 
     // Actions
     startDivination: flow.startDivination,

@@ -58,7 +58,7 @@
 
 - [x] C1 文档/注释（详见上）。提交 `d1c1f3d`。
 - [x] C2 化简宽屏分栏死 stageWidth 分支 + 删死 isWide 参数 + 过时注释（实证收敛：常量保留，见上）。
-- [ ] C3 请求管道/控制器/store/事件改名。message：`refactor(naming): rename answer-pipeline symbols + completion event`。
+- [x] C3 请求管道/控制器/store/事件改名（25 文件，含 kebab + 一处 C1 漏网注释）。
 - [ ] C4 `reading_stage`→`answer_stage` 场景全链。message：`refactor(naming): rename reading_stage scene to answer_stage`。
 - [ ] C5 文件/目录重命名 + import + 配置。message：`refactor(naming): move reading files/dirs to answer + repoint imports & arch rule`。
 - [ ] C6 应用阶段标识 `reading→answer`。message：`refactor(naming): rename app phase identifier reading→answer`。
@@ -70,7 +70,7 @@
 
 ## 进度
 
-S1（数据契约+协议字段）提交 `85e4360`；旧 S2 执行中发现冻结映射不完整且与 pivot 死代码/视图模型债纠缠，回滚脏态、穷尽实证后重排为 C1–C7。C1（文档+注释）提交 `d1c1f3d`。C2（化简死 stageWidth 分支+删死 isWide 参数+注释）已全套验收（full 门禁+prod+e2e 15/15）待提交。C3 起未启动。
+S1（数据契约+协议字段）提交 `85e4360`；旧 S2 因冻结映射不完整回滚重排为 C1–C7。C1（文档+注释）`d1c1f3d`；C2（化简死 stageWidth 分支+删死 isWide 参数）`61c0f0c`；C3（请求管道/控制器/store/事件改名）已全套验收（full 门禁+prod+e2e 15/15）待提交。C4–C7 未启动。注：本会话出现一次 npm registry 网络超时致 audit 步瞬时失败，重试即恢复，非代码问题。
 
 ## 搁置问题（已登记，未排期）
 

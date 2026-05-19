@@ -9,8 +9,8 @@
 
 import { describe, expect, it, vi, beforeEach } from 'vitest'
 import { ref } from 'vue'
-import { createReadingOrchestrator } from '../src/core/utils/reading/reading_orchestrator'
-import type { ReadingProvider, ReadingRequest } from '../src/core/utils/reading/reading_provider'
+import { createAnswerOrchestrator } from '../src/core/utils/reading/reading_orchestrator'
+import type { AnswerProvider, AnswerRequest } from '../src/core/utils/reading/reading_provider'
 import type { DrawnResult, AnswerResult, TarotCardInfo } from '../src/core/api/types'
 import type { Divination } from '../src/core/api/divinations'
 
@@ -29,7 +29,7 @@ function makeDrawn(id: string): DrawnResult[] {
   return [{ card: makeCard(id), position: 'upright' }]
 }
 
-function makeReadingResult(): AnswerResult {
+function makeAnswerResult(): AnswerResult {
   return {
     cardDetails: [
       {
@@ -45,14 +45,14 @@ function makeReadingResult(): AnswerResult {
   }
 }
 
-function makeDivination(id = 'card_a', answer: AnswerResult = makeReadingResult()): Divination {
+function makeDivination(id = 'card_a', answer: AnswerResult = makeAnswerResult()): Divination {
   return { spreadKind: 'single_card', drawn: makeDrawn(id), answer }
 }
 
-function makeMockProvider(divination: Divination | null = null, shouldReject = false): ReadingProvider {
+function makeMockProvider(divination: Divination | null = null, shouldReject = false): AnswerProvider {
   return {
     type: 'rule_based',
-    requestReading: vi.fn().mockImplementation(() => {
+    requestAnswer: vi.fn().mockImplementation(() => {
       if (shouldReject) {
         return Promise.reject(new Error('Test error'))
       }
@@ -62,7 +62,7 @@ function makeMockProvider(divination: Divination | null = null, shouldReject = f
   }
 }
 
-function makeRequest(): ReadingRequest {
+function makeRequest(): AnswerRequest {
   return { spreadKind: 'single_card' }
 }
 
@@ -82,7 +82,7 @@ describe('reading_orchestrator retry', () => {
   it('retries with stored request when no request provided', async () => {
     const divination = makeDivination()
     const provider = makeMockProvider(divination)
-    const orchestrator = createReadingOrchestrator({
+    const orchestrator = createAnswerOrchestrator({
       provider,
       statusRef,
       resultRef,
@@ -92,7 +92,7 @@ describe('reading_orchestrator retry', () => {
     })
 
     await orchestrator.start(makeRequest())
-    expect(provider.requestReading).toHaveBeenCalledTimes(1)
+    expect(provider.requestAnswer).toHaveBeenCalledTimes(1)
 
     // Simulate error state and clear the result so retry actually re-requests
     // (orchestrator.start short-circuits if resultRef is non-null).
@@ -102,7 +102,7 @@ describe('reading_orchestrator retry', () => {
 
     const retryResult = await orchestrator.retry()
     expect(retryResult).toStrictEqual(divination.answer)
-    expect(provider.requestReading).toHaveBeenCalledTimes(2)
+    expect(provider.requestAnswer).toHaveBeenCalledTimes(2)
     expect(statusRef.value).toBe('success')
     // After a successful retry, drawnRef must reflect the freshly-drawn hand.
     expect(drawnRef.value).toStrictEqual(divination.drawn)
@@ -111,14 +111,14 @@ describe('reading_orchestrator retry', () => {
   it('retries with provided request when given (overwriting drawnRef)', async () => {
     const firstDivination = makeDivination('card_first')
     const secondDivination = makeDivination('card_second')
-    const provider: ReadingProvider = {
+    const provider: AnswerProvider = {
       type: 'rule_based',
-      requestReading: vi.fn()
+      requestAnswer: vi.fn()
         .mockResolvedValueOnce(firstDivination)
         .mockResolvedValueOnce(secondDivination),
       isAvailable: vi.fn().mockReturnValue(true),
     }
-    const orchestrator = createReadingOrchestrator({
+    const orchestrator = createAnswerOrchestrator({
       provider,
       statusRef,
       resultRef,
@@ -128,7 +128,7 @@ describe('reading_orchestrator retry', () => {
     })
 
     await orchestrator.start(makeRequest())
-    expect(provider.requestReading).toHaveBeenCalledTimes(1)
+    expect(provider.requestAnswer).toHaveBeenCalledTimes(1)
     expect(drawnRef.value).toStrictEqual(firstDivination.drawn)
 
     // Clear result so retry re-requests; simulate error path UI state.
@@ -138,13 +138,13 @@ describe('reading_orchestrator retry', () => {
 
     const retryResult = await orchestrator.retry({ spreadKind: 'single_card' })
     expect(retryResult).toStrictEqual(secondDivination.answer)
-    expect(provider.requestReading).toHaveBeenCalledTimes(2)
+    expect(provider.requestAnswer).toHaveBeenCalledTimes(2)
     // drawnRef must have been overwritten by the retry's fresh draw.
     expect(drawnRef.value).toStrictEqual(secondDivination.drawn)
   })
 
   it('returns null when retry called without prior start and no request provided', async () => {
-    const orchestrator = createReadingOrchestrator({
+    const orchestrator = createAnswerOrchestrator({
       provider: makeMockProvider(),
       statusRef,
       resultRef,
@@ -160,7 +160,7 @@ describe('reading_orchestrator retry', () => {
   it('retries from error state and transitions through loading to success', async () => {
     const divination = makeDivination()
     const provider = makeMockProvider(divination)
-    const orchestrator = createReadingOrchestrator({
+    const orchestrator = createAnswerOrchestrator({
       provider,
       statusRef,
       resultRef,
@@ -190,16 +190,16 @@ describe('reading_orchestrator retry', () => {
 
   it('retries from error state and handles repeated failures', async () => {
     const successDivination = makeDivination('card_success')
-    const provider: ReadingProvider = {
+    const provider: AnswerProvider = {
       type: 'rule_based',
-      requestReading: vi.fn()
+      requestAnswer: vi.fn()
         .mockRejectedValueOnce(new Error('First failure'))
         .mockRejectedValueOnce(new Error('Second failure'))
         .mockResolvedValueOnce(successDivination),
       isAvailable: vi.fn().mockReturnValue(true),
     }
 
-    const orchestrator = createReadingOrchestrator({
+    const orchestrator = createAnswerOrchestrator({
       provider,
       statusRef,
       resultRef,
@@ -215,14 +215,14 @@ describe('reading_orchestrator retry', () => {
     expect(firstResult).toBeNull()
     expect(statusRef.value).toBe('error')
     expect(errorRef.value).toBe('Second failure')
-    expect(provider.requestReading).toHaveBeenCalledTimes(2)
+    expect(provider.requestAnswer).toHaveBeenCalledTimes(2)
 
     // Manual retry succeeds.
     const retryResult = await orchestrator.retry()
     expect(retryResult).toStrictEqual(successDivination.answer)
     expect(statusRef.value).toBe('success')
     expect(errorRef.value).toBeNull()
-    expect(provider.requestReading).toHaveBeenCalledTimes(3)
+    expect(provider.requestAnswer).toHaveBeenCalledTimes(3)
     // Successful retry must populate drawnRef.
     expect(drawnRef.value).toStrictEqual(successDivination.drawn)
   })
