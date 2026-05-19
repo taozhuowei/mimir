@@ -36,18 +36,15 @@ export interface DivinationRig {
  * fire them on phase transitions without re-mounting the component.
  */
 export function createDivinationRig(animCtrl: UseAnimationControllerReturn): DivinationRig {
-  let resizeHandler: ((res: UniApp.WindowResizeResult) => void) | null = null
+  let resizeHandler: (() => void) | null = null
 
   function start(): void {
     animCtrl.resumeAnimations()
     animCtrl.setPlaybackRate(1)
-    const { windowWidth } = uni.getWindowInfo()
-    animCtrl.checkWidth(windowWidth)
     const drawLayout = animCtrl.getSceneLayout('draw_stage')
     animCtrl.setDrawCardSizes(drawLayout)
     if (!resizeHandler) {
-      resizeHandler = (res) => {
-        animCtrl.checkWidth(res.size.windowWidth)
+      resizeHandler = () => {
         const layout = animCtrl.getSceneLayout('draw_stage')
         animCtrl.setDrawCardSizes(layout)
         if (

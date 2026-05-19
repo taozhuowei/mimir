@@ -95,7 +95,6 @@ export interface UseAnimationControllerReturn extends ReconcilerPublic {
   phaseSteps: ComputedRef<ReturnType<typeof calculatePhaseProgress>>
   activePhaseIndex: ComputedRef<number>
   getSceneLayout: ReturnType<typeof useOverlayLayout>['getSceneLayout']
-  checkWidth: ReturnType<typeof useOverlayLayout>['checkWidth']
   deckCount: number
   shuffleHalfCount: number
   cutPileCount: number
@@ -177,7 +176,7 @@ export function useAnimationController(deps: UseAnimationControllerDeps): UseAni
       getUiAsset: (name) => deps.themeStore.getUiAsset(name),
     })
 
-  const { getSceneLayout, checkWidth } = layoutApi
+  const { getSceneLayout } = layoutApi
 
   // ── Hook: lifecycle (entry settle, reset, interrupt, pipeline) ────────
   const lifecycle = useLifecycle({
@@ -250,7 +249,7 @@ export function useAnimationController(deps: UseAnimationControllerDeps): UseAni
     leftsVisible, rightsVisible, pilesVisible, drawsVisible,
     overlayVarsStyle, layoutCardWidth, layoutCardHeight,
     progressHeaderPresentation, footerPresentation, phaseSteps, activePhaseIndex,
-    getSceneLayout, checkWidth,
+    getSceneLayout,
     deckCount: DECK_COUNT, shuffleHalfCount: SHUFFLE_HALF_COUNT,
     cutPileCount: CUT_PILE_COUNT, cardsPerPile: CARDS_PER_PILE,
     draws, refreshDraws,

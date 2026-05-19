@@ -4,8 +4,8 @@
  *          pure `solveLayout` solver and exposes scene + motion + deck
  *          metrics to the controllers and components. Acts as a facade
  *          over three internal modules:
- *            - `overlay_layout/wide_breakpoint_and_chrome` — wide-screen threshold +
- *              mini-program chrome adapter.
+ *            - `overlay_layout/wide_breakpoint_and_chrome` — mini-program
+ *              chrome adapter (capsule rect / top-bar clearance).
  *            - `overlay_layout/scene` — viewport + scene-layout
  *              derivation.
  *            - `overlay_layout/motion` — shuffle / cut / draw motion
@@ -21,7 +21,6 @@
  */
 
 import type { Ref } from 'vue'
-import { checkWidth as checkWidthHelper } from './wide_breakpoint_and_chrome'
 import {
   getSceneLayout,
   getViewportMetrics,
@@ -54,8 +53,8 @@ export function useOverlayLayout(deps: UseOverlayLayoutDeps) {
    * downstream consumers (animation controller, overlay components) still
    * use today.
    */
-  function getViewport(showResults: boolean): ViewportMetrics {
-    return getViewportMetrics(showResults)
+  function getViewport(): ViewportMetrics {
+    return getViewportMetrics()
   }
 
   /**
@@ -76,19 +75,10 @@ export function useOverlayLayout(deps: UseOverlayLayoutDeps) {
     drawLayout: SceneLayout
     resultLayout: SceneLayout
   } {
-    const drawViewport = getViewport(false)
+    const drawViewport = getViewport()
     const drawLayout = getSceneLayout('draw_stage')
     const resultLayout = getSceneLayout('answer_stage')
     return { drawViewport, drawLayout, resultLayout }
-  }
-
-  /**
-   * Update `deps.isWide` when the window size crosses the PC breakpoint.
-   * Returns true iff `isWide` actually changed so the caller can short-
-   * circuit redundant relayouts.
-   */
-  function checkWidth(windowWidth: number): boolean {
-    return checkWidthHelper(deps.isWide, windowWidth)
   }
 
   /**
@@ -108,7 +98,6 @@ export function useOverlayLayout(deps: UseOverlayLayoutDeps) {
     getSceneLayout,
     getMotionMetrics: getMotion,
     getOverlayLayouts,
-    checkWidth,
     getDeckCenter,
   }
 }
