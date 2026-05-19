@@ -3,7 +3,7 @@
  * Purpose: state-slice factory holding the tarot card deck loaded from the
  *          backend. Composed by the `tarot` Pinia store — this module is a
  *          pure factory, not a store itself.
- * Reason: separates deck data concerns from divination flow and reading state.
+ * Reason: separates deck data concerns from divination flow and answer state.
  */
 
 import { ref } from 'vue'

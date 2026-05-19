@@ -1,6 +1,6 @@
 /**
  * Name: core/sizing/layout_solver
- * Purpose: pure layout solver for the tarot reading flow. Given a viewport,
+ * Purpose: pure layout solver for the tarot divination flow. Given a viewport,
  *          ResponsiveSizes, and a scene kind, returns a fully described
  *          SceneLayout (card rects, drawer geometry, stage rect, animation
  *          envelope) — every value derived from a single 1:1.6 stage rect
@@ -62,7 +62,7 @@ export type {
  * Strategy
  * ────────
  *  1. Compute the stage rect — largest 1:1.6 box that fits the canvas
- *     after subtracting margins, header, safe areas, and (on the reading
+ *     after subtracting margins, header, safe areas, and (on the answer
  *     scene) the bottom drawer + action-area reservation. The stage is
  *     centred horizontally and pinned below the header.
  *  2. Compute the 3-pile draw card size from the stage (one card per pile).

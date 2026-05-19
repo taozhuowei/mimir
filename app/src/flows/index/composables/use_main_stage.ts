@@ -2,9 +2,9 @@
  * Name: flows/index/composables/use_main_stage
  * Purpose: aggregate the main-surface orchestration so MainSurface
  *          stays a pure entry. Owns stores, app phase, responsive width +
- *          resize lifecycle, the CSS-var bridge, the animation + reading
+ *          resize lifecycle, the CSS-var bridge, the animation + answer
  *          controllers (and their callback wiring), the view picker,
- *          two-phase result-card sizing, reading passthrough, the main
+ *          two-phase result-card sizing, answer passthrough, the main
  *          event handlers, and dev tools.
  * Data flow: constructs the controller graph and lifecycle → returns refs /
  *          computeds / handlers MainSurface binds; provide() stays in
@@ -53,7 +53,7 @@ export function useMainStage(): MainStage {
   const { phase, startDivination, enterDecision, resetToIdle } = useAppPhase()
 
   /* Responsive width — capped at MAX_CANVAS_WIDTH (440px). Consumed by the
-     animation pipeline (deck/draw layout); the reading split/drawer that
+     animation pipeline (deck/draw layout); the former split/drawer that
      used to branch on it was removed. */
   const isWide = ref(false)
   function recomputeIsWide() {

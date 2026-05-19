@@ -107,7 +107,7 @@ export function buildPhysicalViewport(): PhysicalViewport {
  * `stageWidth/stageHeight/stageContainerHeight/topBarHeight` keys that
  * downstream consumers (animation controller, overlay components) still
  * use today. The wide-screen stage-width shrink for the old
- * ReadingSplitView side column was removed in the pivot cleanup — the
+ * the wide-split side column was removed in the pivot cleanup — the
  * answer is inline now, so the stage is always the full canvas width.
  * The `isWide` parameter was removed along with that branch.
  */

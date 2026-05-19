@@ -4,7 +4,7 @@
  *          (`handleRestart` + `settlePipeline`) so that SFC can stay
  *          inside the 300-line file cap. Both functions orchestrate
  *          multi-step transitions that have to keep the animation
- *          controller, reading controller, and tarot store in lock-step,
+ *          controller, answer controller, and tarot store in lock-step,
  *          which is why they're worth a named home rather than inline
  *          closures.
  * Reason: `MainSurface.vue` was crossing the 300-line file cap by
@@ -15,8 +15,8 @@
  *          one place.
  * Data flow: caller passes the same controller refs the page already
  *          holds; this composable returns the two handlers and a setter
- *          for the in-flight reading promise the page tracks so
- *          `settlePipeline` can `await` it before promoting to reading.
+ *          for the in-flight answer promise the page tracks so
+ *          `settlePipeline` can `await` it before promoting to answer.
  */
 import type { useTarotStore } from '../../../core/store/tarot'
 import type { useAnimationController } from '../../divination/composables/use_animation_controller'
@@ -26,9 +26,9 @@ export interface UseMainHandlersDeps {
   tarotStore: ReturnType<typeof useTarotStore>
   animationController: ReturnType<typeof useAnimationController>
   answerController: ReturnType<typeof useAnswerController>
-  /** Read the current in-flight reading promise (or null). */
+  /** Read the current in-flight answer promise (or null). */
   getAnswerPromise: () => Promise<unknown> | null
-  /** Replace the in-flight reading promise (called after settle clears it). */
+  /** Replace the in-flight answer promise (called after settle clears it). */
   setAnswerPromise: (next: Promise<unknown> | null) => void
   /** Application-phase entry to (re)start a divination with the same question. */
   startDivination: (question: string) => void
@@ -36,7 +36,7 @@ export interface UseMainHandlersDeps {
 
 export interface MainHandlers {
   /**
-   * Settle the in-flight reading and promote the application stage to
+   * Settle the in-flight answer and promote the application stage to
    * `reading` for both success AND error outcomes. The inline answer
    * zone is gated by phase ∈ {answer, decision} in MainSurface, so
    * without this branch a failed /api/v1/divinations response leaves the
@@ -49,7 +49,7 @@ export interface MainHandlers {
   settlePipeline: () => Promise<void>
   /**
    * Restart the divination from the current question. Resumes any paused
-   * animations, clears the timeline + reading state, then re-enters the
+   * animations, clears the timeline + answer state, then re-enters the
    * shuffle phase from a clean slate so the second run looks identical
    * to the first (no leaked tweens, no stale draws).
    */

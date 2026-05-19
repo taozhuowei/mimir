@@ -2,83 +2,20 @@
 
 > 唯一执行跟踪文档。仅记录当前进行中的计划与进度，不留历史归档与未来设想。每个任务为独立单步：读「本任务描述 + 其超链接引用的文档与代码」即可获得全部上下文，知道怎么做、怎么测。
 
-## 目标
+## 当前状态
 
-「解读 → 答案」收尾：先清 pivot 删 UI 后残留的死分支与过时文档/注释，再把活代码内部标识 `reading*` 统一改名为 `answer*`。**纯重命名 / 删死分支 / 改文档，零运行时行为变更**（协议字段已在 S1 完成）。
+无进行中计划。最近完成「解读 → 答案」命名债清偿 N2（S1 数据契约+协议字段、C1 文档/注释、C2 删宽屏分栏死布局分支、C3 请求管道/控制器/store/事件改名、C4 `reading_stage`→`answer_stage`、C5 文件/目录 git mv + import/配置/README、C6 应用阶段标识、C7 docs 去括注 + 全仓 reading 残留收口），各步独立提交、每步全套验收（vue-tsc/tsc + app/server vitest + full 门禁 + prod 构建 + e2e 15/15）通过。代码内已无 `reading*` 命名债标识，仅余允许残留：CSS `.reading-panel`（e2e 禁复活负向断言）、英文通用动词 `reading`（读取语义）、`/api/v1/readings` 历史端点名陈述。
 
-实证修正（关键）：pivot 残留中**可安全删除的死代码很少**——仅宽屏分栏布局分支（`viewport_scene_layout` 的 `stageWidth = showResults&&wide ? width - WIDE_SIDE_DRAWER_WIDTH_PX : width` 及 `wide_breakpoint_and_chrome` 的 `WIDE_SIDE_DRAWER_WIDTH_PX/sideDrawerWidth`，已实证 `app/src/flows`+`core/composables` 零消费、注释自承 legacy 待删）。其余 `reading` 标识（`reading_stage` 场景、`cardWidthFull`、`openReadingPanel`、orchestrator/controller/store/event）均为**活代码**，正确处理是改名而非删除；`cardWidthFull` 等语义过时但值仍被活代码消费，**只改名/改注释，不动逻辑**。
-
-前置已交付：pivot `b5f7d9f`；守卫 `e4555ca`；孤儿+README `450d76a`；S1 数据契约+协议字段 `85e4360`。
-
-## 阶段与确定性清册（冻结）
-
-### C1 文档/注释（零运行时，先做）
-
-1. PRD 视图模型债：[`prd/glossary.md`](prd/glossary.md) 18/19/29（分栏/抽屉/答案面板）、[`prd/view.md`](prd/view.md) 视图与容器节、[`prd/animation.md`](prd/animation.md) 第二段过渡（宽屏分栏/窄屏抽屉分支）、[`prd/state.md`](prd/state.md) 视图映射——按 pivot 后实际「单一行内 `.answer-zone`，无分栏/抽屉/面板」重写。
-2. 过时代码注释（描述已删机制，改写为现状，不改代码）：[`MainSurface.vue`](../app/src/flows/index/components/MainSurface.vue) 头注释（ReadingSplit/Drawer overlaid）、[`create_main_transition_handlers.ts`](../app/src/flows/index/composables/create_main_transition_handlers.ts) `MainHandlers` 注释段（useActiveView/ReadingPanel/.error-box）、[`viewport_scene_layout.ts`](../app/src/core/sizing/overlay_layout/viewport_scene_layout.ts) / [`wide_breakpoint_and_chrome.ts`](../app/src/core/sizing/overlay_layout/wide_breakpoint_and_chrome.ts) / [`layout_solver_types.ts`](../app/src/core/sizing/layout_solver_types.ts)（"before the drawer mounts" 等已无 drawer 的注释）。
-
-### C2 删宽屏分栏死布局分支（低-中风险）
-
-实证收敛：`ViewportMetrics.stageWidth` 字段全仓 0 读取，其 wide 缩减分支确证死 → `viewport_scene_layout.ts` 化简为 `stageWidth = viewport.width`、去 `WIDE_SIDE_DRAWER_WIDTH_PX` import。但 `WIDE_SIDE_DRAWER_WIDTH_PX` **不能删**：它经 `PC_BREAKPOINT(920)` 仍驱动活的 `isWide` 断点（`isWide` 经 `motion_metrics` 决定切牌轴向）；故保留常量，仅改其与 `PC_BREAKPOINT`/`checkWidth` 的过时注释（去 split/drawer UI 语义）。`isWide` 双写阈值矛盾等 → 搁置 #3。删后全套验收+e2e 兜底。
-
-### C3 活代码改名：请求管道 / 控制器 / store / 事件
-
-类型：`ReadingProvider|ProviderType|Request|Status|Orchestrator|OrchestratorDeps|OrchestratorState`→`Answer*`；`UseReadingControllerFn|Return|Deps`、`DevReadingController`→`UseAnswerController*`/`DevAnswerController`。
-函数：`createReadingOrchestrator|RuleBasedReadingProvider|createReadingState|useReadingController|requestReading|resetReading|retryReading|destroyReading|onResetReading|onDestroyReading|startReading`→`*Answer*`。
-字段/变量：`readingResult|readingError|getReadingResult|isReadingLoading|readingPanelState|readingErrorMessage|readingController|isReadingFailed|storeReadingResult|storeReadingError|waitForReadingResult|currentReadingPromise|pendingReadingPromise|getReadingPromise|setReadingPromise|currentReadingRequestId|invalidateReadingRequest`→`*Answer*`。
-事件：`typewriterComplete`/`@typewriter-complete`/`handleTypewriterComplete`→`answerRevealed`/`@answer-revealed`/`handleAnswerRevealed`。
-动画揭示命令：`openReadingPanel`→`openAnswer`、`showReadingView`→`showAnswerView`。
-测试 helper：`makeReadingResult`→`makeAnswerResult`。
-全用 `\bSYM\b` 词边界批量；kebab 模板属性单独处理；vue-tsc/tsc 兜底补 kebab/遗漏。
-
-### C4 活代码改名：`reading_stage` 场景全链
-
-`'reading_stage'`→`'answer_stage'`（`SceneKind`、`solveLayout` dispatch、`getSceneLayout('reading_stage')` 调用、e2e/animation 若引用）、`solveReadingStageLayout`→`solveAnswerStageLayout`、`readingStageReservation`→`answerStageReservation`、`layout_solver_types` 中 Reading-scene 注释。
-
-### C5 文件/目录重命名 + import + 配置
-
-`git mv`：`slices/reading.ts→answer.ts`；`core/utils/reading/→core/utils/answer/`（`*_orchestrator/_provider/rule_based_*`）；`tarot_reading_types_shim.ts→tarot_answer_types_shim.ts`；`layout_solver_reading.ts→layout_solver_answer.ts`；`flows/reading/→flows/answer/`（`use_reading_request_controller.ts→use_answer_request_controller.ts`）；`flows/divination/composables/skip_to_reading.ts→skip_to_answer.ts`；`server/src/services/tarot_reading.ts→tarot_answer.ts`；`app/test/reading_orchestrator{,_retry}.test.ts→answer_orchestrator{,_retry}.test.ts`。同步全部 import 路径、文件头 `Name:`/路径注释、`README.md`、`dependency-cruiser.cjs` `animation-not-to-reading→animation-not-to-answer`（名+comment+`to:^app/src/core/utils/reading/→answer/`）+ 354 注释、`env.d.ts`。一次性改全（中间态不可编译）。
-
-### C6 应用阶段标识 `reading→answer`
-
-`DivinationPhase` `'reading'→'answer'`、全部 `=== 'reading'`/`= 'reading'`、`enterReading→enterAnswer`、`skipToReading→skipToAnswer`、`skipToReadingCommand→skipToAnswerCommand`、`handleDevSkipToReading→handleDevSkipToAnswer`、相关注释 "reading phase/decision"。e2e 经实证不锚 phase 值；CSS `.reading-panel` 负向断言属禁复活守卫，不动。
-
-### C7 docs 去括注 + 收口
-
-清除 `prd/*`、`tarot_glossary.md`、本文件全部「（内部标识仍为 reading，命名债）」类括注（去后句子须仍正确）。复核 `grep -rnE "\\bReading|\\breading\\b" app/src server/src` 仅剩允许残留（CSS `.reading-panel`、塔罗英文术语）。本文件回「无进行中计划」空态。
-
-## 禁止项（冻结）
-
-1. C3–C6 纯重命名/移动；C2 仅删确证零消费死分支；C1 仅改文档/注释。**禁改任何运行时逻辑、模板结构、样式、协议语义、布局算法（`cardWidthFull` 等语义过时也只改名/注释不动逻辑）**。
-2. 每步结束必须可编译、测试全绿才提交；不可编译的中间态（C5、协议类）该步一次性改全再验收，禁中途提交。
-3. 禁 `--no-verify`/`--force`/任何门禁绕过；前端类型检查用 [vue-tsc 不用 tsc](../CLAUDE.md)；vitest 必带 `--dir`。
-4. 每步独立单 commit。验收套件 = `vue-tsc(app)` + `tsc(server)` + `vitest(app)` + `vitest(server)` + `node scripts/quality_gate.js full` + `node scripts/build/index.js --prod --target h5,server --skip-quality`（DONE+perfΔ≈0） + `npx playwright test`（15/15）。遇失败即停报告。
-
-## 任务清单
-
-- [x] C1 文档/注释（详见上）。提交 `d1c1f3d`。
-- [x] C2 化简宽屏分栏死 stageWidth 分支 + 删死 isWide 参数 + 过时注释（实证收敛：常量保留，见上）。
-- [x] C3 请求管道/控制器/store/事件改名（25 文件，含 kebab + 一处 C1 漏网注释）。
-- [x] C4 `reading_stage`→`answer_stage` 场景全链（8 文件：SceneKind/Scene/solveLayout dispatch/getSceneLayout 调用/solveAnswerStageLayout/answerStageReservation/注释；C5 文件名与 import 路径未碰）。
-- [x] C5 文件/目录重命名 + import + 配置（git mv 13 项；23 文件 import 重写 + flow 同目录引用 + 文件头 Name；dependency-cruiser `animation-not-to-answer`；README 树同步）。
-- [x] C6 应用阶段标识 `reading→answer`（19 文件：`DivinationPhase` 联合 + 全部 phase 比较/赋值 + `enterAnswer`/`skipToAnswer`/`skipToAnswerCommand`/`SkipToAnswerCommandDeps`/`handleDevSkipToAnswer` + kebab `@skip-to-answer` + phase 注释短语）。
-- [ ] C7 docs 去括注 + 收口。message：`docs: drop reading naming-debt annotations after rename`。
-
-## 回滚
-
-每步未提交：`git checkout -- .`（+ 还原 `git mv`）。已提交：对对应步 `git revert`（各步独立 commit，可分别回退）。
-
-## 进度
-
-S1（数据契约+协议字段）提交 `85e4360`；旧 S2 因冻结映射不完整回滚重排为 C1–C7。C1（文档+注释）`d1c1f3d`；C2（化简死 stageWidth 分支+删死 isWide 参数）`61c0f0c`；C3（请求管道/控制器/store/事件改名）提交 `211d144`；C4（`reading_stage`→`answer_stage` 场景全链）提交 `c75aca8`；C5（文件/目录 git mv 13 项 + import/配置/README）提交 `c736959`；C6（应用阶段标识 `reading→answer`，19 文件）已全套验收（full 门禁+prod+e2e 15/15）待提交。仅余 C7（docs 去命名债括注 + 全仓 reading 残留措辞收口，含 `flow.ts` 的 `reading` 形参/注释、`ActionArea` 等代码内 reading 普通词注释）。注：本会话出现一次 npm registry 网络超时致 audit 步瞬时失败，重试即恢复，非代码问题。
+下一项工作开始时，重写本文件「目标 / 范围 / 任务清单 / 进度 / 回滚」各节为该计划内容。
 
 ## 搁置问题（已登记，未排期）
 
 1. 组件职责拆分债：
-   a. [`TitleContent.vue`](../app/src/flows/shared/components/TitleContent.vue)：`variant: idle|fallback` 一组件三职责。应拆为纯文案渲染 + 入场动画驱动 + 按 variant 薄包装。
+   a. [`TitleContent.vue`](../app/src/flows/shared/components/TitleContent.vue)：`variant: idle|fallback` 一组件三职责（文案表 + 自管 GSAP 错落入场 + 视图语义分支）。应拆为纯文案渲染 + 入场动画驱动 + 按 variant 薄包装。
    b. [`DevToolsPanel.vue`](../app/src/flows/index/components/DevToolsPanel.vue)：可拖拽折叠壳 + 10+ 纯 `$emit` 透传 + 拖拽/点击手势消歧混合。透传收敛、拖拽抽 composable、壳只管布局可见性。
-2. `cardWidthFull/cardHeightFull` 双卡尺寸语义债：pivot 删抽屉后「抽屉挂载前/后」双尺寸概念已无实际区分（`cardWidthFull` 仍被 `pipeline_builder` 当 `resultCardWidth` 用）。本计划只改名/注释不动逻辑；是否将其与 `cardWidth` 合一属布局逻辑简化，单列另案。同源 pivot「抽屉」措辞残留待清：[`layout_solver.test.ts`](../app/test/layout_solver.test.ts) 第 266 行测试名「lifts above the bottom drawer」、`SceneLayout.cardWidth`/`stageShiftY`/`DrawerGeometry` 等注释仍按抽屉模型描述（抽屉已删，应改述为「为下方行内答案区让位」）；属文档/注释债，与 C7 一并梳理或单列。
-3. pivot 布局逻辑残留债（C2 实证发现，均属动逻辑/产品判断，本计划不碰）：
-   a. `isWide` 双写阈值矛盾：[`use_main_stage.ts`](../app/src/flows/index/composables/use_main_stage.ts) `recomputeIsWide` 用 `> MAX_CANVAS_WIDTH`(440)，[`wide_breakpoint_and_chrome.ts`](../app/src/core/sizing/overlay_layout/wide_breakpoint_and_chrome.ts) `checkWidth` 用 `>= PC_BREAKPOINT`(920)，两者写同一 `isWide` ref，阈值不一致（pivot 前 920 是 split 断点）。需产品判断 `isWide`（现仅驱动切牌轴向）应采哪个阈值并去重。
+2. `cardWidthFull/cardHeightFull` 双卡尺寸语义债：pivot 删抽屉后「抽屉挂载前/后」双尺寸已无实际区分（`cardWidthFull` 仍被 `pipeline_builder` 当 `resultCardWidth` 用）。是否与 `cardWidth` 合一属布局逻辑简化，单列。同源 pivot「抽屉」措辞残留：[`layout_solver.test.ts`](../app/test/layout_solver.test.ts) 第 266 行测试名「lifts above the bottom drawer」、`SceneLayout.cardWidth`/`stageShiftY`/`DrawerGeometry` 等注释仍按抽屉模型描述（抽屉已删，应改述为「为下方行内答案区让位」）；属文档/注释债。
+3. pivot 布局逻辑残留债（C2 实证发现，均属动逻辑/产品判断）：
+   a. `isWide` 双写阈值矛盾：[`use_main_stage.ts`](../app/src/flows/index/composables/use_main_stage.ts) `recomputeIsWide` 用 `> MAX_CANVAS_WIDTH`(440)、[`wide_breakpoint_and_chrome.ts`](../app/src/core/sizing/overlay_layout/wide_breakpoint_and_chrome.ts) `checkWidth` 用 `>= PC_BREAKPOINT`(920)，写同一 `isWide` ref，阈值不一致。需产品判断 `isWide`（现仅驱动切牌轴向）采哪个阈值并去重。
    b. `WIDE_SIDE_DRAWER_WIDTH_PX` 误导命名：已与 UI 解耦、仅作 `isWide` 断点 480 加数，名仍含 `DRAWER`。改名牵动 `PC_BREAKPOINT` 可读性，单列。
-   c. `viewport_scene_layout.getViewportMetrics` 的 `stageContainerHeight = showResults ? stageHeight : viewport.height` 两支恒等（`stageHeight===viewport.height`）、`stageWidth` 字段全仓 0 读取：疑似可连同 `showResults` 参数进一步简化，属布局逻辑简化，单列。
+   c. `viewport_scene_layout.getViewportMetrics` 的 `stageContainerHeight = showResults ? stageHeight : viewport.height` 两支恒等、`stageWidth` 字段全仓 0 读取：疑可连同 `showResults` 参数进一步简化，属布局逻辑简化，单列。
+4. pivot/N2 中文文档措辞统一债：[`docs/tarot_glossary.md`](tarot_glossary.md) 等仍有「解读」中文措辞，需逐条判定属塔罗领域通用术语（保留）还是指本应用流程产物（应统一为「答案」）；[`docs/prd/glossary.md`](prd/glossary.md) 18/19/29 行的视图模型曾按 pivot 前分栏/抽屉描述（已于 C1 重写，确认无残留）；`server/src/routes/divinations.ts` 历史端点名 `/api/v1/readings` 陈述（保留历史准确或淡化，单列）。

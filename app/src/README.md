@@ -20,11 +20,11 @@ src/
 │   ├── api/                    后端接口客户端
 │   │   ├── client.ts           客户端基座：请求封装、资源路径解析、错误提取
 │   │   ├── cards.ts            拉取 78 张塔罗牌并解析图片 URL
-│   │   ├── divinations.ts      占卜请求入口：抽牌+解读，组装完整结果
+│   │   ├── divinations.ts      占卜请求入口：抽牌+答案，组装完整结果
 │   │   ├── themes.ts           拉取主题（字体/颜色/UI/图片）并解析 URL
 │   │   └── types.ts            前后端共享协议类型
 │   ├── composables/            视图与 store 之间的解耦封装
-│   │   ├── use_app_phase.ts        应用阶段（idle/divination/reading/decision）与转场
+│   │   ├── use_app_phase.ts        应用阶段（idle/divination/answer/decision）与转场
 │   │   ├── use_boot_status.ts      启动状态读写
 │   │   └── use_cards_load_error.ts 牌库加载错误与重试
 │   ├── deck/
@@ -118,9 +118,9 @@ src/
     │   ├── components/DevToolsCollapsedIcon.vue    调试面板折叠态闪电图标
     │   ├── components/DevToolsControlRow.vue       暂停/继续/单步控制行
     │   ├── components/DevToolsPhaseRow.vue         按相位重播芯片行
-    │   ├── components/DevToolsPlaybackRow.vue      直接解读与速率芯片行
+    │   ├── components/DevToolsPlaybackRow.vue      直接跳答案与速率芯片行
     │   ├── composables/use_main_stage.ts           主舞台编排聚合
-    │   ├── composables/create_main_transition_handlers.ts        晋升解读与重启处理器
+    │   ├── composables/create_main_transition_handlers.ts        晋升答案与重启处理器
     │   ├── composables/use_header_presentation.ts  页眉 variant 与 ARIA 派生
     │   ├── composables/use_play_deck_animation.ts  按相位驱动单例牌堆
     │   └── composables/use_dev_tools.ts            调试面板开关与回调

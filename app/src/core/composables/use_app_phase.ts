@@ -3,7 +3,7 @@
  * Purpose: re-export the application-level 4-stage phase ref from the tarot
  *          store and provide named transition helpers, so the main page can
  *          provide() a single phase ref to all views/containers and switch
- *          between idle / divination / reading / decision through a stable
+ *          between idle / divination / answer / decision through a stable
  *          composable contract.
  * Reason: docs/prd/state.md（流程阶段;2.6.1 应用级流程） defines four application stages. The store already owns
  *         the underlying ref (see stores/flow.ts) and the transition helpers
@@ -30,11 +30,11 @@ export type { DivinationPhase } from '../store/slices/flow'
 export interface UseAppPhaseReturn {
   /** Reactive application-level phase ref, sourced from tarotStore. */
   phase: ReturnType<typeof storeToRefs<ReturnType<typeof useTarotStore>>>['phase']
-  /** Move to `divination` and clear any previous reading. */
+  /** Move to `divination` and clear any previous answer. */
   startDivination: (question: string) => void
-  /** Move to `reading` once the reading payload has landed. */
+  /** Move to `answer` once the answer payload has landed. */
   enterAnswer: () => void
-  /** Move from `reading` to `decision` after the typewriter completes. */
+  /** Move from `answer` to `decision` after the typewriter completes. */
   enterDecision: () => void
   /** Reset the whole flow back to `idle`. */
   resetToIdle: () => void
