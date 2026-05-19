@@ -39,7 +39,7 @@ export interface CardLayout {
  * viewport-absolute px. Historically a draggable bottom-sheet "drawer";
  * the pivot replaced it with an inline answer zone, so these values now
  * just describe that reserved bottom band. The shape (and whether to
- * simplify it post-pivot) is parked — see docs/TODO.md F6.
+ * simplify it post-pivot) is parked as F6 of the parked-debt plan.
  */
 export interface DrawerGeometry {
   /** Distance from viewport top to the reserved region's top edge. */

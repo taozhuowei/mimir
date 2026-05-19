@@ -5,7 +5,7 @@
  *          timeline (with the reduced-motion shortcut), and the
  *          mount / variant-flip / unmount lifecycle — so the component
  *          stays a thin copy-renderer.
- * Reason: F4 of the parked-debt cleanup (docs/TODO.md). TitleContent
+ * Reason: F4 of the parked-debt cleanup. TitleContent
  *          previously inlined the copy table, this ~60-line entrance
  *          animation, and the per-variant view split in one SFC. The
  *          animation is the part worth extracting; the copy table and
