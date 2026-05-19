@@ -1,20 +1,20 @@
 import { test, expect } from '@playwright/test'
 
 /**
- * Happy path: home page → divination overlay → result panel.
+ * Happy path: home page → divination overlay → inline answer.
  *
  * The flow auto-progresses through shuffle/cut/draw/reveal once the user
  * taps the idle deck (per docs/prd/state.md（占卜流程要求） "占卜流程应自动推进"). The 30-second
- * timeout on the reading-panel assertion covers the full animation
- * pipeline plus the rule-based reading lookup.
+ * timeout on the answer-zone assertion covers the full animation
+ * pipeline plus the server-side Answer lookup.
  *
- * Note: we deliberately do NOT click "回到首页" here. On mobile the action
- * bar is inside a draggable drawer that may be collapsed at this point,
- * which makes click reliability viewport-dependent. Verifying the reading
- * surface and the back-home button is in the DOM is enough to catch the
- * regressions this test is designed to prevent.
+ * Note: we deliberately do NOT click "回到首页" here. The answer is struck
+ * inline below the card (.answer-zone — the split / drawer overlay was
+ * removed). Verifying the answer surfaced with its quote and the
+ * back-home button is in the DOM is enough to catch the regressions this
+ * test is designed to prevent.
  */
-test('home → divination → reading panel surfaces', async ({ page }) => {
+test('home → divination → answer surfaces', async ({ page }) => {
   await page.goto('/')
 
   // Selectors track the BEM class names introduced by the B4 (IdleDeck split into
@@ -33,7 +33,8 @@ test('home → divination → reading panel surfaces', async ({ page }) => {
   await expect(page.locator('.progress-content__step-icon').first()).toBeVisible({ timeout: 5_000 })
   expect(await page.locator('.progress-content__step-icon').count()).toBeGreaterThanOrEqual(4)
 
-  await expect(page.locator('.reading-panel')).toBeVisible({ timeout: 30_000 })
+  await expect(page.locator('.answer-zone')).toBeAttached({ timeout: 30_000 })
+  await expect(page.locator('.answer-zone .ai-quote')).toBeVisible({ timeout: 10_000 })
 
   // The action area should be present in the DOM with the back-home affordance,
   // even if collapsed inside the drawer at default height.

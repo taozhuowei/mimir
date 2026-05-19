@@ -4,79 +4,52 @@
 
 ## 目标
 
-取消按类型先分的 [`app/src/components/`](../app/src/components) 与 [`app/src/composables/`](../app/src/composables) 双树，统一重组为单一特性优先树 [`app/src/flows/`](../app/src/flows)：一级为 `flows/`，下设 6 个子域 `shared idle index divination fallback reading`，每个子域再分 `components/`（.vue）与 `composables/`（.ts）。结构来自用户决策，零运行时变更。
+结果阶段产物由「解读」转向「答案」：取消逐字打字机解读、吉凶评分与逐张牌义，结果阶段只呈现一张**答案卡**——按抽到牌的正/逆位返回一句名句的原文 `quote` / 翻译 `translation` / 来源 `source`。删除分栏视图与抽屉视图，答案改为行内（卡下 `.answer-zone`，全宽统一，无侧栏无抽屉）。请求生命周期管道零 diff：协议/状态标识 `reading`、`ReadingResult`、路由 `reading` 字段、`use_reading_request_controller`、store `reading` slice、完成事件 `typewriterComplete` 一律保留（命名债，见搁置问题 #2）。
 
-## 源 → 目标映射（确定，无留根）
+需求依据：[docs/PRD.md](PRD.md) 及模块 [product.md](prd/product.md) [state.md](prd/state.md) [view.md](prd/view.md) [animation.md](prd/animation.md) [glossary.md](prd/glossary.md)；领域口径见 [docs/tarot_glossary.md](tarot_glossary.md)。
 
-```
-app/src/components/shared/X.vue              → app/src/flows/shared/components/X.vue
-app/src/components/flows/<f>/X.vue           → app/src/flows/<f>/components/X.vue
-app/src/composables/shared/animations/x.ts   → app/src/flows/shared/composables/animations/x.ts   (保留 animations/ 层)
-app/src/composables/flows/<f>/**             → app/src/flows/<f>/composables/**                    (保留 divination/phases/ 子层)
-<f> ∈ { index, idle, divination, fallback, reading }
-```
+## 范围与契约（确定）
 
-迁移后删空旧 `app/src/components/`、`app/src/composables/`。共 25 .vue + 49 .ts（含 divination/phases/ 5、shared/animations/ 11）。
+1. 数据单一真源：[`server/src/data/tarot_answer.json`](../server/src/data/tarot_answer.json)（version 5），`cards` 按牌 id 索引，每张含 `upright`/`reversed` 数组，元素 `{quote, source, translation, translationSource}`；`translationSource` 不入协议。78 键与 [`card_loader`](../server/src/services/card_loader.ts) 78 牌 id 一一对应（已实证：无缺失/多余/重复，槽位均非空）。
+2. 按花色卡 JSON（[major](../server/src/data/tarot-major.json) [wands](../server/src/data/tarot-wands.json) [cups](../server/src/data/tarot-cups.json) [swords](../server/src/data/tarot-swords.json) [pentacles](../server/src/data/tarot-pentacles.json)）只保留卡面数据（id/name/image/...），删除 `upright`/`reversed` 牌义与 `sentiment`。
+3. 服务端 [`tarot_reading.ts`](../server/src/services/tarot_reading.ts)：`generateReading`→`buildReading`，去评分，改 id+位查 `tarot_answer.json`；未知 id 或缺槽抛错（数据损坏才会触发，非合法请求路径）。
+4. 前端唯一答案组件 [`AnswerInscription.vue`](../app/src/flows/reading/components/AnswerInscription.vue)：自持 loading/error/success，success 渲染 `.ai-quote`/翻译/来源分段 rise-in，入场约 1.06s（prefers-reduced-motion 立即），settle 后发 `typewriterComplete` 推进 reading→decision。挂于 [`MainSurface.vue`](../app/src/flows/index/components/MainSurface.vue) 的 `.answer-zone`（`phase ∈ {reading,decision}`），与既有 [`ActionArea.vue`](../app/src/flows/reading/components/ActionArea.vue) 同列。
+5. 删除：`ReadingPanel/ReadingSplitView/ReadingDrawerView/CardMeaningContainer/ConclusionContainer/ReadingTextContainer.vue`、`reading_result_presenter.ts`、`use_reading_panel_view_model.ts`、`use_result_card_shrink.ts`、`reading_panel_timing.ts`、`use_active_view.ts` 及对应测试（`reading_result_presenter/result_panel/typewriter_model.test.ts`）。
 
 ## 禁止项（决策冻结）
 
-1. 仅文件移动 / 改 import 路径 / 文件头 `Name:` 与路径注释对齐。**禁改任何运行时逻辑、模板、样式**：`<template>`、`<style>`、`<script>` 主体逐字保留。
-2. `core/*`、`pages/*` 逻辑不动，仅改其对两树的 import 路径行。
-3. 不改 e2e 锚定类名与任何运行时行为；重构零行为变更。
-4. 跨 flow 强耦合 → 中间态不可编译，无法分 flow 增量。本计划为**一次性全量迁移 + 一次验收 + 单 commit**。禁 `--no-verify`/`--force`/任何门禁绕过。
-
-## 引用面（已 grep 实证）
-
-1. 文件内：同目录 `./` 互引迁移后仍同目录，**零改写**；跨子域 / 跨 shared / 到 `core/` 的 `../` import 需按文件新位置实算重写。
-2. 外部 consumer：[`pages/index.vue`](../app/src/pages/index.vue) 2 处（`../components/flows/fallback/FallbackView.vue`、`../components/flows/index/MainSurface.vue`）；`app/test/` 9 个测试文件（`typewriter_text.test.ts` → `src/components/shared/TypewriterText.vue`；`overlay_*`/`replay_from_phase`/`atom_*`/`use_animation_state` → `src/composables/flows/divination/*`、`src/composables/shared/animations/*`）。`App.vue`/`main.ts`/`core/`/e2e 不依赖两树（已证）。
-3. 配套：[`scripts/quality_baseline.json`](../scripts/quality_baseline.json) 2 条（`composables/flows/divination/use_animation_controller.ts`、`use_lifecycle.ts`）；[`config/dependency-cruiser.cjs`](../config/dependency-cruiser.cjs) 第 262/273/283 行 layer model 正则等价重写（旧顶层 `composables|components` 并入 `flows/`，不放宽守卫）。`config/knip.json`、`scripts/quality_scan.js` 经核无需改（递归扫描 + `/components/` 子串新结构仍命中）。
-
-## import 重写算法（确定性，对每条相对 import）
-
-以文件新目录为基：解析旧 import 指向的**旧绝对路径** T_old → 若 T_old 命中源→目标映射则取 T_new，否则 T_new=T_old（`core/` 等不动）→ 新 import = `relative(dirname(F_new), T_new)`。`.vue` 的 import 在 `<script setup>` 内、语法同 `.ts`，同规则。文件头 `Name:` 含旧两树路径串者（composables 惯例为路径式）一并对齐为新路径；组件头 `Name:` 为裸名+角色、无路径串，不改（C2 已证）。
+1. 请求生命周期管道命名零改（`reading*` 内部标识全留），仅结果阶段产物语义与 UI 改。命名债单列搁置问题 #2，本计划不动。
+2. 禁 `--no-verify`/`--force`/任何门禁绕过；单 commit 必须真实跑通 [pre-commit 门禁](../README.md)。
+3. e2e 修正只对齐新单面板 DOM 契约，不对已删组件做任何假断言（[测试一致性](../CLAUDE.md)）。
 
 ## 任务清单
 
-> 每步：按操作改 → 验收（命令逐条 exit 0）→ 勾「进度」。一次性迁移，全部步骤通过后单 commit（[pre-commit 门禁](../README.md) 真实跑通）。遇失败即停报告，按「回滚」处置。
+> 每步：按操作改 → 验收（命令逐条 exit 0）→ 勾「进度」。全部通过后单 commit。遇失败即停报告，按「回滚」处置。
 
-- [x] M1 建目录 + 整目录 git mv + 删空旧树
-  - 操作：
-    1. `mkdir -p app/src/flows/{index,idle,divination,fallback,reading,shared}`。
-    2. composables：对 `<f>` 各 `git mv app/src/composables/flows/<f> app/src/flows/<f>/composables`；`git mv app/src/composables/shared app/src/flows/shared/composables`（= composables/animations）。
-    3. components：对 `<f>` 各 `git mv app/src/components/flows/<f> app/src/flows/<f>/components`；`git mv app/src/components/shared app/src/flows/shared/components`。
-    4. `rmdir` 旧 `app/src/components/flows app/src/components app/src/composables/flows app/src/composables`（应已空，非空即停查）。
-  - 验收：`find app/src/flows -type f | wc -l` = 74；`test ! -d app/src/components -a ! -d app/src/composables`；`git status --porcelain` 全为 R（rename）。
-  - 影响：74 文件 git mv（此时全断链，预期不可编译）。回滚：`git reset --hard c734759` + `rm -rf app/src/flows`。
-
-- [x] M2 全量 import 重写 + Name 路径注释对齐
-  - 操作：按「import 重写算法」对 `app/src/flows/**/*.{ts,vue}` + `app/src/pages/index.vue` + `app/test/*.test.ts` 逐条重写相对 import；composables 文件头 `Name:` 旧路径串对齐新路径。批处理用一次性脚本 [`scripts/_migrate_imports.mjs`](../scripts/_migrate_imports.mjs)（解析→映射→relative，确定性），跑后立即 `git rm`/删除该脚本，不留仓内。
-  - 验收：`grep -rnE "from '[^']*(composables|components)/(shared|flows)" app/src app/test`（空，无旧两树 import 串）；`npx vue-tsc --noEmit -p app/tsconfig.json` exit 0；脚本文件已删除。
-  - 影响：约 200+ import + 若干 Name 注释。回滚：同 M1（未提交，整体 reset）。
-
-- [x] M3 配套门禁/配置同步
-  - 操作：
-    1. [`scripts/quality_baseline.json`](../scripts/quality_baseline.json) 2 条 `app/src/composables/flows/divination/{use_animation_controller,use_lifecycle}.ts` → `app/src/flows/divination/composables/{...}.ts`。
-    2. [`config/dependency-cruiser.cjs`](../config/dependency-cruiser.cjs) 262/273/283：把 `^app/src/(composables|components|pages)/`、`^app/src/(core/gsap|composables/shared/animations|composables/flows/(divination|idle|fallback))/`、`^app/src/shared/(components|views)/` 等价改写为新 `app/src/flows/` 结构正则（守卫语义不变，仅路径形态适配）。
-  - 验收：`node scripts/quality_gate.js full` exit 0（含 arch:check/dead-code/dup/audit）。
-  - 影响：2 配置文件。回滚：同上整体 reset。
-
-- [x] M4 全局回归 + 单 commit
-  - 操作：全量回归后单 commit。message：`refactor(structure): unify components+composables into flows/<domain>/{components,composables}`。
-  - 验收：`npx vue-tsc --noEmit -p app/tsconfig.json`；`npx tsc --noEmit -p server/tsconfig.json`；`npx vitest run --config app/vitest.config.ts --dir app/test`；`npx vitest run --config server/vitest.config.ts --dir server/test`；`npx eslint app/src/ app/test/ server/src/ server/test/`；`node scripts/quality_gate.js full`；`node scripts/build/index.js --prod --target h5 --skip-quality`（DONE 且 perf Δ0.0%）—— 全 exit 0；pre-commit 真实跑通。
-  - 影响：单 commit。回滚：`git revert` 该 commit。
+- [x] P1 服务端 + 数据：新增 `tarot_answer.json`，按花色 JSON 去牌义，`buildReading` 改查表，`card_loader`/路由/类型去 `TarotCardMeaning`。验收：`npx tsc --noEmit -p server/tsconfig.json`、`npx vitest run --config server/vitest.config.ts --dir server/test` exit 0。
+- [x] P2 前端：新增 `AnswerInscription.vue`，`MainSurface`/`use_main_stage`/`StageDeck` 接线为 `.answer-zone`，删 6 组件 + 4 composable + 2 测试。验收：`npx vue-tsc --noEmit -p app/tsconfig.json`、`npx vitest run --config app/vitest.config.ts --dir app/test` exit 0。
+- [x] P3 类型/shim/文档：`api/types.ts`（`AnswerEntry`，`ReadingCardDetail.answer`，去 `result/score`）、`tarot_reading_types_shim.ts`、PRD 全模块 + `tarot_glossary.md` 同步为「答案」，命名债以括注登记。验收：`node scripts/quality_gate.js full` exit 0。
+- [ ] P4 e2e 对齐新单面板契约（[viewport_smoke](../app/test/e2e/viewport_smoke.spec.ts) [divination_flow](../app/test/e2e/divination_flow.spec.ts) [network_error](../app/test/e2e/network_error.spec.ts)）：
+  - `divination_flow`：成功锚 `.reading-panel`→`.answer-zone` attached + `.ai-quote` visible，更新头注。
+  - `viewport_smoke`：成功锚同上；删除 pc/mobile 分栏-抽屉二分契约（`.reading-split-view`/`.reading-drawer-view__sheet` 组件已删），改为每视口断言 `.answer-zone` 可见含 `.ai-quote` 且在视口内不被裁剪；保留 12 视口截图与卡宽 ≤240；移除 DRAWER/SPLIT 常量与 mode 分支。
+  - `network_error`：`重试读取` 文案锚仍命中（`ActionArea` 错误态），仅更新「result drawer」过时注释。
+  - 验收：构建 `node scripts/build/index.js --prod --target h5,server --skip-quality` exit 0 → `npx playwright test --config=app/playwright.config.ts` 全绿。
+- [ ] P5 全量回归 + 单 commit。验收：`npx vue-tsc --noEmit -p app/tsconfig.json`；`npx tsc --noEmit -p server/tsconfig.json`；`npx vitest run --config app/vitest.config.ts --dir app/test`；`npx vitest run --config server/vitest.config.ts --dir server/test`；`node scripts/quality_gate.js full`；`node scripts/build/index.js --prod --target h5 --skip-quality`（DONE + perf Δ≈0）；`npx playwright test --config=app/playwright.config.ts`——全 exit 0；pre-commit 真实跑通。message：`feat(answer): replace reading interpretation with single-quote Answer card`。
 
 ## 执行约束
 
-类型检查用 [vue-tsc 不用 tsc](../CLAUDE.md)（前端）；vitest 必带 `--dir app/test`/`--dir server/test`。一次性迁移：M1→M4 全绿才 commit，禁中途 commit、禁跳步、禁门禁绕过。遇验收失败即停并报告。
-
-## 回滚
-
-未提交：`git reset --hard c734759`（迁移前 HEAD）+ `rm -rf app/src/flows` + 删一次性脚本。已提交：`git revert` M4 commit。
+类型检查用 [vue-tsc 不用 tsc](../CLAUDE.md)（前端）；vitest 必带 `--dir app/test`/`--dir server/test`。P1–P5 全绿才单 commit，禁中途 commit、禁跳步、禁门禁绕过。遇验收失败即停并报告。
 
 ## 进度
 
-M1–M4 完成。components/+composables/ 双树统一为 `app/src/flows/{shared,index,idle,divination,fallback,reading}/{components,composables}`（保留 `animations/`、`phases/` 子层），74 文件 git mv 全 rename。一次性确定性脚本重写 118 处相对 import（绝对路径锚定，用后即删），注释/Name 路径串机械对齐归零。配套：`quality_baseline.json` 2 条、`dependency-cruiser.cjs` core-is-leaf / animation-not-to-reading 规则路径等价改写（守卫不放宽）。回归：vue-tsc + tsc + app/server vitest + eslint + full gate（arch/dead-code/dup/audit/scan）+ H5 prod 构建 perf Δ -0.0% 全绿。纯移动零运行时/模板/样式变更。
+P1–P3 完成（服务端查表 + 数据真源、前端单面板、类型/文档/命名债登记，全量类型检查 / app+server 单测 / full 门禁 / prod perf Δ-0.0% 已绿）。P4 进行中：e2e 上轮遗留半迁移（仍锚已删 `.reading-panel`/分栏/抽屉），按新单面板契约修正中。P5 待 P4 通过后单 commit。
+
+## 回滚
+
+未提交：`git checkout -- <受影响文件>` 并 `rm` 未跟踪的 `AnswerInscription.vue`、`tarot_answer.json` 即回到 pivot 前 `feature` 头 `df4c3c8`。已提交：`git revert` P5 commit。
 
 ## 搁置问题
 
-`config/dependency-cruiser.cjs` 的 `store-not-to-ui` 规则 from `^app/src/shared/store/`、to `^app/src/shared/(components|views)/` 指向真实结构中不存在的路径（store 实为 `core/store/`），为本次迁移前既已失效的历史遗留规则，无对应映射，本次未臆改。若要恢复 store→UI 守卫语义需独立评估其目标路径，单列议题。
+1. [`config/dependency-cruiser.cjs`](../config/dependency-cruiser.cjs) 的 `store-not-to-ui` 规则 from `^app/src/shared/store/`、to `^app/src/shared/(components|views)/` 指向真实结构中不存在的路径（store 实为 `core/store/`），为既有失效历史遗留规则，无对应映射，未臆改。恢复 store→UI 守卫语义需独立评估其目标路径，单列议题。
+
+2. 「解读 → 答案」命名债：用户可见术语与全部 docs 已统一为「答案 / 答案卡 / 结果视图」，但请求生命周期管道为零 diff，内部标识保留未改：协议/状态标识 `reading`、`ReadingResult`、`readingResult`，路由响应字段 `reading`，`use_reading_request_controller`，store 的 `reading` slice，完成事件 `typewriterComplete`，e2e 沿用 `.reading-panel` 语义已被 `.answer-zone` 取代但控制器命名仍为 `reading`。待后续单独一步把上述内部标识统一重命名为 `answer*`，届时同步去除 docs 内「（内部标识仍为 reading，命名债）」括注。

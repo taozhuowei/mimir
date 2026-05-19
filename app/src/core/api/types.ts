@@ -19,12 +19,6 @@ export type CardPosition = 'upright' | 'reversed'
  */
 export type SpreadKind = 'single_card'
 
-export interface TarotCardMeaning {
-  keywords: string[]
-  meaning: string
-  sentiment: 'positive' | 'negative' | 'neutral'
-}
-
 export interface TarotCardInfo {
   id: string
   name: string
@@ -34,8 +28,6 @@ export interface TarotCardInfo {
   suit?: 'wands' | 'cups' | 'swords' | 'pentacles'
   /** Server-resolved URL, populated after `resolveAssetUrl` wraps it. */
   image: string
-  upright: TarotCardMeaning
-  reversed: TarotCardMeaning
 }
 
 /** Output of the local "drawn card" pipeline — card metadata + position. */
@@ -50,15 +42,30 @@ export interface DivinationDrawnEntry {
   position: CardPosition
 }
 
+/**
+ * One Answer (答案): the quote shown big, its translation as a sub-title,
+ * and the source. `translationSource` from the data file is intentionally
+ * not part of the protocol — the UI shows only these three.
+ */
+export interface AnswerEntry {
+  quote: string
+  translation: string
+  source: string
+}
+
 export interface ReadingCardDetail {
   card: TarotCardInfo
   position: CardPosition
-  meaning: string
+  answer: AnswerEntry
 }
 
+/**
+ * Result of a divination. The `reading`/`ReadingResult` identifiers are
+ * retained from the pre-Answer design so the cross-cutting request
+ * lifecycle plumbing stays diff-free; the user-facing term is 答案
+ * (the Answer). No more scoring/sentiment/meaning.
+ */
 export interface ReadingResult {
-  result: 'positive' | 'negative'
-  score: number
   cardDetails: ReadingCardDetail[]
 }
 

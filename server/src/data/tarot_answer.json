@@ -1,0 +1,1721 @@
+{
+  "version": 5,
+  "cards": {
+    "the_fool": {
+      "name": "愚者",
+      "nameEn": "The Fool",
+      "number": 0,
+      "arcana": "major",
+      "upright": [
+        {
+          "quote": "Leap, and the net will appear.",
+          "source": "John Burroughs（常见归属，最早出处未确证）",
+          "translation": "纵身一跃，安全网自会出现。",
+          "translationSource": ""
+        }
+      ],
+      "reversed": [
+        {
+          "quote": "Look before you leap.",
+          "source": "伊索寓言传统／英语谚语",
+          "translation": "三思而后行。",
+          "translationSource": ""
+        }
+      ]
+    },
+    "the_magician": {
+      "name": "魔术师",
+      "nameEn": "The Magician",
+      "number": 1,
+      "arcana": "major",
+      "upright": [
+        {
+          "quote": "I am the master of my fate: I am the captain of my soul.",
+          "source": "William Ernest Henley, Invictus",
+          "translation": "我是命运的主宰，我是灵魂的统帅。",
+          "translationSource": ""
+        }
+      ],
+      "reversed": [
+        {
+          "quote": "知者不言，言者不知。",
+          "source": "道德经·第五十六章",
+          "translation": "He who knows (the Tao) does not (care to) speak (about it); he who is (ever ready to) speak about it does not know it.",
+          "translationSource": "James Legge"
+        }
+      ]
+    },
+    "the_high_priestess": {
+      "name": "女祭司",
+      "nameEn": "The High Priestess",
+      "number": 2,
+      "arcana": "major",
+      "upright": [
+        {
+          "quote": "Trust your own instinct. Your mistakes might as well be your own, instead of someone else's.",
+          "source": "Billy Wilder（“倾听内心声音”常被误托名 Dickens，此为可考的相近名言）",
+          "translation": "相信你自己的直觉，宁可错也要错在自己手里。",
+          "translationSource": ""
+        }
+      ],
+      "reversed": [
+        {
+          "quote": "We are never so easily deceived as when we imagine we are deceiving others.",
+          "source": "François de La Rochefoucauld, Maximes",
+          "translation": "当我们自以为在欺骗别人时，正是最容易被骗的时候。",
+          "translationSource": ""
+        }
+      ]
+    },
+    "the_empress": {
+      "name": "皇后",
+      "nameEn": "The Empress",
+      "number": 3,
+      "arcana": "major",
+      "upright": [
+        {
+          "quote": "Beauty is a manifestation of secret natural laws, which otherwise would have been hidden from us forever.",
+          "source": "Johann Wolfgang von Goethe",
+          "translation": "美是自然隐秘法则的显现，否则它将永远对我们隐藏。",
+          "translationSource": ""
+        }
+      ],
+      "reversed": [
+        {
+          "quote": "Why then, can one desire too much of a good thing?",
+          "source": "William Shakespeare, As You Like It",
+          "translation": "好事过头，也会成为负担。",
+          "translationSource": ""
+        }
+      ]
+    },
+    "the_emperor": {
+      "name": "皇帝",
+      "nameEn": "The Emperor",
+      "number": 4,
+      "arcana": "major",
+      "upright": [
+        {
+          "quote": "Veni, vidi, vici.",
+          "source": "Julius Caesar",
+          "translation": "我来，我见，我征服。",
+          "translationSource": ""
+        }
+      ],
+      "reversed": [
+        {
+          "quote": "He who tries to control everything controls nothing.",
+          "source": "管理格言（常被误托名 Tolstoy，无原始出处）",
+          "translation": "试图掌控一切的人，终将一无所控。",
+          "translationSource": ""
+        }
+      ]
+    },
+    "the_hierophant": {
+      "name": "教皇",
+      "nameEn": "The Hierophant",
+      "number": 5,
+      "arcana": "major",
+      "upright": [
+        {
+          "quote": "If I have seen further it is by standing on the shoulders of Giants.",
+          "source": "Isaac Newton（致 Robert Hooke 书信）",
+          "translation": "如果我看得更远，那是因为我站在巨人的肩膀上。",
+          "translationSource": ""
+        }
+      ],
+      "reversed": [
+        {
+          "quote": "All that is solid melts into air, all that is holy is profaned.",
+          "source": "Karl Marx & Friedrich Engels, The Communist Manifesto",
+          "translation": "一切坚固的东西都烟消云散了，一切神圣的东西都被亵渎了。",
+          "translationSource": ""
+        }
+      ]
+    },
+    "the_lovers": {
+      "name": "恋人",
+      "nameEn": "The Lovers",
+      "number": 6,
+      "arcana": "major",
+      "upright": [
+        {
+          "quote": "The heart has its reasons, which reason does not know.",
+          "source": "Blaise Pascal, Pensées",
+          "translation": "心有其理，理智一无所知。",
+          "translationSource": ""
+        }
+      ],
+      "reversed": [
+        {
+          "quote": "Hell is other people.",
+          "source": "Jean-Paul Sartre, No Exit (Huis Clos)",
+          "translation": "他人即地狱。",
+          "translationSource": ""
+        }
+      ]
+    },
+    "the_chariot": {
+      "name": "战车",
+      "nameEn": "The Chariot",
+      "number": 7,
+      "arcana": "major",
+      "upright": [
+        {
+          "quote": "Never give in. Never give in. Never, never, never, never.",
+          "source": "Winston Churchill（1941 年哈罗公学演讲）",
+          "translation": "绝不屈服，绝不，绝不，绝不。",
+          "translationSource": ""
+        }
+      ],
+      "reversed": [
+        {
+          "quote": "We all want progress, but if you're on the wrong road, progress means doing an about-turn and walking back to the right road.",
+          "source": "C. S. Lewis, Mere Christianity",
+          "translation": "若走错了路，前进就意味着掉头折返。",
+          "translationSource": ""
+        }
+      ]
+    },
+    "strength": {
+      "name": "力量",
+      "nameEn": "Strength",
+      "number": 8,
+      "arcana": "major",
+      "upright": [
+        {
+          "quote": "天下莫柔弱于水，而攻坚强者莫之能胜。",
+          "source": "道德经·第七十八章",
+          "translation": "There is nothing in the world more soft and weak than water, and yet for attacking things that are firm and strong there is nothing that can take precedence of it.",
+          "translationSource": "James Legge"
+        }
+      ],
+      "reversed": [
+        {
+          "quote": "The only thing we have to fear is fear itself.",
+          "source": "Franklin D. Roosevelt（1933 年首次就职演说）",
+          "translation": "我们唯一要恐惧的，就是恐惧本身。",
+          "translationSource": ""
+        }
+      ]
+    },
+    "the_hermit": {
+      "name": "隐士",
+      "nameEn": "The Hermit",
+      "number": 9,
+      "arcana": "major",
+      "upright": [
+        {
+          "quote": "In solitude, when we are least alone.",
+          "source": "Lord Byron, Childe Harold's Pilgrimage（“孤独中心灵自立”主题，此为可考原句）",
+          "translation": "在孤独中，我们最不孤独。",
+          "translationSource": ""
+        }
+      ],
+      "reversed": [
+        {
+          "quote": "Hide not thy face from me in the day when I am in trouble.",
+          "source": "圣经·诗篇 102:2 (KJV)（“不要隐藏你的脸”可考的圣经措辞）",
+          "translation": "我在急难的日子，求你不要向我掩面。",
+          "translationSource": ""
+        }
+      ]
+    },
+    "wheel_of_fortune": {
+      "name": "命运之轮",
+      "nameEn": "Wheel of Fortune",
+      "number": 10,
+      "arcana": "major",
+      "upright": [
+        {
+          "quote": "If Winter comes, can Spring be far behind?",
+          "source": "Percy Bysshe Shelley, Ode to the West Wind",
+          "translation": "冬天来了，春天还会远吗？",
+          "translationSource": ""
+        }
+      ],
+      "reversed": [
+        {
+          "quote": "This too will pass away.",
+          "source": "Edward FitzGerald, Solomon's Seal（波斯寓言转述）",
+          "translation": "这一切终将过去。",
+          "translationSource": ""
+        }
+      ]
+    },
+    "justice": {
+      "name": "正义",
+      "nameEn": "Justice",
+      "number": 11,
+      "arcana": "major",
+      "upright": [
+        {
+          "quote": "Whatsoever a man soweth, that shall he also reap.",
+          "source": "圣经·加拉太书 6:7 (KJV)",
+          "translation": "人种的是什么，收的也是什么。",
+          "translationSource": ""
+        }
+      ],
+      "reversed": [
+        {
+          "quote": "Prejudice is a great time saver. You can form opinions without having to get the facts.",
+          "source": "E. B. White",
+          "translation": "偏见是极好的省时之物，你无需了解事实就能形成观点。",
+          "translationSource": ""
+        }
+      ]
+    },
+    "the_hanged_man": {
+      "name": "倒吊人",
+      "nameEn": "The Hanged Man",
+      "number": 12,
+      "arcana": "major",
+      "upright": [
+        {
+          "quote": "If you change the way you look at things, the things you look at change.",
+          "source": "Wayne Dyer",
+          "translation": "改变看待事物的方式，所看之物便随之改变。",
+          "translationSource": ""
+        }
+      ],
+      "reversed": [
+        {
+          "quote": "Neither cast ye your pearls before swine.",
+          "source": "圣经·马太福音 7:6 (KJV)",
+          "translation": "也不要把你们的珍珠丢在猪前。",
+          "translationSource": ""
+        }
+      ]
+    },
+    "death": {
+      "name": "死神",
+      "nameEn": "Death",
+      "number": 13,
+      "arcana": "major",
+      "upright": [
+        {
+          "quote": "Every new beginning comes from some other beginning's end.",
+          "source": "Semisonic, Closing Time（词作 Dan Wilson；Seneca 归属无据）",
+          "translation": "每一个新的开始，都源自另一个开始的终结。",
+          "translationSource": ""
+        }
+      ],
+      "reversed": [
+        {
+          "quote": "Let the dead bury their dead.",
+          "source": "圣经·马太福音 8:22 (KJV)",
+          "translation": "任凭死人埋葬他们的死人。",
+          "translationSource": ""
+        }
+      ]
+    },
+    "temperance": {
+      "name": "节制",
+      "nameEn": "Temperance",
+      "number": 14,
+      "arcana": "major",
+      "upright": [
+        {
+          "quote": "Moderation in all things.",
+          "source": "古希腊格言（源自 Hesiod／Terence 传统）",
+          "translation": "凡事皆需有度。",
+          "translationSource": ""
+        }
+      ],
+      "reversed": [
+        {
+          "quote": "Those who lack self-control are destroyed by their own desires.",
+          "source": "亚里士多德思想转述（非逐字原文，honest 归属）",
+          "translation": "缺乏自制的人，终被自己的欲望所毁。",
+          "translationSource": ""
+        }
+      ]
+    },
+    "the_devil": {
+      "name": "恶魔",
+      "nameEn": "The Devil",
+      "number": 15,
+      "arcana": "major",
+      "upright": [
+        {
+          "quote": "And if you gaze long into an abyss, the abyss also gazes into you.",
+          "source": "Friedrich Nietzsche, Beyond Good and Evil §146",
+          "translation": "当你凝视深渊，深渊也在凝视你。",
+          "translationSource": ""
+        }
+      ],
+      "reversed": [
+        {
+          "quote": "Ye shall know the truth, and the truth shall make you free.",
+          "source": "圣经·约翰福音 8:32 (KJV)（“斩断锁链”意象的可考来源）",
+          "translation": "真理必叫你们得以自由。",
+          "translationSource": ""
+        }
+      ]
+    },
+    "the_tower": {
+      "name": "高塔",
+      "nameEn": "The Tower",
+      "number": 16,
+      "arcana": "major",
+      "upright": [
+        {
+          "quote": "Things fall apart; the centre cannot hold.",
+          "source": "W. B. Yeats, The Second Coming",
+          "translation": "万物分崩离析，中心难以为继。",
+          "translationSource": ""
+        }
+      ],
+      "reversed": [
+        {
+          "quote": "The truth will set you free, but first it will piss you off.",
+          "source": "Joe Klaas, The Twelve Steps to Happiness（1990；后经 Gloria Steinem 流传）",
+          "translation": "真相会让你自由，但它会先把你激怒。",
+          "translationSource": ""
+        }
+      ]
+    },
+    "the_star": {
+      "name": "星星",
+      "nameEn": "The Star",
+      "number": 17,
+      "arcana": "major",
+      "upright": [
+        {
+          "quote": "Hope is the thing with feathers.",
+          "source": "Emily Dickinson",
+          "translation": "希望是长着羽毛的东西。",
+          "translationSource": ""
+        }
+      ],
+      "reversed": [
+        {
+          "quote": "Do not go gentle into that good night.",
+          "source": "Dylan Thomas",
+          "translation": "不要温和地走进那个良夜。",
+          "translationSource": ""
+        }
+      ]
+    },
+    "the_moon": {
+      "name": "月亮",
+      "nameEn": "The Moon",
+      "number": 18,
+      "arcana": "major",
+      "upright": [
+        {
+          "quote": "Things are not always what they seem; the first appearance deceives many.",
+          "source": "Phaedrus, Fables",
+          "translation": "事物并不总如其表象，初见常欺骗众人。",
+          "translationSource": ""
+        }
+      ],
+      "reversed": [
+        {
+          "quote": "Three things cannot be long hidden: the sun, the moon, and the truth.",
+          "source": "佛教教义改写（源自 Narasu 1907 转述，常托名佛陀）",
+          "translation": "三样东西藏不久：太阳、月亮和真相。",
+          "translationSource": ""
+        }
+      ]
+    },
+    "the_sun": {
+      "name": "太阳",
+      "nameEn": "The Sun",
+      "number": 19,
+      "arcana": "major",
+      "upright": [
+        {
+          "quote": "Keep your face always toward the sunshine—and shadows will fall behind you.",
+          "source": "Walt Whitman（常见归属）",
+          "translation": "永远面朝阳光，阴影便会落在你身后。",
+          "translationSource": ""
+        }
+      ],
+      "reversed": [
+        {
+          "quote": "Was I deceived, or did a sable cloud turn forth her silver lining on the night?",
+          "source": "John Milton, Comus（“乌云银边”典源）",
+          "translation": "乌云亦有银边。",
+          "translationSource": ""
+        }
+      ]
+    },
+    "judgement": {
+      "name": "审判",
+      "nameEn": "Judgement",
+      "number": 20,
+      "arcana": "major",
+      "upright": [
+        {
+          "quote": "The time is always right to do what is right.",
+          "source": "Martin Luther King Jr.",
+          "translation": "做正确之事，永远是正确的时机。",
+          "translationSource": ""
+        }
+      ],
+      "reversed": [
+        {
+          "quote": "There are none so blind as those who will not see.",
+          "source": "John Heywood, Proverbs（1546；英语谚语）",
+          "translation": "最盲目的，莫过于不愿看见的人。",
+          "translationSource": ""
+        }
+      ]
+    },
+    "the_world": {
+      "name": "世界",
+      "nameEn": "The World",
+      "number": 21,
+      "arcana": "major",
+      "upright": [
+        {
+          "quote": "All's well that ends well.",
+          "source": "William Shakespeare, All's Well That Ends Well",
+          "translation": "结局好，一切都好。",
+          "translationSource": ""
+        }
+      ],
+      "reversed": [
+        {
+          "quote": "It is always darkest just before the day dawneth.",
+          "source": "Thomas Fuller, A Pisgah-Sight of Palestine",
+          "translation": "黎明之前最为黑暗。",
+          "translationSource": ""
+        }
+      ]
+    },
+    "wands_ace": {
+      "name": "权杖一",
+      "nameEn": "Ace of Wands",
+      "number": 1,
+      "arcana": "minor",
+      "upright": [
+        {
+          "quote": "Action is eloquence.",
+          "source": "William Shakespeare, Coriolanus",
+          "translation": "行动即是雄辩。",
+          "translationSource": ""
+        }
+      ],
+      "reversed": [
+        {
+          "quote": "A delayed game is eventually good, but a rushed game is forever bad.",
+          "source": "游戏业界格言（常被误托名宫本茂，无确证出处）",
+          "translation": "延期的游戏终会变好，仓促的游戏永远糟糕。",
+          "translationSource": ""
+        }
+      ]
+    },
+    "wands_2": {
+      "name": "权杖二",
+      "nameEn": "Two of Wands",
+      "number": 2,
+      "arcana": "minor",
+      "upright": [
+        {
+          "quote": "To be, or not to be, that is the question.",
+          "source": "William Shakespeare, Hamlet",
+          "translation": "生存还是毁灭，这是个问题。",
+          "translationSource": ""
+        }
+      ],
+      "reversed": [
+        {
+          "quote": "The woman that deliberates is lost.",
+          "source": "Joseph Addison, Cato（“犹豫者必失”典源）",
+          "translation": "犹豫者必失。",
+          "translationSource": ""
+        }
+      ]
+    },
+    "wands_3": {
+      "name": "权杖三",
+      "nameEn": "Three of Wands",
+      "number": 3,
+      "arcana": "minor",
+      "upright": [
+        {
+          "quote": "No man is an island, entire of itself.",
+          "source": "John Donne, Devotions upon Emergent Occasions, Meditation XVII",
+          "translation": "没有人是一座孤岛，独存于世。",
+          "translationSource": ""
+        }
+      ],
+      "reversed": [
+        {
+          "quote": "井蛙不可以语于海者，拘于虚也。",
+          "source": "庄子·秋水",
+          "translation": "You can't discuss the ocean with a well frog—he's limited by the space he lives in.",
+          "translationSource": "Burton Watson"
+        }
+      ]
+    },
+    "wands_4": {
+      "name": "权杖四",
+      "nameEn": "Four of Wands",
+      "number": 4,
+      "arcana": "minor",
+      "upright": [
+        {
+          "quote": "Eat, drink, and be merry.",
+          "source": "圣经·传道书 8:15 (KJV)",
+          "translation": "吃喝快乐。",
+          "translationSource": ""
+        }
+      ],
+      "reversed": [
+        {
+          "quote": "A house divided against itself cannot stand.",
+          "source": "Abraham Lincoln（1858 年演说；语出圣经·马可福音 3:25）",
+          "translation": "分裂的房子，立不住脚。",
+          "translationSource": ""
+        }
+      ]
+    },
+    "wands_5": {
+      "name": "权杖五",
+      "nameEn": "Five of Wands",
+      "number": 5,
+      "arcana": "minor",
+      "upright": [
+        {
+          "quote": "Conflict is the gadfly of thought.",
+          "source": "John Dewey, Human Nature and Conduct",
+          "translation": "冲突是思想的牛虻。",
+          "translationSource": ""
+        }
+      ],
+      "reversed": [
+        {
+          "quote": "Avoid lawsuits beyond all things; they pervert your conscience, impair your health, and dissipate your property.",
+          "source": "Honoré de Balzac",
+          "translation": "务必竭力避免诉讼，它腐蚀良知、损害健康、耗尽财产。",
+          "translationSource": ""
+        }
+      ]
+    },
+    "wands_6": {
+      "name": "权杖六",
+      "nameEn": "Six of Wands",
+      "number": 6,
+      "arcana": "minor",
+      "upright": [
+        {
+          "quote": "To the victor belong the spoils.",
+          "source": "William L. Marcy",
+          "translation": "战利品属于胜利者。",
+          "translationSource": ""
+        }
+      ],
+      "reversed": [
+        {
+          "quote": "Pride goeth before destruction, and an haughty spirit before a fall.",
+          "source": "圣经·箴言 16:18 (KJV)",
+          "translation": "骄傲在败坏之先，狂心在跌倒之前。",
+          "translationSource": ""
+        }
+      ]
+    },
+    "wands_7": {
+      "name": "权杖七",
+      "nameEn": "Seven of Wands",
+      "number": 7,
+      "arcana": "minor",
+      "upright": [
+        {
+          "quote": "Here I stand. I can do no other.",
+          "source": "Martin Luther（1521 沃尔姆斯议会，传统归属）",
+          "translation": "我站在这里，别无选择。",
+          "translationSource": ""
+        }
+      ],
+      "reversed": [
+        {
+          "quote": "The better part of valour is discretion.",
+          "source": "William Shakespeare, Henry IV, Part 1",
+          "translation": "谨慎乃勇武之上。",
+          "translationSource": ""
+        }
+      ]
+    },
+    "wands_8": {
+      "name": "权杖八",
+      "nameEn": "Eight of Wands",
+      "number": 8,
+      "arcana": "minor",
+      "upright": [
+        {
+          "quote": "Strike while the iron is hot.",
+          "source": "英语谚语（源自 Chaucer）",
+          "translation": "趁热打铁。",
+          "translationSource": ""
+        }
+      ],
+      "reversed": [
+        {
+          "quote": "Haste makes waste.",
+          "source": "英语谚语（John Heywood, Proverbs）",
+          "translation": "欲速则不达。",
+          "translationSource": ""
+        }
+      ]
+    },
+    "wands_9": {
+      "name": "权杖九",
+      "nameEn": "Nine of Wands",
+      "number": 9,
+      "arcana": "minor",
+      "upright": [
+        {
+          "quote": "The condition upon which God hath given liberty to man is eternal vigilance.",
+          "source": "John Philpot Curran（1790 都柏林演说；非 Jefferson）",
+          "translation": "上帝赐人自由的条件，是永恒的警惕。",
+          "translationSource": ""
+        }
+      ],
+      "reversed": [
+        {
+          "quote": "There is no shame in a strategic retreat.",
+          "source": "英语格言（常被误托名孙子，无对应孙子兵法原文）",
+          "translation": "战略性的撤退，并不可耻。",
+          "translationSource": ""
+        }
+      ]
+    },
+    "wands_10": {
+      "name": "权杖十",
+      "nameEn": "Ten of Wands",
+      "number": 10,
+      "arcana": "minor",
+      "upright": [
+        {
+          "quote": "Uneasy lies the head that wears a crown.",
+          "source": "William Shakespeare, Henry IV, Part 2",
+          "translation": "欲戴王冠，必承其重。",
+          "translationSource": ""
+        }
+      ],
+      "reversed": [
+        {
+          "quote": "It is the last straw that breaks the camel's back.",
+          "source": "英语谚语",
+          "translation": "压垮骆驼的，是最后一根稻草。",
+          "translationSource": ""
+        }
+      ]
+    },
+    "wands_page": {
+      "name": "权杖侍从",
+      "nameEn": "Page of Wands",
+      "number": "page",
+      "arcana": "minor",
+      "upright": [
+        {
+          "quote": "The greatest oak was once a little nut who held its ground.",
+          "source": "英语谚语（佚名励志格言）",
+          "translation": "最高大的橡树，曾是一颗坚守原地的小坚果。",
+          "translationSource": ""
+        }
+      ],
+      "reversed": [
+        {
+          "quote": "If wishes were horses, beggars would ride.",
+          "source": "苏格兰谚语",
+          "translation": "若愿望是马，乞丐皆能骑。",
+          "translationSource": ""
+        }
+      ]
+    },
+    "wands_knight": {
+      "name": "权杖骑士",
+      "nameEn": "Knight of Wands",
+      "number": "knight",
+      "arcana": "minor",
+      "upright": [
+        {
+          "quote": "Audentes fortuna iuvat.",
+          "source": "Virgil, Aeneid",
+          "translation": "幸运眷顾勇者。",
+          "translationSource": ""
+        }
+      ],
+      "reversed": [
+        {
+          "quote": "For fools rush in where angels fear to tread.",
+          "source": "Alexander Pope, An Essay on Criticism",
+          "translation": "天使止步之处，愚者贸然闯入。",
+          "translationSource": ""
+        }
+      ]
+    },
+    "wands_queen": {
+      "name": "权杖王后",
+      "nameEn": "Queen of Wands",
+      "number": "queen",
+      "arcana": "minor",
+      "upright": [
+        {
+          "quote": "She walks in beauty, like the night.",
+          "source": "Lord Byron",
+          "translation": "她走在美的光彩中，如夜色。",
+          "translationSource": ""
+        }
+      ],
+      "reversed": [
+        {
+          "quote": "O, beware, my lord, of jealousy; it is the green-eyed monster.",
+          "source": "William Shakespeare, Othello",
+          "translation": "主公，当心嫉妒，那是只绿眼怪物。",
+          "translationSource": ""
+        }
+      ]
+    },
+    "wands_king": {
+      "name": "权杖国王",
+      "nameEn": "King of Wands",
+      "number": "king",
+      "arcana": "minor",
+      "upright": [
+        {
+          "quote": "A leader is a dealer in hope.",
+          "source": "Napoleon Bonaparte",
+          "translation": "领导者，是希望的贩售者。",
+          "translationSource": ""
+        }
+      ],
+      "reversed": [
+        {
+          "quote": "Power tends to corrupt, and absolute power corrupts absolutely.",
+          "source": "Lord Acton",
+          "translation": "权力导致腐败，绝对权力导致绝对腐败。",
+          "translationSource": ""
+        }
+      ]
+    },
+    "cups_ace": {
+      "name": "圣杯一",
+      "nameEn": "Ace of Cups",
+      "number": 1,
+      "arcana": "minor",
+      "upright": [
+        {
+          "quote": "Let love in.",
+          "source": "现代格言（佚名）",
+          "translation": "让爱进来。",
+          "translationSource": ""
+        }
+      ],
+      "reversed": [
+        {
+          "quote": "The closed heart cannot receive.",
+          "source": "现代格言（佚名）",
+          "translation": "封闭的心，无法接纳。",
+          "translationSource": ""
+        }
+      ]
+    },
+    "cups_2": {
+      "name": "圣杯二",
+      "nameEn": "Two of Cups",
+      "number": 2,
+      "arcana": "minor",
+      "upright": [
+        {
+          "quote": "Two heads are better than one.",
+          "source": "英语谚语（John Heywood, Proverbs）",
+          "translation": "两人智慧胜过一人。",
+          "translationSource": ""
+        }
+      ],
+      "reversed": [
+        {
+          "quote": "镜与人俱去，镜归人不归。",
+          "source": "徐德言《题破镜诗》，唐·孟棨《本事诗·情感》",
+          "translation": "The mirror and its owner both departed; the mirror returns, but she does not.",
+          "translationSource": ""
+        }
+      ]
+    },
+    "cups_3": {
+      "name": "圣杯三",
+      "nameEn": "Three of Cups",
+      "number": 3,
+      "arcana": "minor",
+      "upright": [
+        {
+          "quote": "Shared joy is a double joy; shared sorrow is half a sorrow.",
+          "source": "瑞典谚语",
+          "translation": "分享的快乐是双倍的快乐，分担的悲伤是一半的悲伤。",
+          "translationSource": ""
+        }
+      ],
+      "reversed": [
+        {
+          "quote": "Evil communications corrupt good manners.",
+          "source": "圣经·哥林多前书 15:33 (KJV)（语出 Menander）",
+          "translation": "滥交败坏善行。",
+          "translationSource": ""
+        }
+      ]
+    },
+    "cups_4": {
+      "name": "圣杯四",
+      "nameEn": "Four of Cups",
+      "number": 4,
+      "arcana": "minor",
+      "upright": [
+        {
+          "quote": "Opportunities multiply as they are seized.",
+          "source": "英语格言（常被误托名孙子，无古典中文原文）",
+          "translation": "机会会在被把握时不断增多。",
+          "translationSource": ""
+        }
+      ],
+      "reversed": [
+        {
+          "quote": "Carpe diem, quam minimum credula postero.",
+          "source": "Horace, Odes 1.11",
+          "translation": "及时行乐，莫信明日。",
+          "translationSource": ""
+        }
+      ]
+    },
+    "cups_5": {
+      "name": "圣杯五",
+      "nameEn": "Five of Cups",
+      "number": 5,
+      "arcana": "minor",
+      "upright": [
+        {
+          "quote": "It is no use crying over spilt milk.",
+          "source": "英语谚语（James Howell, Proverbs）",
+          "translation": "覆水难收，徒泣无益。",
+          "translationSource": ""
+        }
+      ],
+      "reversed": [
+        {
+          "quote": "Time heals all wounds.",
+          "source": "英语谚语（源自 Chaucer“tyme heeleth”）",
+          "translation": "时间治愈一切创伤。",
+          "translationSource": ""
+        }
+      ]
+    },
+    "cups_6": {
+      "name": "圣杯六",
+      "nameEn": "Six of Cups",
+      "number": 6,
+      "arcana": "minor",
+      "upright": [
+        {
+          "quote": "The Child is father of the Man.",
+          "source": "William Wordsworth, My Heart Leaps Up",
+          "translation": "儿童是成人之父。",
+          "translationSource": ""
+        }
+      ],
+      "reversed": [
+        {
+          "quote": "Nostalgia is a file that removes the rough edges from the good old days.",
+          "source": "Doug Larson",
+          "translation": "怀旧是一把锉刀，磨去旧日时光的粗粝棱角。",
+          "translationSource": ""
+        }
+      ]
+    },
+    "cups_7": {
+      "name": "圣杯七",
+      "nameEn": "Seven of Cups",
+      "number": 7,
+      "arcana": "minor",
+      "upright": [
+        {
+          "quote": "All that glisters is not gold.",
+          "source": "William Shakespeare, The Merchant of Venice",
+          "translation": "闪光的并非都是金子。",
+          "translationSource": ""
+        }
+      ],
+      "reversed": [
+        {
+          "quote": "If you chase two rabbits, you will not catch either one.",
+          "source": "谚语（佚名）",
+          "translation": "同时追两只兔子，一只也抓不到。",
+          "translationSource": ""
+        }
+      ]
+    },
+    "cups_8": {
+      "name": "圣杯八",
+      "nameEn": "Eight of Cups",
+      "number": 8,
+      "arcana": "minor",
+      "upright": [
+        {
+          "quote": "Sometimes you have to walk away to see things clearly.",
+          "source": "现代格言（佚名）",
+          "translation": "有时你必须离开，才能看得清楚。",
+          "translationSource": ""
+        }
+      ],
+      "reversed": [
+        {
+          "quote": "Better the devil you know than the devil you don't.",
+          "source": "英语谚语",
+          "translation": "已知的魔鬼，胜过未知的魔鬼。",
+          "translationSource": ""
+        }
+      ]
+    },
+    "cups_9": {
+      "name": "圣杯九",
+      "nameEn": "Nine of Cups",
+      "number": 9,
+      "arcana": "minor",
+      "upright": [
+        {
+          "quote": "Ask, and it shall be given you.",
+          "source": "圣经·马太福音 7:7 (KJV)",
+          "translation": "祈求，就给你们。",
+          "translationSource": ""
+        }
+      ],
+      "reversed": [
+        {
+          "quote": "Be careful what you wish for, lest it come true.",
+          "source": "谚语（佚名）",
+          "translation": "小心你的愿望，免得它成真。",
+          "translationSource": ""
+        }
+      ]
+    },
+    "cups_10": {
+      "name": "圣杯十",
+      "nameEn": "Ten of Cups",
+      "number": 10,
+      "arcana": "minor",
+      "upright": [
+        {
+          "quote": "Home is where the heart is.",
+          "source": "英语谚语（常被归于 Pliny the Elder）",
+          "translation": "心之所在，即是家。",
+          "translationSource": ""
+        }
+      ],
+      "reversed": [
+        {
+          "quote": "Blood is thicker than water, but loyalty is thicker than blood.",
+          "source": "英语谚语＋现代延伸（后半句为现代添加）",
+          "translation": "血浓于水，而忠诚浓于血。",
+          "translationSource": ""
+        }
+      ]
+    },
+    "cups_page": {
+      "name": "圣杯侍从",
+      "nameEn": "Page of Cups",
+      "number": "page",
+      "arcana": "minor",
+      "upright": [
+        {
+          "quote": "Listen to the wind, it talks. Listen to the silence, it speaks.",
+          "source": "美洲原住民谚语（常见归属）",
+          "translation": "倾听风，它在诉说；倾听寂静，它在发声。",
+          "translationSource": ""
+        }
+      ],
+      "reversed": [
+        {
+          "quote": "But I will wear my heart upon my sleeve.",
+          "source": "William Shakespeare, Othello",
+          "translation": "我却要把心戴在袖口上。",
+          "translationSource": ""
+        }
+      ]
+    },
+    "cups_knight": {
+      "name": "圣杯骑士",
+      "nameEn": "Knight of Cups",
+      "number": "knight",
+      "arcana": "minor",
+      "upright": [
+        {
+          "quote": "Omnia vincit amor.",
+          "source": "Virgil, Eclogues X",
+          "translation": "爱征服一切。",
+          "translationSource": ""
+        }
+      ],
+      "reversed": [
+        {
+          "quote": "A honey tongue, a heart of gall.",
+          "source": "Edmund Spenser, The Faerie Queene",
+          "translation": "口蜜腹剑。",
+          "translationSource": ""
+        }
+      ]
+    },
+    "cups_queen": {
+      "name": "圣杯王后",
+      "nameEn": "Queen of Cups",
+      "number": "queen",
+      "arcana": "minor",
+      "upright": [
+        {
+          "quote": "Compassion is the basis of morality.",
+          "source": "Arthur Schopenhauer",
+          "translation": "同情是道德的基础。",
+          "translationSource": ""
+        }
+      ],
+      "reversed": [
+        {
+          "quote": "Don't set yourself on fire trying to keep others warm.",
+          "source": "Penny Reid, Beard in Mind",
+          "translation": "别为了给别人取暖，而点燃自己。",
+          "translationSource": ""
+        }
+      ]
+    },
+    "cups_king": {
+      "name": "圣杯国王",
+      "nameEn": "King of Cups",
+      "number": "king",
+      "arcana": "minor",
+      "upright": [
+        {
+          "quote": "Still waters run deep.",
+          "source": "英语谚语（拉丁语源 Quintus Curtius Rufus）",
+          "translation": "静水流深。",
+          "translationSource": ""
+        }
+      ],
+      "reversed": [
+        {
+          "quote": "Ira furor brevis est.",
+          "source": "Horace, Epistles 1.2",
+          "translation": "愤怒是短暂的疯狂。",
+          "translationSource": ""
+        }
+      ]
+    },
+    "swords_ace": {
+      "name": "宝剑一",
+      "nameEn": "Ace of Swords",
+      "number": 1,
+      "arcana": "minor",
+      "upright": [
+        {
+          "quote": "The pen is mightier than the sword.",
+          "source": "Edward Bulwer-Lytton, Richelieu",
+          "translation": "笔胜于剑。",
+          "translationSource": ""
+        }
+      ],
+      "reversed": [
+        {
+          "quote": "Confusion is a word we have invented for an order which is not understood.",
+          "source": "Henry Miller, Tropic of Capricorn",
+          "translation": "混乱，是我们为尚未理解的秩序所发明的词。",
+          "translationSource": ""
+        }
+      ]
+    },
+    "swords_2": {
+      "name": "宝剑二",
+      "nameEn": "Two of Swords",
+      "number": 2,
+      "arcana": "minor",
+      "upright": [
+        {
+          "quote": "You cannot have your cake and eat it too.",
+          "source": "英语谚语（John Heywood, Proverbs）",
+          "translation": "鱼与熊掌不可兼得。",
+          "translationSource": ""
+        }
+      ],
+      "reversed": [
+        {
+          "quote": "When you have to make a choice and don't make it, that is in itself a choice.",
+          "source": "William James（常见归属）",
+          "translation": "当你必须抉择却不抉择，这本身就是一种抉择。",
+          "translationSource": ""
+        }
+      ]
+    },
+    "swords_3": {
+      "name": "宝剑三",
+      "nameEn": "Three of Swords",
+      "number": 3,
+      "arcana": "minor",
+      "upright": [
+        {
+          "quote": "The truth hurts, but a lie kills.",
+          "source": "谚语（佚名）",
+          "translation": "真相伤人，谎言杀人。",
+          "translationSource": ""
+        }
+      ],
+      "reversed": [
+        {
+          "quote": "Turn your wounds into wisdom.",
+          "source": "Oprah Winfrey",
+          "translation": "把你的伤痛，化为智慧。",
+          "translationSource": ""
+        }
+      ]
+    },
+    "swords_4": {
+      "name": "宝剑四",
+      "nameEn": "Four of Swords",
+      "number": 4,
+      "arcana": "minor",
+      "upright": [
+        {
+          "quote": "Speech is of Time, Silence is of Eternity.",
+          "source": "Thomas Carlyle, Sartor Resartus（“沉默是金”典源）",
+          "translation": "言语属于时间，沉默属于永恒。",
+          "translationSource": ""
+        }
+      ],
+      "reversed": [
+        {
+          "quote": "Awake, arise, or be for ever fall'n!",
+          "source": "John Milton, Paradise Lost",
+          "translation": "醒来，站起，否则永堕深渊！",
+          "translationSource": ""
+        }
+      ]
+    },
+    "swords_5": {
+      "name": "宝剑五",
+      "nameEn": "Five of Swords",
+      "number": 5,
+      "arcana": "minor",
+      "upright": [
+        {
+          "quote": "Another such victory over the Romans, and we are undone.",
+          "source": "Plutarch, Life of Pyrrhus（“皮洛士式惨胜”史源）",
+          "translation": "再有一次这样对罗马人的胜利，我们就彻底完了。",
+          "translationSource": ""
+        }
+      ],
+      "reversed": [
+        {
+          "quote": "He who fights and runs away may live to fight another day.",
+          "source": "Oliver Goldsmith（英语谚语，Demosthenes 传统）",
+          "translation": "战而走者，留得青山，可再战。",
+          "translationSource": ""
+        }
+      ]
+    },
+    "swords_6": {
+      "name": "宝剑六",
+      "nameEn": "Six of Swords",
+      "number": 6,
+      "arcana": "minor",
+      "upright": [
+        {
+          "quote": "Smooth seas do not make skilful sailors.",
+          "source": "英语谚语（常被归于非洲谚语／Roosevelt）",
+          "translation": "平静的海，造不出娴熟的水手。",
+          "translationSource": ""
+        }
+      ],
+      "reversed": [
+        {
+          "quote": "Wherever you go, there you are.",
+          "source": "现代格言（常被误托名孔子；Jon Kabat-Zinn 书名）",
+          "translation": "无论你走到哪里，你都在那里。",
+          "translationSource": ""
+        }
+      ]
+    },
+    "swords_7": {
+      "name": "宝剑七",
+      "nameEn": "Seven of Swords",
+      "number": 7,
+      "arcana": "minor",
+      "upright": [
+        {
+          "quote": "兵者，诡道也。",
+          "source": "孙子兵法·始计篇",
+          "translation": "All warfare is based on deception.",
+          "translationSource": "Lionel Giles"
+        }
+      ],
+      "reversed": [
+        {
+          "quote": "Honesty is the best policy.",
+          "source": "英语谚语（常被归于 Edwin Sandys／Benjamin Franklin）",
+          "translation": "诚实是上策。",
+          "translationSource": ""
+        }
+      ]
+    },
+    "swords_8": {
+      "name": "宝剑八",
+      "nameEn": "Eight of Swords",
+      "number": 8,
+      "arcana": "minor",
+      "upright": [
+        {
+          "quote": "We often give our enemies the means of our own destruction.",
+          "source": "伊索寓言（“我们是自己最大的敌人”寓意之源）",
+          "translation": "我们常把毁灭自己的武器，递到敌人手中。",
+          "translationSource": ""
+        }
+      ],
+      "reversed": [
+        {
+          "quote": "Freedom is not given, it is taken.",
+          "source": "英语格言（佚名，归属未确证）",
+          "translation": "自由不是被赐予的，而是被争取的。",
+          "translationSource": ""
+        }
+      ]
+    },
+    "swords_9": {
+      "name": "宝剑九",
+      "nameEn": "Nine of Swords",
+      "number": 9,
+      "arcana": "minor",
+      "upright": [
+        {
+          "quote": "Worry often gives a small thing a big shadow.",
+          "source": "瑞典谚语",
+          "translation": "忧虑常给小事投下巨大的阴影。",
+          "translationSource": ""
+        }
+      ],
+      "reversed": [
+        {
+          "quote": "It is always darkest just before the day dawneth.",
+          "source": "Thomas Fuller, A Pisgah-Sight of Palestine",
+          "translation": "夜最黑时，黎明将至。",
+          "translationSource": ""
+        }
+      ]
+    },
+    "swords_10": {
+      "name": "宝剑十",
+      "nameEn": "Ten of Swords",
+      "number": 10,
+      "arcana": "minor",
+      "upright": [
+        {
+          "quote": "When you hit rock bottom, the only way is up.",
+          "source": "谚语（佚名）",
+          "translation": "触底之后，唯一的方向是向上。",
+          "translationSource": ""
+        }
+      ],
+      "reversed": [
+        {
+          "quote": "Cut short your losses, let your profits run on.",
+          "source": "David Ricardo 的黄金法则（James Grant, The Great Metropolis 记述）",
+          "translation": "截断亏损，让利润奔跑。",
+          "translationSource": ""
+        }
+      ]
+    },
+    "swords_page": {
+      "name": "宝剑侍从",
+      "nameEn": "Page of Swords",
+      "number": "page",
+      "arcana": "minor",
+      "upright": [
+        {
+          "quote": "Curiosity killed the cat, but satisfaction brought it back.",
+          "source": "英语谚语",
+          "translation": "好奇害死猫，满足又救回它。",
+          "translationSource": ""
+        }
+      ],
+      "reversed": [
+        {
+          "quote": "Speech is silver, silence is golden.",
+          "source": "英语谚语（Thomas Carlyle 转述瑞士铭文）",
+          "translation": "雄辩是银，沉默是金。",
+          "translationSource": ""
+        }
+      ]
+    },
+    "swords_knight": {
+      "name": "宝剑骑士",
+      "nameEn": "Knight of Swords",
+      "number": "knight",
+      "arcana": "minor",
+      "upright": [
+        {
+          "quote": "Veni, vidi, vici.",
+          "source": "Julius Caesar",
+          "translation": "我来，我见，我征服。",
+          "translationSource": ""
+        }
+      ],
+      "reversed": [
+        {
+          "quote": "For fools rush in where angels fear to tread.",
+          "source": "Alexander Pope, An Essay on Criticism",
+          "translation": "天使止步之处，愚者贸然闯入。",
+          "translationSource": ""
+        }
+      ]
+    },
+    "swords_queen": {
+      "name": "宝剑王后",
+      "nameEn": "Queen of Swords",
+      "number": "queen",
+      "arcana": "minor",
+      "upright": [
+        {
+          "quote": "Logic is the anatomy of thought.",
+          "source": "John Locke（常见归属，无原始出处确证）",
+          "translation": "逻辑是思想的解剖学。",
+          "translationSource": ""
+        }
+      ],
+      "reversed": [
+        {
+          "quote": "Words can be like weapons.",
+          "source": "现代格言（佚名）",
+          "translation": "言语可以像武器一样伤人。",
+          "translationSource": ""
+        }
+      ]
+    },
+    "swords_king": {
+      "name": "宝剑国王",
+      "nameEn": "King of Swords",
+      "number": "king",
+      "arcana": "minor",
+      "upright": [
+        {
+          "quote": "Fiat justitia ruat caelum.",
+          "source": "拉丁法谚（与 Lord Mansfield 相关联）",
+          "translation": "纵使天塌，也要伸张正义。",
+          "translationSource": ""
+        }
+      ],
+      "reversed": [
+        {
+          "quote": "Absolute power corrupts absolutely.",
+          "source": "Lord Acton",
+          "translation": "绝对的权力，绝对地腐败。",
+          "translationSource": ""
+        }
+      ]
+    },
+    "pentacles_ace": {
+      "name": "星币一",
+      "nameEn": "Ace of Pentacles",
+      "number": 1,
+      "arcana": "minor",
+      "upright": [
+        {
+          "quote": "Opportunity knocks but once.",
+          "source": "英语谚语",
+          "translation": "机会只敲一次门。",
+          "translationSource": ""
+        }
+      ],
+      "reversed": [
+        {
+          "quote": "A fool and his money are soon parted.",
+          "source": "Thomas Tusser",
+          "translation": "蠢人的钱，很快就花光。",
+          "translationSource": ""
+        }
+      ]
+    },
+    "pentacles_2": {
+      "name": "星币二",
+      "nameEn": "Two of Pentacles",
+      "number": 2,
+      "arcana": "minor",
+      "upright": [
+        {
+          "quote": "Adapt or perish, now as ever, is nature's inexorable imperative.",
+          "source": "H. G. Wells",
+          "translation": "适应或灭亡，是自然不可违抗的律令。",
+          "translationSource": ""
+        }
+      ],
+      "reversed": [
+        {
+          "quote": "No man can serve two masters.",
+          "source": "圣经·马太福音 6:24 (KJV)",
+          "translation": "一个人不能侍奉两个主。",
+          "translationSource": ""
+        }
+      ]
+    },
+    "pentacles_3": {
+      "name": "星币三",
+      "nameEn": "Three of Pentacles",
+      "number": 3,
+      "arcana": "minor",
+      "upright": [
+        {
+          "quote": "Many hands make light work.",
+          "source": "英语谚语（John Heywood, Proverbs）",
+          "translation": "人多好办事。",
+          "translationSource": ""
+        }
+      ],
+      "reversed": [
+        {
+          "quote": "If you want a thing done well, do it yourself.",
+          "source": "英语谚语（常被归于 Napoleon／Charles-Guillaume Étienne）",
+          "translation": "想把事做好，就自己动手。",
+          "translationSource": ""
+        }
+      ]
+    },
+    "pentacles_4": {
+      "name": "星币四",
+      "nameEn": "Four of Pentacles",
+      "number": 4,
+      "arcana": "minor",
+      "upright": [
+        {
+          "quote": "A penny saved is a penny got.",
+          "source": "英语谚语（常被归于 Benjamin Franklin）",
+          "translation": "省一分，即赚一分。",
+          "translationSource": ""
+        }
+      ],
+      "reversed": [
+        {
+          "quote": "Money is like muck, not good except it be spread.",
+          "source": "Francis Bacon, Of Seditions and Troubles",
+          "translation": "金钱如粪土，唯散播方有益。",
+          "translationSource": ""
+        }
+      ]
+    },
+    "pentacles_5": {
+      "name": "星币五",
+      "nameEn": "Five of Pentacles",
+      "number": 5,
+      "arcana": "minor",
+      "upright": [
+        {
+          "quote": "A friend in need is a friend indeed.",
+          "source": "英语谚语（拉丁语源 Ennius）",
+          "translation": "患难见真情。",
+          "translationSource": ""
+        }
+      ],
+      "reversed": [
+        {
+          "quote": "After a storm comes a calm.",
+          "source": "英语谚语（Matthew Henry, Commentary）",
+          "translation": "暴风雨之后，便是宁静。",
+          "translationSource": ""
+        }
+      ]
+    },
+    "pentacles_6": {
+      "name": "星币六",
+      "nameEn": "Six of Pentacles",
+      "number": 6,
+      "arcana": "minor",
+      "upright": [
+        {
+          "quote": "It is more blessed to give than to receive.",
+          "source": "圣经·使徒行传 20:35 (KJV)",
+          "translation": "施比受更为有福。",
+          "translationSource": ""
+        }
+      ],
+      "reversed": [
+        {
+          "quote": "There ain't no such thing as a free lunch.",
+          "source": "经济学格言（Robert A. Heinlein, The Moon Is a Harsh Mistress 推广）",
+          "translation": "天下没有免费的午餐。",
+          "translationSource": ""
+        }
+      ]
+    },
+    "pentacles_7": {
+      "name": "星币七",
+      "nameEn": "Seven of Pentacles",
+      "number": 7,
+      "arcana": "minor",
+      "upright": [
+        {
+          "quote": "Patience is bitter, but its fruit is sweet.",
+          "source": "格言（最早见于 John Chardin 1711；Aristotle／Rousseau 归属无据）",
+          "translation": "耐心是苦的，但它的果实是甜的。",
+          "translationSource": ""
+        }
+      ],
+      "reversed": [
+        {
+          "quote": "Don't beat a dead horse.",
+          "source": "英语谚语",
+          "translation": "莫鞭打死马，白费气力。",
+          "translationSource": ""
+        }
+      ]
+    },
+    "pentacles_8": {
+      "name": "星币八",
+      "nameEn": "Eight of Pentacles",
+      "number": 8,
+      "arcana": "minor",
+      "upright": [
+        {
+          "quote": "Genius is one percent inspiration and ninety-nine percent perspiration.",
+          "source": "Thomas Edison",
+          "translation": "天才是百分之一的灵感，加百分之九十九的汗水。",
+          "translationSource": ""
+        }
+      ],
+      "reversed": [
+        {
+          "quote": "Working hard is not the same as working smart.",
+          "source": "现代格言（佚名）",
+          "translation": "努力工作，不等于聪明工作。",
+          "translationSource": ""
+        }
+      ]
+    },
+    "pentacles_9": {
+      "name": "星币九",
+      "nameEn": "Nine of Pentacles",
+      "number": 9,
+      "arcana": "minor",
+      "upright": [
+        {
+          "quote": "For a man's house is his castle.",
+          "source": "Edward Coke, The Institutes of the Laws of England",
+          "translation": "一个人的家，就是他的城堡。",
+          "translationSource": ""
+        }
+      ],
+      "reversed": [
+        {
+          "quote": "What shall it profit a man, if he shall gain the whole world, and lose his own soul?",
+          "source": "圣经·马可福音 8:36 (KJV)",
+          "translation": "人若赚得全世界，赔上自己的灵魂，有什么益处？",
+          "translationSource": ""
+        }
+      ]
+    },
+    "pentacles_10": {
+      "name": "星币十",
+      "nameEn": "Ten of Pentacles",
+      "number": 10,
+      "arcana": "minor",
+      "upright": [
+        {
+          "quote": "Rome was not built in a day.",
+          "source": "英语谚语（John Heywood, Proverbs；源自法语谚语）",
+          "translation": "罗马非一日建成。",
+          "translationSource": ""
+        }
+      ],
+      "reversed": [
+        {
+          "quote": "君子之泽，五世而斩。",
+          "source": "孟子·离娄下",
+          "translation": "The influence of a sovereign will terminate in the fifth generation.",
+          "translationSource": "James Legge"
+        }
+      ]
+    },
+    "pentacles_page": {
+      "name": "星币侍从",
+      "nameEn": "Page of Pentacles",
+      "number": "page",
+      "arcana": "minor",
+      "upright": [
+        {
+          "quote": "Knowledge itself is power.",
+          "source": "Francis Bacon, Meditationes Sacrae（“scientia potentia est”）",
+          "translation": "知识本身就是力量。",
+          "translationSource": ""
+        }
+      ],
+      "reversed": [
+        {
+          "quote": "Actions speak louder than words.",
+          "source": "英语谚语（常被归于 Abraham Lincoln，实更早）",
+          "translation": "事实胜于雄辩。",
+          "translationSource": ""
+        }
+      ]
+    },
+    "pentacles_knight": {
+      "name": "星币骑士",
+      "nameEn": "Knight of Pentacles",
+      "number": "knight",
+      "arcana": "minor",
+      "upright": [
+        {
+          "quote": "Slow and steady wins the race.",
+          "source": "伊索寓言《龟兔赛跑》",
+          "translation": "稳扎稳打，方能制胜。",
+          "translationSource": ""
+        }
+      ],
+      "reversed": [
+        {
+          "quote": "A foolish consistency is the hobgoblin of little minds.",
+          "source": "Ralph Waldo Emerson, Self-Reliance",
+          "translation": "愚蠢的一致性，是狭隘心灵的魔障。",
+          "translationSource": ""
+        }
+      ]
+    },
+    "pentacles_queen": {
+      "name": "星币王后",
+      "nameEn": "Queen of Pentacles",
+      "number": "queen",
+      "arcana": "minor",
+      "upright": [
+        {
+          "quote": "Health is wealth.",
+          "source": "英语谚语（常被归于 Virgil／Emerson）",
+          "translation": "健康即财富。",
+          "translationSource": ""
+        }
+      ],
+      "reversed": [
+        {
+          "quote": "Money cannot buy happiness.",
+          "source": "英语谚语",
+          "translation": "金钱买不到幸福。",
+          "translationSource": ""
+        }
+      ]
+    },
+    "pentacles_king": {
+      "name": "星币国王",
+      "nameEn": "King of Pentacles",
+      "number": "king",
+      "arcana": "minor",
+      "upright": [
+        {
+          "quote": "Money makes the world go round.",
+          "source": "Kander & Ebb, Cabaret（音乐剧《Money Song》）",
+          "translation": "金钱让世界运转。",
+          "translationSource": ""
+        }
+      ],
+      "reversed": [
+        {
+          "quote": "Greed is a bottomless pit which exhausts the person in an endless effort to satisfy the need without ever reaching satisfaction.",
+          "source": "Erich Fromm, Escape from Freedom",
+          "translation": "贪婪是无底洞，让人在无尽的索求中精疲力竭，永无满足。",
+          "translationSource": ""
+        }
+      ]
+    }
+  }
+}

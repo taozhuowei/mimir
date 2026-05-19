@@ -62,7 +62,7 @@ describe('GET /api/v1/cards', () => {
     expect(res.body.cards).toHaveLength(78)
   })
 
-  it('each card satisfies TarotCardInfo shape', async () => {
+  it('each card satisfies TarotCardInfo shape (face data only)', async () => {
     const res = await request(app).get('/api/v1/cards')
     for (const card of res.body.cards) {
       expect(typeof card.id).toBe('string')
@@ -71,14 +71,10 @@ describe('GET /api/v1/cards', () => {
       expect(typeof card.number).toBe('number')
       expect(['major', 'minor']).toContain(card.type)
       expect(typeof card.image).toBe('string')
-      // upright meaning
-      expect(Array.isArray(card.upright.keywords)).toBe(true)
-      expect(typeof card.upright.meaning).toBe('string')
-      expect(['positive', 'negative', 'neutral']).toContain(card.upright.sentiment)
-      // reversed meaning
-      expect(Array.isArray(card.reversed.keywords)).toBe(true)
-      expect(typeof card.reversed.meaning).toBe('string')
-      expect(['positive', 'negative', 'neutral']).toContain(card.reversed.sentiment)
+      // Interpretation data was removed — cards no longer carry
+      // upright/reversed keywords/meaning/sentiment.
+      expect(card.upright).toBeUndefined()
+      expect(card.reversed).toBeUndefined()
     }
   })
 
@@ -122,7 +118,10 @@ describe('GET /api/v1/cards', () => {
 // Request body: { spreadKind?: 'single_card' }   (defaults to single_card)
 // Expected response shape:
 //   { drawn:   [{ cardId: string, position: 'upright' | 'reversed' }],
-//     reading: { result: 'positive'|'negative', score: number, cardDetails: CardDetail[] } }
+//     reading: { cardDetails: [{ card, position,
+//                 answer: { quote, translation, source } }] } }
+// The `reading` key is retained for protocol stability; the product term
+// is 答案 (the Answer).
 // ---------------------------------------------------------------------------
 
 describe('POST /api/v1/divinations', () => {
@@ -158,23 +157,31 @@ describe('POST /api/v1/divinations', () => {
     expect(['upright', 'reversed']).toContain(res.body.drawn[0].position)
   })
 
-  it('reading satisfies ReadingResult shape', async () => {
+  it('reading satisfies ReadingResult shape (Answer-based, no scoring)', async () => {
     const res = await request(app).post('/api/v1/divinations').send({})
-    expect(['positive', 'negative']).toContain(res.body.reading.result)
-    expect(typeof res.body.reading.score).toBe('number')
+    expect(res.body.reading.result).toBeUndefined()
+    expect(res.body.reading.score).toBeUndefined()
     expect(Array.isArray(res.body.reading.cardDetails)).toBe(true)
     expect(res.body.reading.cardDetails).toHaveLength(1)
   })
 
-  it('cardDetails entries satisfy CardDetail shape', async () => {
+  it('cardDetails entries satisfy CardDetail shape (card + position + answer)', async () => {
     const res = await request(app).post('/api/v1/divinations').send({})
     for (const detail of res.body.reading.cardDetails) {
       expect(['upright', 'reversed']).toContain(detail.position)
-      expect(typeof detail.meaning).toBe('string')
-      expect(detail.meaning.length).toBeGreaterThan(0)
       expect(typeof detail.card.id).toBe('string')
       expect(typeof detail.card.image).toBe('string')
       expect(['major', 'minor']).toContain(detail.card.type)
+      expect(detail.meaning).toBeUndefined()
+      // answer = quote shown big, translation small, source prefixed.
+      expect(Object.keys(detail.answer).sort()).toEqual([
+        'quote',
+        'source',
+        'translation',
+      ])
+      expect(detail.answer.quote.length).toBeGreaterThan(0)
+      expect(detail.answer.translation.length).toBeGreaterThan(0)
+      expect(detail.answer.source.length).toBeGreaterThan(0)
     }
   })
 

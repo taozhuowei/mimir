@@ -22,8 +22,8 @@ import type {
 
 /**
  * Result of a complete divination: drawn cards (with images resolved) plus
- * the server's reading. Frontend animations consume `drawn`; the result
- * panel consumes `reading`.
+ * the server's reading (the 答案 / Answer per card). Frontend animations
+ * consume `drawn`; the answer card consumes `reading`.
  */
 export interface Divination {
   spreadKind: SpreadKind
@@ -33,9 +33,9 @@ export interface Divination {
 
 /**
  * Hydrate a server-returned drawn entry into a full `DrawnResult`. We need
- * the user-facing card metadata (image, name, meanings) on the client, so
- * the reading we get back already carries the card object — we reuse it
- * here to avoid a second round-trip to `/api/v1/cards`.
+ * the user-facing card face data (image, name) on the client, so the
+ * reading we get back already carries the card object — we reuse it here
+ * to avoid a second round-trip to `/api/v1/cards`.
  */
 function hydrateDrawn(
   serverDrawn: DivinationResponse['drawn'],

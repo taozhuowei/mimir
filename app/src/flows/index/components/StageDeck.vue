@@ -80,7 +80,6 @@ const animCtrl = inject<UseAnimationControllerReturn>('animationController')!
 const phase = inject<Ref<DivinationPhase>>('appPhase')!
 const tarotStore = useTarotStore()
 const themeStore = useThemeStore()
-const isWide = inject<{ value: boolean }>('isWide', { value: false })
 
 const cardBack = computed(() => themeStore.cardBackImage)
 
@@ -90,14 +89,15 @@ const cardBack = computed(() => themeStore.cardBackImage)
 const isIdle = computed(() => phase.value === 'idle')
 
 /**
- * Vertical lift applied to the result-stage card when the bottom drawer
- * opens. Mirrors the legacy DivinationDeck behaviour — the GSAP rig
- * anchors the card at the draw-container midpoint, so without a lift the
- * drawer would cover half the result. Lift = drawer-half + breathing
- * margin; wide branch keeps lift = 0 (side panel, not bottom drawer).
+ * Vertical lift applied to the result-stage card so the answer struck
+ * below it (AnswerInscription, rendered in MainSurface's answer-zone) has
+ * room. The GSAP rig anchors the card at the draw-container midpoint, so
+ * without a lift the answer would sit under the card. Lift = the
+ * draw-stage virtual-drawer half + a breathing margin. Applied on all
+ * widths now that the side-panel split is gone.
  */
 const resultCardLiftY = computed(() => {
-  if (!animCtrl.showResults.value || isWide.value) return 0
+  if (!animCtrl.showResults.value) return 0
   try {
     const drawLayout = animCtrl.getSceneLayout('draw_stage')
     return Math.max(

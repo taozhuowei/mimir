@@ -15,10 +15,10 @@
 
 export type {
   CardPosition,
-  TarotCardMeaning,
   TarotCardInfo,
   DrawnResult,
   DivinationDrawnEntry,
+  AnswerEntry,
   ReadingCardDetail,
   ReadingResult,
   DivinationResponse,

@@ -18,8 +18,8 @@ import { createPinia, setActivePinia } from 'pinia'
 import { useTarotStore } from '../src/core/store/tarot'
 import type { DrawnResult, ReadingResult, TarotCardInfo } from '../src/core/utils/tarot_reading_types_shim'
 
-// Helper to create minimal valid TarotCardInfo
-function makeCard(id: string, sentiment: 'positive' | 'negative' | 'neutral' = 'positive'): TarotCardInfo {
+// Helper to create minimal valid TarotCardInfo (face data only).
+function makeCard(id: string): TarotCardInfo {
   return {
     id,
     name: id,
@@ -27,8 +27,6 @@ function makeCard(id: string, sentiment: 'positive' | 'negative' | 'neutral' = '
     number: 0,
     type: 'major',
     image: `http://localhost:4124/static/themes/golden_dawn/tarot/major/major_arcana_00_${id}.jpeg`,
-    upright: { keywords: [], meaning: `${id} upright`, sentiment },
-    reversed: { keywords: [], meaning: `${id} reversed`, sentiment: sentiment === 'positive' ? 'negative' : 'positive' },
   }
 }
 
@@ -38,12 +36,14 @@ function makeDrawn(id = 'card_a'): DrawnResult[] {
 
 function makeReadingResult(drawn: DrawnResult[]): ReadingResult {
   return {
-    result: 'positive',
-    score: 3,
     cardDetails: drawn.map(d => ({
       card: d.card,
       position: d.position,
-      meaning: d.position === 'upright' ? d.card.upright.meaning : d.card.reversed.meaning,
+      answer: {
+        quote: `${d.card.id} quote`,
+        translation: `${d.card.id} 译文`,
+        source: `${d.card.id} 出处`,
+      },
     })),
   }
 }
