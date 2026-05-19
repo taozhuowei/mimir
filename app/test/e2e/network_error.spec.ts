@@ -1,9 +1,11 @@
 import { test, expect } from '@playwright/test'
 
 /**
- * Verifies the network-failure recovery path: when the reading API returns
- * a 5xx error, the result drawer renders an error state with a retry
- * affordance (instead of leaving the user stuck on the reveal animation).
+ * Verifies the network-failure recovery path: when the divination API
+ * returns a 5xx error, the inline answer zone renders an error state with
+ * a retry affordance (instead of leaving the user stuck on the reveal
+ * animation). The split / drawer overlay was removed — the error line and
+ * the retry button now live in .answer-zone.
  *
  * Replaces the old shell script that mutated the backend source file in
  * place. page.route() is the right tool here: it intercepts the request
@@ -23,13 +25,15 @@ test('reading API failure surfaces a retryable error UI', async ({ page }) => {
   // .idle-deck → .idle-deck-content after the B4 IdleDeck composable refactor.
   await page.locator('.idle-deck-content').click()
 
-  // The error state lives inside the drawer; on mobile the drawer may be
-  // collapsed, so we assert that the error UI is *attached* to the DOM
-  // rather than visible. Either the .error-box element or the explicit
-  // retry button is sufficient evidence that the failure path was taken.
+  // The error state is struck inline under the card (AnswerInscription's
+  // .ai-error__text), with the retry button in the colocated ActionArea.
+  // We assert *attached* rather than visible since the staged reveal /
+  // fade may not have fully settled at assertion time. Either the error
+  // line or the explicit retry button is sufficient evidence that the
+  // failure path was taken.
   const errorIndicator = page
-    .locator('.error-box')
-    .or(page.getByRole('button', { name: '重试' }))
+    .locator('.ai-error__text')
+    .or(page.getByRole('button', { name: '重试读取' }))
     .or(page.getByText('重试读取'))
 
   await expect(errorIndicator.first()).toBeAttached({ timeout: 30_000 })

@@ -22,8 +22,6 @@ function makeCard(id: string): TarotCardInfo {
     number: 0,
     type: 'major',
     image: `http://localhost/static/${id}.jpeg`,
-    upright: { keywords: [], meaning: `${id} upright`, sentiment: 'positive' },
-    reversed: { keywords: [], meaning: `${id} reversed`, sentiment: 'negative' },
   }
 }
 
@@ -33,9 +31,17 @@ function makeDrawn(id: string): DrawnResult[] {
 
 function makeReadingResult(): ReadingResult {
   return {
-    result: 'positive',
-    score: 5,
-    cardDetails: [],
+    cardDetails: [
+      {
+        card: makeCard('card_a'),
+        position: 'upright',
+        answer: {
+          quote: 'Action is eloquence.',
+          translation: '行动即是雄辩。',
+          source: 'William Shakespeare, Coriolanus',
+        },
+      },
+    ],
   }
 }
 

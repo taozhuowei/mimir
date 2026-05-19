@@ -18,12 +18,6 @@ import wandsData from '../data/tarot-wands.json'
 // address different from whatever STATIC_BASE_URL would have hard-coded.
 const TAROT_BASE_PATH = '/static/themes/golden_dawn/tarot'
 
-export interface TarotCardMeaning {
-  keywords: string[]
-  meaning: string
-  sentiment: 'positive' | 'negative' | 'neutral'
-}
-
 export interface TarotCard {
   id: string
   name: string
@@ -32,8 +26,6 @@ export interface TarotCard {
   type: 'major' | 'minor'
   suit?: 'wands' | 'cups' | 'swords' | 'pentacles'
   image: string
-  upright: TarotCardMeaning
-  reversed: TarotCardMeaning
 }
 
 // JSON files omit the image field — we build it at load time

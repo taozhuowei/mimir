@@ -2,27 +2,26 @@
  * Tarot Reading Service
  *
  * Purpose:
- *   Owns the full divination pipeline on the backend — from random card
- *   selection through scoring/interpretation — so the frontend never holds
- *   any draw randomness or scoring logic.
+ *   Owns the full divination pipeline on the backend — random card
+ *   selection, orientation, then mapping each drawn card to its "答案"
+ *   (the Answer): a single famous quote with its translation and source.
+ *   The frontend never holds draw randomness or any interpretation data.
  *
  * Why:
- *   Previously the frontend shuffled and drew cards locally, then POSTed the
- *   chosen cards to /api/v1/readings for scoring. Splitting the random source
- *   between client and server made the contract awkward and harder to audit
- *   (replay, fairness, future server-side personalization). This module
- *   centralizes both steps behind `performDivination()`.
+ *   The product no longer scores/interprets cards (no sentiment, no
+ *   meaning text). A draw now yields exactly one assertive quote — the
+ *   Answer — looked up from `data/tarot_answer.json` by card id +
+ *   orientation. `tarot_answer.json` is the single source of truth for
+ *   that content; the per-suit JSON files only carry card face data
+ *   (id/name/image/...).
  *
  * Data flow:
  *   getAllCards() ──▶ Fisher-Yates shuffle ──▶ pick N (N depends on spread)
  *                                              │
- *                                              ▼
+ *                                              ▼  random orientation
  *                                        DrawnInput[]
  *                                              │
- *                                              ▼
- *                                      generateReading()
- *                                              │
- *                                              ▼
+ *                                              ▼  answer lookup by id+pos
  *                                  { drawn, reading: ReadingResult }
  *
  * Random source:
@@ -30,25 +29,37 @@
  *   steps therefore draw from the platform CSPRNG. This is overkill for a
  *   tarot demo but keeps the project-wide ban on Math.random consistent
  *   and removes any predictability concerns from v8's PRNG state.
+ *
+ * Naming note:
+ *   The protocol/state identifier `reading` (ReadingResult, the route's
+ *   `reading` field) is retained verbatim from the pre-Answer design to
+ *   keep the cross-cutting request-lifecycle plumbing diff-free. The
+ *   user-facing term is 答案 (the Answer) — see docs/prd.
  */
 
 import { getAllCards, getCardById, type TarotCard } from './card_loader'
 import { randomBelow, randomBool } from '../utils/secure_random'
+import answerData from '../data/tarot_answer.json'
 
 export interface DrawnInput {
   cardId: string
   position: 'upright' | 'reversed'
 }
 
+/** One Answer entry: the quote shown big, its translation, and the source. */
+export interface AnswerEntry {
+  quote: string
+  translation: string
+  source: string
+}
+
 export interface CardDetail {
   card: TarotCard
   position: 'upright' | 'reversed'
-  meaning: string
+  answer: AnswerEntry
 }
 
 export interface ReadingResult {
-  result: 'positive' | 'negative'
-  score: number
   cardDetails: CardDetail[]
 }
 
@@ -68,96 +79,52 @@ const SPREAD_DRAW_COUNT: Record<string, number> = {
   single_card: 1,
 }
 
-// Base sentiment weights: positive = +3, negative = -3, neutral = 0
-const SENTIMENT_BASE_WEIGHT: Record<string, number> = {
-  positive: 3,
-  negative: -3,
-  neutral: 0
+// Raw shape of one orientation slot in tarot_answer.json. The file stores
+// translationSource too, but the UI shows only quote/translation/source so
+// it is intentionally dropped at the mapping boundary below.
+interface AnswerSide {
+  quote: string
+  source: string
+  translation: string
+  translationSource: string
+}
+
+// tarot_answer.json is the single source of truth for Answer content. Its
+// `cards` keys are aligned 1:1 with the card ids from card_loader (see the
+// per-suit JSON `id` fields), so the lookup is a direct id index.
+const ANSWER_CARDS = (answerData as {
+  cards: Record<string, { upright: AnswerSide[]; reversed: AnswerSide[] }>
+}).cards
+
+/** Resolve the Answer for a card id + orientation. */
+function getAnswer(cardId: string, position: 'upright' | 'reversed'): AnswerEntry {
+  const entry = ANSWER_CARDS[cardId]
+  if (!entry) throw new Error(`Answer not found: ${cardId}`)
+  const side = entry[position]?.[0]
+  if (!side) throw new Error(`Answer missing ${position} for: ${cardId}`)
+  return { quote: side.quote, translation: side.translation, source: side.source }
 }
 
 /**
- * Score a single drawn card.
- * Rules:
- *  - Base score from sentiment (+3/-3/0)
- *  - Position/sentiment alignment: matching → +2 or -2, mismatching → +1 or -1
- *  - Neutral cards: upright = +1, reversed = -1
- *  - Major Arcana: score × 1.3 (rounded)
- */
-function getNeutralScore(position: 'upright' | 'reversed'): number {
-  return position === 'upright' ? 1 : -1
-}
-
-function getAlignmentBonus(
-  card: TarotCard,
-  position: 'upright' | 'reversed',
-  sentiment: 'positive' | 'negative',
-): number {
-  const positionSentiment = position === 'upright' ? card.upright.sentiment : card.reversed.sentiment
-  const aligned = positionSentiment === sentiment
-  if (sentiment === 'positive') return aligned ? 2 : -1
-  return aligned ? -2 : 1
-}
-
-function getCardScore(card: TarotCard, position: 'upright' | 'reversed'): number {
-  const meaning = position === 'upright' ? card.upright : card.reversed
-  const sentiment = meaning.sentiment
-
-  let score: number
-  if (sentiment === 'neutral') {
-    score = getNeutralScore(position)
-  } else {
-    score = (SENTIMENT_BASE_WEIGHT[sentiment] ?? 0) + getAlignmentBonus(card, position, sentiment)
-  }
-
-  if (card.type === 'major') {
-    score = Math.round(score * 1.3)
-  }
-
-  return score
-}
-
-/**
- * Generate a reading from drawn card IDs + positions.
- * Total score > 0 → positive (yes), < 0 → negative (no). Ties resolve by
- * upright count (more upright wins; reversed wins only on a strict majority).
+ * Build the reading: resolve each drawn card to its face data + the Answer
+ * for its orientation. Throws on an unknown card id or a missing Answer —
+ * both indicate corrupted data files, never a well-formed client request.
  *
  * Kept exported because integration tests and the divination service both
  * depend on it; do not collapse into performDivination.
  */
-export function generateReading(inputs: DrawnInput[]): ReadingResult {
-  // Guard against the empty-array edge case. Without this, the function
-  // walks through fine and the tie-break branch produces a misleading
-  // `{ result: 'positive', score: 1 }` from zero cards. The route layer
-  // currently never calls us with `[]` (every spread maps to ≥ 1 cards),
-  // but exporting this function makes that an enforceable contract.
+export function buildReading(inputs: DrawnInput[]): ReadingResult {
   if (inputs.length === 0) {
-    throw new Error('generateReading requires at least one drawn card')
+    throw new Error('buildReading requires at least one drawn card')
   }
 
-  const resolved = inputs.map(({ cardId, position }) => {
+  const cardDetails: CardDetail[] = inputs.map(({ cardId, position }) => {
     const card = getCardById(cardId)
     if (!card) throw new Error(`Card not found: ${cardId}`)
-    return { card, position }
+    return { card, position, answer: getAnswer(cardId, position) }
   })
 
-  const scores = resolved.map(({ card, position }) => getCardScore(card, position))
-  let total_score = scores.reduce((sum, s) => sum + s, 0)
-
-  if (total_score === 0) {
-    const upright_count = resolved.filter(r => r.position === 'upright').length
-    const reversed_count = resolved.filter(r => r.position === 'reversed').length
-    total_score = upright_count >= reversed_count ? 1 : -1
-  }
-
-  return {
-    result: total_score > 0 ? 'positive' : 'negative',
-    score: total_score,
-    cardDetails: resolved.map(({ card, position }) => ({
-      card,
-      position,
-      meaning: position === 'upright' ? card.upright.meaning : card.reversed.meaning
-    }))
-  }
+  return { cardDetails }
 }
 
 /**
@@ -176,8 +143,8 @@ function shuffle<T>(items: readonly T[]): T[] {
 
 /**
  * Run a complete divination: shuffle the deck, pick N cards (N is fixed per
- * spread), randomly orient each card upright/reversed, and produce the
- * scored interpretation.
+ * spread), randomly orient each card upright/reversed, and resolve the
+ * Answer for each.
  *
  * Throws on unknown spreadKind — the route layer validates first, so this is
  * a defensive backstop, not the primary error surface.
@@ -196,6 +163,6 @@ export function performDivination(spreadKind: 'single_card'): DivinationOutput {
     position: randomBool() ? 'upright' : 'reversed',
   }))
 
-  const reading = generateReading(drawn)
+  const reading = buildReading(drawn)
   return { spreadKind, drawn, reading }
 }

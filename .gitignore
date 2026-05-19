@@ -2,6 +2,11 @@
 /dist/
 /server/dist/
 
+# Playwright screenshot artifacts: viewport_smoke.spec.ts writes
+# home-/result-*.png here (cwd-relative), separate from the config's
+# dist/ outputDir. Regenerated every e2e run, never tracked.
+/test-results/
+
 # Dependencies
 node_modules/
 

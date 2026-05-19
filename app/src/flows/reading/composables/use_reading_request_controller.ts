@@ -47,7 +47,7 @@ export function useReadingController(deps: UseReadingControllerDeps): UseReading
     resultRef: storeReadingResult,
     errorRef: storeReadingError,
     drawnRef: storeDrawnCards,
-    errorMessage: '解读暂时不可用，请稍后重试',
+    errorMessage: '答案暂时不可用，请稍后重试',
   })
 
   const readingPanelState = computed(() => readingOrchestrator.state.status)

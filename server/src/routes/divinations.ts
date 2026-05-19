@@ -5,7 +5,7 @@
  *
  * Purpose:
  *   Single-shot endpoint that performs a full divination (random draw +
- *   interpretation) on the server. Replaces the older two-step flow where
+ *   Answer lookup) on the server. Replaces the older two-step flow where
  *   the frontend drew cards locally and POSTed them to /api/v1/readings.
  *
  * Request body:
@@ -14,7 +14,10 @@
  * Response (200):
  *   { spreadKind: SpreadKind,        // echo of the resolved spread kind
  *     drawn:      DrawnInput[],      // cards picked by the server
- *     reading:    ReadingResult }    // scored interpretation
+ *     reading:    ReadingResult }    // each drawn card + its Answer
+ *                                    // (quote/translation/source). The
+ *                                    // `reading` key is kept for protocol
+ *                                    // stability; the product term is 答案.
  *
  * Errors:
  *   400 { error: 'Unknown spreadKind', code: 'spreadKind' }

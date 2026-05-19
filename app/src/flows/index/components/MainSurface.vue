@@ -14,7 +14,6 @@
   -->
   <view
     class="main-page"
-    :class="{ 'is-reading-wide': isWide && showReadingView }"
     :style="cssVarStyle"
   >
     <view class="canvas">
@@ -36,35 +35,26 @@
           <CardsLoadError v-if="isIdle && cardsLoadError" />
           <StageDeck v-else />
         </Stage>
+
+        <!-- The answer is struck directly below the card once the draw
+             resolves (phase ∈ reading/decision). No split / drawer overlay. -->
+        <view v-if="showAnswer" class="answer-zone">
+          <AnswerInscription
+            :state="readingPanelState"
+            :reading-result="readingResult"
+            :error-message="readingErrorMessage"
+            @typewriter-complete="handleTypewriterComplete"
+          />
+          <ActionArea
+            :phase="phase"
+            :is-reading-failed="readingPanelState === 'error'"
+            @restart="handleRestart"
+            @back-home="handleBackHome"
+            @retry="handleRetry"
+          />
+        </view>
       </view>
     </view>
-
-    <!-- Wide → split, narrow → drawer (docs/prd/glossary.md（视图）). Mounted only in 'reading'/'decision'. -->
-    <ReadingSplitView
-      v-if="showReadingView && isWide"
-      :panel-state="readingPanelState"
-      :reading-result="readingResult"
-      :phase="phase"
-      :question="currentQuestion"
-      :error-message="readingErrorMessage"
-      @restart="handleRestart"
-      @back-home="handleBackHome"
-      @retry="handleRetry"
-      @typewriter-complete="handleTypewriterComplete"
-    />
-    <ReadingDrawerView
-      v-else-if="showReadingView && !isWide"
-      :panel-state="readingPanelState"
-      :reading-result="readingResult"
-      :phase="phase"
-      :drawer-geometry="resultDrawerGeometry"
-      :question="currentQuestion"
-      :error-message="readingErrorMessage"
-      @restart="handleRestart"
-      @back-home="handleBackHome"
-      @retry="handleRetry"
-      @typewriter-complete="handleTypewriterComplete"
-    />
 
     <NotificationHost />
     <DevToolsPanel
@@ -107,8 +97,8 @@ import ProgressContent from '../../divination/components/ProgressContent.vue'
 import Stage from '../../shared/components/Stage.vue'
 import StageDeck from './StageDeck.vue'
 import CardsLoadError from '../../idle/components/CardsLoadError.vue'
-import ReadingSplitView from '../../reading/components/ReadingSplitView.vue'
-import ReadingDrawerView from '../../reading/components/ReadingDrawerView.vue'
+import AnswerInscription from '../../reading/components/AnswerInscription.vue'
+import ActionArea from '../../reading/components/ActionArea.vue'
 import NotificationHost from './NotificationHost.vue'
 import DevToolsPanel from './DevToolsPanel.vue'
 import { useMainStage } from '../composables/use_main_stage'
@@ -117,9 +107,8 @@ import { useCardsLoadError } from '../../../core/composables/use_cards_load_erro
 
 const {
   phase, isWide, cssVarStyle, animationController, readingController, devTools,
-  showReadingView, resultDrawerGeometry, readingPanelState, readingResult,
-  readingErrorMessage, currentQuestion, handleRestart, handleBackHome,
-  handleRetry, handleTypewriterComplete,
+  showAnswer, readingPanelState, readingResult, readingErrorMessage,
+  handleRestart, handleBackHome, handleRetry, handleTypewriterComplete,
 } = useMainStage()
 
 provide('appPhase', phase)
@@ -141,9 +130,10 @@ const { cardsLoadError } = useCardsLoadError()
   background: var(--color-bg-page);
 }
 
-/* docs/prd/animation.md（视图过渡动画） — canvas capped at MAX_CANVAS_WIDTH (440 px). Centered on
-   wider viewports via translateX max-clamp; slides flush-left in
-   .is-reading-wide so ReadingSplitView fills the right remainder. */
+/* docs/prd/animation.md（视图过渡动画） — canvas capped at MAX_CANVAS_WIDTH
+   (440 px), centered on wider viewports via translateX max-clamp. The
+   reading split/drawer overlay was removed, so the canvas no longer
+   slides flush-left. */
 .canvas {
   position: absolute;
   top: 0;
@@ -158,8 +148,28 @@ const { cardsLoadError } = useCardsLoadError()
   overflow: hidden;
 }
 
-.main-page.is-reading-wide .canvas {
-  transform: translateX(0);
+/* The answer zone is struck into the lower half of the play surface,
+   below the (lifted) card. Bottom-anchored, scrolls internally if a long
+   quote + its translation overflow on short viewports so the action row
+   never gets clipped. No sheet chrome, no drag — it is part of the
+   canvas, not an overlay. */
+.answer-zone {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  max-height: 60%;
+  overflow-y: auto;
+  padding-bottom: calc(env(safe-area-inset-bottom, 0px) + var(--space-2));
+  animation: answer-zone-in 420ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes answer-zone-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
 }
 
 /* Divination surface root: flex column with uniform safe-area + margin
@@ -182,6 +192,9 @@ const { cardsLoadError } = useCardsLoadError()
 @media (prefers-reduced-motion: reduce) {
   .canvas {
     transition: none;
+  }
+  .answer-zone {
+    animation: none;
   }
 }
 </style>

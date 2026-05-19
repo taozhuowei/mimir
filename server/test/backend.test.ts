@@ -1,21 +1,31 @@
 /**
  * Backend unit tests
- * Tests card_loader and generateReading service logic using real JSON card data.
- * No mocking — all assertions are against deterministic real-data values.
+ * Tests card_loader (card face data) and buildReading (Answer lookup) using
+ * the real JSON data files. No mocking — every assertion is checked against
+ * the actual data source so the test moves with the data, not a frozen copy.
  *
- * Score rules (from tarot_reading.ts):
- *   minor non-neutral: base ±3 + alignment ±2 = ±5
- *   major non-neutral: Math.round(±5 × 1.3) = +7 / -6  (JS round-half-up asymmetry)
- *   major neutral upright:   Math.round(1 × 1.3) = 1
- *   major neutral reversed:  Math.round(-1 × 1.3) = -1
+ * The product no longer scores or interprets cards: a draw resolves to one
+ * Answer (quote / translation / source) per card+orientation, looked up from
+ * data/tarot_answer.json by card id.
  */
 
 import { describe, it, expect } from 'vitest'
 import { getAllCards, getCardById } from '../src/services/card_loader'
-import { generateReading } from '../src/services/tarot_reading'
+import { buildReading } from '../src/services/tarot_reading'
+import answerData from '../src/data/tarot_answer.json'
+
+const ANSWER_CARDS = (answerData as {
+  cards: Record<
+    string,
+    {
+      upright: { quote: string; translation: string; source: string }[]
+      reversed: { quote: string; translation: string; source: string }[]
+    }
+  >
+}).cards
 
 // ---------------------------------------------------------------------------
-// card_loader
+// card_loader — card face data is preserved (id/name/nameEn/number/type/image)
 // ---------------------------------------------------------------------------
 
 describe('card_loader', () => {
@@ -59,175 +69,105 @@ describe('card_loader', () => {
   it('major arcana cards have no suit field', () => {
     expect(getCardById('the_fool')!.suit).toBeUndefined()
   })
-})
 
-// ---------------------------------------------------------------------------
-// generateReading — per-card scoring paths
-//
-// Reference cards used here:
-//   cups_ace  minor positive   upright.sentiment=positive, reversed.sentiment=negative
-//   swords_2  minor negative   upright.sentiment=negative, reversed.sentiment=positive
-//   the_fool  major positive   upright.sentiment=positive, reversed.sentiment=negative
-//   the_devil major negative   upright.sentiment=negative, reversed.sentiment=positive
-//   the_hierophant major neutral  both sentiments=neutral
-// ---------------------------------------------------------------------------
-
-describe('generateReading — scoring', () => {
-  it('minor positive upright scores +5', () => {
-    const r = generateReading([{ cardId: 'cups_ace', position: 'upright' }])
-    expect(r.score).toBe(5)
-    expect(r.result).toBe('positive')
-  })
-
-  it('minor negative upright scores -5', () => {
-    const r = generateReading([{ cardId: 'swords_2', position: 'upright' }])
-    expect(r.score).toBe(-5)
-    expect(r.result).toBe('negative')
-  })
-
-  it('minor positive reversed scores -5 (reversed.sentiment=negative)', () => {
-    const r = generateReading([{ cardId: 'cups_ace', position: 'reversed' }])
-    expect(r.score).toBe(-5)
-    expect(r.result).toBe('negative')
-  })
-
-  it('minor negative reversed scores +5 (reversed.sentiment=positive)', () => {
-    // swords_2 has reversed.sentiment=positive — a redemptive reversal
-    const r = generateReading([{ cardId: 'swords_2', position: 'reversed' }])
-    expect(r.score).toBe(5)
-    expect(r.result).toBe('positive')
-  })
-
-  it('major positive upright scores +7 (×1.3 multiplier)', () => {
-    const r = generateReading([{ cardId: 'the_fool', position: 'upright' }])
-    expect(r.score).toBe(7) // Math.round(5 × 1.3) = Math.round(6.5) = 7
-  })
-
-  it('major negative upright scores -6 (Math.round(-6.5) rounds toward +∞)', () => {
-    const r = generateReading([{ cardId: 'the_devil', position: 'upright' }])
-    expect(r.score).toBe(-6) // Math.round(-5 × 1.3) = Math.round(-6.5) = -6 (not -7)
-  })
-
-  it('major neutral upright scores +1', () => {
-    const r = generateReading([{ cardId: 'the_hierophant', position: 'upright' }])
-    expect(r.score).toBe(1)
-  })
-
-  it('major neutral reversed scores -1', () => {
-    const r = generateReading([{ cardId: 'the_hierophant', position: 'reversed' }])
-    expect(r.score).toBe(-1)
+  it('no longer exposes interpretation fields (upright/reversed stripped)', () => {
+    const card = getCardById('the_fool')! as Record<string, unknown>
+    expect(card.upright).toBeUndefined()
+    expect(card.reversed).toBeUndefined()
   })
 })
 
 // ---------------------------------------------------------------------------
-// generateReading — multi-card results and cardDetails
+// buildReading — Answer lookup
 // ---------------------------------------------------------------------------
 
-describe('generateReading — result and details', () => {
-  it('returns yes for a net positive score (3 positive minor upright)', () => {
-    const r = generateReading([
-      { cardId: 'cups_ace', position: 'upright' },
-      { cardId: 'cups_ace', position: 'upright' },
-      { cardId: 'cups_ace', position: 'upright' },
-    ])
-    expect(r.score).toBe(15)
-    expect(r.result).toBe('positive')
-  })
-
-  it('returns no for a net negative score (3 negative minor upright)', () => {
-    const r = generateReading([
-      { cardId: 'swords_2', position: 'upright' },
-      { cardId: 'swords_2', position: 'upright' },
-      { cardId: 'swords_2', position: 'upright' },
-    ])
-    expect(r.score).toBe(-15)
-    expect(r.result).toBe('negative')
-  })
-
-  it('returns correct total for a mixed three-card spread', () => {
-    // +5 (cups_ace up) + (-5) (swords_2 up) + (+5) (swords_2 reversed) = +5
-    const r = generateReading([
-      { cardId: 'cups_ace', position: 'upright' },
-      { cardId: 'swords_2', position: 'upright' },
-      { cardId: 'swords_2', position: 'reversed' },
-    ])
-    expect(r.score).toBe(5)
-    expect(r.result).toBe('positive')
-  })
-
-  it('populates cardDetails with the drawn position and meaning', () => {
-    const r = generateReading([{ cardId: 'cups_ace', position: 'upright' }])
+describe('buildReading — single card', () => {
+  it('maps a card+upright to its Answer from tarot_answer.json', () => {
+    const r = buildReading([{ cardId: 'cups_ace', position: 'upright' }])
     expect(r.cardDetails).toHaveLength(1)
     const detail = r.cardDetails[0]
     expect(detail.position).toBe('upright')
     expect(detail.card.id).toBe('cups_ace')
-    expect(detail.meaning).toBe(getCardById('cups_ace')!.upright.meaning)
+    const expected = ANSWER_CARDS['cups_ace'].upright[0]
+    expect(detail.answer).toEqual({
+      quote: expected.quote,
+      translation: expected.translation,
+      source: expected.source,
+    })
   })
 
-  it('uses reversed meaning when position is reversed', () => {
-    const r = generateReading([{ cardId: 'cups_ace', position: 'reversed' }])
-    expect(r.cardDetails[0].meaning).toBe(getCardById('cups_ace')!.reversed.meaning)
+  it('uses the reversed Answer when position is reversed', () => {
+    const r = buildReading([{ cardId: 'cups_ace', position: 'reversed' }])
+    const expected = ANSWER_CARDS['cups_ace'].reversed[0]
+    expect(r.cardDetails[0].answer).toEqual({
+      quote: expected.quote,
+      translation: expected.translation,
+      source: expected.source,
+    })
   })
 
-  it('throws when a card id does not exist', () => {
-    expect(() =>
-      generateReading([{ cardId: 'not_a_real_card', position: 'upright' }])
-    ).toThrow('Card not found: not_a_real_card')
+  it('drops translationSource — the UI shows only quote/translation/source', () => {
+    const r = buildReading([{ cardId: 'the_fool', position: 'upright' }])
+    expect(Object.keys(r.cardDetails[0].answer).sort()).toEqual([
+      'quote',
+      'source',
+      'translation',
+    ])
+  })
+
+  it('carries no scoring/interpretation fields', () => {
+    const r = buildReading([{ cardId: 'the_fool', position: 'upright' }]) as Record<string, unknown>
+    expect(r.score).toBeUndefined()
+    expect(r.result).toBeUndefined()
+    const detail = r.cardDetails[0] as unknown as Record<string, unknown>
+    expect(detail.meaning).toBeUndefined()
   })
 })
 
-// ---------------------------------------------------------------------------
-// generateReading — tie-break (total score = 0)
-//
-// Tie-break logic: upright_count >= reversed_count → score=+1 (yes)
-//                  upright_count <  reversed_count → score=-1 (no)
-//
-// Score-zero constructions using real cards (no mocking needed):
-//   2 upright:   cups_ace up (+5) + swords_2 up (-5) = 0, 2 up / 0 rv
-//   2 reversed:  swords_2 rv (+5) + cups_ace rv (-5) = 0, 0 up / 2 rv
-//   1+1 equal:   cups_ace up (+5) + cups_ace rv (-5) = 0, 1 up / 1 rv
-// ---------------------------------------------------------------------------
-
-describe('generateReading — tie-break', () => {
-  it('more upright than reversed → upright wins → yes', () => {
-    const r = generateReading([
-      { cardId: 'cups_ace', position: 'upright' },  // +5
-      { cardId: 'swords_2', position: 'upright' },  // -5  → total=0, 2 up / 0 rv
+describe('buildReading — multi card', () => {
+  it('preserves order and resolves each card to its Answer', () => {
+    const r = buildReading([
+      { cardId: 'the_fool', position: 'upright' },
+      { cardId: 'swords_2', position: 'reversed' },
+      { cardId: 'the_world', position: 'upright' },
     ])
-    expect(r.score).toBe(1)
-    expect(r.result).toBe('positive')
-  })
-
-  it('more reversed than upright → reversed wins → no', () => {
-    const r = generateReading([
-      { cardId: 'swords_2', position: 'reversed' }, // +5 (reversed.sentiment=positive)
-      { cardId: 'cups_ace', position: 'reversed' }, // -5 (reversed.sentiment=negative)
-    ])                                               // total=0, 0 up / 2 rv
-    expect(r.score).toBe(-1)
-    expect(r.result).toBe('negative')
-  })
-
-  it('equal upright and reversed count → upright wins (>=) → yes', () => {
-    const r = generateReading([
-      { cardId: 'cups_ace', position: 'upright' },  // +5
-      { cardId: 'cups_ace', position: 'reversed' }, // -5  → total=0, 1 up / 1 rv
+    expect(r.cardDetails.map(d => d.card.id)).toEqual([
+      'the_fool',
+      'swords_2',
+      'the_world',
     ])
-    expect(r.score).toBe(1)
-    expect(r.result).toBe('positive')
+    expect(r.cardDetails[1].answer).toEqual({
+      quote: ANSWER_CARDS['swords_2'].reversed[0].quote,
+      translation: ANSWER_CARDS['swords_2'].reversed[0].translation,
+      source: ANSWER_CARDS['swords_2'].reversed[0].source,
+    })
   })
 })
 
-describe('generateReading — input contract', () => {
-  it('throws on empty input rather than silently returning a tie-break result', () => {
-    // Before the explicit guard, [] walked through the function and the
-    // tie-break branch produced { result: 'positive', score: 1 } from zero
-    // cards — a misleading "yes" from no evidence. This test pins the
-    // contract: zero cards is a programmer error, not a divination.
-    expect(() => generateReading([])).toThrow(/at least one drawn card/i)
+describe('buildReading — data integrity across all 78 cards', () => {
+  it('every card resolves a non-empty Answer for both orientations', () => {
+    for (const card of getAllCards()) {
+      for (const position of ['upright', 'reversed'] as const) {
+        const r = buildReading([{ cardId: card.id, position }])
+        const a = r.cardDetails[0].answer
+        expect(typeof a.quote).toBe('string')
+        expect(a.quote.length).toBeGreaterThan(0)
+        expect(typeof a.translation).toBe('string')
+        expect(a.translation.length).toBeGreaterThan(0)
+        expect(typeof a.source).toBe('string')
+        expect(a.source.length).toBeGreaterThan(0)
+      }
+    }
+  })
+})
+
+describe('buildReading — input contract', () => {
+  it('throws on empty input rather than returning an empty reading', () => {
+    expect(() => buildReading([])).toThrow(/at least one drawn card/i)
   })
 
   it('throws on unknown cardId', () => {
-    expect(() => generateReading([{ cardId: 'no_such_card', position: 'upright' }]))
+    expect(() => buildReading([{ cardId: 'no_such_card', position: 'upright' }]))
       .toThrow(/card not found/i)
   })
 })

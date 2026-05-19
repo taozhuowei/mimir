@@ -16,11 +16,9 @@ import { useTarotStore } from '../../../core/store/tarot'
 import { useThemeStore } from '../../../core/store/theme'
 import { useAnimationController } from '../../divination/composables/use_animation_controller'
 import { useReadingController } from '../../reading/composables/use_reading_request_controller'
-import { useActiveView } from './use_active_view'
 import { useDevTools } from './use_dev_tools'
 import { useCssVarBridge } from '../../../core/sizing/use_css_var_bridge'
 import { useMainHandlers } from './create_main_transition_handlers'
-import { useResultCardShrink } from '../../reading/composables/use_result_card_shrink'
 import { MAX_CANVAS_WIDTH } from '../../../core/sizing/scale'
 import type { OverlayPhase } from '../../shared/composables/animations/phase_contracts'
 import type { UseAnimationControllerReturn } from '../../divination/composables/use_animation_controller'
@@ -35,12 +33,13 @@ export interface MainStage {
   animationController: UseAnimationControllerReturn
   readingController: ReturnType<typeof UseReadingControllerFn>
   devTools: ReturnType<typeof UseDevToolsFn>
-  showReadingView: ComputedRef<boolean>
-  resultDrawerGeometry: ReturnType<typeof useActiveView>['resultDrawerGeometry']
+  /** Gate for the below-card answer (phase ∈ {reading, decision}). The
+   *  old split/drawer overlay + its `useActiveView` picker were removed;
+   *  the answer is now inline under the card, so this is a one-liner. */
+  showAnswer: ComputedRef<boolean>
   readingPanelState: ComputedRef<ReturnType<typeof UseReadingControllerFn>['readingPanelState']['value']>
   readingResult: ComputedRef<ReturnType<typeof UseReadingControllerFn>['readingResult']['value']>
   readingErrorMessage: ComputedRef<ReturnType<typeof UseReadingControllerFn>['readingErrorMessage']['value']>
-  currentQuestion: ComputedRef<string>
   handleRestart: () => void
   handleBackHome: () => void
   handleRetry: () => void
@@ -53,8 +52,9 @@ export function useMainStage(): MainStage {
   const themeStore = useThemeStore()
   const { phase, startDivination, enterDecision, resetToIdle } = useAppPhase()
 
-  /* Responsive width — capped at MAX_CANVAS_WIDTH (440px); wider viewports
-     get the side reading panel (split), narrower the bottom drawer. */
+  /* Responsive width — capped at MAX_CANVAS_WIDTH (440px). Consumed by the
+     animation pipeline (deck/draw layout); the reading split/drawer that
+     used to branch on it was removed. */
   const isWide = ref(false)
   function recomputeIsWide() {
     const { windowWidth } = uni.getWindowInfo()
@@ -82,20 +82,15 @@ export function useMainStage(): MainStage {
     },
   })
 
-  /* View picker + two-phase result-card sizing */
-  const { showReadingView, resultDrawerGeometry } = useActiveView({ phase })
-  useResultCardShrink({
-    showReadingView,
-    isWide,
-    draws: animationController.draws,
-    getSceneLayout: animationController.getSceneLayout,
-    cardCount,
-  })
+  /* The answer is shown inline under the card once the app reaches the
+     reading phase (and stays through decision). No overlay view picker. */
+  const showAnswer = computed(
+    () => phase.value === 'reading' || phase.value === 'decision',
+  )
 
   const readingPanelState = computed(() => readingController.readingPanelState.value)
   const readingResult = computed(() => readingController.readingResult.value)
   const readingErrorMessage = computed(() => readingController.readingErrorMessage.value)
-  const currentQuestion = computed(() => tarotStore.currentQuestion)
 
   /* Event handlers */
   const { settlePipeline, handleRestart } = useMainHandlers({
@@ -139,12 +134,10 @@ export function useMainStage(): MainStage {
     animationController,
     readingController,
     devTools,
-    showReadingView,
-    resultDrawerGeometry,
+    showAnswer,
     readingPanelState,
     readingResult,
     readingErrorMessage,
-    currentQuestion,
     handleRestart,
     handleBackHome,
     handleRetry,

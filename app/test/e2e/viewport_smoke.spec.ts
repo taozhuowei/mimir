@@ -3,24 +3,25 @@ import { test, expect } from '@playwright/test'
 /**
  * Multi-viewport visual + contract smoke for the divination flow.
  *
- * Walks the home → divination → reading flow at every popular phone /
+ * Walks the home → divination → answer flow at every popular phone /
  * tablet / desktop viewport we want to defend against regression, and
  * captures `home-{tag}.png` + `result-{tag}.png` per device. Beyond the
  * screenshots, each pass asserts:
  *   • The result card never exceeds MAX_CARD_WIDTH (240) — the global
  *     "≤ largest phone" contract.
- *   • Mobile-mode drawer spans the full viewport width (so on iPad
- *     portrait the sheet covers the whole 768 / 820 px, not just the
- *     centred phone-shell band).
- *   • PC-mode (≥ 920) renders the side-column reading sidebar instead
- *     of the bottom drawer.
- *   • The "too small" banner shows iff the actual viewport width is
- *     below MIN_VIEWPORT_WIDTH (375).
+ *   • The answer surfaced: .answer-zone is visible, carries its quote
+ *     (.ai-quote), and stays inside the viewport (no horizontal overflow,
+ *     bottom not clipped).
  *
- * Why so many viewports: the layout has three discrete spacing tiers
- * (compact / regular / wide) and three top-level screen modes
- * (too_small / mobile / pc). Each combination needs a representative
- * real device or we rely on the math being right by inspection.
+ * The old split-vs-drawer two-branch contract is gone: ReadingSplitView /
+ * ReadingDrawerView were removed when the answer became a single inline
+ * zone struck below the card on every width. There is no longer a
+ * mode-specific layout to assert — only the unified answer surface — so
+ * the per-mode branch was deleted rather than re-pointed at dead classes.
+ *
+ * Why still so many viewports: the layout has discrete spacing tiers and
+ * the screenshot set is the regression net for the inline answer zone
+ * across real phone / tablet / desktop sizes.
  */
 
 interface Viewport {
@@ -60,13 +61,8 @@ const VIEWPORTS: readonly Viewport[] = [
   { tag: 'full-hd-desktop-1920x1080',  width: 1920, height: 1080, mode: 'pc' },
 ] as const
 
-// ----- Solver constants the contract assertions reference --------------
-const MAX_STAGE_WIDTH_PX = 440        // MAX_STAGE_VIEWPORT_WIDTH
-const DRAWER_MIN_INITIAL_HEIGHT_PX = 220
+// ----- Solver constant the card-size contract references ---------------
 const MAX_CARD_WIDTH_PX = 240         // DEFAULT_MAX_CARD_WIDTH
-// DRAWER_WIDE_WIDTH_PX (480) was removed: PC mode now uses ReadingSplitView,
-// a flex right column whose width = viewport.width − MAX_STAGE_WIDTH_PX (no
-// fixed 480 px sidebar).
 
 for (const vp of VIEWPORTS) {
   test(`viewport smoke @ ${vp.tag}`, async ({ page }) => {
@@ -78,9 +74,6 @@ for (const vp of VIEWPORTS) {
     //   .title              → .title-content__title
     //   .idle-deck          → .idle-deck-content
     //   .phase-step-icon    → .progress-content__step-icon
-    //   .sidebar-container  → .reading-split-view (PC right column is now a flex
-    //                         split, not a fixed 480px sidebar)
-    //   .drawer-sheet       → .reading-drawer-view__sheet
     await page.goto('/')
     await expect(page.locator('.title-content__title')).toContainText('Scales Tarot', { timeout: 10_000 })
     await expect(page.locator('.idle-deck-content')).toBeVisible()
@@ -99,13 +92,13 @@ for (const vp of VIEWPORTS) {
     await page.locator('.idle-deck-content').click()
     await expect(page.locator('.progress-content__step-icon').first()).toBeVisible({ timeout: 5_000 })
 
-    // ----- Wait for the reading panel -----------------------------------
+    // ----- Wait for the answer ------------------------------------------
     // 30 s budget covers entry + shuffle + cut + draw + reveal + the
-    // rule-based reading round trip, the same envelope
+    // server-side Answer round trip, the same envelope
     // divination_flow.spec.ts uses.
-    await expect(page.locator('.reading-panel')).toBeAttached({ timeout: 30_000 })
-    await expect(page.locator('.reading-panel .hero-title')).toBeVisible({ timeout: 10_000 })
-    // Buffer for the lift transform + drawer/sidebar slide-in to settle.
+    await expect(page.locator('.answer-zone')).toBeAttached({ timeout: 30_000 })
+    await expect(page.locator('.answer-zone .ai-quote')).toBeVisible({ timeout: 10_000 })
+    // Buffer for the card lift + answer-zone fade + staged rise-in to settle.
     await page.waitForTimeout(3000)
 
     await page.screenshot({
@@ -113,53 +106,33 @@ for (const vp of VIEWPORTS) {
       fullPage: false,
     })
 
-    // ----- Mode-specific contract ---------------------------------------
-    if (vp.mode === 'pc') {
-      // PC mode: ReadingSplitView mounts as the right column, no drawer
-      // bottom panel. After B4/B5 the column is a flex split that fills
-      // viewport.width − 440 (see ReadingSplitView.vue, `left: 440px;
-      // right: 0;`), NOT a fixed 480px sidebar — so DRAWER_WIDE_WIDTH_PX
-      // is no longer a valid width assertion.
-      const splitView = page.locator('.reading-split-view')
-      await expect(splitView).toBeVisible()
-      const splitBox = await splitView.boundingBox()
-      expect(splitBox).not.toBeNull()
-      if (splitBox) {
-        // Width contract: viewport.width − 440 (MAX_STAGE_WIDTH_PX), with a
-        // 1 px tolerance for sub-pixel rounding.
-        expect(
-          splitBox.width,
-          `split view width must equal viewport.width − ${MAX_STAGE_WIDTH_PX} at ${vp.tag}`,
-        ).toBeGreaterThanOrEqual(vp.width - MAX_STAGE_WIDTH_PX - 1)
-        expect(splitBox.width).toBeLessThanOrEqual(vp.width - MAX_STAGE_WIDTH_PX + 1)
-      }
-      // Drawer (mobile component) must NOT mount in pc mode.
-      await expect(page.locator('.reading-drawer-view__sheet')).toHaveCount(0)
-    } else {
-      // Mobile / too_small: ReadingDrawerView mounts. The drawer sheet now
-      // spans the full viewport width (the phone-shell cap only applies to
-      // the result card / .canvas above it — the drawer is a screen-bottom
-      // surface). On iPad portrait (768 / 820) and similar tablet widths
-      // this means the sheet width should equal viewport.width so there are
-      // no empty bands on either side.
-      const drawerSheet = page.locator('.reading-drawer-view__sheet')
-      await expect(drawerSheet).toBeVisible()
-      const sheetBox = await drawerSheet.boundingBox()
-      expect(sheetBox).not.toBeNull()
-      if (sheetBox) {
-        expect(
-          sheetBox.height,
-          `narrow drawer initialHeight must be >= ${DRAWER_MIN_INITIAL_HEIGHT_PX}px at ${vp.tag}`,
-        ).toBeGreaterThanOrEqual(DRAWER_MIN_INITIAL_HEIGHT_PX)
-        // 1 px tolerance for sub-pixel rounding.
-        expect(
-          sheetBox.width,
-          `drawer width must equal viewport.width (${vp.width}) at ${vp.tag} (got ${sheetBox.width})`,
-        ).toBeGreaterThanOrEqual(vp.width - 1)
-        expect(sheetBox.width).toBeLessThanOrEqual(vp.width + 1)
-      }
-      // Split view (pc component) must NOT mount in mobile mode.
-      await expect(page.locator('.reading-split-view')).toHaveCount(0)
+    // ----- Answer surface contract (unified, every viewport) ------------
+    // No split / drawer branch anymore: one inline .answer-zone struck
+    // below the card on all widths. Assert it surfaced with its quote and
+    // is not clipped out of the viewport (no horizontal overflow; the
+    // bottom-anchored edge stays on screen).
+    const answerZone = page.locator('.answer-zone')
+    await expect(answerZone).toBeVisible()
+    await expect(answerZone.locator('.ai-quote')).toBeVisible()
+    // The removed split / drawer / panel host must not resurrect.
+    await expect(
+      page.locator('.reading-split-view, .reading-drawer-view__sheet, .reading-panel'),
+    ).toHaveCount(0)
+    const zoneBox = await answerZone.boundingBox()
+    expect(zoneBox).not.toBeNull()
+    if (zoneBox) {
+      expect(
+        zoneBox.x,
+        `answer zone must not overflow the left edge at ${vp.tag} (x=${zoneBox.x})`,
+      ).toBeGreaterThanOrEqual(-1)
+      expect(
+        zoneBox.x + zoneBox.width,
+        `answer zone must not overflow the right edge at ${vp.tag}`,
+      ).toBeLessThanOrEqual(vp.width + 1)
+      expect(
+        zoneBox.y + zoneBox.height,
+        `answer zone bottom must stay within the viewport at ${vp.tag}`,
+      ).toBeLessThanOrEqual(vp.height + 1)
     }
 
     // ----- Card-size cap ------------------------------------------------
