@@ -61,7 +61,7 @@
 - [x] C3 请求管道/控制器/store/事件改名（25 文件，含 kebab + 一处 C1 漏网注释）。
 - [x] C4 `reading_stage`→`answer_stage` 场景全链（8 文件：SceneKind/Scene/solveLayout dispatch/getSceneLayout 调用/solveAnswerStageLayout/answerStageReservation/注释；C5 文件名与 import 路径未碰）。
 - [x] C5 文件/目录重命名 + import + 配置（git mv 13 项；23 文件 import 重写 + flow 同目录引用 + 文件头 Name；dependency-cruiser `animation-not-to-answer`；README 树同步）。
-- [ ] C6 应用阶段标识 `reading→answer`。message：`refactor(naming): rename app phase identifier reading→answer`。
+- [x] C6 应用阶段标识 `reading→answer`（19 文件：`DivinationPhase` 联合 + 全部 phase 比较/赋值 + `enterAnswer`/`skipToAnswer`/`skipToAnswerCommand`/`SkipToAnswerCommandDeps`/`handleDevSkipToAnswer` + kebab `@skip-to-answer` + phase 注释短语）。
 - [ ] C7 docs 去括注 + 收口。message：`docs: drop reading naming-debt annotations after rename`。
 
 ## 回滚
@@ -70,7 +70,7 @@
 
 ## 进度
 
-S1（数据契约+协议字段）提交 `85e4360`；旧 S2 因冻结映射不完整回滚重排为 C1–C7。C1（文档+注释）`d1c1f3d`；C2（化简死 stageWidth 分支+删死 isWide 参数）`61c0f0c`；C3（请求管道/控制器/store/事件改名）提交 `211d144`；C4（`reading_stage`→`answer_stage` 场景全链）提交 `c75aca8`；C5（文件/目录 git mv 13 项 + import/配置/README 全量重写）已全套验收（full 门禁+prod+e2e 15/15）待提交。C6（应用阶段标识 `reading→answer`）、C7（docs 去括注收口）未启动。注：本会话出现一次 npm registry 网络超时致 audit 步瞬时失败，重试即恢复，非代码问题。
+S1（数据契约+协议字段）提交 `85e4360`；旧 S2 因冻结映射不完整回滚重排为 C1–C7。C1（文档+注释）`d1c1f3d`；C2（化简死 stageWidth 分支+删死 isWide 参数）`61c0f0c`；C3（请求管道/控制器/store/事件改名）提交 `211d144`；C4（`reading_stage`→`answer_stage` 场景全链）提交 `c75aca8`；C5（文件/目录 git mv 13 项 + import/配置/README）提交 `c736959`；C6（应用阶段标识 `reading→answer`，19 文件）已全套验收（full 门禁+prod+e2e 15/15）待提交。仅余 C7（docs 去命名债括注 + 全仓 reading 残留措辞收口，含 `flow.ts` 的 `reading` 形参/注释、`ActionArea` 等代码内 reading 普通词注释）。注：本会话出现一次 npm registry 网络超时致 audit 步瞬时失败，重试即恢复，非代码问题。
 
 ## 搁置问题（已登记，未排期）
 

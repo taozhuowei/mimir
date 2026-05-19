@@ -127,7 +127,7 @@ describe('tarot store - drawn cards and reading flow', () => {
       expect(store.currentQuestion).toBe('Test question')
 
       store.revealResult()
-      expect(store.phase).toBe('reading')
+      expect(store.phase).toBe('answer')
       // isResultVisible is false because answerResult is null (no result loaded yet)
       expect(store.isResultVisible).toBe(false)
 
@@ -145,7 +145,7 @@ describe('tarot store - drawn cards and reading flow', () => {
       store.revealResult()
       expect(store.isResultVisible).toBe(false)
 
-      // Need both phase='reading' AND answerResult
+      // Need both phase='answer' AND answerResult
       const drawn = makeDrawn()
       store.setDrawnCards(drawn)
       store.answerResult = makeAnswerResult(drawn)

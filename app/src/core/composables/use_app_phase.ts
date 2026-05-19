@@ -33,7 +33,7 @@ export interface UseAppPhaseReturn {
   /** Move to `divination` and clear any previous reading. */
   startDivination: (question: string) => void
   /** Move to `reading` once the reading payload has landed. */
-  enterReading: () => void
+  enterAnswer: () => void
   /** Move from `reading` to `decision` after the typewriter completes. */
   enterDecision: () => void
   /** Reset the whole flow back to `idle`. */
@@ -49,7 +49,7 @@ export function useAppPhase(): UseAppPhaseReturn {
   return {
     phase,
     startDivination: (question: string) => tarotStore.startDivination(question),
-    enterReading: () => tarotStore.revealResult(),
+    enterAnswer: () => tarotStore.revealResult(),
     enterDecision: () => tarotStore.enterDecision(),
     resetToIdle: () => tarotStore.reset(),
     setPhase: (next: DivinationPhase) => tarotStore.setPhase(next),

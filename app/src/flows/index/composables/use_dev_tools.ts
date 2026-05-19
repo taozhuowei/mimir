@@ -3,11 +3,11 @@
  * Purpose: encapsulates the dev-tools state + event handlers wired into
  *          MainSurface (DevToolsPanel). Owns the local toggles
  *          (`isDevExpanded`, `showContainerBorders`) and the handlers the
- *          panel emits (replay, skip-to-reading, playback rate, container
+ *          panel emits (replay, skip-to-answer, playback rate, container
  *          border toggle). Reading is normally seeded by the animation
  *          pipeline's `onDrawingStart` hook, but the `revealing` replay
  *          path skips the drawing builder entirely, so this composable
- *          mirrors the skipToReading flow before delegating to the
+ *          mirrors the skipToAnswer flow before delegating to the
  *          animation controller.
  * Reason: extracted from `MainSurface.vue` (was 446 lines) so the
  *          dev-tools surface stays self-contained — MainSurface only has
@@ -25,7 +25,7 @@ import { toggleContainerBorders as toggleContainerBordersH5 } from '../../../cor
 /** Animation controller surface this composable touches. */
 export interface DevAnimationController {
   replayFromPhase: (phase: OverlayPhase) => void
-  skipToReading: () => void
+  skipToAnswer: () => void
   setPlaybackRate: (rate: number) => void
 }
 
@@ -51,7 +51,7 @@ export interface DevTools {
   isDevExpanded: Ref<boolean>
   showContainerBorders: Ref<boolean>
   handleDevReplay: (targetPhase: OverlayPhase) => void
-  handleDevSkipToReading: () => void
+  handleDevSkipToAnswer: () => void
   handleDevPlaybackRate: (rate: number) => void
   toggleContainerBorders: () => void
 }
@@ -74,7 +74,7 @@ export function useDevTools(deps: UseDevToolsDeps): DevTools {
     // still cross that hook on their way through. But replays that jump
     // straight to `revealing` skip the drawing builder entirely, so the
     // hook never fires and the panel opens with no reading in flight
-    // (empty body). Mirror the skipToReading flow: fire the request
+    // (empty body). Mirror the skipToAnswer flow: fire the request
     // synchronously before delegating to the animation controller. Any
     // in-flight reading is reset first to avoid resolving against the
     // previous run.
@@ -85,8 +85,8 @@ export function useDevTools(deps: UseDevToolsDeps): DevTools {
     deps.animationController.replayFromPhase(targetPhase)
   }
 
-  function handleDevSkipToReading(): void {
-    deps.animationController.skipToReading()
+  function handleDevSkipToAnswer(): void {
+    deps.animationController.skipToAnswer()
   }
 
   function handleDevPlaybackRate(rate: number): void {
@@ -104,7 +104,7 @@ export function useDevTools(deps: UseDevToolsDeps): DevTools {
     isDevExpanded,
     showContainerBorders,
     handleDevReplay,
-    handleDevSkipToReading,
+    handleDevSkipToAnswer,
     handleDevPlaybackRate,
     toggleContainerBorders,
   }

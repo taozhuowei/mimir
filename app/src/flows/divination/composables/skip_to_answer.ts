@@ -14,7 +14,7 @@ import { getPhaseSnap } from './phase_registry'
 import type { PhaseSnapDeps } from './phase_entry_snap'
 import type { OverlayPhase } from '../../shared/composables/animations/phase_contracts'
 
-export interface SkipToReadingCommandDeps {
+export interface SkipToAnswerCommandDeps {
   interruptCurrentAnimation: () => void
   entryAnimationComplete: Ref<boolean>
   resetOverlayScene: () => void
@@ -25,7 +25,7 @@ export interface SkipToReadingCommandDeps {
   getPhaseSnapDeps: () => PhaseSnapDeps
 }
 
-export function skipToReadingCommand(deps: SkipToReadingCommandDeps): void {
+export function skipToAnswerCommand(deps: SkipToAnswerCommandDeps): void {
   deps.interruptCurrentAnimation()
   deps.entryAnimationComplete.value = true
   deps.resetOverlayScene()
