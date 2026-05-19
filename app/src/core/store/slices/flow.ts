@@ -18,7 +18,7 @@
 
 import { computed, ref } from 'vue'
 import type { DrawnResult } from '../../api/types'
-import type { createAnswerState } from './reading'
+import type { createAnswerState } from './answer'
 
 export type DivinationPhase = 'idle' | 'divination' | 'reading' | 'decision'
 

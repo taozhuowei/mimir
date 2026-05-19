@@ -1,5 +1,5 @@
 /**
- * Name: core/sizing/layout_solver_reading
+ * Name: core/sizing/layout_solver_answer
  * Purpose: pure reading-stage layout solver — bottom-band reservation,
  *          result-card sizing (shrunk + full), and the assembled reading
  *          SceneLayout (single centred card + drawer anchored to its edge).

@@ -1,5 +1,5 @@
 /**
- * Name: flows/reading/composables/result_card_lift_margin
+ * Name: flows/answer/composables/result_card_lift_margin
  * Purpose: vertical breathing margin (px) added to the result-card lift
  *          transform so the card's bottom never touches the reading
  *          drawer's top edge when the bottom sheet opens on narrow

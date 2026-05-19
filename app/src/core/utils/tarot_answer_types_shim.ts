@@ -1,5 +1,5 @@
 /**
- * Name: utils/tarot_reading_types_shim
+ * Name: utils/tarot_answer_types_shim
  * Purpose: thin re-export shim that preserves the historical import path
  *          while protocol types now live in `api/types.ts`.
  * Reason: 11 modules across stores, components, and composables already

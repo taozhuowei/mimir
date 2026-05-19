@@ -4,7 +4,7 @@
  * Reason: extracted from the phase pipeline to isolate replay logic as a standalone command.
  *         Now delegates per-phase entry-state setup to PHASE_MANIFEST.snapToEntryState
  *         via getPhaseSnap() so the visual contract for each phase lives next to its
- *         metadata, not duplicated across this command and skip_to_reading.
+ *         metadata, not duplicated across this command and skip_to_answer.
  * Data flow: deps in → interrupts current animation, resets scene, snaps the visual
  *         state to the target phase's entry, then runs the pipeline from that index.
  *         The await-nextTick before runPipeline ensures visible-flag mutations have

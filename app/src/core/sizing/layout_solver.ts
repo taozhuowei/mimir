@@ -9,7 +9,7 @@
  *          This file is a small facade: the type surface lives in
  *          `layout_solver_types.ts`, the per-scene pure computers in
  *          `layout_solver_computers.ts`, and the per-scene assemblers in
- *          `layout_solver_reading.ts` / `layout_solver_draw.ts`.
+ *          `layout_solver_answer.ts` / `layout_solver_draw.ts`.
  *          `solveLayout` dispatches to them; the public API is unchanged —
  *          every type and the function itself are re-exported here so
  *          downstream importers stay identical.
@@ -39,7 +39,7 @@ import type {
 import {
   answerStageReservation,
   solveAnswerStageLayout,
-} from './layout_solver_reading'
+} from './layout_solver_answer'
 import { solveDrawStageLayout } from './layout_solver_draw'
 
 // Re-export the type surface from the dedicated module so existing

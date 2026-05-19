@@ -40,7 +40,7 @@ src/
 │   │   ├── layout_solver_types.ts    布局求解输入/输出类型
 │   │   ├── layout_solver_computers.ts 舞台/抽屉/运动包络纯计算
 │   │   ├── layout_solver_draw.ts     抽牌场景布局求解
-│   │   ├── layout_solver_reading.ts  解读场景布局求解
+│   │   ├── layout_solver_answer.ts   答案场景布局求解
 │   │   ├── layout_solver.ts          布局求解门面：按场景分派
 │   │   ├── solve_from_window.ts      一步从窗口信息求出场景布局
 │   │   ├── use_css_var_bridge.ts     把尺寸写成根元素 CSS 变量
@@ -50,10 +50,10 @@ src/
 │   │       ├── motion_metrics.ts         由布局包络算洗/切/抽运动度量
 │   │       └── use_overlay_layout.ts     占卜浮层布局组合式门面
 │   ├── store/                  Pinia 状态
-│   │   ├── tarot.ts            占卜域门面：组合 slices/deck|flow|reading
+│   │   ├── tarot.ts            占卜域门面：组合 slices/deck|flow|answer
 │   │   ├── slices/deck.ts      牌库数据与加载（状态切片工厂，非 store）
 │   │   ├── slices/flow.ts      占卜流程阶段、抽牌、问题（状态切片工厂，非 store）
-│   │   ├── slices/reading.ts   解读结果与请求状态（状态切片工厂，非 store）
+│   │   ├── slices/answer.ts    答案结果与请求状态（状态切片工厂，非 store）
 │   │   ├── boot.ts             启动结果三态（pending/ok/failed）
 │   │   ├── notification.ts     跨视图通知队列
 │   │   └── theme.ts            主题数据与资产解析
@@ -64,12 +64,12 @@ src/
 │       ├── math.ts             数值区间钳制 clamp
 │       ├── secure_random.ts    安全随机数（视觉抖动用）
 │       ├── accessibility.ts    探测“减少动效”偏好
-│       ├── tarot_reading_types_shim.ts 类型再导出兼容垫片
+│       ├── tarot_answer_types_shim.ts 类型再导出兼容垫片
 │       ├── dev/container_borders.ts 切换调试边框（仅 H5）
 │       ├── dev/draggable_panel.ts   调试面板拖拽手柄（仅 H5）
-│       ├── reading/reading_provider.ts          解读提供者接口类型
-│       ├── reading/rule_based_reading_provider.ts 规则解读提供者：转发后端
-│       └── reading/reading_orchestrator.ts      解读请求生命周期（超时/重试/写入）
+│       ├── answer/answer_provider.ts            答案提供者接口类型
+│       ├── answer/rule_based_answer_provider.ts 规则答案提供者：转发后端
+│       └── answer/answer_orchestrator.ts        答案请求生命周期（超时/重试/写入）
 │
 └── flows/                      按业务流分域，每域含视图与编排逻辑
     ├── idle/                   待机扇形牌堆
@@ -102,13 +102,13 @@ src/
     │   ├── composables/progress_presenter.ts   进度转视图数据
     │   ├── composables/phase_entry_snap.ts 各相位入场态快照
     │   ├── composables/replay_from_phase.ts    从指定相位重放（开发用）
-    │   ├── composables/skip_to_reading.ts      跳过洗切抽直达翻牌
+    │   ├── composables/skip_to_answer.ts       跳过洗切抽直达翻牌
     │   ├── composables/rig_lifecycle.ts       演出台启停与窗口 resize 监听
     │   └── composables/overlay_text.ts         占卜遮罩文案常量
-    ├── reading/                答案揭示（卡下行内，无面板/分栏/抽屉）
+    ├── answer/                 答案揭示（卡下行内，无面板/分栏/抽屉）
     │   ├── components/AnswerInscription.vue     答案卡：原文/翻译/来源，自持 loading/error/success
     │   ├── components/ActionArea.vue            重开/回首页/重试按钮区
-    │   ├── composables/use_reading_request_controller.ts       答案请求生命周期（超时/重试/写入）
+    │   ├── composables/use_answer_request_controller.ts        答案请求生命周期（超时/重试/写入）
     │   └── composables/result_card_lift_margin.ts      结果卡抬升留白常量
     ├── index/                  主界面装配与开发工具
     │   ├── components/MainSurface.vue              主界面装配根

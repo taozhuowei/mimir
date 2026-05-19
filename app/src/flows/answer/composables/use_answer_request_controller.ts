@@ -1,5 +1,5 @@
 /**
- * Name: flows/reading/composables/use_reading_request_controller
+ * Name: flows/answer/composables/use_answer_request_controller
  * Purpose: manage divination lifecycle (start, retry, reset, destroy) and
  *          expose request state to the overlay templates.
  * Reason: decouples divination orchestration from animation; this module
@@ -10,11 +10,11 @@
 import { computed, ref } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useTarotStore } from '../../../core/store/tarot'
-import { RuleBasedAnswerProvider } from '../../../core/utils/reading/rule_based_reading_provider'
-import { createAnswerOrchestrator } from '../../../core/utils/reading/reading_orchestrator'
-import type { AnswerRequest } from '../../../core/utils/reading/reading_provider'
+import { RuleBasedAnswerProvider } from '../../../core/utils/answer/rule_based_answer_provider'
+import { createAnswerOrchestrator } from '../../../core/utils/answer/answer_orchestrator'
+import type { AnswerRequest } from '../../../core/utils/answer/answer_provider'
 import type { AnswerResult } from '../../../core/api/types'
-import type { AnswerStatus } from '../../../core/utils/reading/reading_orchestrator'
+import type { AnswerStatus } from '../../../core/utils/answer/answer_orchestrator'
 import type { ComputedRef } from 'vue'
 
 export interface UseAnswerControllerDeps {

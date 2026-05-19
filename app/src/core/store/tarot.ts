@@ -3,7 +3,7 @@
 import { defineStore } from 'pinia'
 import type { DrawnResult } from '../api/types'
 import { createDeckState } from './slices/deck'
-import { createAnswerState } from './slices/reading'
+import { createAnswerState } from './slices/answer'
 import { createFlowState } from './slices/flow'
 
 export type { DivinationPhase } from './slices/flow'

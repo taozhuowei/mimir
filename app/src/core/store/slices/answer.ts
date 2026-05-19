@@ -1,11 +1,11 @@
 /**
- * Name: core/store/slices/reading
+ * Name: core/store/slices/answer
  * Purpose: state-slice factory holding the divination's interpretation
  *          result and request status refs that the reading orchestrator
  *          drives. Composed by the `tarot` Pinia store — this module is a
  *          pure factory, not a store itself.
  * Reason: separates reading concerns from divination flow and deck state.
- *         The orchestrator (see `utils/reading/reading_orchestrator.ts`)
+ *         The orchestrator (see `utils/answer/answer_orchestrator.ts`)
  *         owns the request lifecycle now — this store only exposes the
  *         shared refs it writes into, so the rest of the app can subscribe.
  * Data flow: orchestrator writes `answerResult`/`isAnswerLoading`/
