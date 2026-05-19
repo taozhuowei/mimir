@@ -3,7 +3,7 @@
  *
  * Uses supertest to send real HTTP requests to the Express app in-process.
  * Each assertion verifies that the server response matches the TypeScript
- * interface the frontend expects (TarotCardInfo, ReadingResult, DrawnInput).
+ * interface the frontend expects (TarotCardInfo, AnswerResult, DrawnInput).
  *
  * This file is the source of truth for the API contract between:
  *   - app/src/api/cards.ts       ←→  GET  /api/v1/cards
@@ -117,11 +117,10 @@ describe('GET /api/v1/cards', () => {
 // Frontend contract: requestDivination(spreadKind?) → Promise<DivinationOutput>
 // Request body: { spreadKind?: 'single_card' }   (defaults to single_card)
 // Expected response shape:
-//   { drawn:   [{ cardId: string, position: 'upright' | 'reversed' }],
-//     reading: { cardDetails: [{ card, position,
-//                 answer: { quote, translation, source } }] } }
-// The `reading` key is retained for protocol stability; the product term
-// is 答案 (the Answer).
+//   { drawn:  [{ cardId: string, position: 'upright' | 'reversed' }],
+//     answer: { cardDetails: [{ card, position,
+//                answer: { quote, translation, source } }] } }
+// The product term is 答案 (the Answer).
 // ---------------------------------------------------------------------------
 
 describe('POST /api/v1/divinations', () => {
@@ -157,17 +156,17 @@ describe('POST /api/v1/divinations', () => {
     expect(['upright', 'reversed']).toContain(res.body.drawn[0].position)
   })
 
-  it('reading satisfies ReadingResult shape (Answer-based, no scoring)', async () => {
+  it('answer satisfies AnswerResult shape (Answer-based, no scoring)', async () => {
     const res = await request(app).post('/api/v1/divinations').send({})
-    expect(res.body.reading.result).toBeUndefined()
-    expect(res.body.reading.score).toBeUndefined()
-    expect(Array.isArray(res.body.reading.cardDetails)).toBe(true)
-    expect(res.body.reading.cardDetails).toHaveLength(1)
+    expect(res.body.answer.result).toBeUndefined()
+    expect(res.body.answer.score).toBeUndefined()
+    expect(Array.isArray(res.body.answer.cardDetails)).toBe(true)
+    expect(res.body.answer.cardDetails).toHaveLength(1)
   })
 
   it('cardDetails entries satisfy CardDetail shape (card + position + answer)', async () => {
     const res = await request(app).post('/api/v1/divinations').send({})
-    for (const detail of res.body.reading.cardDetails) {
+    for (const detail of res.body.answer.cardDetails) {
       expect(['upright', 'reversed']).toContain(detail.position)
       expect(typeof detail.card.id).toBe('string')
       expect(typeof detail.card.image).toBe('string')
@@ -185,10 +184,10 @@ describe('POST /api/v1/divinations', () => {
     }
   })
 
-  it('drawn[0].cardId matches reading.cardDetails[0].card.id', async () => {
+  it('drawn[0].cardId matches answer.cardDetails[0].card.id', async () => {
     const res = await request(app).post('/api/v1/divinations').send({})
-    expect(res.body.drawn[0].cardId).toBe(res.body.reading.cardDetails[0].card.id)
-    expect(res.body.drawn[0].position).toBe(res.body.reading.cardDetails[0].position)
+    expect(res.body.drawn[0].cardId).toBe(res.body.answer.cardDetails[0].card.id)
+    expect(res.body.drawn[0].position).toBe(res.body.answer.cardDetails[0].position)
   })
 
   it('returns 400 with code "spreadKind" for unknown spread', async () => {

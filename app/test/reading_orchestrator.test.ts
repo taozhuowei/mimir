@@ -3,8 +3,8 @@
 /**
  * Reading orchestrator unit tests (B2 protocol).
  * After the protocol merge the provider returns a `Divination`
- * (`{ spreadKind, drawn, reading }`); the orchestrator splits this into
- * `drawnRef` (drawn cards) and `resultRef` (reading). These tests cover
+ * (`{ spreadKind, drawn, answer }`); the orchestrator splits this into
+ * `drawnRef` (drawn cards) and `resultRef` (answer). These tests cover
  * the happy path, error path, reset semantics and the early-return when a
  * result already exists.
  */
@@ -13,7 +13,7 @@ import { describe, expect, it, vi, beforeEach } from 'vitest'
 import { ref } from 'vue'
 import { createReadingOrchestrator } from '../src/core/utils/reading/reading_orchestrator'
 import type { ReadingProvider } from '../src/core/utils/reading/reading_provider'
-import type { DrawnResult, ReadingResult, TarotCardInfo } from '../src/core/api/types'
+import type { DrawnResult, AnswerResult, TarotCardInfo } from '../src/core/api/types'
 import type { Divination } from '../src/core/api/divinations'
 
 function makeCard(id: string): TarotCardInfo {
@@ -31,7 +31,7 @@ function makeDrawn(id = 'card_a'): DrawnResult[] {
   return [{ card: makeCard(id), position: 'upright' }]
 }
 
-function makeReadingResult(): ReadingResult {
+function makeReadingResult(): AnswerResult {
   return {
     cardDetails: [
       {
@@ -47,8 +47,8 @@ function makeReadingResult(): ReadingResult {
   }
 }
 
-function makeDivination(drawn: DrawnResult[] = makeDrawn(), reading: ReadingResult = makeReadingResult()): Divination {
-  return { spreadKind: 'single_card', drawn, reading }
+function makeDivination(drawn: DrawnResult[] = makeDrawn(), answer: AnswerResult = makeReadingResult()): Divination {
+  return { spreadKind: 'single_card', drawn, answer }
 }
 
 function makeMockProvider(divination: Divination | null = null, shouldReject = false): ReadingProvider {
@@ -66,7 +66,7 @@ function makeMockProvider(divination: Divination | null = null, shouldReject = f
 
 describe('reading_orchestrator', () => {
   let statusRef: ReturnType<typeof ref<'idle' | 'loading' | 'success' | 'error'>>
-  let resultRef: ReturnType<typeof ref<ReadingResult | null>>
+  let resultRef: ReturnType<typeof ref<AnswerResult | null>>
   let errorRef: ReturnType<typeof ref<string | null>>
   let drawnRef: ReturnType<typeof ref<DrawnResult[]>>
 

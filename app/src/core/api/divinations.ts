@@ -14,32 +14,32 @@ import { request, resolveAssetUrl } from './client'
 import type {
   DivinationResponse,
   DrawnResult,
-  ReadingCardDetail,
-  ReadingResult,
+  AnswerCardDetail,
+  AnswerResult,
   SpreadKind,
   TarotCardInfo,
 } from './types'
 
 /**
- * Result of a complete divination: drawn cards (with images resolved) plus
- * the server's reading (the 答案 / Answer per card). Frontend animations
- * consume `drawn`; the answer card consumes `reading`.
+ * Result of a complete divination: drawn cards (with images resolved)
+ * plus the server's Answer (the 答案, per card). Frontend animations
+ * consume `drawn`; the answer card consumes `answer`.
  */
 export interface Divination {
   spreadKind: SpreadKind
   drawn: DrawnResult[]
-  reading: ReadingResult
+  answer: AnswerResult
 }
 
 /**
  * Hydrate a server-returned drawn entry into a full `DrawnResult`. We need
  * the user-facing card face data (image, name) on the client, so the
- * reading we get back already carries the card object — we reuse it here
+ * answer we get back already carries the card object — we reuse it here
  * to avoid a second round-trip to `/api/v1/cards`.
  */
 function hydrateDrawn(
   serverDrawn: DivinationResponse['drawn'],
-  cardDetails: ReadingCardDetail[],
+  cardDetails: AnswerCardDetail[],
 ): DrawnResult[] {
   const card_by_id = new Map<string, TarotCardInfo>()
   for (const detail of cardDetails) {
@@ -58,11 +58,11 @@ function hydrateDrawn(
   })
 }
 
-/** Resolve image URLs inside a reading result. */
-function hydrateReading(reading: ReadingResult): ReadingResult {
+/** Resolve image URLs inside an answer result. */
+function hydrateAnswer(answer: AnswerResult): AnswerResult {
   return {
-    ...reading,
-    cardDetails: reading.cardDetails.map(detail => ({
+    ...answer,
+    cardDetails: answer.cardDetails.map(detail => ({
       ...detail,
       card: { ...detail.card, image: resolveAssetUrl(detail.card.image) },
     })),
@@ -91,8 +91,8 @@ export async function requestDivination(spreadKind?: SpreadKind): Promise<Divina
     data,
   })
 
-  const reading = hydrateReading(res.reading)
-  const drawn = hydrateDrawn(res.drawn, reading.cardDetails)
+  const answer = hydrateAnswer(res.answer)
+  const drawn = hydrateDrawn(res.drawn, answer.cardDetails)
 
-  return { spreadKind: res.spreadKind, drawn, reading }
+  return { spreadKind: res.spreadKind, drawn, answer }
 }

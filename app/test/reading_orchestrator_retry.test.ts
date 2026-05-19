@@ -3,7 +3,7 @@
 /**
  * Reading orchestrator retry semantics (B2 protocol).
  * `retry` re-issues the divination request; the backend draws a fresh hand
- * and returns a new reading. Tests assert both the reading and the drawn
+ * and returns a new answer. Tests assert both the answer and the drawn
  * cards are overwritten on a successful retry.
  */
 
@@ -11,7 +11,7 @@ import { describe, expect, it, vi, beforeEach } from 'vitest'
 import { ref } from 'vue'
 import { createReadingOrchestrator } from '../src/core/utils/reading/reading_orchestrator'
 import type { ReadingProvider, ReadingRequest } from '../src/core/utils/reading/reading_provider'
-import type { DrawnResult, ReadingResult, TarotCardInfo } from '../src/core/api/types'
+import type { DrawnResult, AnswerResult, TarotCardInfo } from '../src/core/api/types'
 import type { Divination } from '../src/core/api/divinations'
 
 function makeCard(id: string): TarotCardInfo {
@@ -29,7 +29,7 @@ function makeDrawn(id: string): DrawnResult[] {
   return [{ card: makeCard(id), position: 'upright' }]
 }
 
-function makeReadingResult(): ReadingResult {
+function makeReadingResult(): AnswerResult {
   return {
     cardDetails: [
       {
@@ -45,8 +45,8 @@ function makeReadingResult(): ReadingResult {
   }
 }
 
-function makeDivination(id = 'card_a', reading: ReadingResult = makeReadingResult()): Divination {
-  return { spreadKind: 'single_card', drawn: makeDrawn(id), reading }
+function makeDivination(id = 'card_a', answer: AnswerResult = makeReadingResult()): Divination {
+  return { spreadKind: 'single_card', drawn: makeDrawn(id), answer }
 }
 
 function makeMockProvider(divination: Divination | null = null, shouldReject = false): ReadingProvider {
@@ -68,7 +68,7 @@ function makeRequest(): ReadingRequest {
 
 describe('reading_orchestrator retry', () => {
   let statusRef: ReturnType<typeof ref<'idle' | 'loading' | 'success' | 'error'>>
-  let resultRef: ReturnType<typeof ref<ReadingResult | null>>
+  let resultRef: ReturnType<typeof ref<AnswerResult | null>>
   let errorRef: ReturnType<typeof ref<string | null>>
   let drawnRef: ReturnType<typeof ref<DrawnResult[]>>
 
@@ -101,7 +101,7 @@ describe('reading_orchestrator retry', () => {
     errorRef.value = 'Test error'
 
     const retryResult = await orchestrator.retry()
-    expect(retryResult).toStrictEqual(divination.reading)
+    expect(retryResult).toStrictEqual(divination.answer)
     expect(provider.requestReading).toHaveBeenCalledTimes(2)
     expect(statusRef.value).toBe('success')
     // After a successful retry, drawnRef must reflect the freshly-drawn hand.
@@ -137,7 +137,7 @@ describe('reading_orchestrator retry', () => {
     errorRef.value = 'Test error'
 
     const retryResult = await orchestrator.retry({ spreadKind: 'single_card' })
-    expect(retryResult).toStrictEqual(secondDivination.reading)
+    expect(retryResult).toStrictEqual(secondDivination.answer)
     expect(provider.requestReading).toHaveBeenCalledTimes(2)
     // drawnRef must have been overwritten by the retry's fresh draw.
     expect(drawnRef.value).toStrictEqual(secondDivination.drawn)
@@ -183,7 +183,7 @@ describe('reading_orchestrator retry', () => {
     expect(errorRef.value).toBeNull()
 
     const retryResult = await retryPromise
-    expect(retryResult).toStrictEqual(divination.reading)
+    expect(retryResult).toStrictEqual(divination.answer)
     expect(statusRef.value).toBe('success')
     expect(orchestrator.state.canRetry).toBe(false)
   })
@@ -219,7 +219,7 @@ describe('reading_orchestrator retry', () => {
 
     // Manual retry succeeds.
     const retryResult = await orchestrator.retry()
-    expect(retryResult).toStrictEqual(successDivination.reading)
+    expect(retryResult).toStrictEqual(successDivination.answer)
     expect(statusRef.value).toBe('success')
     expect(errorRef.value).toBeNull()
     expect(provider.requestReading).toHaveBeenCalledTimes(3)

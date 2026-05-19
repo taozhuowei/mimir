@@ -16,7 +16,7 @@
 import { describe, expect, it, beforeEach } from 'vitest'
 import { createPinia, setActivePinia } from 'pinia'
 import { useTarotStore } from '../src/core/store/tarot'
-import type { DrawnResult, ReadingResult, TarotCardInfo } from '../src/core/utils/tarot_reading_types_shim'
+import type { DrawnResult, AnswerResult, TarotCardInfo } from '../src/core/utils/tarot_reading_types_shim'
 
 // Helper to create minimal valid TarotCardInfo (face data only).
 function makeCard(id: string): TarotCardInfo {
@@ -34,7 +34,7 @@ function makeDrawn(id = 'card_a'): DrawnResult[] {
   return [{ card: makeCard(id), position: 'upright' }]
 }
 
-function makeReadingResult(drawn: DrawnResult[]): ReadingResult {
+function makeReadingResult(drawn: DrawnResult[]): AnswerResult {
   return {
     cardDetails: drawn.map(d => ({
       card: d.card,

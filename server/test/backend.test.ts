@@ -1,6 +1,6 @@
 /**
  * Backend unit tests
- * Tests card_loader (card face data) and buildReading (Answer lookup) using
+ * Tests card_loader (card face data) and buildAnswer (Answer lookup) using
  * the real JSON data files. No mocking — every assertion is checked against
  * the actual data source so the test moves with the data, not a frozen copy.
  *
@@ -11,7 +11,7 @@
 
 import { describe, it, expect } from 'vitest'
 import { getAllCards, getCardById } from '../src/services/card_loader'
-import { buildReading } from '../src/services/tarot_reading'
+import { buildAnswer } from '../src/services/tarot_reading'
 import answerData from '../src/data/tarot_answer.json'
 
 const ANSWER_CARDS = (answerData as {
@@ -78,12 +78,12 @@ describe('card_loader', () => {
 })
 
 // ---------------------------------------------------------------------------
-// buildReading — Answer lookup
+// buildAnswer — Answer lookup
 // ---------------------------------------------------------------------------
 
-describe('buildReading — single card', () => {
+describe('buildAnswer — single card', () => {
   it('maps a card+upright to its Answer from tarot_answer.json', () => {
-    const r = buildReading([{ cardId: 'cups_ace', position: 'upright' }])
+    const r = buildAnswer([{ cardId: 'cups_ace', position: 'upright' }])
     expect(r.cardDetails).toHaveLength(1)
     const detail = r.cardDetails[0]
     expect(detail.position).toBe('upright')
@@ -97,7 +97,7 @@ describe('buildReading — single card', () => {
   })
 
   it('uses the reversed Answer when position is reversed', () => {
-    const r = buildReading([{ cardId: 'cups_ace', position: 'reversed' }])
+    const r = buildAnswer([{ cardId: 'cups_ace', position: 'reversed' }])
     const expected = ANSWER_CARDS['cups_ace'].reversed[0]
     expect(r.cardDetails[0].answer).toEqual({
       quote: expected.quote,
@@ -107,7 +107,7 @@ describe('buildReading — single card', () => {
   })
 
   it('drops translationSource — the UI shows only quote/translation/source', () => {
-    const r = buildReading([{ cardId: 'the_fool', position: 'upright' }])
+    const r = buildAnswer([{ cardId: 'the_fool', position: 'upright' }])
     expect(Object.keys(r.cardDetails[0].answer).sort()).toEqual([
       'quote',
       'source',
@@ -116,7 +116,7 @@ describe('buildReading — single card', () => {
   })
 
   it('carries no scoring/interpretation fields', () => {
-    const r = buildReading([{ cardId: 'the_fool', position: 'upright' }]) as Record<string, unknown>
+    const r = buildAnswer([{ cardId: 'the_fool', position: 'upright' }]) as Record<string, unknown>
     expect(r.score).toBeUndefined()
     expect(r.result).toBeUndefined()
     const detail = r.cardDetails[0] as unknown as Record<string, unknown>
@@ -124,9 +124,9 @@ describe('buildReading — single card', () => {
   })
 })
 
-describe('buildReading — multi card', () => {
+describe('buildAnswer — multi card', () => {
   it('preserves order and resolves each card to its Answer', () => {
-    const r = buildReading([
+    const r = buildAnswer([
       { cardId: 'the_fool', position: 'upright' },
       { cardId: 'swords_2', position: 'reversed' },
       { cardId: 'the_world', position: 'upright' },
@@ -144,11 +144,11 @@ describe('buildReading — multi card', () => {
   })
 })
 
-describe('buildReading — data integrity across all 78 cards', () => {
+describe('buildAnswer — data integrity across all 78 cards', () => {
   it('every card resolves a non-empty Answer for both orientations', () => {
     for (const card of getAllCards()) {
       for (const position of ['upright', 'reversed'] as const) {
-        const r = buildReading([{ cardId: card.id, position }])
+        const r = buildAnswer([{ cardId: card.id, position }])
         const a = r.cardDetails[0].answer
         expect(typeof a.quote).toBe('string')
         expect(a.quote.length).toBeGreaterThan(0)
@@ -161,13 +161,13 @@ describe('buildReading — data integrity across all 78 cards', () => {
   })
 })
 
-describe('buildReading — input contract', () => {
+describe('buildAnswer — input contract', () => {
   it('throws on empty input rather than returning an empty reading', () => {
-    expect(() => buildReading([])).toThrow(/at least one drawn card/i)
+    expect(() => buildAnswer([])).toThrow(/at least one drawn card/i)
   })
 
   it('throws on unknown cardId', () => {
-    expect(() => buildReading([{ cardId: 'no_such_card', position: 'upright' }]))
+    expect(() => buildAnswer([{ cardId: 'no_such_card', position: 'upright' }]))
       .toThrow(/card not found/i)
   })
 })

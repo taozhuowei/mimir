@@ -12,7 +12,7 @@ declare global {
     __TAROT_TEST_API__?: {
       showResult: (payload: {
         question?: string
-        readingResult: import('./core/api/types').ReadingResult
+        readingResult: import('./core/api/types').AnswerResult
         drawnCards?: import('./core/api/types').DrawnResult[]
       }) => void
       reset: () => void

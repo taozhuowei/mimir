@@ -13,7 +13,7 @@
  */
 
 import type { Ref } from 'vue'
-import type { DrawnResult, ReadingResult } from '../../api/types'
+import type { DrawnResult, AnswerResult } from '../../api/types'
 import type { Divination } from '../../api/divinations'
 import type { ReadingProvider, ReadingRequest } from './reading_provider'
 
@@ -21,7 +21,7 @@ export type ReadingStatus = 'idle' | 'loading' | 'success' | 'error'
 
 export interface ReadingOrchestratorState {
   status: ReadingStatus
-  result: ReadingResult | null
+  result: AnswerResult | null
   error: string | null
   isLoading: boolean
   canRetry: boolean
@@ -29,8 +29,8 @@ export interface ReadingOrchestratorState {
 
 export interface ReadingOrchestrator {
   state: ReadingOrchestratorState
-  start(request: ReadingRequest): Promise<ReadingResult | null>
-  retry(request?: ReadingRequest): Promise<ReadingResult | null>
+  start(request: ReadingRequest): Promise<AnswerResult | null>
+  retry(request?: ReadingRequest): Promise<AnswerResult | null>
   reset(): void
   destroy(): void
 }
@@ -38,7 +38,7 @@ export interface ReadingOrchestrator {
 export interface ReadingOrchestratorDeps {
   provider: ReadingProvider
   statusRef: Ref<ReadingStatus>
-  resultRef: Ref<ReadingResult | null>
+  resultRef: Ref<AnswerResult | null>
   errorRef: Ref<string | null>
   /**
    * Where to write the drawn cards returned by the server. The flow store
@@ -93,7 +93,7 @@ function createTimerRegistry(): TimerRegistry {
  */
 function readOrchestratorState(
   statusRef: Ref<ReadingStatus>,
-  resultRef: Ref<ReadingResult | null>,
+  resultRef: Ref<AnswerResult | null>,
   errorRef: Ref<string | null>,
 ): ReadingOrchestratorState {
   return {
@@ -107,12 +107,12 @@ function readOrchestratorState(
 
 export function createReadingOrchestrator(deps: ReadingOrchestratorDeps): ReadingOrchestrator {
   const { provider, statusRef, resultRef, errorRef, drawnRef, errorMessage } = deps
-  let currentRequest: Promise<ReadingResult | null> | null = null
+  let currentRequest: Promise<AnswerResult | null> | null = null
   let lastRequest: ReadingRequest | null = null
   let destroyed = false
   const timers = createTimerRegistry()
 
-  async function doRequest(request: ReadingRequest, retryCount: number): Promise<ReadingResult | null> {
+  async function doRequest(request: ReadingRequest, retryCount: number): Promise<AnswerResult | null> {
     if (destroyed) return null
 
     let timeoutId: ReturnType<typeof setTimeout> | null = null
@@ -135,9 +135,9 @@ export function createReadingOrchestrator(deps: ReadingOrchestratorDeps): Readin
       // Order matters: write drawn first so any sync watcher on the reading
       // result already finds the drawn cards in place.
       drawnRef.value = divination.drawn
-      resultRef.value = divination.reading
+      resultRef.value = divination.answer
       statusRef.value = 'success'
-      return divination.reading
+      return divination.answer
     } catch (err: unknown) {
       if (timeoutId) clearTimeout(timeoutId)
       if (retryCount < 1 && !destroyed) {
@@ -150,7 +150,7 @@ export function createReadingOrchestrator(deps: ReadingOrchestratorDeps): Readin
     }
   }
 
-  async function executeRequest(request: ReadingRequest): Promise<ReadingResult | null> {
+  async function executeRequest(request: ReadingRequest): Promise<AnswerResult | null> {
     if (destroyed) return null
     if (currentRequest) {
       return currentRequest
