@@ -19,7 +19,7 @@
 - [x] F3 [`DevToolsPanel.vue`](../app/src/flows/index/components/DevToolsPanel.vue) 职责拆分（纯重构，零行为）：拖拽 Vue 接线（anchor/dragging/containerStyle/pointer/click 抑制/生命周期）抽为 [`use_dev_panel_drag`](../app/src/flows/index/composables/use_dev_panel_drag.ts) composable，壳变薄；`emit('toggle-dev-expanded')` 留壳经 `consumeClick()`。`$emit` 透传据实证维持显式（Vue 标准、类型安全、对外契约零风险；强行收敛无净收益且风险高，不为重构而重构）。模板/样式/props/emits 逐字不变。全套验收 + e2e 15/15 通过。提交 `51bd81e`。
 - [x] F4 [`TitleContent.vue`](../app/src/flows/shared/components/TitleContent.vue) 职责拆分（纯重构，零行为）：idle 入场动画（DOM-free 状态 + GSAP 时间轴 + reduced-motion + mount/variant-flip/unmount 生命周期）抽为 [`use_title_entrance`](../app/src/flows/shared/composables/use_title_entrance.ts) composable，SFC 变薄只渲染文案。COPY 表 + v-if variant 分支据实证保留（已是薄形态，外置无净收益）。模板/样式/COPY/props 逐字不变，时序逐字移植。全套验收 + e2e 15/15 通过。
 - [x] F5 `isWide` 双写竞态（方案 1：单一阈值 440，用户决策）：实证确认 bug 真实——同一 `isWide` ref 被 `recomputeIsWide`(>440) 与 `checkWidth`(≥920) 在 resize 时双写，440–920 区间非确定致切牌轴向不稳；常规手机/桌面落两阈值一致区，故此前测试未现。修复：`isWide` 仅 `recomputeIsWide(>MAX_CANVAS_WIDTH=440)` 单一写入；删 `checkWidth`/`PC_BREAKPOINT`/`WIDE_SIDE_DRAWER_WIDTH_PX` 全链（返回值零消费实证），`wide_breakpoint_and_chrome` 仅留 MP 胶囊；F5c：`stageContainerHeight` 恒等三元 + `showResults` 死参数化简（同 C2 删参数+调用方），`getViewportMetrics` 死字段注释为现状；顺修 C7 遗留语病。vue-tsc/tsc 双绿、`isWide` 单一写入复核通过；e2e 兜底按用户中断未单独跑（pre-commit 门禁真实跑）。`wide_breakpoint_and_chrome` 文件名已不贴切（仅余 MP chrome），改名待后续。
-- [ ] F6 `cardWidthFull/cardHeightFull` 双卡尺寸合一（**需评估，可能停下问**）：实证 `cardWidthFull` 与 `cardWidth` 在无抽屉后是否值恒等、`pipeline_builder` 用 `resultCardWidth` 的实际取值；若实证可等价合一则纯化简（全套 + e2e 证零行为变更），若存在真实差异或需产品判断则停下报告。
+- [x] F6 `cardWidthFull/cardHeightFull` 合一评估——结论：**不可合一，零代码改动**。实证 `layout_solver_answer.solveAnswerStageLayout`：`cardWidth/Height`(shrunk)=减去 `answerStageReservation`（底部 40% 视口 + 操作区）后舞台拟合，`cardWidthFull/HeightFull`(full)=全安全区舞台拟合；手机画布(375–440)宽度两者都撞 240 上限，但**高度真实不同**（full 舞台更高）。二者承载结果卡 reveal 的「先长到 full、父再缩到 shrunk」两阶段动画（`pipeline_builder` 用 `cardWidthFull/HeightFull` 作 `resultCardWidth/Height`，活路径）。pivot 删的是抽屉**组件**，底部预留（行内答案区 + 操作区）仍在——双尺寸是活逻辑非死概念。此前「无抽屉→已无区分」系错误推断，实证推翻，纠正于此。仅历史措辞「drawer/抽屉」可后续中性化（与 layout_solver 注释/`INITIAL_DRAWER_HEIGHT_RATIO` 命名同属低优先文档/命名债）。
 
 ## 回滚
 
@@ -27,7 +27,7 @@
 
 ## 进度
 
-四类搁置债转为 F1–F6 执行计划。F1（抽屉措辞残留）`a2e82a7`；F2（中文「解读」甄别）零文件改 `8f985fd`；F3（DevToolsPanel 拖拽抽 composable）`51bd81e`；F4（TitleContent 入场动画抽 composable）`e22d750`；F5（isWide 双写竞态修复，方案 1）已修+类型双绿+单一写入复核，e2e 兜底按用户中断未单独跑、待提交（pre-commit 门禁真实跑）。仅余 F6（cardWidthFull 合一）——开工即停下报告，需评估。
+四类搁置债转为 F1–F6 执行计划，全部完成。F1（抽屉措辞残留）`a2e82a7`；F2（中文「解读」甄别，零文件改）`8f985fd`；F3（DevToolsPanel 拖拽抽 composable）`51bd81e`；F4（TitleContent 入场动画抽 composable）`e22d750`；F5（isWide 双写竞态修复，方案 1）`f5ea876`；注释噪音清理 `657946e`；F6（cardWidthFull 合一评估，结论不可合一、零代码改）记于本提交。e2e 缺口：F3/F4 各自 e2e 15/15 通过；F5（改切牌 isWide 运行时）因用户中断 full gate 未单独跑 e2e，vue-tsc/tsc 双绿 + 单一写入复核 + pre-commit 门禁通过，建议统一补跑一次 e2e 兜底 F3/F4/F5 运行时改动。
 
 ## 搁置问题（已登记，未排期）
 
