@@ -1,41 +1,19 @@
 /**
  * Name: core/sizing/overlay_layout/wide_breakpoint_and_chrome
- * Purpose: holds the breakpoint constants and helpers used by the
- *          overlay-layout composable: the wide-screen side-drawer width,
- *          the PC-mode threshold, the mini-program menu-button rect
- *          reader, and the topBarHeight resolution.
- * Reason: extracted from `use_overlay_layout.ts` (was 361 lines) so the
- *          breakpoint math + platform chrome adapter stays small,
- *          testable, and can be re-exported via the composable facade
- *          without changing any downstream import paths.
- * Data flow: viewport width ──▶ checkWidth(deps.isWide) toggles the
- *            wide-screen flag; mini-program capsule rect ──▶
- *            resolveTopBarHeight ──▶ topBarHeight metric.
+ * Purpose: mini-program chrome adapter — the WeChat capsule rect reader
+ *          and the topBarHeight / menu-clearance resolution.
+ * Reason: extracted from `use_overlay_layout.ts`. The wide-screen
+ *          breakpoint constants + `checkWidth` that used to live here
+ *          were removed in F5: `isWide` is now a single-writer flag set
+ *          only by use_main_stage.recomputeIsWide at `> MAX_CANVAS_WIDTH`,
+ *          which fixed a dual-threshold race (440 vs 920) on the same ref
+ *          that left the cut-animation axis non-deterministic in the
+ *          440–920 viewport band. The file keeps its name for now; a
+ *          rename to drop the now-stale `wide_breakpoint` part is parked
+ *          as docs/TODO.md debt.
+ * Data flow: mini-program capsule rect ──▶ resolveTopBarHeight ──▶
+ *            topBarHeight / menu-clearance metric.
  */
-
-import { MAX_CANVAS_WIDTH } from '../scale'
-
-/**
- * Legacy wide-screen breakpoint addend (px). It once was the
- * wide-split side-column width; that UI and the stage-width shrink
- * it drove are gone. The value is now decoupled from any UI element —
- * it survives only as the addend that, with the canvas cap, fixes the
- * `isWide` responsive threshold at 920 (see `PC_BREAKPOINT`). The
- * `*_DRAWER_*` name is now a misnomer (no drawer); a rename is parked as
- * pivot layout-logic debt and is out of this step's scope.
- */
-export const WIDE_SIDE_DRAWER_WIDTH_PX = 480
-
-/**
- * `isWide` responsive breakpoint (px) = canvas cap (440) + the legacy
- * addend (480) = 920. Above it `isWide` flips true; today `isWide` only
- * drives the cut-animation axis (motion_metrics) — no split/drawer UI
- * branches on it anymore. NOTE: a second writer, use_main_stage's
- * recomputeIsWide, sets the same ref at a different threshold
- * (> MAX_CANVAS_WIDTH = 440); reconciling the dual threshold is parked
- * as pivot layout-logic debt — not touched here.
- */
-const PC_BREAKPOINT = MAX_CANVAS_WIDTH + WIDE_SIDE_DRAWER_WIDTH_PX // 920
 
 /**
  * Read the mini-program capsule rect when running in WeChat MP. Returns
@@ -81,19 +59,4 @@ export function resolveTopBarHeight(rect: { top: number; height: number } | null
  */
 export function getMenuClearancePx(): number {
   return resolveTopBarHeight(getMenuButtonRect())
-}
-
-/**
- * Update an `isWide` ref when the window size crosses the PC breakpoint.
- * Returns true iff `isWide` actually changed so the caller can short-
- * circuit redundant relayouts.
- *
- * The threshold is `PC_BREAKPOINT` (920). The split/drawer UI it used to
- * gate is gone; crossing it now only flips `isWide`, which solely drives
- * the cut-animation axis. Kept as a stable breakpoint, not a UI switch.
- */
-export function checkWidth(isWide: { value: boolean }, windowWidth: number): boolean {
-  const wasWide = isWide.value
-  isWide.value = windowWidth >= PC_BREAKPOINT
-  return wasWide !== isWide.value
 }

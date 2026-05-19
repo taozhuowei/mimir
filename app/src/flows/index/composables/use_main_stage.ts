@@ -52,9 +52,12 @@ export function useMainStage(): MainStage {
   const themeStore = useThemeStore()
   const { phase, startDivination, enterDecision, resetToIdle } = useAppPhase()
 
-  /* Responsive width — capped at MAX_CANVAS_WIDTH (440px). Consumed by the
-     animation pipeline (deck/draw layout); the former split/drawer that
-     used to branch on it was removed. */
+  /* `isWide` — single source of truth for the responsive flag, written
+     ONLY here (on window resize, threshold = MAX_CANVAS_WIDTH 440). Its
+     sole consumer is the cut-animation axis (motion_metrics: wide →
+     horizontal split, narrow → vertical). F5 removed a second writer (the
+     old 920 PC breakpoint via checkWidth) that raced this one on the same
+     ref and left the axis non-deterministic in the 440–920 band. */
   const isWide = ref(false)
   function recomputeIsWide() {
     const { windowWidth } = uni.getWindowInfo()

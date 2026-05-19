@@ -103,28 +103,26 @@ export function buildPhysicalViewport(): PhysicalViewport {
 }
 
 /**
- * Public viewport metrics — combines the physical viewport with the legacy
- * `stageWidth/stageHeight/stageContainerHeight/topBarHeight` keys that
- * downstream consumers (animation controller, overlay components) still
- * use today. The wide-screen stage-width shrink for the old
- * the wide-split side column was removed in the pivot cleanup — the
- * answer is inline now, so the stage is always the full canvas width.
- * The `isWide` parameter was removed along with that branch.
+ * Public viewport metrics — keeps the legacy
+ * `stageWidth/stageHeight/stageContainerHeight/topBarHeight` keys on the
+ * shape for type-contract stability. Post-pivot the answer is inline, so
+ * the stage is always the full canvas width and height: each derived key
+ * is now just the canvas dimension (the old wide-split width shrink and
+ * the `showResults` stage-container branch were removed — both collapsed
+ * to identity). None of these keys is read at runtime today; the fields
+ * are retained as the output contract (parked, docs/TODO.md).
  */
-export function getViewportMetrics(showResults: boolean): ViewportMetrics {
+export function getViewportMetrics(): ViewportMetrics {
   const viewport = buildPhysicalViewport()
-  const stageWidth = viewport.width
-  const stageHeight = viewport.height
-  const stageContainerHeight = showResults ? stageHeight : viewport.height
   return {
     width: viewport.width,
     height: viewport.height,
     safeAreaTop: viewport.safeAreaTop,
     safeAreaBottom: viewport.safeAreaBottom,
     dpr: 1,
-    stageWidth,
-    stageHeight,
-    stageContainerHeight,
+    stageWidth: viewport.width,
+    stageHeight: viewport.height,
+    stageContainerHeight: viewport.height,
     topBarHeight: 0,
   }
 }
