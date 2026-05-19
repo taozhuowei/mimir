@@ -14,7 +14,7 @@
 
 ## 任务清单
 
-- [ ] F1 清 pivot「抽屉」措辞残留（纯文档/注释/测试名，零运行时）：实证 [`layout_solver.test.ts`](../app/test/layout_solver.test.ts) 第 266 行测试断言性质——仅描述措辞过时则改其名与描述为「为下方行内答案区让位」语义；若断言逻辑本身假设抽屉存在则转 F6 评估。同步 [`layout_solver_types.ts`](../app/src/core/sizing/layout_solver_types.ts) `SceneLayout.cardWidth`/`stageShiftY`/`DrawerGeometry` 等仍按抽屉模型的注释为现状（行内答案区，无抽屉），不改字段/逻辑。验收：full 门禁 + 因纯注释/描述零运行时，prod/e2e 与上次同源可省并说明（断言若调整则补 e2e）。
+- [x] F1 清 pivot「抽屉」措辞残留：实证 `test:266` 断言（answer_stage 比 draw_stage 小 + 中心上移）pivot 后仍成立、仅措辞过时——改测试名/注释为「为下方行内答案区让位」，断言逐字未变；`layout_solver_types.ts` `DrawerGeometry`/`cardWidth` 抽屉模型注释改述为现状（行内答案区预留，结构保留待 F6）。纯注释/测试名零运行时，full 门禁全绿，prod/e2e 与上次 `4f4bfdd` 同源运行时故省。
 - [ ] F2 中文「解读」文档措辞统一（逐条甄别）：扫 [`docs/`](.) 与 [`README.md`](../README.md)、[`app/src/README.md`](../app/src/README.md) 全部「解读」，逐条判定——指本应用占卜产物者改「答案」；属塔罗领域通用术语（如正逆位含义解释、占卜动作泛称）者保留。`server/src/routes/divinations.ts` 历史端点名 `/api/v1/readings` 改为中性历史表述或保留并明确标注。验收：full 门禁；文档链接不破。
 - [ ] F3 [`DevToolsPanel.vue`](../app/src/flows/index/components/DevToolsPanel.vue) 职责拆分（纯重构，零行为）：把 10+ 纯 `$emit` 透传收敛（`v-bind/v-on` 转发或下沉）、拖拽/点击手势消歧抽为独立 composable、壳只管布局与可见性；模板渲染与对外事件契约逐字不变。验收：全套 + e2e 15/15（DevTools 在 e2e 路径，必跑）。
 - [ ] F4 [`TitleContent.vue`](../app/src/flows/shared/components/TitleContent.vue) 职责拆分（纯重构，零行为）：拆为纯文案渲染 + 入场动画驱动 + 按 `variant` 的薄包装；idle/fallback 两形态视觉与时序逐字不变。验收：全套 + e2e 15/15（待机/兜底视图在 e2e 路径）。
@@ -27,7 +27,7 @@
 
 ## 进度
 
-四类搁置债转为 F1–F6 执行计划，未启动。F1（最低风险，纯文档/注释）起。
+四类搁置债转为 F1–F6 执行计划。F1（pivot 抽屉措辞残留清理）已全套验收（full 门禁全绿；纯注释/测试名零运行时，prod/e2e 同源省）待提交。F2 起未启动。
 
 ## 搁置问题（已登记，未排期）
 

@@ -34,21 +34,25 @@ export interface CardLayout {
   zIndex: number
 }
 
-/** Drawer placement and size, in viewport-absolute px coordinates. */
+/**
+ * Solver output describing the bottom region the answer occupies, in
+ * viewport-absolute px. Historically a draggable bottom-sheet "drawer";
+ * the pivot replaced it with an inline answer zone, so these values now
+ * just describe that reserved bottom band. The shape (and whether to
+ * simplify it post-pivot) is parked — see docs/TODO.md F6.
+ */
 export interface DrawerGeometry {
-  /** Distance from the top of the viewport to the drawer's initial top edge. */
+  /** Distance from viewport top to the reserved region's top edge. */
   initialTop: number
-  /** Initial drawer height (= viewport.height - safeAreaBottom - initialTop). */
+  /** Reserved region height (= viewport.height - safeAreaBottom - initialTop). */
   initialHeight: number
-  /** Maximum drawer height when fully expanded. */
+  /** Max region height. */
   maxHeight: number
-  /** Drawer width in px. */
+  /** Region width in px. */
   width: number
   /**
-   * True when drawer is anchored to the right side. Always false in the new
-   * model (drawer is always a bottom sheet) — the field is kept so consumers
-   * that branch on it continue to compile until the wide-split UI is removed
-   * in a later step.
+   * Always false: the answer zone is an inline bottom region, never a
+   * right-aligned panel. Retained as part of the output contract.
    */
   rightAligned: boolean
 }
@@ -96,11 +100,10 @@ export interface SceneLayout {
   cards: CardLayout[]
   /**
    * Card width for the current scene. On the answer scene this is the
-   * "shrunk" size (computed against the stage rect that already subtracts
-   * the bottom drawer reservation) — matches the visual the user sees once
-   * the drawer is open. The "full" size used the moment the reveal
-   * animation lands (drawer not yet mounted) is exposed separately as
-   * `cardWidthFull` / `cardHeightFull`.
+   * size computed against the stage rect that already reserves the bottom
+   * inline-answer-zone region (so it is smaller than the draw scene). The
+   * pre-reservation size is exposed separately as `cardWidthFull` /
+   * `cardHeightFull`.
    */
   cardWidth: number
   /** Card height for the current scene (see `cardWidth` for semantics). */
