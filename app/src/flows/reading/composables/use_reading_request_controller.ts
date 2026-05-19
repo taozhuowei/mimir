@@ -13,7 +13,7 @@ import { useTarotStore } from '../../../core/store/tarot'
 import { RuleBasedReadingProvider } from '../../../core/utils/reading/rule_based_reading_provider'
 import { createReadingOrchestrator } from '../../../core/utils/reading/reading_orchestrator'
 import type { ReadingRequest } from '../../../core/utils/reading/reading_provider'
-import type { ReadingResult } from '../../../core/api/types'
+import type { AnswerResult } from '../../../core/api/types'
 import type { ReadingStatus } from '../../../core/utils/reading/reading_orchestrator'
 import type { ComputedRef } from 'vue'
 
@@ -26,9 +26,9 @@ export interface UseReadingControllerReturn {
   readingErrorMessage: ComputedRef<string>
   isReadingFailed: ComputedRef<boolean>
   isReadingLoading: ComputedRef<boolean>
-  readingResult: ComputedRef<ReadingResult | null>
-  startReading: (request: ReadingRequest) => Promise<ReadingResult | null>
-  retryReading: (request: ReadingRequest) => Promise<ReadingResult | null>
+  readingResult: ComputedRef<AnswerResult | null>
+  startReading: (request: ReadingRequest) => Promise<AnswerResult | null>
+  retryReading: (request: ReadingRequest) => Promise<AnswerResult | null>
   resetReading: () => void
   destroyReading: () => void
 }

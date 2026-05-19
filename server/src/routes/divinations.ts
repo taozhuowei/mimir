@@ -14,10 +14,9 @@
  * Response (200):
  *   { spreadKind: SpreadKind,        // echo of the resolved spread kind
  *     drawn:      DrawnInput[],      // cards picked by the server
- *     reading:    ReadingResult }    // each drawn card + its Answer
- *                                    // (quote/translation/source). The
- *                                    // `reading` key is kept for protocol
- *                                    // stability; the product term is 答案.
+ *     answer:     AnswerResult }    // each drawn card + its Answer
+ *                                    // (quote/translation/source); the
+ *                                    // product term is 答案.
  *
  * Errors:
  *   400 { error: 'Unknown spreadKind', code: 'spreadKind' }

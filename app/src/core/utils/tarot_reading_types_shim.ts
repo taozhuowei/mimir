@@ -19,7 +19,7 @@ export type {
   DrawnResult,
   DivinationDrawnEntry,
   AnswerEntry,
-  ReadingCardDetail,
-  ReadingResult,
+  AnswerCardDetail,
+  AnswerResult,
   DivinationResponse,
 } from '../api/types'

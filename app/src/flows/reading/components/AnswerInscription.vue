@@ -45,13 +45,13 @@
  */
 import { computed, onMounted, onUnmounted, watch } from 'vue'
 import { prefersReducedMotion } from '../../../core/utils/accessibility'
-import type { ReadingResult } from '../../../core/api/types'
+import type { AnswerResult } from '../../../core/api/types'
 
 type RequestState = 'idle' | 'loading' | 'success' | 'error'
 
 const props = defineProps<{
   state: RequestState
-  readingResult: ReadingResult | null
+  readingResult: AnswerResult | null
   errorMessage?: string
 }>()
 

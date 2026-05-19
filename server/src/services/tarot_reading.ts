@@ -22,7 +22,7 @@
  *                                        DrawnInput[]
  *                                              │
  *                                              ▼  answer lookup by id+pos
- *                                  { drawn, reading: ReadingResult }
+ *                                  { drawn, reading: AnswerResult }
  *
  * Random source:
  *   Uses node:crypto via utils/secure_random. The shuffle and orientation
@@ -30,11 +30,8 @@
  *   tarot demo but keeps the project-wide ban on Math.random consistent
  *   and removes any predictability concerns from v8's PRNG state.
  *
- * Naming note:
- *   The protocol/state identifier `reading` (ReadingResult, the route's
- *   `reading` field) is retained verbatim from the pre-Answer design to
- *   keep the cross-cutting request-lifecycle plumbing diff-free. The
- *   user-facing term is 答案 (the Answer) — see docs/prd.
+ * The response field is `answer` (renamed from the pre-Answer design's
+ * `reading`); see docs/prd for the product term 答案.
  */
 
 import { getAllCards, getCardById, type TarotCard } from './card_loader'
@@ -59,7 +56,7 @@ export interface CardDetail {
   answer: AnswerEntry
 }
 
-export interface ReadingResult {
+export interface AnswerResult {
   cardDetails: CardDetail[]
 }
 
@@ -69,7 +66,7 @@ export interface DivinationOutput {
    *  is the protocol's extension point for future multi-card spreads. */
   spreadKind: 'single_card'
   drawn: DrawnInput[]
-  reading: ReadingResult
+  answer: AnswerResult
 }
 
 // Spread → number of cards drawn. Currently single-card only; extending to
@@ -113,9 +110,9 @@ function getAnswer(cardId: string, position: 'upright' | 'reversed'): AnswerEntr
  * Kept exported because integration tests and the divination service both
  * depend on it; do not collapse into performDivination.
  */
-export function buildReading(inputs: DrawnInput[]): ReadingResult {
+export function buildAnswer(inputs: DrawnInput[]): AnswerResult {
   if (inputs.length === 0) {
-    throw new Error('buildReading requires at least one drawn card')
+    throw new Error('buildAnswer requires at least one drawn card')
   }
 
   const cardDetails: CardDetail[] = inputs.map(({ cardId, position }) => {
@@ -163,6 +160,6 @@ export function performDivination(spreadKind: 'single_card'): DivinationOutput {
     position: randomBool() ? 'upright' : 'reversed',
   }))
 
-  const reading = buildReading(drawn)
-  return { spreadKind, drawn, reading }
+  const answer = buildAnswer(drawn)
+  return { spreadKind, drawn, answer }
 }

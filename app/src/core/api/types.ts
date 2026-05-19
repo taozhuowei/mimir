@@ -53,25 +53,23 @@ export interface AnswerEntry {
   source: string
 }
 
-export interface ReadingCardDetail {
+export interface AnswerCardDetail {
   card: TarotCardInfo
   position: CardPosition
   answer: AnswerEntry
 }
 
 /**
- * Result of a divination. The `reading`/`ReadingResult` identifiers are
- * retained from the pre-Answer design so the cross-cutting request
- * lifecycle plumbing stays diff-free; the user-facing term is 答案
- * (the Answer). No more scoring/sentiment/meaning.
+ * Result of a divination: each drawn card paired with its Answer (the
+ * 答案 — quote / translation / source). No scoring/sentiment/meaning.
  */
-export interface ReadingResult {
-  cardDetails: ReadingCardDetail[]
+export interface AnswerResult {
+  cardDetails: AnswerCardDetail[]
 }
 
 /** Top-level reply from `POST /api/v1/divinations`. */
 export interface DivinationResponse {
   spreadKind: SpreadKind
   drawn: DivinationDrawnEntry[]
-  reading: ReadingResult
+  answer: AnswerResult
 }

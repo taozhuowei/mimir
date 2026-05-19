@@ -13,17 +13,17 @@
  */
 
 import { ref } from 'vue'
-import type { ReadingResult } from '../../api/types'
+import type { AnswerResult } from '../../api/types'
 
 export function createReadingState() {
-  const readingResult = ref<ReadingResult | null>(null)
+  const readingResult = ref<AnswerResult | null>(null)
   const isReadingLoading = ref(false)
   const readingError = ref<string | null>(null)
 
   // A monotonic counter consumers can bump to ignore stale in-flight
   // responses (e.g. when restarting a divination mid-request).
   const currentReadingRequestId = ref<number>(0)
-  let pendingReadingPromise: Promise<ReadingResult | null> | null = null
+  let pendingReadingPromise: Promise<AnswerResult | null> | null = null
 
   function invalidateReadingRequest() {
     currentReadingRequestId.value += 1
@@ -31,7 +31,7 @@ export function createReadingState() {
     isReadingLoading.value = false
   }
 
-  function waitForReadingResult(): Promise<ReadingResult | null> {
+  function waitForReadingResult(): Promise<AnswerResult | null> {
     if (pendingReadingPromise) {
       return pendingReadingPromise
     }
