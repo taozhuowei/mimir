@@ -20,7 +20,7 @@
  */
 import type { useTarotStore } from '../../../core/store/tarot'
 import type { useAnimationController } from '../../divination/composables/use_animation_controller'
-import type { useAnswerController } from '../../reading/composables/use_reading_request_controller'
+import type { useAnswerController } from '../../answer/composables/use_answer_request_controller'
 
 export interface UseMainHandlersDeps {
   tarotStore: ReturnType<typeof useTarotStore>

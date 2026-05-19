@@ -1,5 +1,5 @@
 /**
- * Name: flows/divination/composables/skip_to_reading
+ * Name: flows/divination/composables/skip_to_answer
  * Purpose: skip directly to the revealing phase, bypassing shuffle/cut/draw animations.
  * Reason: extracted from the phase pipeline to isolate skip logic as a standalone command.
  *         Now reuses the manifest's snap-to-revealing-entry helper so the visual state

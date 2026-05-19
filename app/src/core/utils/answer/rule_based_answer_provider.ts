@@ -1,5 +1,5 @@
 /**
- * Name: rule_based_reading_provider
+ * Name: rule_based_answer_provider
  * Purpose: divination provider backed by the project's rule-based backend.
  * Reason: implements the provider boundary for the current non-LLM reading
  *         pipeline. The backend now owns shuffling, drawing, and rule-based
@@ -10,7 +10,7 @@
  */
 
 import { requestDivination, type Divination } from '../../api/divinations'
-import type { AnswerProvider, AnswerRequest } from './reading_provider'
+import type { AnswerProvider, AnswerRequest } from './answer_provider'
 
 export class RuleBasedAnswerProvider implements AnswerProvider {
   readonly type = 'rule_based' as const

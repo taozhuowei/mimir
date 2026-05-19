@@ -11,7 +11,7 @@
 
 import { describe, it, expect } from 'vitest'
 import { getAllCards, getCardById } from '../src/services/card_loader'
-import { buildAnswer } from '../src/services/tarot_reading'
+import { buildAnswer } from '../src/services/tarot_answer'
 import answerData from '../src/data/tarot_answer.json'
 
 const ANSWER_CARDS = (answerData as {

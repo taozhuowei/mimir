@@ -1,5 +1,5 @@
 /**
- * Name: reading_provider
+ * Name: answer_provider
  * Purpose: abstract interface for divination request providers.
  * Reason: enables swapping between rule-based and future AI providers
  *         without changing consumers. Now that the backend owns shuffling,

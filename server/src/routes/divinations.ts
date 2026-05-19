@@ -27,12 +27,12 @@
 
 import { Router, type Request, type Response } from 'express'
 import { z } from 'zod'
-import { performDivination } from '../services/tarot_reading'
+import { performDivination } from '../services/tarot_answer'
 
 const router = Router()
 
 // Single source of truth for the supported spread types. Extending here means
-// also extending SPREAD_DRAW_COUNT in services/tarot_reading.ts.
+// also extending SPREAD_DRAW_COUNT in services/tarot_answer.ts.
 const SUPPORTED_SPREADS = ['single_card'] as const
 type SpreadKind = (typeof SUPPORTED_SPREADS)[number]
 

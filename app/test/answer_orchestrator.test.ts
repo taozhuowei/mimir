@@ -11,8 +11,8 @@
 
 import { describe, expect, it, vi, beforeEach } from 'vitest'
 import { ref } from 'vue'
-import { createAnswerOrchestrator } from '../src/core/utils/reading/reading_orchestrator'
-import type { AnswerProvider } from '../src/core/utils/reading/reading_provider'
+import { createAnswerOrchestrator } from '../src/core/utils/answer/answer_orchestrator'
+import type { AnswerProvider } from '../src/core/utils/answer/answer_provider'
 import type { DrawnResult, AnswerResult, TarotCardInfo } from '../src/core/api/types'
 import type { Divination } from '../src/core/api/divinations'
 
@@ -64,7 +64,7 @@ function makeMockProvider(divination: Divination | null = null, shouldReject = f
   }
 }
 
-describe('reading_orchestrator', () => {
+describe('answer_orchestrator', () => {
   let statusRef: ReturnType<typeof ref<'idle' | 'loading' | 'success' | 'error'>>
   let resultRef: ReturnType<typeof ref<AnswerResult | null>>
   let errorRef: ReturnType<typeof ref<string | null>>

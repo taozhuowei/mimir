@@ -262,16 +262,16 @@ module.exports = {
       to: { path: '^app/src/(flows|pages)/' },
     },
     {
-      name: 'animation-not-to-reading',
+      name: 'animation-not-to-answer',
       comment:
-        "The animation engine must not depend on reading business logic. " +
+        "The animation engine must not depend on answer business logic. " +
         "This boundary keeps visual orchestration decoupled from divination " +
         "result rules (from-path updated after the core/animation→gsap " +
         "layered refactor: gsap lib + shared animation base + flow " +
-        "orchestration ⊥ core/utils/reading).",
+        "orchestration ⊥ core/utils/answer).",
       severity: 'error',
       from: { path: '^app/src/(core/gsap|flows/shared/composables/animations|flows/(divination|idle|fallback)/composables)/' },
-      to: { path: '^app/src/core/utils/reading/' },
+      to: { path: '^app/src/core/utils/answer/' },
     },
     {
       name: 'store-not-to-ui',
@@ -351,7 +351,7 @@ module.exports = {
 
     // Track type-only `import type { X } from '...'` imports as dependencies.
     // Without this, files that are only imported for their types (engine.ts,
-    // use_lifecycle_types.ts, reading_provider.ts, tarot_reading.ts in this
+    // use_lifecycle_types.ts, answer_provider.ts, tarot_answer.ts in this
     // codebase) get misflagged as orphans by `no-orphans`. The cost is a
     // slightly larger graph and a few hundred ms of cruise time — acceptable
     // for a project of this size.
