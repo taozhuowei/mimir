@@ -106,13 +106,13 @@ export interface SceneLayout {
   /** Card height for the current scene (see `cardWidth` for semantics). */
   cardHeight: number
   /**
-   * Reading-scene card width before the drawer mounts — computed against
-   * the full safe-area rect (no bottom drawer reservation), still capped
-   * by `MAX_CARD_WIDTH_PX`. On `draw_stage` this equals `cardWidth`
-   * because the draw stage doesn't reserve drawer space.
+   * Reading-scene card width computed against the full safe-area rect,
+   * capped by `MAX_CARD_WIDTH_PX`. Historically this was "before the
+   * bottom drawer mounts"; the drawer was removed, so it now simply
+   * equals the reading-scene card width and, on `draw_stage`, `cardWidth`.
    */
   cardWidthFull: number
-  /** Reading-scene card height before the drawer mounts. See `cardWidthFull`. */
+  /** Reading-scene card height (see `cardWidthFull`). */
   cardHeightFull: number
   /** Uniform draw-stage card width (shuffle / cut / draw share this size). */
   drawCardWidth: number

@@ -2,12 +2,14 @@
   <!--
     Main divination surface (docs/prd/glossary.md（路由 #1）). Composes the
     divination surface — HeaderArea (TitleContent ↔ ProgressContent by
-    phase) + Stage (CardsLoadError | StageDeck) — with ReadingSplit/Drawer
-    overlaid in 'reading'/'decision'. NotificationHost sits on the surface
-    root for cross-view alerts. The .canvas wrapper caps the divination
-    canvas at MAX_CANVAS_WIDTH (docs/prd/animation.md（视图过渡动画）) and
-    slides it flush-left when reading opens on a wide viewport. The single
-    StageDeck instance stays mounted across idle ↔ divination, so the swap is a
+    phase) + Stage (CardsLoadError | StageDeck) — with the inline answer
+    zone (AnswerInscription + ActionArea) struck below the result card in
+    'reading'/'decision'; no split / drawer / side panel. NotificationHost
+    sits on the surface root for cross-view alerts. The .canvas wrapper
+    caps the divination canvas at MAX_CANVAS_WIDTH
+    (docs/prd/animation.md（视图过渡动画）), centered, and no longer slides
+    flush-left (the wide-split overlay was removed). The single StageDeck
+    instance stays mounted across idle ↔ divination, so the swap is a
     header-content change only. Mounted by pages/index.vue only when
     bootstrap did not fail (the fallback view is its mutually-exclusive
     sibling) — so useMainStage is never constructed in the failed state.
