@@ -2,8 +2,8 @@
  * Name: flows/divination/composables/use_animation_controller
  * Purpose: thin orchestrator — composes usePhases, usePlayback, usePresentation,
  *          useAnimationState, and useLifecycle into the animation controller public API.
- * Reason: isolates GSAP-dependent code so reading controller never touches animation internals.
- * Constraint: does NOT import any module under `reading/`.
+ * Reason: isolates GSAP-dependent code so answer controller never touches animation internals.
+ * Constraint: does NOT import any module under `answer/`.
  * Data flow: deps in → wires hooks via DI → exposes unified public API surface.
  */
 

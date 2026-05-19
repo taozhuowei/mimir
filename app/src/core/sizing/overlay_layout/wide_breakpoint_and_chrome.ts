@@ -17,7 +17,7 @@ import { MAX_CANVAS_WIDTH } from '../scale'
 
 /**
  * Legacy wide-screen breakpoint addend (px). It once was the
- * ReadingSplitView side-column width; that UI and the stage-width shrink
+ * wide-split side-column width; that UI and the stage-width shrink
  * it drove are gone. The value is now decoupled from any UI element —
  * it survives only as the addend that, with the canvas cap, fixes the
  * `isWide` responsive threshold at 920 (see `PC_BREAKPOINT`). The

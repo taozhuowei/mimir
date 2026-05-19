@@ -2,7 +2,7 @@
   <!--
     StageDeck — single persistent stage-content instance. Stays mounted from
     idle (fan loop) → divination (shuffle / cut / draw / reveal) →
-    reading, so the idle ↔ divination swap has no visual gap.
+    answer, so the idle ↔ divination swap has no visual gap.
 
     Composition:
       - DeckFanStack  — idle fan-loop visuals (12-card stack + bottom hint).

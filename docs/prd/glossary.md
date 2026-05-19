@@ -54,12 +54,12 @@
 2. 牌堆（deck）：未发出的多张卡牌的集合。
 3. 分牌堆（pile）：切牌过程中分出的小堆。
 4. 结果卡牌（result card）：本次占卜最终抽到的卡牌；占卜完成后在占卜舞台定格并上移，下方为答案区。
-5. 答案（answer，路由响应字段与内部状态标识仍为 reading / readingResult，命名债）：一次占卜的产物，按抽到的卡牌及其正逆位返回的一句名句，含原文 quote、翻译 translation、来源 source 三个字段。
+5. 答案（answer）：一次占卜的产物，按抽到的卡牌及其正逆位返回的一句名句，含原文 quote、翻译 translation、来源 source 三个字段。
 6. 牌阵类型（spread kind）：本期仅支持单张（single card）。
 7. 物理视口（viewport）：屏幕物理像素信息——宽、高、安全区、状态栏。
 8. UI 预算（reservations）：各区域的像素预留——标题区、操作区、卡牌间距等。
 9. 布局求解（solve layout）：纯函数布局求解器，从视口与预算算出所有容器和卡牌的几何位置。
-10. 答案区域（answer zone，内部标识仍为 reading zone，命名债）：答案区在屏幕上的物理空间。
+10. 答案区域（answer zone）：答案区在屏幕上的物理空间。
 
 ## 塔罗领域术语
 

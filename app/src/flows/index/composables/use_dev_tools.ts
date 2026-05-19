@@ -4,7 +4,7 @@
  *          MainSurface (DevToolsPanel). Owns the local toggles
  *          (`isDevExpanded`, `showContainerBorders`) and the handlers the
  *          panel emits (replay, skip-to-answer, playback rate, container
- *          border toggle). Reading is normally seeded by the animation
+ *          border toggle). Answer is normally seeded by the animation
  *          pipeline's `onDrawingStart` hook, but the `revealing` replay
  *          path skips the drawing builder entirely, so this composable
  *          mirrors the skipToAnswer flow before delegating to the
@@ -13,7 +13,7 @@
  *          dev-tools surface stays self-contained — MainSurface only has
  *          to spread the returned object onto DevToolsPanel's props +
  *          listeners.
- * Data flow: animation + reading controllers feed in; reactive flags +
+ * Data flow: animation + answer controllers feed in; reactive flags +
  *          handler functions flow out for the SFC to bind.
  */
 import { ref, type Ref } from 'vue'
@@ -29,7 +29,7 @@ export interface DevAnimationController {
   setPlaybackRate: (rate: number) => void
 }
 
-/** Reading controller surface this composable touches. */
+/** Answer controller surface this composable touches. */
 export interface DevAnswerController {
   resetAnswer: () => void
   startAnswer: (args: Record<string, unknown>) => Promise<unknown>
@@ -39,8 +39,8 @@ export interface UseDevToolsDeps {
   animationController: DevAnimationController
   answerController: DevAnswerController
   /**
-   * Setter for the page-owned in-flight reading promise. The replay path
-   * for `revealing` synchronously kicks off a new reading (because the
+   * Setter for the page-owned in-flight answer promise. The replay path
+   * for `revealing` synchronously kicks off a new answer (because the
    * drawing builder is skipped) and the page needs to await the same
    * promise in `settlePipeline`.
    */
@@ -69,14 +69,14 @@ export function useDevTools(deps: UseDevToolsDeps): DevTools {
   const showContainerBorders = ref(false)
 
   function handleDevReplay(targetPhase: OverlayPhase): void {
-    // Reading is normally seeded by the animation pipeline's
+    // Answer is normally seeded by the animation pipeline's
     // `onDrawingStart` hook. Replays that resume *at or before* drawing
     // still cross that hook on their way through. But replays that jump
     // straight to `revealing` skip the drawing builder entirely, so the
-    // hook never fires and the panel opens with no reading in flight
+    // hook never fires and the panel opens with no answer in flight
     // (empty body). Mirror the skipToAnswer flow: fire the request
     // synchronously before delegating to the animation controller. Any
-    // in-flight reading is reset first to avoid resolving against the
+    // in-flight answer is reset first to avoid resolving against the
     // previous run.
     if (targetPhase === 'revealing') {
       deps.answerController.resetAnswer()

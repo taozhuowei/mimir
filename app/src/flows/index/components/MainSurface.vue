@@ -135,7 +135,7 @@ const { cardsLoadError } = useCardsLoadError()
 
 /* docs/prd/animation.md（视图过渡动画） — canvas capped at MAX_CANVAS_WIDTH
    (440 px), centered on wider viewports via translateX max-clamp. The
-   reading split/drawer overlay was removed, so the canvas no longer
+   the split/drawer overlay was removed, so the canvas no longer
    slides flush-left. */
 .canvas {
   position: absolute;

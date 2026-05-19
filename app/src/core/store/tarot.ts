@@ -1,4 +1,4 @@
-/** Divination flow state management (Pinia Store) — facade composing deck + reading + flow */
+/** Divination flow state management (Pinia Store) — facade composing deck + answer + flow */
 
 import { defineStore } from 'pinia'
 import type { DrawnResult } from '../api/types'
@@ -10,11 +10,11 @@ export type { DivinationPhase } from './slices/flow'
 
 export const useTarotStore = defineStore('tarot', () => {
   const deck = createDeckState()
-  const reading = createAnswerState()
-  const flow = createFlowState(reading)
+  const answer = createAnswerState()
+  const flow = createFlowState(answer)
 
   /**
-   * Externally-owned write path for the drawn cards. The reading
+   * Externally-owned write path for the drawn cards. The answer
    * orchestrator calls this after a successful `/api/v1/divinations`
    * response; the deck and tarot stores no longer perform any local
    * shuffling or drawing.
@@ -38,12 +38,12 @@ export const useTarotStore = defineStore('tarot', () => {
     cardsLoadError: deck.cardsLoadError,
     loadCards: deck.loadCards,
 
-    // Reading
-    isAnswerLoading: reading.isAnswerLoading,
-    answerResult: reading.answerResult,
-    answerError: reading.answerError,
-    waitForAnswerResult: reading.waitForAnswerResult,
-    getAnswerResult: () => reading.answerResult.value,
+    // Answer
+    isAnswerLoading: answer.isAnswerLoading,
+    answerResult: answer.answerResult,
+    answerError: answer.answerError,
+    waitForAnswerResult: answer.waitForAnswerResult,
+    getAnswerResult: () => answer.answerResult.value,
 
     // Actions
     startDivination: flow.startDivination,
