@@ -53,6 +53,5 @@ N1、N2 各自全绿才单 commit（message 形如 `fix(arch): repoint store-not
 ## 搁置问题（已登记，未排期，结构迁移只搬位置未碰逻辑，根因仍在）
 
 1. 组件职责拆分债：
-   a. [`TypewriterText.vue`](../app/src/flows/shared/components/TypewriterText.vue)：pivot 删除其唯一源码消费方（`ReadingTextContainer`），现仅 [`app/test/typewriter_text.test.ts`](../app/test/typewriter_text.test.ts) 与 [`app/src/README.md`](../app/src/README.md) 引用，疑似死代码而 knip 未判死（测试文件牵连）。须核实无源码引用后连同测试与 README 条目一并删除，或确认确有保留场景再决定。
-   b. [`TitleContent.vue`](../app/src/flows/shared/components/TitleContent.vue)：`variant: idle|fallback` 一组件三职责（文案表 `COPY` + 自管 GSAP 错落入场 + 视图语义分支）。应拆为纯文案渲染 + 入场动画驱动 + 按 variant 的薄包装。
-   c. [`DevToolsPanel.vue`](../app/src/flows/index/components/DevToolsPanel.vue)：可拖拽折叠壳 + 10+ 纯 `$emit` 透传 + 拖拽/点击手势消歧混合。透传应收敛（`v-bind/v-on` 转发或下沉），拖拽抽为独立 composable，壳只管布局与可见性。
+   a. [`TitleContent.vue`](../app/src/flows/shared/components/TitleContent.vue)：`variant: idle|fallback` 一组件三职责（文案表 `COPY` + 自管 GSAP 错落入场 + 视图语义分支）。应拆为纯文案渲染 + 入场动画驱动 + 按 variant 的薄包装。
+   b. [`DevToolsPanel.vue`](../app/src/flows/index/components/DevToolsPanel.vue)：可拖拽折叠壳 + 10+ 纯 `$emit` 透传 + 拖拽/点击手势消歧混合。透传应收敛（`v-bind/v-on` 转发或下沉），拖拽抽为独立 composable，壳只管布局与可见性。
