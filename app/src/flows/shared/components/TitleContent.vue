@@ -32,22 +32,24 @@
 /**
  * Name: TitleContent component
  * Purpose: render the heading copy (idle main/sub/guidance, or fallback
- *          single line) inside the shared HeaderArea shell. Owns its own
- *          GSAP staggered entrance for the idle variant and switches copy
- *          tables for the fallback variant.
+ *          single line) inside the shared HeaderArea shell. Delegates the
+ *          idle staggered entrance to the `use_title_entrance` composable
+ *          and switches copy tables for the fallback variant.
  * Reason: split out from the legacy TitleArea (task 8.3.1) so the outer
  *         shell can be unified with ProgressContent. This component holds
  *         no outer-box geometry — only the text payload and an inner top
  *         anchor that aligns the first line with ProgressContent's icon
  *         top y. The anchor is content-intrinsic, not a layout decision.
- * Data flow: parent view picks the variant. Idle variant runs its own
+ *         F4 moved the entrance animation into the composable so this SFC
+ *         stays a thin per-variant copy renderer.
+ * Data flow: parent view picks the variant. The composable runs the idle
  *            entrance timeline on mount (DOM-free state objects + style
- *            refs, identical to the legacy pattern). Reduced-motion users
- *            get the final state immediately.
+ *            refs, identical to the legacy pattern) and re-runs on a
+ *            variant flip. Reduced-motion users get the final state
+ *            immediately.
  */
-import { onUnmounted, ref, watch, onMounted } from 'vue'
-import { gsap } from 'gsap'
-import { prefersReducedMotion } from '../../../core/utils/accessibility'
+import { toRef } from 'vue'
+import { useTitleEntrance } from '../composables/use_title_entrance'
 
 const props = withDefaults(
   defineProps<{
@@ -73,74 +75,11 @@ const COPY = {
   },
 } as const
 
-/* ── DOM-free animation state (MP-WeChat compatible) ──────────────── */
-
-const titleStyle = ref<Record<string, string>>({})
-const subtitleStyle = ref<Record<string, string>>({})
-const guidanceStyle = ref<Record<string, string>>({})
-
-const _title = { y: 20, opacity: 0 }
-const _subtitle = { y: 20, opacity: 0 }
-const _guidance = { y: 20, opacity: 0 }
-
-function flushHeaderStyles() {
-  titleStyle.value = {
-    transform: `translateY(${_title.y}px)`,
-    opacity: String(_title.opacity),
-  }
-  subtitleStyle.value = {
-    transform: `translateY(${_subtitle.y}px)`,
-    opacity: String(_subtitle.opacity),
-  }
-  guidanceStyle.value = {
-    transform: `translateY(${_guidance.y}px)`,
-    opacity: String(_guidance.opacity),
-  }
-}
-
-function runEntranceAnimation() {
-  if (props.variant !== 'idle') return
-
-  // Reset DOM-free state every run so re-mount or variant flip starts fresh.
-  _title.y = 20; _title.opacity = 0
-  _subtitle.y = 20; _subtitle.opacity = 0
-  _guidance.y = 20; _guidance.opacity = 0
-  flushHeaderStyles()
-
-  if (prefersReducedMotion()) {
-    _title.y = 0; _title.opacity = 1
-    _subtitle.y = 0; _subtitle.opacity = 1
-    _guidance.y = 0; _guidance.opacity = 1
-    flushHeaderStyles()
-    return
-  }
-
-  const tl = gsap.timeline()
-  tl.to(_title, {
-    y: 0, opacity: 1, duration: 0.6, ease: 'power3.out', onUpdate: flushHeaderStyles,
-  })
-    .to(_subtitle, {
-      y: 0, opacity: 1, duration: 0.6, ease: 'power3.out', onUpdate: flushHeaderStyles,
-    }, 0.08)
-    .to(_guidance, {
-      y: 0, opacity: 1, duration: 0.6, ease: 'power3.out', onUpdate: flushHeaderStyles,
-    }, 0.16)
-}
-
-onMounted(() => {
-  runEntranceAnimation()
-})
-
-// If the parent flips variant at runtime (e.g. fallback → idle on retry),
-// re-run the entrance so the user sees a fresh fade-in instead of the
-// stale opacity-0 state from the previous variant.
-watch(() => props.variant, () => { runEntranceAnimation() })
-
-onUnmounted(() => {
-  gsap.killTweensOf(_title)
-  gsap.killTweensOf(_subtitle)
-  gsap.killTweensOf(_guidance)
-})
+/* Idle staggered entrance lives in a composable; this component is a
+   thin per-variant copy renderer. */
+const { titleStyle, subtitleStyle, guidanceStyle } = useTitleEntrance(
+  toRef(props, 'variant'),
+)
 </script>
 
 <style scoped>
