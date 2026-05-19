@@ -16,7 +16,7 @@
 
 - [x] F1 清 pivot「抽屉」措辞残留：实证 `test:266` 断言（answer_stage 比 draw_stage 小 + 中心上移）pivot 后仍成立、仅措辞过时——改测试名/注释为「为下方行内答案区让位」，断言逐字未变；`layout_solver_types.ts` `DrawerGeometry`/`cardWidth` 抽屉模型注释改述为现状（行内答案区预留，结构保留待 F6）。纯注释/测试名零运行时，full 门禁全绿，prod/e2e 与上次 `4f4bfdd` 同源运行时故省。
 - [x] F2 中文「解读」逐条甄别——结论：零文件需改。`tarot_glossary.md:19`「不做牌义解读」属塔罗领域通用动作泛称（句意为本应用"不做解读"，改则语义失真，正确保留）；`routes/divinations.ts:9` `/api/v1/readings` 历史端点名陈述（C7 已判定允许残留，保留历史准确）；其余「解读」仅 `docs/TODO.md` 计划描述自身。核查类任务，实证后确认无需改动，不为做而做。
-- [ ] F3 [`DevToolsPanel.vue`](../app/src/flows/index/components/DevToolsPanel.vue) 职责拆分（纯重构，零行为）：把 10+ 纯 `$emit` 透传收敛（`v-bind/v-on` 转发或下沉）、拖拽/点击手势消歧抽为独立 composable、壳只管布局与可见性；模板渲染与对外事件契约逐字不变。验收：全套 + e2e 15/15（DevTools 在 e2e 路径，必跑）。
+- [x] F3 [`DevToolsPanel.vue`](../app/src/flows/index/components/DevToolsPanel.vue) 职责拆分（纯重构，零行为）：拖拽 Vue 接线（anchor/dragging/containerStyle/pointer/click 抑制/生命周期）抽为 [`use_dev_panel_drag`](../app/src/flows/index/composables/use_dev_panel_drag.ts) composable，壳变薄；`emit('toggle-dev-expanded')` 留壳经 `consumeClick()`。`$emit` 透传据实证维持显式（Vue 标准、类型安全、对外契约零风险；强行收敛无净收益且风险高，不为重构而重构）。模板/样式/props/emits 逐字不变。全套验收 + e2e 15/15 通过。提交 `<F3>`。
 - [ ] F4 [`TitleContent.vue`](../app/src/flows/shared/components/TitleContent.vue) 职责拆分（纯重构，零行为）：拆为纯文案渲染 + 入场动画驱动 + 按 `variant` 的薄包装；idle/fallback 两形态视觉与时序逐字不变。验收：全套 + e2e 15/15（待机/兜底视图在 e2e 路径）。
 - [ ] F5 `isWide` 布局逻辑债（**需产品决策，开工即停下问**）：双写阈值矛盾（440 vs 920，定哪个并去重）、`WIDE_SIDE_DRAWER_WIDTH_PX` 误导命名、`stageContainerHeight` 恒等三元 + `stageWidth` 字段 0 读取简化。先实证三处真实影响面，plain-text 提交决策（阈值取舍）后再改；改后全套 + e2e。
 - [ ] F6 `cardWidthFull/cardHeightFull` 双卡尺寸合一（**需评估，可能停下问**）：实证 `cardWidthFull` 与 `cardWidth` 在无抽屉后是否值恒等、`pipeline_builder` 用 `resultCardWidth` 的实际取值；若实证可等价合一则纯化简（全套 + e2e 证零行为变更），若存在真实差异或需产品判断则停下报告。
@@ -27,7 +27,7 @@
 
 ## 进度
 
-四类搁置债转为 F1–F6 执行计划。F1（pivot 抽屉措辞残留清理）提交 `a2e82a7`。F2（中文「解读」逐条甄别）结论零文件需改（均属塔罗术语/历史/计划描述）。F3（DevToolsPanel 职责拆分）起未启动。
+四类搁置债转为 F1–F6 执行计划。F1（pivot 抽屉措辞残留清理）提交 `a2e82a7`；F2（中文「解读」逐条甄别）零文件需改 `8f985fd`；F3（DevToolsPanel 拖拽接线抽 composable）已全套验收（full 门禁 + e2e 15/15）待提交。F4（TitleContent 职责拆分，纯重构）起未启动；F5（isWide 布局逻辑债）/F6（cardWidthFull 合一）开工即停下报告（需产品决策/评估）。
 
 ## 搁置问题（已登记，未排期）
 
