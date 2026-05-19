@@ -276,11 +276,13 @@ module.exports = {
     {
       name: 'store-not-to-ui',
       comment:
-        "Pinia stores are the data layer; UI components/views consume them, " +
-        "not vice versa. shared/store/ must not depend on shared/components|views/.",
+        "Pinia stores are the data layer; UI components consume them, not " +
+        "vice versa. core/store/ must not depend on any " +
+        "flows/<domain>/components/ (the unified UI tree after the " +
+        "components+composables→flows refactor).",
       severity: 'error',
-      from: { path: '^app/src/shared/store/' },
-      to: { path: '^app/src/shared/(components|views)/' },
+      from: { path: '^app/src/core/store/' },
+      to: { path: '^app/src/flows/[^/]+/components/' },
     },
     {
       name: 'tools-is-dev-sink',
