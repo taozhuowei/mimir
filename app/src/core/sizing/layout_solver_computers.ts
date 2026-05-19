@@ -37,10 +37,10 @@ export const INITIAL_DRAWER_HEIGHT_RATIO = 0.4
  * Compute the largest 1:1.6 stage rect that fits inside the canvas after
  * subtracting the header and the page margins on every side. The stage is
  * the visual region cards live in — it doubles as the result card rect on
- * the reading scene because there's exactly one card and the card fills it.
+ * the answer scene because there's exactly one card and the card fills it.
  *
  * `bottomReservation` (px, default 0) reserves additional vertical space at
- * the bottom of the canvas. Used by the reading scene to subtract the
+ * the bottom of the canvas. Used by the answer scene to subtract the
  * drawer's initial height so the result card auto-shrinks and lifts up
  * into the remaining stage area when the bottom drawer covers the lower
  * portion of the viewport. The draw scene passes 0 — the draw stage uses
@@ -95,9 +95,9 @@ export function computeDrawCardSize(stage: StageRect, sizes: ResponsiveSizes): {
  * Drawer geometry in the new model: always a bottom sheet that opens
  * directly under the result card. The drawer's top edge anchors to the
  * card's bottom edge — not the stage's bottom edge — so the drawer
- * naturally hugs the (now-padded) result card on the reading scene.
+ * naturally hugs the (now-padded) result card on the answer scene.
  *
- * `cardHeight` is the card height to anchor against. On the reading scene
+ * `cardHeight` is the card height to anchor against. On the answer scene
  * it equals `stage.height * RESULT_CARD_FILL_RATIO` when the unclamped
  * card width fits inside the MAX_CARD_WIDTH_PX phone-shell envelope, or
  * `MAX_CARD_WIDTH_PX * CARD_ASPECT_RATIO` when the cap engages so the

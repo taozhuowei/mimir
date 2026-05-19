@@ -5,7 +5,7 @@
  *
  * Coverage matrix: 5 viewports × 2 scenes = 10 cases. The new solver is a
  * pure function of (PhysicalViewport, ResponsiveSizes, scene) and produces
- * a single 1:1.6 stage rect (= result card on the reading scene), three
+ * a single 1:1.6 stage rect (= result card on the answer scene), three
  * draw piles tiling the stage horizontally with `gap` breathing, and a
  * bottom-sheet drawer pinned to the stage's lower edge.
  *
@@ -72,7 +72,7 @@ const VIEWPORTS: ViewportFixture[] = [
   { label: 'MacBook Air (1440×900)', actualWidth: 1440, height: 900, safeAreaTop: 0, safeAreaBottom: 0 },
 ]
 
-const SCENES: SceneKind[] = ['draw_stage', 'reading_stage']
+const SCENES: SceneKind[] = ['draw_stage', 'answer_stage']
 
 const EPS = 1e-6
 
@@ -143,7 +143,7 @@ describe('layout_solver — proportional-sizes layout solver', () => {
 
         // -------------------------------------------------------------------
         // (5) Drawer geometry: bottom-sheet anchored to the result card's
-        //     bottom edge for `initialTop`. On the reading scene the card
+        //     bottom edge for `initialTop`. On the answer scene the card
         //     is shrunk to RESULT_CARD_FILL_RATIO of the stage so the
         //     anchor sits higher; on the draw scene the card height equals
         //     the stage height (anchor at stage bottom).
@@ -168,7 +168,7 @@ describe('layout_solver — proportional-sizes layout solver', () => {
         // proportion. The drawer's `initialTop` follows from whichever
         // height the solver actually emitted.
         const unclampedCardWidth = layout.stage.width * RESULT_CARD_FILL_RATIO
-        const expectedCardHeight = scene === 'reading_stage'
+        const expectedCardHeight = scene === 'answer_stage'
           ? unclampedCardWidth <= MAX_CARD_WIDTH_PX
             ? layout.stage.height * RESULT_CARD_FILL_RATIO
             : MAX_CARD_WIDTH_PX * CARD_ASPECT_RATIO
@@ -206,7 +206,7 @@ describe('layout_solver — proportional-sizes layout solver', () => {
         // -------------------------------------------------------------------
         // (8) Scene-specific assertions.
         // -------------------------------------------------------------------
-        if (scene === 'reading_stage') {
+        if (scene === 'answer_stage') {
           // Result card (shrunk) occupies RESULT_CARD_FILL_RATIO of the
           // stage rect on each axis (90 %) — but capped at
           // MAX_CARD_WIDTH_PX (docs/prd/animation.md（视图过渡动画） phone-shell envelope). When the
@@ -263,8 +263,8 @@ describe('layout_solver — proportional-sizes layout solver', () => {
     }
   }
 
-  it('reading_stage shrinks below draw_stage so the result card lifts above the bottom drawer', () => {
-    // The reading scene reserves INITIAL_DRAWER_HEIGHT_RATIO × viewport.height
+  it('answer_stage shrinks below draw_stage so the result card lifts above the bottom drawer', () => {
+    // The answer scene reserves INITIAL_DRAWER_HEIGHT_RATIO × viewport.height
     // at the bottom (the bottom drawer's initial footprint) — the stage
     // therefore shrinks vs. the draw scene, the card shrinks with it, and
     // the visual centre lifts up into the remaining area. Without this the
@@ -278,7 +278,7 @@ describe('layout_solver — proportional-sizes layout solver', () => {
       )
       const sizes = deriveSizes(viewport.width)
       const draw = solveLayout({ viewport, sizes, scene: 'draw_stage' })
-      const result = solveLayout({ viewport, sizes, scene: 'reading_stage' })
+      const result = solveLayout({ viewport, sizes, scene: 'answer_stage' })
       // Reading stage is strictly smaller than draw stage on every fixture
       // — the drawer reservation (40 % × viewport.height) always exceeds 0.
       expect(result.stage.height).toBeLessThan(draw.stage.height)

@@ -78,7 +78,7 @@ export function useOverlayLayout(deps: UseOverlayLayoutDeps) {
   } {
     const drawViewport = getViewport(false)
     const drawLayout = getSceneLayout('draw_stage')
-    const resultLayout = getSceneLayout('reading_stage')
+    const resultLayout = getSceneLayout('answer_stage')
     return { drawViewport, drawLayout, resultLayout }
   }
 

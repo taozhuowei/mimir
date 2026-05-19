@@ -29,7 +29,7 @@ import {
 import { getMenuButtonRect, resolveTopBarHeight } from './wide_breakpoint_and_chrome'
 
 /** Scene = phase grouping the solver understands. */
-export type Scene = 'draw_stage' | 'reading_stage'
+export type Scene = 'draw_stage' | 'answer_stage'
 
 /**
  * Viewport metrics that include both the new physical viewport and the
@@ -130,7 +130,7 @@ export function getViewportMetrics(showResults: boolean): ViewportMetrics {
 }
 
 /**
- * Resolve the scene layout for `draw_stage` or `reading_stage` by
+ * Resolve the scene layout for `draw_stage` or `answer_stage` by
  * delegating to the pure solver, then attach the legacy `safe*Inset`
  * compatibility fields the overlay debug rectangle expects.
  */

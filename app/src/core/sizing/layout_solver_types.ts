@@ -95,7 +95,7 @@ export interface SceneLayout {
   // ----- preserved field names (style_reconciler.ts depends on these) -----
   cards: CardLayout[]
   /**
-   * Card width for the current scene. On the reading scene this is the
+   * Card width for the current scene. On the answer scene this is the
    * "shrunk" size (computed against the stage rect that already subtracts
    * the bottom drawer reservation) — matches the visual the user sees once
    * the drawer is open. The "full" size used the moment the reveal
@@ -106,13 +106,13 @@ export interface SceneLayout {
   /** Card height for the current scene (see `cardWidth` for semantics). */
   cardHeight: number
   /**
-   * Reading-scene card width computed against the full safe-area rect,
+   * Answer-scene card width computed against the full safe-area rect,
    * capped by `MAX_CARD_WIDTH_PX`. Historically this was "before the
    * bottom drawer mounts"; the drawer was removed, so it now simply
-   * equals the reading-scene card width and, on `draw_stage`, `cardWidth`.
+   * equals the answer-scene card width and, on `draw_stage`, `cardWidth`.
    */
   cardWidthFull: number
-  /** Reading-scene card height (see `cardWidthFull`). */
+  /** Answer-scene card height (see `cardWidthFull`). */
   cardHeightFull: number
   /** Uniform draw-stage card width (shuffle / cut / draw share this size). */
   drawCardWidth: number
@@ -130,7 +130,7 @@ export interface SceneLayout {
   envelope: LayoutEnvelope
 }
 
-export type SceneKind = 'draw_stage' | 'reading_stage'
+export type SceneKind = 'draw_stage' | 'answer_stage'
 
 export interface SolveLayoutInput {
   viewport: PhysicalViewport
