@@ -27,7 +27,7 @@
 
 ## 进度
 
-四类搁置债转为 F1–F6 执行计划，全部完成。F1（抽屉措辞残留）`a2e82a7`；F2（中文「解读」甄别，零文件改）`8f985fd`；F3（DevToolsPanel 拖拽抽 composable）`51bd81e`；F4（TitleContent 入场动画抽 composable）`e22d750`；F5（isWide 双写竞态修复，方案 1）`f5ea876`；注释噪音清理 `657946e`；F6（cardWidthFull 合一评估，结论不可合一、零代码改）记于本提交。e2e 缺口：F3/F4 各自 e2e 15/15 通过；F5（改切牌 isWide 运行时）因用户中断 full gate 未单独跑 e2e，vue-tsc/tsc 双绿 + 单一写入复核 + pre-commit 门禁通过，建议统一补跑一次 e2e 兜底 F3/F4/F5 运行时改动。
+四类搁置债转为 F1–F6 执行计划，全部完成。F1（抽屉措辞残留）`a2e82a7`；F2（中文「解读」甄别，零文件改）`8f985fd`；F3（DevToolsPanel 拖拽抽 composable）`51bd81e`；F4（TitleContent 入场动画抽 composable）`e22d750`；F5（isWide 双写竞态修复，方案 1）`f5ea876`；注释噪音清理 `657946e`；F6（cardWidthFull 合一评估，结论不可合一、零代码改）记于本提交。e2e：F3/F4 各自 e2e 15/15 通过；F5 当时因用户中断未单独跑，本轮收尾后已统一补跑 e2e 15/15 兜底 F3/F4/F5 累积运行时改动（占卜/切牌轴向/多视口）无回归，F5 唯一未验缺口闭合。
 
 ## 搁置问题（已登记，未排期）
 
