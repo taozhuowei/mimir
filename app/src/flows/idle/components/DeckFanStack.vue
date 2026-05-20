@@ -87,11 +87,9 @@ defineProps<{
   left: 0;
   width: 100%;
   height: 100%;
-  /* 10rpx ≈ 5 px at the 750-rpx design baseline — unified across every
-     card surface (.tarot-card, cut-pile.pile-card, CardMeaningContainer)
-     so the deck reads as the same physical object from idle through
-     reveal. */
-  border-radius: 10rpx;
+  /* 物理 5 px 圆角，跨 .tarot-card / cut-pile.pile-card 统一，不随 rpx
+     缩放，使牌堆从 idle 到揭示在所有屏宽下都呈现一致的实体圆角。 */
+  border-radius: 5px;
   border: 1px solid var(--color-border);
   box-shadow: 0 2rpx 8rpx rgba(30, 15, 6, 0.3);
 }

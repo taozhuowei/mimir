@@ -37,7 +37,7 @@
              剩余高度并居中卡牌；答案区作为兄弟节点紧贴 Stage 下方挂出，
              不再 absolute 覆盖 Stage。flex 自动分配让卡牌严格几何居中
              于 Stage 区。详见 docs/research/layout_final_rem.md. -->
-        <view class="content-area">
+        <view class="content-area" :class="{ 'content-area--with-answer': showAnswer }">
           <Stage :scene="isIdle ? 'idle' : 'divination'">
             <CardsLoadError v-if="isIdle && cardsLoadError" />
             <StageDeck v-else />
@@ -180,6 +180,9 @@ const { cardsLoadError } = useCardsLoadError()
   min-height: 0;
 }
 
+/* 答案区入场：opacity 淡入。配合 .content-area--with-answer 下 Stage
+   的 stage-rise keyframe（卡牌从旧中心点 translateY 滑到新中心点），
+   形成"答案淡入 / 卡牌让位上移"的同步过渡，无 layout 瞬变跳跃。 */
 .answer-zone {
   flex: 0 0 auto;
   max-height: 50%;
@@ -187,12 +190,25 @@ const { cardsLoadError } = useCardsLoadError()
   flex-direction: column;
   align-items: center;
   padding-bottom: env(safe-area-inset-bottom, 0px);
-  animation: answer-zone-in 420ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation: answer-zone-in 480ms cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
 @keyframes answer-zone-in {
   from { opacity: 0; }
   to   { opacity: 1; }
+}
+
+/* Stage 高度由 flex 在答案区挂出瞬间即收缩；用 transform 从旧中心点
+   位置（translateY ≈ answer-zone 高度/2）滑到 0 来补位。60px 取
+   loading 状态下答案区高度 ~120px 的一半，配合 ease-out 让前段位移
+   迅速、后段平滑收尾。reduced-motion 下禁用。 */
+.content-area--with-answer :deep(.stage) {
+  animation: stage-rise 480ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes stage-rise {
+  from { transform: translateY(60px); }
+  to   { transform: translateY(0); }
 }
 
 /* Divination surface root: flex column with uniform safe-area + margin
@@ -216,7 +232,8 @@ const { cardsLoadError } = useCardsLoadError()
   .canvas {
     transition: none;
   }
-  .answer-zone {
+  .answer-zone,
+  .content-area--with-answer :deep(.stage) {
     animation: none;
   }
 }
