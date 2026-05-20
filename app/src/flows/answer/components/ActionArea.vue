@@ -94,6 +94,27 @@ const visible = computed(() =>
   animation: action-fade-in 350ms cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
+/*
+ * Local overrides for the global `.btn` utility — scoped to .action-area so
+ * other future consumers of `.btn` are not affected.
+ *
+ * 全局 .btn 用 var(--space-3) var(--space-6) = 0.75rem / 1.5rem，在 rem
+ * 自适应链下 rootFontSize=43（14PM）时实测 32.25×64.5px、按钮高 83~87px，
+ * 远超移动端触控按钮的合理比例（44px 触控基线、字号 14px 的 ~2.7 倍盒）。
+ *
+ * 改用 px 字面量后 padding 不参与 rem 缩放，结合显式 line-height 锁定盒高，
+ * 14PM 视口下高度收敛到 ~40px、宽度自然贴文：14×1.4 + 10×2 ≈ 40，含
+ * letter-spacing 实际略大于 44px 触控基线。border-radius 999px 同样改字面量
+ * 避免 9999rpx 经 rem 链放大成 13436px。
+ */
+.action-area .btn {
+  padding: 10px 22px;
+  border-radius: 999px;
+  font-size: 13px;
+  line-height: 1.4;
+  letter-spacing: 0.06em;
+}
+
 @keyframes action-fade-in {
   from {
     opacity: 0;

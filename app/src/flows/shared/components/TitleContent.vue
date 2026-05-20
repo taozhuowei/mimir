@@ -108,9 +108,11 @@ const { titleStyle, subtitleStyle, guidanceStyle } = useTitleEntrance(
 }
 
 .title-content__title {
-  font-size: var(--font-xxl);
+  /* xxl(32) → xl(24): 14PM 实测从 37px 收到 ~28px，去除 letter-spacing
+     放大造成的"挤压感"，留出 subtitle/guidance 喘息空间。 */
+  font-size: var(--font-xl);
   color: var(--color-text-primary);
-  letter-spacing: 0.18em;
+  letter-spacing: 0.14em;
   text-shadow: 0 4rpx 12rpx rgba(74, 37, 16, 0.1);
   line-height: 1;
 }

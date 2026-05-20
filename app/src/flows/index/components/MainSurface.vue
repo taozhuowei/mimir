@@ -131,36 +131,38 @@ const { cardsLoadError } = useCardsLoadError()
 </script>
 
 <style scoped>
+/* 14PM 画布外壳：铺满视口，横向居中画布，背景填空（main 分支同款策略）。
+   rem 链由 design_flexible 按 w/430 缩 root font-size，.canvas 宽
+   写 430px = 10rem，自动跟着 rootFontSize 缩（14PM=430、iPhone 8=375）；
+   高度由 .canvas height:100vh 独立铺满视口，内部 flex column 自适应。
+   除 < iPhone 8 (375×667) 之外严禁滚动 — 横向宽 ≥ 375 即装得下画布，
+   纵向高 ≥ 667 即由内部 flex 紧凑布局消化。 */
 .main-page {
   position: relative;
-  width: 100%;
+  width: 100vw;
   height: 100vh;
   overflow: hidden;
   background: var(--color-bg-page);
+  display: flex;
+  justify-content: center;
+  align-items: stretch;
 }
 
-/* too-small fallback：低于 iPhone 8 屏宽时，根容器允许溢出 body 滚动，
-   让 inline script 在 html.data-too-small=1 时的 body overflow:auto
-   生效（见 global.css 全局滚动切换）。 */
-:global(html[data-too-small="1"]) .main-page {
-  height: auto;
-  min-height: 100vh;
-  overflow: visible;
-}
+/* too-small (w<375 || h<667) 状态下的 main-page overflow / height /
+   align 切换由 global.css 接管（Vue 的 :global() 嵌套属性选择器在
+   本 scope 内未稳定生效，改用全局规则避免 specificity 漂移）。 */
 
-/* docs/prd/animation.md（视图过渡动画） — canvas capped at MAX_CANVAS_WIDTH
-   (440 px), centered on wider viewports via translateX max-clamp. The
-   the split/drawer overlay was removed, so the canvas no longer
-   slides flush-left. */
+/* 14PM 画布：宽固定 430px（postcss-pxtorem 转 10rem，由 rootFontSize
+   按 w/430 缩；14PM=430，iPhone 8=375），高度铺满视口（height:100%
+   继承父级 align-items:stretch 给的 100vh）。这与 main 分支 .canvas
+   max-width:440 + top:0 bottom:0 等价策略：宽限定 / 高随视口 / 内部
+   flex 自适应。去除历史 max-width:440 + translateX（main 用绝对定位
+   居中，feature 用 flex 居中，视觉等价）。 */
 .canvas {
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  left: 0;
-  width: 100%;
-  max-width: 440px;
-  transform: translateX(max(0px, calc((100vw - 440px) / 2)));
-  transition: transform 450ms cubic-bezier(0.16, 1, 0.3, 1);
+  position: relative;
+  width: 430px;
+  height: 100%;
+  flex-shrink: 0;
   display: flex;
   flex-direction: column;
   overflow: hidden;
