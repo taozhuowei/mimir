@@ -6,6 +6,7 @@
 
 import { computed, ref, watch } from 'vue'
 import type { Ref, ComputedRef } from 'vue'
+import { dpxStr } from '../../../../core/sizing/dpx'
 import type { SceneLayout as SceneLayoutResult } from '../../../../core/sizing/layout_solver'
 import type { AnimationState } from './animation_targets'
 
@@ -92,18 +93,21 @@ function createStyleRefs(state: AnimationState, opts: StyleReconcilerOptions) {
 
   const bgStyle = ref<Record<string, string>>({ opacity: '0' })
   const stageStyle = ref<Record<string, string>>({})
+  // translateY(60px) 与卡堆 -i*0.8px 偏移均为 iPhone 14 Pro Max 设计稿
+  // 真值。inline style 不经 postcss-pxtorem，需走 dpx 才能按视口等比缩放
+  // （否则小屏入场偏移看起来过大）。详见 docs/research/layout_final_rem.md。
   const headerStyle = ref<Record<string, string>>({
-    transform: 'translateY(60px)',
+    transform: `translateY(${dpxStr(60)})`,
     opacity: '0',
   })
   const footerStyle = ref<Record<string, string>>({
-    transform: 'translateY(60px)',
+    transform: `translateY(${dpxStr(60)})`,
     opacity: '0',
   })
   const deckCtnStyle = ref<Record<string, string>>({})
 
   const initialsStyle = ref<Record<string, string>[]>(
-    state.initials.map((_, i) => ({ transform: `translateY(${-i * 0.8}px)` })),
+    state.initials.map((_, i) => ({ transform: `translateY(${dpxStr(-i * 0.8)})` })),
   )
   const leftsStyle = ref<Record<string, string>[]>(
     Array.from({ length: opts.shuffleHalfCount }, () => ({})),
