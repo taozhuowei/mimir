@@ -20,6 +20,17 @@
    设计令牌 (Design Tokens)
    ======================================== */
 
+/* rem 基准锚点 — 由 lib-flexible (design_flexible.ts) 运行时覆盖。
+   设计稿基准 iPhone 14 Pro Max 宽 430 CSS px / 10 = 43px。
+   此占位让 N1 装配后构建产物在 lib-flexible 尚未注入前仍按 14PM 真值
+   渲染（不响应视口变化）；N2 注入 inline 脚本后即按 viewport.w 动态调整。
+   注：此选择器命中 vite.config.ts 的 selectorBlackList，本块内 px
+   不被 postcss-pxtorem 转换，font-size 字面量保持 43px。
+   方案档：../../../docs/research/layout_final_rem.md */
+:root {
+  font-size: 43px;
+}
+
 /* 颜色系统 — 浅色中世纪手稿风格，羊皮纸为基调
    通用变量在 :root 和 page 中同时定义 */
 :root, page {

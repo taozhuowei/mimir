@@ -1,5 +1,8 @@
 {
   "name": "scales-tarot-app",
   "version": "0.0.0",
-  "private": true
+  "private": true,
+  "devDependencies": {
+    "postcss-pxtorem": "^6.1.0"
+  }
 }
