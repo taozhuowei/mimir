@@ -62,6 +62,7 @@
       </view>
     </view>
 
+    <TooSmallBanner />
     <NotificationHost />
     <DevToolsPanel
       :phase-steps="animationController.phaseSteps.value"
@@ -108,6 +109,7 @@ import AnswerInscription from '../../answer/components/AnswerInscription.vue'
 import ActionArea from '../../answer/components/ActionArea.vue'
 import NotificationHost from './NotificationHost.vue'
 import DevToolsPanel from './DevToolsPanel.vue'
+import TooSmallBanner from '../../shared/components/TooSmallBanner.vue'
 import { useMainStage } from '../composables/use_main_stage'
 import { useHeaderPresentation } from '../composables/use_header_presentation'
 import { useCardsLoadError } from '../../../core/composables/use_cards_load_error'
@@ -135,6 +137,15 @@ const { cardsLoadError } = useCardsLoadError()
   height: 100vh;
   overflow: hidden;
   background: var(--color-bg-page);
+}
+
+/* too-small fallback：低于 iPhone 8 屏宽时，根容器允许溢出 body 滚动，
+   让 inline script 在 html.data-too-small=1 时的 body overflow:auto
+   生效（见 global.css 全局滚动切换）。 */
+:global(html[data-too-small="1"]) .main-page {
+  height: auto;
+  min-height: 100vh;
+  overflow: visible;
 }
 
 /* docs/prd/animation.md（视图过渡动画） — canvas capped at MAX_CANVAS_WIDTH

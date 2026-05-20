@@ -31,6 +31,18 @@
   font-size: 43px;
 }
 
+/* 滚动行为切换：默认 body overflow:hidden（界面按 rem 链等比缩 + flex
+   布局保证不溢出）；只有 too-small 状态（视口 < iPhone 8 真机尺寸）允许
+   body 滚动作为兜底，与 TooSmallBanner 提示协同。html.data-too-small
+   由 index.html inline 脚本同步写入。 */
+body {
+  margin: 0;
+  overflow: hidden;
+}
+html[data-too-small="1"] body {
+  overflow: auto;
+}
+
 /* 颜色系统 — 浅色中世纪手稿风格，羊皮纸为基调
    通用变量在 :root 和 page 中同时定义 */
 :root, page {
