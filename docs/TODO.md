@@ -15,8 +15,8 @@
 
 ## 任务清单
 
-- [ ] N1 引入 postcss-pxtorem + 配置（基础设施）：装 `postcss-pxtorem` 到 `app/devDependencies`；vite.config.ts 注入 `css.postcss.plugins`：`rootValue=43`、`propList=['*','!border','!border-*']`、`minPixelValue=2`、`unitPrecision=5`、`mediaQuery=false`、`selectorBlackList` 含 `.ignore-rem` 与 `:root`（避免根级 var 被转）。零运行时（postcss-pxtorem 仅编译期），但产物变化大，提交后 prod build + e2e 兜底跑一遍。
-- [ ] N2 自研 design_flexible（< 30 行 JS）+ FOUC 注入：新增 [`app/src/core/sizing/design_flexible.ts`](../app/src/core/sizing/design_flexible.ts)：导出 `setup(): void` 与 `isTooSmall: Ref<boolean>`、`scale: Ref<number>`；公式 `scale = clamp(0.872, w/430, 1)`、`rootFontSize = 43 × scale`；监听 `resize/orientationchange`，rAF 节流，dimension diff 短路；too-small 判定 `w<375`。同步 [`app/index.html`](../app/index.html) 入口模板把 setup 调用 inline 到 `<head>` 顶部 blocking 执行（FOUC 防护）。单测覆盖公式数学。
+- [x] N1 引入 postcss-pxtorem + 配置（基础设施）：装 `postcss-pxtorem@6.1.0` 到 `app/devDependencies`；vite.config.ts H5 端注入 `css.postcss.plugins`：`rootValue=43`、`propList=['*','!border','!border-*','!box-shadow','!outline','!outline-*']`、`minPixelValue=2`、`unitPrecision=5`、`mediaQuery=false`、`selectorBlackList=[/^:root$/, /\.ignore-rem/]`。global.css 顶部加 `:root { font-size: 43px }` 占位（命中 blackList 不自转，N2 由 inline lib-flexible 覆盖）。视觉等价于现状（rem 经 root=43 反解回原 px）。全套验收 + e2e 15/15 通过。提交 `b387922`。
+- [x] N2 自研 design_flexible + FOUC 注入：[`design_flexible.ts`](../app/src/core/sizing/design_flexible.ts) 暴露 `computeScale / computeRootFontSize / isTooSmallView` 纯函数 + `useDesignFlexible` composable，公式 `scale = clamp(0.872, w/430, 1)`，rem 基数 43，视口走 `uni.getWindowInfo()` + `uni.onWindowResize()`，raf 节流，单例 listener 跨 scope 存活（同 scale.ts 策略）；[`index.html`](../app/index.html) 头部增 inline 脚本同源同步执行（FOUC 防护），写 `html.style.fontSize` + `html.dataset.tooSmall`；[`design_flexible.test.ts`](../app/test/design_flexible.test.ts) 16 个单测覆盖常量/边界/中间值。视觉变化：14PM 等价 N1，<430 按比例缩（14 ≈ 91%、8 ≈ 87%），≥430 钉死。全套验收 + e2e 15/15 通过。提交 `3d66d09`。
 - [ ] N3 新增 dpx() runtime helper + 改造 GSAP/style_sync px 拼接：新增 [`app/src/core/sizing/dpx.ts`](../app/src/core/sizing/dpx.ts)：导出 `dpx(n: number): number` 与 `dpxStr(n: number): string`；实现 `n × currentRootFontSize / 43`。全项目搜 GSAP / animation / `${x}px` 字符串拼装路径（已知点：[`style_sync.ts`](../app/src/flows/shared/composables/animations/style_sync.ts) `:51,58,72`、[`flip.ts`](../app/src/flows/shared/composables/animations/flip.ts)、[`grow.ts`](../app/src/flows/shared/composables/animations/grow.ts)），统一改用 dpx() 桥；新增 ESLint 规则禁裸 `\d+px` 字面量出现在 .ts 字符串里。
 - [ ] N4 baseline 抽出为 design_baseline.ts（事实层）：把 [`scale_constants.ts`](../app/src/core/sizing/scale_constants.ts) 已有 11 个 `BASELINE_*` 常量抽出为 [`app/src/core/sizing/design_baseline.ts`](../app/src/core/sizing/design_baseline.ts) 嵌套树（`viewport / floor / header / card / answer / action / spacing`），命名规范 + TS `as const` 导出；layout_solver 系列改读新 baseline；scale_constants 退化为重导出兼容层。零功能改动，纯结构。
 - [ ] N5 重构布局为 flex 三段（行为改动，需 e2e 兜底）：[`MainSurface.vue`](../app/src/flows/index/components/MainSurface.vue) play-view 改 flex 列：HeaderArea + content-area（stage flex + answer flex），废弃 `--result-card-lift-y`、answer-zone 解除 `position:absolute`、卡牌严格 flex 居中；[`StageDeck.vue`](../app/src/flows/index/components/StageDeck.vue) 删 `resultCardLiftY` 计算；[`DeckRig.vue`](../app/src/flows/divination/components/DeckRig.vue) 删 lift transform 与 `.deck-rig--show-results` 修饰。Playwright 五档视口（360/375/430/768/1280）截图基线对比，确认卡居中 + 答案紧贴下方 + 无滚动。
@@ -33,7 +33,7 @@
 
 ## 进度
 
-待启动。N1（PostCSS 引入）正在准备中。
+基础设施就位：N1（PostCSS 引入）`b387922`、N2（design_flexible + FOUC）`3d66d09`。当前 `<html>` font-size 已按视口动态计算，源码 px 经 postcss-pxtorem 自动转 rem 后正确解析。下一步 N3（dpx helper + GSAP 路径改造）涉及运行时动画字符串拼装的改造，开工前停下汇报。
 
 ## 搁置问题（已登记，未排期）
 
