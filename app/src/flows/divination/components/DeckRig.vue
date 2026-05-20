@@ -138,7 +138,7 @@ defineProps<{
   height: var(--card-height);
 }
 
-.tarot-card { border-radius: 10rpx; overflow: hidden; }
+.tarot-card { border-radius: 5px; overflow: hidden; }
 
 .deck-layer { position: relative; }
 
@@ -181,7 +181,7 @@ defineProps<{
   position: absolute;
   width: var(--card-width);
   height: var(--card-height);
-  border-radius: 10rpx;
+  border-radius: 5px;
   border: 1px solid var(--color-border);
   box-shadow: 0 2rpx 8rpx rgba(30, 15, 6, 0.3);
 }
