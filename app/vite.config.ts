@@ -1,5 +1,6 @@
 import { defineConfig } from 'vite'
 import uni from '@dcloudio/vite-plugin-uni'
+import postcssPxtorem from 'postcss-pxtorem'
 import path from 'path'
 
 // Defensive: pin UNI_INPUT_DIR to this config's directory so tools that load
@@ -10,6 +11,17 @@ if (!process.env.UNI_INPUT_DIR) {
   process.env.UNI_INPUT_DIR = path.resolve(__dirname, 'src')
 }
 
+// H5 only: source code is authored against the iPhone 14 Pro Max design draft
+// (430x932 CSS px). postcss-pxtorem converts every px declaration to rem at
+// build time so the runtime lib-flexible (app/src/core/sizing/design_flexible.ts)
+// can drive the global scale by writing a single root font-size. rootValue=43
+// is `design_baseline.viewport.w / 10`; propList excludes border/box-shadow so
+// hairlines stay physical 1px regardless of viewport. mp-weixin targets do not
+// go through vite's CSS pipeline (uni-cli has its own); we still gate the
+// plugin on UNI_PLATFORM to make intent explicit and survive future toolchain
+// shuffles. See docs/research/layout_final_rem.md for the full rationale.
+const isH5Target = !process.env.UNI_PLATFORM || process.env.UNI_PLATFORM === 'h5'
+
 export default defineConfig(({ mode }) => {
   const isProduction = mode === 'production'
 
@@ -17,6 +29,23 @@ export default defineConfig(({ mode }) => {
     publicDir: path.resolve(__dirname, '../server/public'),
     plugins: [uni()],
     envDir: path.resolve(__dirname, '..'),
+    css: isH5Target
+      ? {
+          postcss: {
+            plugins: [
+              postcssPxtorem({
+                rootValue: 43,
+                unitPrecision: 5,
+                propList: ['*', '!border', '!border-*', '!box-shadow', '!outline', '!outline-*'],
+                selectorBlackList: [':root', /\.ignore-rem/],
+                replace: true,
+                mediaQuery: false,
+                minPixelValue: 2,
+              }),
+            ],
+          },
+        }
+      : undefined,
     resolve: {
       alias: {
         // Use gsap-core (no CSSPlugin) to avoid DOM-only APIs in WeChat Mini Program.
