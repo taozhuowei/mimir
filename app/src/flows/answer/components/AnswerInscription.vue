@@ -90,6 +90,11 @@ onUnmounted(clearTimer)
 </script>
 
 <style scoped>
+/* 所有 px 数值按 iPhone 14 Pro Max 设计稿真值书写。
+   postcss-pxtorem 编译期转 rem，design_flexible 运行时按视口宽度 clamp
+   到 [0.872, 1] × 43px 的 root font-size，实现等比缩放。
+   max-width 使用 px 而非 em，避免大字号下二次膨胀溢出 canvas。
+   详见 docs/research/layout_final_rem.md。 */
 .answer-inscription {
   display: flex;
   flex-direction: column;
@@ -97,7 +102,7 @@ onUnmounted(clearTimer)
   text-align: center;
   width: 100%;
   box-sizing: border-box;
-  padding: 0 var(--space-5);
+  padding: 0 20px;
 }
 
 /* ---- success: the inscription ------------------------------------- */
@@ -105,60 +110,55 @@ onUnmounted(clearTimer)
   display: flex;
   flex-direction: column;
   align-items: center;
-  /* Asymmetric rhythm: the quote lands with room, its meaning sits close
-     beneath it, the colophon falls away with more air. Not uniform gap. */
 }
 
-/* 原文 — the struck line. Display face, the visual weight of the whole
-   surface. Held to a poster measure so a long line breaks deliberately
-   rather than running the full stage width. */
+/* 原文：display face，整段视觉重心。最大宽度按 14PM 上 quote 28px ×
+   ~13 字符宽，保证长行在 canvas 内自然折行而不撑出。 */
 .ai-quote {
-  max-width: 13em;
+  max-width: 360px;
   color: var(--color-text-primary);
-  font-size: var(--text-2xl);
+  font-size: 26px;
   font-weight: 600;
   line-height: 1.26;
   letter-spacing: 0.005em;
-  margin-top: var(--space-6);
+  margin-top: 24px;
   animation: ai-rise 560ms cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
-/* A carved colophon rule — a short centred hairline, not a panel border.
-   1px keeps it engraved, not boxed. */
+/* hairline rule — 短中线分隔，1px 边框由 postcss-pxtorem 配置
+   propList 排除，保持物理像素不参与缩放（防 subpixel 失真）。 */
 .ai-rule {
-  width: 40rpx;
+  width: 40px;
   height: 1px;
-  margin: var(--space-5) 0 var(--space-4);
+  margin: 16px 0 12px;
   background: var(--color-border-accent);
   animation: ai-rise 560ms cubic-bezier(0.16, 1, 0.3, 1) 220ms both;
 }
 
-/* 翻译 — the meaning, whispered one clear step down. Looser leading
-   because light type on a light field reads lighter. */
+/* 翻译：含义层，line-height 略宽给浅色字配色更易读。 */
 .ai-translation {
-  max-width: 18em;
+  max-width: 320px;
   color: var(--color-text-secondary);
-  font-size: var(--text-base);
+  font-size: 16px;
   line-height: 1.74;
   letter-spacing: 0.01em;
   animation: ai-rise 560ms cubic-bezier(0.16, 1, 0.3, 1) 300ms both;
 }
 
-/* 来源 — the attribution, carved smallest and quietest, set off with air
-   and an em-dash like a colophon. */
+/* 来源：题款，最细最轻。 */
 .ai-source {
-  max-width: 20em;
+  max-width: 280px;
   color: var(--color-text-muted);
-  font-size: var(--text-xs);
+  font-size: 12px;
   font-style: italic;
   line-height: 1.6;
   letter-spacing: 0.06em;
-  margin-top: var(--space-6);
+  margin-top: 16px;
   animation: ai-rise 560ms cubic-bezier(0.16, 1, 0.3, 1) 460ms both;
 }
 
 @keyframes ai-rise {
-  from { opacity: 0; transform: translateY(20rpx); }
+  from { opacity: 0; transform: translateY(8px); }
   to   { opacity: 1; transform: translateY(0); }
 }
 
@@ -167,19 +167,19 @@ onUnmounted(clearTimer)
   display: flex;
   align-items: baseline;
   justify-content: center;
-  gap: var(--space-2);
-  padding: var(--space-8) 0;
+  gap: 8px;
+  padding: 32px 0;
 }
 
 .ai-loading__word {
   color: var(--color-text-muted);
-  font-size: var(--text-base);
+  font-size: 16px;
   letter-spacing: 0.16em;
 }
 
 .ai-loading__ellipsis {
   color: var(--color-accent);
-  font-size: var(--text-base);
+  font-size: 16px;
   letter-spacing: 0.12em;
   animation: ai-breathe 1.6s ease-in-out infinite;
 }
@@ -191,12 +191,12 @@ onUnmounted(clearTimer)
 
 /* ---- error: a quiet line; recovery lives in ActionArea ------------ */
 .ai-error {
-  padding: var(--space-8) 0;
+  padding: 32px 0;
 }
 
 .ai-error__text {
   color: var(--color-yes);
-  font-size: var(--text-sm);
+  font-size: 14px;
   line-height: 1.7;
 }
 

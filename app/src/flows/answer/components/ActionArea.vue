@@ -86,10 +86,10 @@ const visible = computed(() =>
 <style scoped>
 .action-area {
   display: flex;
-  gap: 24rpx;
+  gap: 12px;
   align-items: center;
   justify-content: center;
-  padding: 24rpx 24rpx calc(env(safe-area-inset-bottom, 0px) + 24rpx);
+  padding: 12px 12px calc(env(safe-area-inset-bottom, 0px) + 12px);
   /* 350ms fade-in per docs/prd/animation.md（动效规范 #3） */
   animation: action-fade-in 350ms cubic-bezier(0.16, 1, 0.3, 1) both;
 }
@@ -97,7 +97,7 @@ const visible = computed(() =>
 @keyframes action-fade-in {
   from {
     opacity: 0;
-    transform: translateY(16rpx);
+    transform: translateY(8px);
   }
 
   to {
