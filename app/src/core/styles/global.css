@@ -177,33 +177,26 @@
   --safe-area-inset-left: env(safe-area-inset-left, 0px);
 }
 
-/* H5 专用：响应式字体大小
+/* H5 字号 token — iPhone 14 Pro Max 设计稿真值（静态 px）
  *
- * Pure px clamp() — NOT rem. Reason: UniApp's H5 build dynamically
- * inflates `html { font-size }` based on viewport width to make rpx
- * units work (e.g. at iPad Air 820px, html font-size jumps to ~35px).
- * Anything rem-based would inherit that inflation and produce 30+px
- * "body" text on tablets. Pixel clamps with vw slopes give predictable
- * scaling regardless of how UniApp messes with html font-size.
- *
- * Targets:
- *   iPhone 8/PM (≤440):  base=16, lg=18, xl=22 (phone tier, min cap)
- *   iPad Air (820):      base≈19, lg≈23, xl≈28 (comfortable tablet)
- *   iPad Pro (1024):     base≈21, lg≈25, xl≈31
- *   Desktop (≥1280):     hits max caps (24/30/36/...)
+ * 历史 clamp(vw) 公式已废除：与新 rem 自适应链
+ * （design_flexible + postcss-pxtorem）冲突，会在大屏产生 vw 弹性 + rem
+ * 缩放双重作用。改为静态 14PM 真值后，postcss-pxtorem 把 Npx 转成 Nrem，
+ * html font-size 由 design_flexible 按视口宽度 clamp(0.872, w/430, 1) ×
+ * 43，所有字号同步等比缩放。详见 docs/research/layout_final_rem.md。
  */
 /* #ifdef H5 */
 :root {
   --font-display: 'Cinzel', 'LXGW WenKai', 'STKaiti', 'KaiTi', 'Kaiti SC', serif;
   --font-body: 'LXGW WenKai', 'STKaiti', 'KaiTi', 'Kaiti SC', 'STSong', serif;
-  --text-xs:   clamp(12px, 9px + 0.6vw, 18px);
-  --text-sm:   clamp(14px, 10px + 0.8vw, 22px);
-  --text-base: clamp(16px, 11px + 1.0vw, 24px);
-  --text-lg:   clamp(18px, 13px + 1.2vw, 30px);
-  --text-xl:   clamp(22px, 15px + 1.6vw, 40px);
-  --text-2xl:  clamp(28px, 18px + 2.2vw, 52px);
-  --text-3xl:  clamp(36px, 22px + 3.0vw, 64px);
-  --text-4xl:  clamp(48px, 28px + 4.0vw, 88px);
+  --text-xs:   12px;
+  --text-sm:   14px;
+  --text-base: 16px;
+  --text-lg:   18px;
+  --text-xl:   22px;
+  --text-2xl:  28px;
+  --text-3xl:  36px;
+  --text-4xl:  48px;
 }
 /* #endif */
 
