@@ -71,7 +71,6 @@ import type { UseAnimationControllerReturn } from '../../divination/composables/
 import { useTarotStore } from '../../../core/store/tarot'
 import { useThemeStore } from '../../../core/store/theme'
 import { usePlayDeckAnimation } from '../composables/use_play_deck_animation'
-import { RESULT_LIFT_MARGIN_PX } from '../../answer/composables/result_card_lift_margin'
 import type { DivinationPhase } from '../../../core/store/slices/flow'
 import DeckFanStack from '../../idle/components/DeckFanStack.vue'
 import DeckRig from '../../divination/components/DeckRig.vue'
@@ -88,32 +87,13 @@ const cardBack = computed(() => themeStore.cardBackImage)
  *  gated by the animation controller's own state). */
 const isIdle = computed(() => phase.value === 'idle')
 
-/**
- * Vertical lift applied to the result-stage card so the answer struck
- * below it (AnswerInscription, rendered in MainSurface's answer-zone) has
- * room. The GSAP rig anchors the card at the draw-container midpoint, so
- * without a lift the answer would sit under the card. Lift = the
- * draw-stage virtual-drawer half + a breathing margin. Applied on all
- * widths now that the side-panel split is gone.
+/* MainSurface 已切换为 flex 三段（HeaderArea + Stage + answer-zone 兄弟节点
+ * 自然纵向分布）：Stage 占据剩余高度且卡牌严格 flex 居中，答案区作为兄弟
+ * 节点紧贴 Stage 下方。原 result-card-lift-y 升起卡牌让位的机制不再需要，
+ * lift computed 与 RESULT_LIFT_MARGIN_PX 常量一并废弃，详见
+ * docs/research/layout_final_rem.md。
  */
-const resultCardLiftY = computed(() => {
-  if (!animCtrl.showResults.value) return 0
-  try {
-    const drawLayout = animCtrl.getSceneLayout('draw_stage')
-    return Math.max(
-      0,
-      drawLayout.drawer.initialHeight / 2 + RESULT_LIFT_MARGIN_PX,
-    )
-  } catch {
-    return 0
-  }
-})
-
-const rootStyle = computed(() => {
-  const base = animCtrl.overlayVarsStyle.value
-  const liftDecl = `--result-card-lift-y: ${resultCardLiftY.value}px`
-  return base ? `${base}; ${liftDecl}` : liftDecl
-})
+const rootStyle = computed(() => animCtrl.overlayVarsStyle.value)
 
 function getCardImg(idx: number): string {
   return tarotStore.drawnCards[idx]?.card.image || themeStore.cardBackImage
