@@ -33,27 +33,31 @@
           <TitleContent v-if="isIdle" variant="idle" />
           <ProgressContent v-else />
         </HeaderArea>
-        <Stage :scene="isIdle ? 'idle' : 'divination'">
-          <CardsLoadError v-if="isIdle && cardsLoadError" />
-          <StageDeck v-else />
-        </Stage>
+        <!-- content-area: HeaderArea 之下的"内容区"，弹性列。Stage 占据
+             剩余高度并居中卡牌；答案区作为兄弟节点紧贴 Stage 下方挂出，
+             不再 absolute 覆盖 Stage。flex 自动分配让卡牌严格几何居中
+             于 Stage 区。详见 docs/research/layout_final_rem.md. -->
+        <view class="content-area">
+          <Stage :scene="isIdle ? 'idle' : 'divination'">
+            <CardsLoadError v-if="isIdle && cardsLoadError" />
+            <StageDeck v-else />
+          </Stage>
 
-        <!-- The answer is struck directly below the card once the draw
-             resolves (phase ∈ answer/decision). No split / drawer overlay. -->
-        <view v-if="showAnswer" class="answer-zone">
-          <AnswerInscription
-            :state="answerPanelState"
-            :answer-result="answerResult"
-            :error-message="answerErrorMessage"
-            @answer-revealed="handleAnswerRevealed"
-          />
-          <ActionArea
-            :phase="phase"
-            :is-answer-failed="answerPanelState === 'error'"
-            @restart="handleRestart"
-            @back-home="handleBackHome"
-            @retry="handleRetry"
-          />
+          <view v-if="showAnswer" class="answer-zone">
+            <AnswerInscription
+              :state="answerPanelState"
+              :answer-result="answerResult"
+              :error-message="answerErrorMessage"
+              @answer-revealed="handleAnswerRevealed"
+            />
+            <ActionArea
+              :phase="phase"
+              :is-answer-failed="answerPanelState === 'error'"
+              @restart="handleRestart"
+              @back-home="handleBackHome"
+              @retry="handleRetry"
+            />
+          </view>
         </view>
       </view>
     </view>
@@ -151,22 +155,25 @@ const { cardsLoadError } = useCardsLoadError()
   overflow: hidden;
 }
 
-/* The answer zone is struck into the lower half of the play surface,
-   below the (lifted) card. Bottom-anchored, scrolls internally if a long
-   quote + its translation overflow on short viewports so the action row
-   never gets clipped. No sheet chrome, no drag — it is part of the
-   canvas, not an overlay. */
+/* content-area: HeaderArea 之下的弹性列容器。Stage 占据可缩高度（卡牌
+   严格几何居中）；答案区作为 flex item 紧贴 Stage 下方，自适应内容高度
+   但不超过 content-area 50%（防止长文献挤压卡牌）。禁滚动：答案文本由
+   rem 链按视口缩，恰好容下；过小屏 fallback 由 html[data-too-small=1]
+   切换 body overflow:auto 处理（见 global.css）。 */
+.content-area {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
 .answer-zone {
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
+  flex: 0 0 auto;
+  max-height: 50%;
   display: flex;
   flex-direction: column;
   align-items: center;
-  max-height: 60%;
-  overflow-y: auto;
-  padding-bottom: calc(env(safe-area-inset-bottom, 0px) + var(--space-2));
+  padding-bottom: env(safe-area-inset-bottom, 0px);
   animation: answer-zone-in 420ms cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 

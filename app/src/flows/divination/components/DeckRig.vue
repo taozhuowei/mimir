@@ -10,7 +10,7 @@
     styles, and bindings are byte-identical to the legacy block. Only
     the wrapper-level idle/click logic stays in the parent.
   -->
-  <view class="deck-rig" :class="{ 'deck-rig--show-results': animCtrl.showResults.value }">
+  <view class="deck-rig">
     <!-- ── Initial deck + shuffle halves ──────────────────────────── -->
     <view class="deck-layer stage-pointer" :style="animCtrl.deckCtnStyle.value">
       <image
@@ -167,16 +167,10 @@ defineProps<{
   transition: transform 0.55s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* `.deck-rig--show-results` is set on the rig's own wrapper when the
-   parent's animationController.showResults flips on. The rig owns the
-   modifier locally so Vue's scoped-CSS attribute rewrite still matches
-   the descendant `.draw-container` selector — the legacy ancestor
-   modifier `.show-results .draw-container` lived on the Deck root,
-   which sits one component level up and therefore would not match
-   under scoped CSS without a `:global` opt-out. */
-.deck-rig--show-results .draw-container {
-  transform: translateY(calc(-1 * var(--result-card-lift-y, 0px)));
-}
+/* 历史 .deck-rig--show-results 升起规则已废除：MainSurface 切换为 flex 三段
+   后，Stage 与答案区作为兄弟节点自然纵向分布，卡牌严格几何居中于 Stage，
+   不再需要升起让位。--result-card-lift-y 变量与 StageDeck 的 lift computed
+   一并废弃。详见 docs/research/layout_final_rem.md。 */
 
 .cut-pile {
   width: var(--card-width);
