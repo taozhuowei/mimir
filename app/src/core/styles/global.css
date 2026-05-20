@@ -31,16 +31,52 @@
   font-size: 43px;
 }
 
-/* 滚动行为切换：默认 body overflow:hidden（界面按 rem 链等比缩 + flex
-   布局保证不溢出）；只有 too-small 状态（视口 < iPhone 8 真机尺寸）允许
-   body 滚动作为兜底，与 TooSmallBanner 提示协同。html.data-too-small
-   由 index.html inline 脚本同步写入。 */
+/* 滚动行为切换：默认 body overflow:hidden（界面按宽度单轴 rem 链等比
+   缩，画布宽固定 ≥ iPhone 8 真宽 375，高度由 canvas:100vh + 内部 flex
+   自适应消化，正常视口下不滚）；只有 too-small 状态（视口 <
+   iPhone 8 真机 375×667）才允许 body 滚动作为兜底，与 TooSmallBanner
+   顶部横幅协同。html.data-too-small 由 index.html inline 脚本同步写入。 */
 body {
   margin: 0;
   overflow: hidden;
 }
 html[data-too-small="1"] body {
   overflow: auto;
+}
+
+/* too-small 下 .main-page 让出 100vh 与 overflow:hidden 锁定，改为
+   height:auto + min-height:100vh + overflow:visible + 顶部对齐，
+   使溢出的画布顶/底能被 body 滚动看到；正常状态下 main-page 自身
+   的 scoped 规则（width:100vw / height:100vh / overflow:hidden /
+   center）严格不滚。两套规则按 specificity 互不影响。 */
+html[data-too-small="1"] .main-page {
+  height: auto;
+  min-height: 100vh;
+  overflow: visible;
+  align-items: flex-start;
+}
+
+/* too-small 下祖先链上的 page / uni-page / uni-page-body 也必须放开
+   height:100vh + overflow:hidden，否则它们会把 main-page 的溢出吃掉，
+   body 不会撑高，rolling 不会出现。这与 page 默认规则形成 too-small
+   兜底分支。 */
+html[data-too-small="1"] page,
+html[data-too-small="1"] uni-page,
+html[data-too-small="1"] uni-page-body,
+html[data-too-small="1"] uni-page-wrapper {
+  height: auto;
+  min-height: 100vh;
+  overflow: visible;
+}
+
+/* too-small 下 .canvas height:100% 继承父级 height:auto 后塌成 0，需要
+   显式 min-height 撑住。锁定为 14PM 设计稿高 932px（postcss-pxtorem 转
+   21.67rem，rootFontSize 按宽度 scale 缩）：视口低于 iPhone 8 高 667
+   时必然 > 100vh，body 纵向滚动启用；视口宽不足 375 时画布 375 宽
+   > 视口，横向也会出现滚动。"非最佳显示效果"由 TooSmallBanner 文案告知。 */
+html[data-too-small="1"] .canvas {
+  height: auto;
+  min-height: 932px;
 }
 
 /* 颜色系统 — 浅色中世纪手稿风格，羊皮纸为基调

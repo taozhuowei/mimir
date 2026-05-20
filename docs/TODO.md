@@ -33,7 +33,7 @@
 
 ## 进度
 
-基础设施就位：N1（PostCSS 引入）`b387922`、N2（design_flexible + FOUC）`3d66d09`。当前 `<html>` font-size 已按视口动态计算，源码 px 经 postcss-pxtorem 自动转 rem 后正确解析。下一步 N3（dpx helper + GSAP 路径改造）涉及运行时动画字符串拼装的改造，开工前停下汇报。
+核心体验可预览：N1 `b387922` / N2 `3d66d09` / N3 `392ca8f` / N5 `97e9315` / N6 部分 `8e7250b` / N7 `d37f4cc`。当前状态：卡牌严格居中 content-area、答案紧贴卡下、字号按 rem 链等比缩、14PM 上限钉死、iPhone 8 下限锁底 + banner 提示、桌面背景填空、全程 e2e 15/15 绿。剩余 N4（baseline 嵌套树，非阻塞）/N8（e2e helper 现状已自然通过）/N9（stylelint 守护）/N10（清旧 token / k 系架构债，与 rem 链并存的视觉错位 ~10% 仍待消除）/N11（收尾）。
 
 ## 搁置问题（已登记，未排期）
 

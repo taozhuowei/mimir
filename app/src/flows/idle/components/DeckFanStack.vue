@@ -125,7 +125,11 @@ defineProps<{
 }
 
 .idle-deck-content__hint-text {
-  font-size: 20rpx;
+  /* 20rpx 在 H5 经 uni rem 链放大后 14PM 视口实测 ~27px，过抢镜；改用
+     token --font-xs(12×k) 让 hint 与 subtitle/guidance 同档，落入 14px
+     上限。显式 line-height: 1 抵消 page 默认 1.6 撑高的盒子。 */
+  font-size: var(--font-xs);
+  line-height: 1;
   color: var(--color-text-muted);
   letter-spacing: 0.25em;
 }
