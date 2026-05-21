@@ -16,7 +16,7 @@
 import { describe, expect, it, beforeEach } from 'vitest'
 import { createPinia, setActivePinia } from 'pinia'
 import { useTarotStore } from '../src/core/store/tarot'
-import type { DrawnResult, AnswerResult, TarotCardInfo } from '../src/core/utils/tarot_answer_types_shim'
+import type { DrawnResult, AnswerResult, TarotCardInfo } from '../src/core/api/types'
 
 // Helper to create minimal valid TarotCardInfo (face data only).
 function makeCard(id: string): TarotCardInfo {

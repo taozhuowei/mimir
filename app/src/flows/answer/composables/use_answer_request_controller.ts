@@ -10,11 +10,11 @@
 import { computed, ref } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useTarotStore } from '../../../core/store/tarot'
-import { RuleBasedAnswerProvider } from '../../../core/utils/answer/rule_based_answer_provider'
-import { createAnswerOrchestrator } from '../../../core/utils/answer/answer_orchestrator'
-import type { AnswerRequest } from '../../../core/utils/answer/answer_provider'
+import { RuleBasedAnswerProvider } from '../lib/rule_based_answer_provider'
+import { createAnswerOrchestrator } from '../lib/answer_orchestrator'
+import type { AnswerRequest } from '../lib/answer_provider'
 import type { AnswerResult } from '../../../core/api/types'
-import type { AnswerStatus } from '../../../core/utils/answer/answer_orchestrator'
+import type { AnswerStatus } from '../lib/answer_orchestrator'
 import type { ComputedRef } from 'vue'
 
 export interface UseAnswerControllerDeps {

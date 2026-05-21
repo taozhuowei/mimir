@@ -63,13 +63,7 @@ src/
 │   └── utils/
 │       ├── math.ts             数值区间钳制 clamp
 │       ├── secure_random.ts    安全随机数（视觉抖动用）
-│       ├── accessibility.ts    探测“减少动效”偏好
-│       ├── tarot_answer_types_shim.ts 类型再导出兼容垫片
-│       ├── dev/container_borders.ts 切换调试边框（仅 H5）
-│       ├── dev/draggable_panel.ts   调试面板拖拽手柄（仅 H5）
-│       ├── answer/answer_provider.ts            答案提供者接口类型
-│       ├── answer/rule_based_answer_provider.ts 规则答案提供者：转发后端
-│       └── answer/answer_orchestrator.ts        答案请求生命周期（超时/重试/写入）
+│       └── accessibility.ts    探测“减少动效”偏好
 │
 └── flows/                      按业务流分域，每域含视图与编排逻辑
     ├── idle/                   待机扇形牌堆
@@ -108,8 +102,10 @@ src/
     ├── answer/                 答案揭示（卡下行内，无面板/分栏/抽屉）
     │   ├── components/AnswerCard.vue            答案卡：原文/翻译/来源，自持 loading/error/success
     │   ├── components/ActionArea.vue            重开/回首页/重试按钮区
-    │   ├── composables/use_answer_request_controller.ts        答案请求生命周期（超时/重试/写入）
-    │   └── composables/result_card_lift_margin.ts      结果卡抬升留白常量
+    │   ├── composables/use_answer_request_controller.ts 答案请求控制器：连通编排器与 store
+    │   ├── lib/answer_provider.ts               答案提供者接口类型
+    │   ├── lib/rule_based_answer_provider.ts    规则答案提供者：转发后端
+    │   └── lib/answer_orchestrator.ts           答案请求生命周期（超时/重试/写入）
     ├── index/                  主界面装配与开发工具
     │   ├── components/MainSurface.vue              主界面装配根
     │   ├── components/StageDeck.vue                 单例舞台牌堆（idle/占卜切换）

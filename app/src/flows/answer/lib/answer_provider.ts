@@ -1,5 +1,5 @@
 /**
- * Name: answer_provider
+ * Name: flows/answer/lib/answer_provider
  * Purpose: abstract interface for divination request providers.
  * Reason: enables swapping between rule-based and future AI providers
  *         without changing consumers. Now that the backend owns shuffling,
@@ -9,8 +9,8 @@
  * Data flow: spread kind flows in -> hydrated `Divination` flows out.
  */
 
-import type { Divination } from '../../api/divinations'
-import type { SpreadKind } from '../../api/types'
+import type { Divination } from '../../../core/api/divinations'
+import type { SpreadKind } from '../../../core/api/types'
 
 export type AnswerProviderType = 'rule_based' | 'ai'
 

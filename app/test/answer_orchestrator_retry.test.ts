@@ -9,8 +9,8 @@
 
 import { describe, expect, it, vi, beforeEach } from 'vitest'
 import { ref } from 'vue'
-import { createAnswerOrchestrator } from '../src/core/utils/answer/answer_orchestrator'
-import type { AnswerProvider, AnswerRequest } from '../src/core/utils/answer/answer_provider'
+import { createAnswerOrchestrator } from '../src/flows/answer/lib/answer_orchestrator'
+import type { AnswerProvider, AnswerRequest } from '../src/flows/answer/lib/answer_provider'
 import type { DrawnResult, AnswerResult, TarotCardInfo } from '../src/core/api/types'
 import type { Divination } from '../src/core/api/divinations'
 

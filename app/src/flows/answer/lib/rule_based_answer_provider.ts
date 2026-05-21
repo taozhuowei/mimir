@@ -1,5 +1,5 @@
 /**
- * Name: rule_based_answer_provider
+ * Name: flows/answer/lib/rule_based_answer_provider
  * Purpose: divination provider backed by the project's rule-based backend.
  * Reason: implements the provider boundary for the current non-LLM reading
  *         pipeline. The backend now owns shuffling, drawing, and rule-based
@@ -9,7 +9,7 @@
  *         with resolved asset URLs) flows out.
  */
 
-import { requestDivination, type Divination } from '../../api/divinations'
+import { requestDivination, type Divination } from '../../../core/api/divinations'
 import type { AnswerProvider, AnswerRequest } from './answer_provider'
 
 export class RuleBasedAnswerProvider implements AnswerProvider {
