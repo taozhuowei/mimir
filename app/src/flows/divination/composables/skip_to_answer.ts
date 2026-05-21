@@ -12,7 +12,7 @@
 import type { Ref } from 'vue'
 import { getPhaseSnap } from './phase_registry'
 import type { PhaseSnapDeps } from './phase_entry_snap'
-import type { OverlayPhase } from '../../shared/composables/animations/phase_contracts'
+import type { OverlayPhase } from '../../base/composables/animations/phase_contracts'
 
 export interface SkipToAnswerCommandDeps {
   interruptCurrentAnimation: () => void

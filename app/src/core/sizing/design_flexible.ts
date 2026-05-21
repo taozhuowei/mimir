@@ -14,7 +14,7 @@
  * - 中间：按宽度等比缩
  * - 下限 FLOOR_RATIO = 375/430 ≈ 0.8721（iPhone 8 宽边界）
  *
- * 高度不参与 scale —— 画布高度由 .main-page/.canvas height:100vh
+ * 高度不参与 scale —— 画布高度由 .main-surface/.main-surface__canvas height:100vh
  * 接管，内部 flex column（HeaderArea + Stage + ActionArea）按视口
  * 高度自适应，与 main 分支视觉等价。视口高 < 932 不触发缩放，仅内部
  * 组件挤压；视口高 < 667 时由 isTooSmallView 触发横幅 + 滚动。
@@ -66,11 +66,11 @@ export const CEILING_RATIO = 1
  *   横向 / 纵向 body 滚动兜底）
  *
  * 第二参数 viewportH 仅签名占位，便于调用方传完整 viewport（与 inline
- * 脚本签名同源），不参与 scale 计算 —— 高度由 .canvas height:100vh +
+ * 脚本签名同源），不参与 scale 计算 —— 高度由 .main-surface__canvas height:100vh +
  * 内部 flex column 自适应消化。
  */
 // 第二参数刻意未命名为 _ 前缀 + 用 disable 注释，让调用方可传 height 而不
-// 触发 unused 警告；本函数不用高度（高度由 .canvas height:100vh 消化）。
+// 触发 unused 警告；本函数不用高度（高度由 .main-surface__canvas height:100vh 消化）。
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export function computeScale(viewportW: number, viewportH?: number): number {
   const raw = viewportW / BASELINE_W

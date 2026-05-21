@@ -6,10 +6,10 @@
  * writes both into the store. The store therefore only exposes:
  *   - `setDrawnCards(drawn)` for the orchestrator to push drawn cards in
  *   - `answerResult` as a writable ref (for tests / direct consumers)
- *   - phase transition primitives (`startDivination`, `setPhase`,
- *     `revealResult`, `reset`)
+ *   - flow transition primitives (`startDivination`, `setFlow`,
+ *     `enterAnswer`, `reset`)
  *
- * These tests cover the surface that remains: phase transitions, drawn-card
+ * These tests cover the surface that remains: flow transitions, drawn-card
  * injection, reading result wiring, and the deck-load error ref.
  */
 
@@ -112,40 +112,37 @@ describe('tarot store - drawn cards and reading flow', () => {
     })
   })
 
-  describe('phase transitions', () => {
-    it('transitions through phases correctly', () => {
+  describe('flow transitions', () => {
+    it('transitions through flow states correctly', () => {
       const store = useTarotStore()
 
-      expect(store.phase).toBe('idle')
+      expect(store.flow).toBe('idle')
       expect(store.isIdle).toBe(true)
       expect(store.isAnimating).toBe(false)
 
       store.startDivination('Test question')
-      expect(store.phase).toBe('divination')
+      expect(store.flow).toBe('divination')
       expect(store.isIdle).toBe(false)
       expect(store.isAnimating).toBe(true)
       expect(store.currentQuestion).toBe('Test question')
 
-      store.revealResult()
-      expect(store.phase).toBe('answer')
+      store.enterAnswer()
+      expect(store.flow).toBe('answer')
       // isResultVisible is false because answerResult is null (no result loaded yet)
       expect(store.isResultVisible).toBe(false)
-
-      store.enterDecision()
-      expect(store.phase).toBe('decision')
     })
 
-    it('isResultVisible requires both phase=reading AND answerResult', () => {
+    it('isResultVisible requires both flow=answer AND answerResult', () => {
       const store = useTarotStore()
 
       // Initially not visible
       expect(store.isResultVisible).toBe(false)
 
-      // Just changing phase is not enough
-      store.revealResult()
+      // Just changing flow is not enough
+      store.enterAnswer()
       expect(store.isResultVisible).toBe(false)
 
-      // Need both phase='answer' AND answerResult
+      // Need both flow='answer' AND answerResult
       const drawn = makeDrawn()
       store.setDrawnCards(drawn)
       store.answerResult = makeAnswerResult(drawn)
@@ -161,23 +158,23 @@ describe('tarot store - drawn cards and reading flow', () => {
 
       store.startDivination('Fresh question')
 
-      expect(store.phase).toBe('divination')
+      expect(store.flow).toBe('divination')
       expect(store.drawnCards).toHaveLength(0)
       expect(store.answerResult).toBeNull()
       expect(store.currentQuestion).toBe('Fresh question')
     })
 
-    it('reset clears all state including phase, drawn cards, reading and question', () => {
+    it('reset clears all state including flow, drawn cards, reading and question', () => {
       const store = useTarotStore()
 
       store.startDivination('Test question')
       store.setDrawnCards(makeDrawn())
-      store.setPhase('revealing')
+      store.setFlow('answer')
       store.answerResult = makeAnswerResult(store.drawnCards)
 
       store.reset()
 
-      expect(store.phase).toBe('idle')
+      expect(store.flow).toBe('idle')
       expect(store.drawnCards).toHaveLength(0)
       expect(store.answerResult).toBeNull()
       expect(store.currentQuestion).toBe('')

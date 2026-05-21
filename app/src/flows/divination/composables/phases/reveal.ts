@@ -12,10 +12,10 @@
  *          then growAtom + flipAtom compose into the timeline.
  */
 import gsap from 'gsap'
-import type { AnimationTimeline } from '../../../shared/composables/animations/state_types'
-import type { OverlayPhase, PhaseContext, PhaseRunner } from '../../../shared/composables/animations/phase_contracts'
-import { growAtom } from '../../../shared/composables/animations/grow'
-import { flipAtom } from '../../../shared/composables/animations/flip'
+import type { AnimationTimeline } from '../../../base/composables/animations/state_types'
+import type { OverlayPhase, PhaseContext, PhaseRunner } from '../../../base/composables/animations/phase_contracts'
+import { growAtom } from '../../../base/composables/animations/grow'
+import { flipAtom } from '../../../base/composables/animations/flip'
 
 export interface RevealPhaseConfig {
   cardCount: number

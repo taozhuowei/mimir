@@ -15,7 +15,7 @@
 
 1. 待机视图（idle view）：主面板初始状态，用摊牌动画引导用户触发占卜。
 2. 占卜视图（divination view）：触发占卜后呈现，舞台依次播放洗牌 / 切牌 / 抽牌 / 翻牌动画。
-3. 结果视图（result view）：占卜完成后呈现，结果卡牌在占卜舞台定格并上移留白，正下方行内答案区呈现答案；不分栏、不侧栏、不抽屉，全宽统一。
+3. 结果视图（result view）：进入答案 flow 后呈现，结果卡牌在占卜舞台定格并上移留白，正下方行内答案区呈现答案，答案区与操作区同帧挂载、动效同步；不分栏、不侧栏、不抽屉，全宽统一。
 4. 兜底视图（fallback view）：引导资源不可用时由主路由呈现、与主面板互斥的唯一视图，用神秘文案与几何动画提示无法连接。
 
 ## 容器（container）
@@ -23,9 +23,9 @@
 1. 标题区（title area）：承载主标题、副标题、引导文字；兜底视图的标题区写神秘提示文案。
 2. 流程进度区（progress area）：占卜视图顶部，展示流程阶段进度图标。
 3. 舞台（stage）：专门用来播放动画的容器，待机视图、占卜视图、兜底视图各自持有一个舞台实例。
-4. 答案区（answer zone）：占卜视图结果卡牌正下方的行内区域，限高约屏高 60%、底部贴齐、内部可滚；自持加载 / 错误 / 成功三态，内含单一答案卡。
+4. 答案区（answer zone）：占卜视图结果卡牌正下方的行内区域，高度由 `--answer-zone-height` 锁定、底部贴齐、内部可滚；自持加载 / 错误 / 成功三态，内含单一答案卡。
 5. 答案卡（AnswerCard）：答案区内唯一内容子容器，呈现一句名句的原文、翻译与来源。
-6. 操作区（action area）：仅在决策阶段出现，承载再占一次 / 重试 / 回到首页等操作按钮。答案阶段（答案卡入场中）、占卜阶段、翻牌相位、待机阶段、兜底视图均无操作区。
+6. 操作区（action area）：仅在答案 flow 出现，与答案卡同帧挂载，承载再占一次 / 重试 / 回到首页等操作按钮。占卜 flow、待机 flow、兜底视图均无操作区。
 7. 通知（notification）：跨视图的全局浮层容器，应用运行时所有异常通过它在顶部显示，明显但不突兀，不阻塞操作。
 
 ## 内容 — 动画（animation）
@@ -37,16 +37,20 @@
 3. 文字动画（text animation）：作用主体是文字，当前包含答案卡入场动画——答案卡内原文 / 翻译 / 来源分段 rise-in 浮现，无逐字打字机。
 4. 视图过渡动画（view transition animation）：视图切换时的过渡动画。
 
-## 流程阶段（process stage）
+## 流程状态（flow） 与 动画相位（phase）
 
-应用级 4 阶段（idle / divination / reading / decision）、占卜内 4 相位（shuffling / cutting / drawing / revealing）、决策阶段出口（restart / back home / retry）的完整定义见 [state.md](state.md)。
+DDD 区分：
+1. flow：应用级流程状态，3 个值 `idle / divination / answer`。`answer` 是终态，答案区与操作区同帧挂载。store 字段 `tarotStore.flow`，类型 `Flow`，see `app/src/core/store/slices/flow.ts`。
+2. phase：占卜（divination flow）内部的动画相位，4 个值 `shuffling / cutting / drawing / revealing`，对应进度区图标。类型 `OverlayPhase`，see `app/src/flows/base/composables/animations/phase_contracts.ts`。
+
+完整状态机、出口、异常恢复见 [state.md](state.md)。
 
 ## UI 操作（UI action）
 
-1. 触发占卜（trigger divination）：点击待机视图舞台进入占卜。
-2. 再占一次（restart）：决策阶段后重新开始一次完整占卜，重新经历所有动画。
-3. 重试（retry）：占卜请求失败时重发请求，不重新经历仪式动画。
-4. 回到首页（back home）：清空状态返回待机视图。
+1. 触发占卜（trigger divination）：点击待机视图舞台进入 divination flow。
+2. 再占一次（restart）：answer flow 中按下，回到 divination flow 重新经历所有动画。
+3. 重试（retry）：占卜请求失败时重发请求，仍在 answer flow，不重新经历仪式动画。
+4. 回到首页（back home）：清空状态返回 idle flow。
 
 ## 数据术语（data term）
 
@@ -57,7 +61,7 @@
 5. 答案（answer）：一次占卜的产物，按抽到的卡牌及其正逆位返回的一句名句，含原文 quote、翻译 translation、来源 source 三个字段。
 6. 牌阵类型（spread kind）：本期仅支持单张（single card）。
 7. 物理视口（viewport）：屏幕物理像素信息——宽、高、安全区、状态栏。
-8. UI 预算（reservations）：各区域的像素预留——标题区、操作区、卡牌间距等。
+8. UI 预算（reservations）：各区域的像素预留——标题区、操作区、答案区、卡牌间距等。`answerZoneHeight` 是答案区的像素预算，layout solver 据此扣减 stage 可用高，使卡牌 reveal 终态尺寸不溢出 stage。
 9. 布局求解（solve layout）：纯函数布局求解器，从视口与预算算出所有容器和卡牌的几何位置。
 10. 答案区域（answer zone）：答案区在屏幕上的物理空间。
 

@@ -10,8 +10,8 @@ import { test, expect } from '@playwright/test'
  *   • The result card never exceeds MAX_CARD_WIDTH (240) — the global
  *     "≤ largest phone" contract.
  *   • The answer surfaced: .answer-zone is visible, carries its quote
- *     (.ai-quote), and stays inside the viewport (no horizontal overflow,
- *     bottom not clipped).
+ *     (.answer-card__quote), and stays inside the viewport (no horizontal
+ *     overflow, bottom not clipped).
  *
  * The old split-vs-drawer two-branch contract is gone: ReadingSplitView /
  * ReadingDrawerView were removed when the answer became a single inline
@@ -69,14 +69,13 @@ for (const vp of VIEWPORTS) {
     await page.setViewportSize({ width: vp.width, height: vp.height })
 
     // ----- Home ----------------------------------------------------------
-    // Selectors track the BEM class names introduced by B4 (IdleDeck split into
-    // a composable) + B5 (HeaderArea unification):
-    //   .title              → .title-content__title
-    //   .idle-deck          → .idle-deck-content
-    //   .phase-step-icon    → .progress-content__step-icon
+    // Selectors track the post-T4 BEM class names aligned with PRD glossary:
+    //   .title-content__title       — title content root
+    //   .deck--idle                 — idle gate on the deck wrapper
+    //   .progress-content__step-icon — divination phase progress icons
     await page.goto('/')
     await expect(page.locator('.title-content__title')).toContainText('Scales Tarot', { timeout: 10_000 })
-    await expect(page.locator('.idle-deck-content')).toBeVisible()
+    await expect(page.locator('.deck--idle')).toBeVisible()
 
     // Too-small banner assertion intentionally dropped: TooSmallBanner.vue was
     // removed in commit 69afea2 ("chore(quality): clean up dead code so
@@ -89,7 +88,7 @@ for (const vp of VIEWPORTS) {
     })
 
     // ----- Trigger divination -------------------------------------------
-    await page.locator('.idle-deck-content').click()
+    await page.locator('.deck--idle').click()
     await expect(page.locator('.progress-content__step-icon').first()).toBeVisible({ timeout: 5_000 })
 
     // ----- Wait for the answer ------------------------------------------
@@ -97,8 +96,8 @@ for (const vp of VIEWPORTS) {
     // server-side Answer round trip, the same envelope
     // divination_flow.spec.ts uses.
     await expect(page.locator('.answer-zone')).toBeAttached({ timeout: 30_000 })
-    await expect(page.locator('.answer-zone .ai-quote')).toBeVisible({ timeout: 10_000 })
-    // Buffer for the card lift + answer-zone fade + staged rise-in to settle.
+    await expect(page.locator('.answer-zone .answer-card__quote')).toBeVisible({ timeout: 10_000 })
+    // Buffer for the card lift + answer fade + staged rise-in to settle.
     await page.waitForTimeout(3000)
 
     await page.screenshot({
@@ -108,12 +107,12 @@ for (const vp of VIEWPORTS) {
 
     // ----- Answer surface contract (unified, every viewport) ------------
     // No split / drawer branch anymore: one inline .answer-zone struck
-    // below the card on all widths. Assert it surfaced with its quote and
-    // is not clipped out of the viewport (no horizontal overflow; the
-    // bottom-anchored edge stays on screen).
+    // below the card on all widths. Assert it surfaced with its quote
+    // and is not clipped out of the viewport (no horizontal overflow;
+    // the bottom-anchored edge stays on screen).
     const answerZone = page.locator('.answer-zone')
     await expect(answerZone).toBeVisible()
-    await expect(answerZone.locator('.ai-quote')).toBeVisible()
+    await expect(answerZone.locator('.answer-card__quote')).toBeVisible()
     // The removed split / drawer / panel host must not resurrect.
     await expect(
       page.locator('.reading-split-view, .reading-drawer-view__sheet, .reading-panel'),

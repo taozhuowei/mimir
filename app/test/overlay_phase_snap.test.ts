@@ -11,7 +11,7 @@ import {
   MAX_CUT_PILES,
   type PhaseSnapDeps,
 } from '../src/flows/divination/composables/phase_entry_snap'
-import { MAX_CARD_COUNT } from '../src/flows/shared/composables/animations/animation_targets'
+import { MAX_CARD_COUNT } from '../src/flows/base/composables/animations/animation_targets'
 import type { SceneLayout } from '../src/core/sizing/layout_solver'
 
 /**

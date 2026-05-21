@@ -21,7 +21,7 @@
 
 import type { Ref } from 'vue'
 import { useTarotStore } from '../../../core/store/tarot'
-import type { DivinationPhase } from '../../../core/store/slices/flow'
+import type { Flow } from '../../../core/store/slices/flow'
 import type { PlayDeckRuntime } from './deck_runtime'
 
 /** Minimum gap between deck-click events to debounce double-taps (ms). */
@@ -38,12 +38,12 @@ const DECK_CLICK_RELEASE_MS = 300
  */
 export function buildClickHandler(
   rt: PlayDeckRuntime,
-  phase: Ref<DivinationPhase>,
+  flow: Ref<Flow>,
   onTriggerDivination: () => void,
 ): () => void {
   const tarotStore = useTarotStore()
   return function handleClick(): void {
-    if (phase.value !== 'idle') return
+    if (flow.value !== 'idle') return
     if (rt.isStartingDivination.value || tarotStore.isAnimating) return
     rt.isStartingDivination.value = true
     rt.lockTimerHolder.value = setTimeout(() => {

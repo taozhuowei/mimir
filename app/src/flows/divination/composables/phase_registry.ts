@@ -11,7 +11,7 @@
  *          looks up the entry-state setter for replay/skip dispatchers.
  */
 
-import type { OverlayPhase } from '../../shared/composables/animations/phase_contracts'
+import type { OverlayPhase } from '../../base/composables/animations/phase_contracts'
 import type { PhaseSnapDeps } from './phase_entry_snap'
 import {
   snapToCuttingEntry,

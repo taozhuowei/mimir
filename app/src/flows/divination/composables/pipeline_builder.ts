@@ -13,7 +13,7 @@ import { buildCutPhaseRunner } from './phases/cut'
 import { buildDrawPhaseRunner } from './phases/draw'
 import { buildRevealPhaseRunner } from './phases/reveal'
 import { PHASE_MANIFEST } from './phase_registry'
-import type { PhaseContext, PhaseRunner, OverlayPhase } from '../../shared/composables/animations/phase_contracts'
+import type { PhaseContext, PhaseRunner, OverlayPhase } from '../../base/composables/animations/phase_contracts'
 import type { SceneKind, SceneLayout } from '../../../core/sizing/layout_solver'
 import type { MotionMetrics } from '../../../core/sizing/overlay_layout/use_overlay_layout'
 
@@ -54,15 +54,13 @@ interface PhaseRunnerDeps {
     drawViewport: { stageHeight: number }
     drawLayout: SceneLayout
     /**
-     * Both "full" and "shrunk" sizes are required: the reveal phase grows
-     * cards to the full safe-area size, then the parent's drawer-mount
-     * watcher animates them to the shrunk size.
+     * Single answer-stage card size — reveal grows the card directly to
+     * this rect, which already excludes the answer-zone + action-area
+     * reservation, so the card never overflows the stage.
      */
     resultLayout: {
       cardWidth: number
       cardHeight: number
-      cardWidthFull: number
-      cardHeightFull: number
     }
   }
   setDrawCardSizes: (layout: SceneLayout) => void
@@ -100,22 +98,17 @@ function buildRevealingRunner(deps: PhaseRunnerDeps): PhaseRunner {
     run(context: PhaseContext, onComplete: () => void) {
       const { drawLayout, resultLayout } = deps.getOverlayLayouts()
       deps.setDrawCardSizes(drawLayout)
-      // Grow cards to the *full* safe-area size (typically the 240×384
-      // phone-shell maximum on every supported canvas). The bottom
-      // drawer mounts after the reveal phase completes; main page's
-      // showAnswerView watcher animates the card down to the
-      // drawer-reserved size at that point so the drawer doesn't crop
-      // the card. Using cardWidth/cardHeight here would pre-shrink the
-      // card to the drawer-reserved size and produce the regression
-      // PR #12 introduced — visually the reveal looked like the card
-      // jumped *smaller* than the draw card when the drawer wasn't
-      // even visible yet.
+      // Grow cards to the answer-stage result-card size. The stage rect
+      // the size is computed against already excludes the answer-zone
+      // + action-area reservation, so the card lands exactly inside
+      // the Stage flex DOM box once the answer flow mounts those
+      // siblings; no post-reveal shrink is needed.
       const runner = buildRevealPhaseRunner({
         cardCount: deps.cardCountRef.value,
         drawCardWidth: drawLayout.drawCardWidth,
         drawCardHeight: drawLayout.drawCardHeight,
-        resultCardWidth: resultLayout.cardWidthFull,
-        resultCardHeight: resultLayout.cardHeightFull,
+        resultCardWidth: resultLayout.cardWidth,
+        resultCardHeight: resultLayout.cardHeight,
         drawLayout: {
           stageShiftY: drawLayout.stageShiftY,
           cards: drawLayout.cards.map((c) => ({ x: c.x, y: c.y })),

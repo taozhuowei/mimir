@@ -23,7 +23,7 @@
 import { onLaunch } from '@dcloudio/uni-app'
 import { useTarotStore } from './core/store/tarot'
 import { useThemeStore } from './core/store/theme'
-import { useBootStatus } from './core/composables/use_boot_status'
+import { useBootStatus } from './flows/base/composables/use_boot_status'
 
 const tarotStore = useTarotStore()
 const themeStore = useThemeStore()

@@ -6,7 +6,7 @@ import { createDeckState } from './slices/deck'
 import { createAnswerState } from './slices/answer'
 import { createFlowState } from './slices/flow'
 
-export type { DivinationPhase } from './slices/flow'
+export type { Flow } from './slices/flow'
 
 export const useTarotStore = defineStore('tarot', () => {
   const deck = createDeckState()
@@ -25,7 +25,7 @@ export const useTarotStore = defineStore('tarot', () => {
 
   return {
     // Flow
-    phase: flow.phase,
+    flow: flow.flow,
     drawnCards: flow.drawnCards,
     currentQuestion: flow.currentQuestion,
     isAnimating: flow.isAnimating,
@@ -47,9 +47,8 @@ export const useTarotStore = defineStore('tarot', () => {
 
     // Actions
     startDivination: flow.startDivination,
-    setPhase: flow.setPhase,
-    revealResult: flow.revealResult,
-    enterDecision: flow.enterDecision,
+    setFlow: flow.setFlow,
+    enterAnswer: flow.enterAnswer,
     setDrawnCards,
     reset: flow.reset,
   }

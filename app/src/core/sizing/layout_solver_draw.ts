@@ -55,12 +55,6 @@ export function solveDrawStageLayout(
     cards,
     cardWidth: draw.width,
     cardHeight: draw.height,
-    // The draw stage doesn't reserve drawer space, so "full" and "shrunk"
-    // collapse to the same size. Exposing both keeps the SceneLayout shape
-    // uniform across scenes for consumers that want to read the full size
-    // without branching on scene.
-    cardWidthFull: draw.width,
-    cardHeightFull: draw.height,
     drawCardWidth: draw.width,
     drawCardHeight: draw.height,
     stageShiftY: 0,

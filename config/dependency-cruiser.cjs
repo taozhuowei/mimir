@@ -270,7 +270,7 @@ module.exports = {
         "layered refactor: gsap lib + shared animation base + flow " +
         "orchestration ⊥ core/utils/answer).",
       severity: 'error',
-      from: { path: '^app/src/(core/gsap|flows/shared/composables/animations|flows/(divination|idle|fallback)/composables)/' },
+      from: { path: '^app/src/(core/gsap|flows/base/composables/animations|flows/(divination|idle|fallback)/composables)/' },
       to: { path: '^app/src/core/utils/answer/' },
     },
     {

@@ -75,22 +75,16 @@ export type {
 export function solveLayout(input: SolveLayoutInput): SceneLayout {
   const { viewport, sizes, scene } = input
   if (scene === 'answer_stage') {
-    // Two stage rects feed the answer scene:
-    //   - stageShrunk: the safe-area minus the bottom drawer reservation
-    //     (= INITIAL_DRAWER_HEIGHT_RATIO × viewport.height + actionAreaH).
-    //     This is the rect the result card lives in *while the drawer is
-    //     open*; everything else (drawer geometry, draw card size, motion
-    //     envelope) anchors to it because the draw-pile grid still shares
-    //     the same horizontal extent.
-    //   - stageFull: the full safe-area rect (no drawer reservation).
-    //     This is the rect the result card grows into right after reveal,
-    //     before the drawer mounts. Used only to derive `cardWidthFull` /
-    //     `cardHeightFull`.
+    // Single stage rect for the answer scene: safe-area minus the
+    // bottom inline answer-zone + action-area reservation. The card is
+    // grown directly to this rect's `RESULT_CARD_FILL_RATIO`; no
+    // "stage full" pre-reservation rect is exposed because the
+    // answer zone height is CSS-locked, so the DOM-occupied space and
+    // the solver's reservation match by construction.
     const reservation = answerStageReservation(viewport, sizes)
     const stageShrunk = computeStage(viewport, sizes, reservation)
-    const stageFull = computeStage(viewport, sizes, 0)
     const draw = computeDrawCardSize(stageShrunk, sizes)
-    return solveAnswerStageLayout(viewport, sizes, stageShrunk, stageFull, draw)
+    return solveAnswerStageLayout(viewport, sizes, stageShrunk, draw)
   }
   const stage = computeStage(viewport, sizes, 0)
   const draw = computeDrawCardSize(stage, sizes)

@@ -5,7 +5,7 @@
  * Data flow: phase changes flow in; progress state flows out.
  */
 
-import type { OverlayPhase } from '../../shared/composables/animations/phase_contracts'
+import type { OverlayPhase } from '../../base/composables/animations/phase_contracts'
 import { getPhaseIndex, getPhaseSteps } from './phase_registry'
 
 export interface ProgressState {

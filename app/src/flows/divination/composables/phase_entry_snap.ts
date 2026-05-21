@@ -13,8 +13,8 @@
  *          moves).
  */
 
-import type { PhaseContext } from '../../shared/composables/animations/phase_contracts'
-import type { DrawCardState } from '../../shared/composables/animations/state_types'
+import type { PhaseContext } from '../../base/composables/animations/phase_contracts'
+import type { DrawCardState } from '../../base/composables/animations/state_types'
 import type { SceneLayout } from '../../../core/sizing/layout_solver'
 
 /** Maximum number of cut piles the cut animation pre-allocates.

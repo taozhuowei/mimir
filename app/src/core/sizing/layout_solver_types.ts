@@ -100,23 +100,13 @@ export interface SceneLayout {
   cards: CardLayout[]
   /**
    * Card width for the current scene. On the answer scene this is the
-   * size computed against the stage rect that already reserves the bottom
-   * inline-answer-zone region (so it is smaller than the draw scene). The
-   * pre-reservation size is exposed separately as `cardWidthFull` /
-   * `cardHeightFull`.
+   * size computed against the stage rect that already reserves the
+   * bottom inline answer-zone + action-area band; the reveal pipeline
+   * targets this size directly so the card never overflows the stage.
    */
   cardWidth: number
   /** Card height for the current scene (see `cardWidth` for semantics). */
   cardHeight: number
-  /**
-   * Answer-scene card width computed against the full safe-area rect,
-   * capped by `MAX_CARD_WIDTH_PX`. Historically this was "before the
-   * bottom drawer mounts"; the drawer was removed, so it now simply
-   * equals the answer-scene card width and, on `draw_stage`, `cardWidth`.
-   */
-  cardWidthFull: number
-  /** Answer-scene card height (see `cardWidthFull`). */
-  cardHeightFull: number
   /** Uniform draw-stage card width (shuffle / cut / draw share this size). */
   drawCardWidth: number
   /** Uniform draw-stage card height. */
