@@ -7,7 +7,7 @@
 
 import { describe, expect, it, beforeEach } from 'vitest'
 import { createPinia, setActivePinia } from 'pinia'
-import { useBootStatus } from '../src/core/composables/use_boot_status'
+import { useBootStatus } from '../src/flows/base/composables/use_boot_status'
 
 describe('boot status', () => {
   beforeEach(() => {

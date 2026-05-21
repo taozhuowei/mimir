@@ -8,7 +8,7 @@ import {
   isValidPhase,
   getNextPhase,
 } from '../src/flows/divination/composables/phase_registry'
-import type { OverlayPhase } from '../src/flows/shared/composables/animations/phase_contracts'
+import type { OverlayPhase } from '../src/flows/base/composables/animations/phase_contracts'
 
 describe('overlay_animation/phase_registry', () => {
   describe('PHASE_STEPS', () => {

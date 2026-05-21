@@ -24,7 +24,7 @@ src/
 │   │   ├── themes.ts           拉取主题（字体/颜色/UI/图片）并解析 URL
 │   │   └── types.ts            前后端共享协议类型
 │   ├── composables/            视图与 store 之间的解耦封装
-│   │   ├── use_app_phase.ts        应用阶段（idle/divination/answer/decision）与转场
+│   │   ├── use_flow.ts             应用流程状态 Flow（idle/divination/answer）与转场
 │   │   ├── use_boot_status.ts      启动状态读写
 │   │   └── use_cards_load_error.ts 牌库加载错误与重试
 │   ├── deck/
@@ -52,7 +52,7 @@ src/
 │   ├── store/                  Pinia 状态
 │   │   ├── tarot.ts            占卜域门面：组合 slices/deck|flow|answer
 │   │   ├── slices/deck.ts      牌库数据与加载（状态切片工厂，非 store）
-│   │   ├── slices/flow.ts      占卜流程阶段、抽牌、问题（状态切片工厂，非 store）
+│   │   ├── slices/flow.ts      应用 flow 状态、抽牌、问题（状态切片工厂，非 store）
 │   │   ├── slices/answer.ts    答案结果与请求状态（状态切片工厂，非 store）
 │   │   ├── boot.ts             启动结果三态（pending/ok/failed）
 │   │   ├── notification.ts     跨视图通知队列
@@ -106,7 +106,7 @@ src/
     │   ├── composables/rig_lifecycle.ts       演出台启停与窗口 resize 监听
     │   └── composables/overlay_text.ts         占卜遮罩文案常量
     ├── answer/                 答案揭示（卡下行内，无面板/分栏/抽屉）
-    │   ├── components/AnswerInscription.vue     答案卡：原文/翻译/来源，自持 loading/error/success
+    │   ├── components/AnswerCard.vue            答案卡：原文/翻译/来源，自持 loading/error/success
     │   ├── components/ActionArea.vue            重开/回首页/重试按钮区
     │   ├── composables/use_answer_request_controller.ts        答案请求生命周期（超时/重试/写入）
     │   └── composables/result_card_lift_margin.ts      结果卡抬升留白常量

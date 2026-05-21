@@ -21,7 +21,7 @@
     <image
       v-for="i in deckSize"
       :key="`fan${i}`"
-      class="idle-deck-content__card"
+      class="fan-stack__card"
       :src="cardBack"
       :style="cardsStyle[i - 1]"
       role="img"
@@ -32,12 +32,12 @@
 
   <view
     v-show="visible"
-    class="idle-deck-content__hint"
+    class="fan-stack__hint"
     :style="{ opacity: hintOpacity }"
   >
-    <view class="idle-deck-content__hint-line" />
-    <text class="idle-deck-content__hint-text font-display">TOUCH TO DIVINE</text>
-    <view class="idle-deck-content__hint-line" />
+    <view class="fan-stack__hint-line" />
+    <text class="fan-stack__hint-text font-display">TOUCH TO DIVINE</text>
+    <view class="fan-stack__hint-line" />
   </view>
 </template>
 
@@ -81,7 +81,7 @@ defineProps<{
   z-index: 10;
 }
 
-.idle-deck-content__card {
+.fan-stack__card {
   position: absolute;
   top: 0;
   left: 0;
@@ -97,14 +97,14 @@ defineProps<{
 /* Deepest shadow on the bottom card — H5 only because mp-weixin
    doesn't reliably support `:first-child` on `<image>` tags. */
 /* #ifdef H5 */
-.idle-deck-content__card:first-child {
+.fan-stack__card:first-child {
   box-shadow: 0 12px 30px rgba(0, 0, 0, 0.4);
 }
 /* #endif */
 
 /* ── Idle touch hint ─────────────────────────────────────────────── */
 
-.idle-deck-content__hint {
+.fan-stack__hint {
   position: absolute;
   bottom: calc(env(safe-area-inset-bottom, 0px) + 80rpx);
   left: 0;
@@ -116,13 +116,13 @@ defineProps<{
   pointer-events: none;
 }
 
-.idle-deck-content__hint-line {
+.fan-stack__hint-line {
   width: 50rpx;
   height: 2rpx;
   background: linear-gradient(90deg, transparent, var(--color-border-strong), transparent);
 }
 
-.idle-deck-content__hint-text {
+.fan-stack__hint-text {
   /* 20rpx 在 H5 经 uni rem 链放大后 14PM 视口实测 ~27px，过抢镜；改用
      token --font-xs(12×k) 让 hint 与 subtitle/guidance 同档，落入 14px
      上限。显式 line-height: 1 抵消 page 默认 1.6 撑高的盒子。 */
@@ -133,8 +133,8 @@ defineProps<{
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .idle-deck-content__card,
-  .idle-deck-content__hint {
+  .fan-stack__card,
+  .fan-stack__hint {
     transition: none !important;
     animation: none !important;
   }

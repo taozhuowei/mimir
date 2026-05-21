@@ -7,7 +7,7 @@
 
 import { ref } from 'vue'
 import { createProgressModel } from './progress_model'
-import type { OverlayPhase } from '../../shared/composables/animations/phase_contracts'
+import type { OverlayPhase } from '../../base/composables/animations/phase_contracts'
 import type { ProgressModel } from './progress_model'
 
 export function usePhases() {

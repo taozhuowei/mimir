@@ -27,8 +27,8 @@
  *           ──▶ v-if branch.
  */
 import FallbackView from '../flows/fallback/components/FallbackView.vue'
-import MainSurface from '../flows/index/components/MainSurface.vue'
-import { useBootStatus } from '../core/composables/use_boot_status'
+import MainSurface from '../flows/base/components/MainSurface.vue'
+import { useBootStatus } from '../flows/base/composables/use_boot_status'
 
 const { isFailed } = useBootStatus()
 </script>

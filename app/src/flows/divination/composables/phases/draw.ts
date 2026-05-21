@@ -7,8 +7,8 @@
  *          pipeline_builder).
  */
 
-import type { AnimationTimeline } from '../../../shared/composables/animations/state_types'
-import type { OverlayPhase, PhaseContext, PhaseRunner } from '../../../shared/composables/animations/phase_contracts'
+import type { AnimationTimeline } from '../../../base/composables/animations/state_types'
+import type { OverlayPhase, PhaseContext, PhaseRunner } from '../../../base/composables/animations/phase_contracts'
 import { prefersReducedMotion } from '../../../../core/utils/accessibility'
 import {
   buildReducedMotionDrawTimeline,

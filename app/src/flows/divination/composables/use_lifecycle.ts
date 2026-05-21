@@ -11,7 +11,7 @@
 import { nextTick } from 'vue'
 import { killAnimationTargets } from '../../../core/gsap/tween'
 import type { PhaseSnapDeps } from './phase_entry_snap'
-import type { OverlayPhase } from '../../shared/composables/animations/phase_contracts'
+import type { OverlayPhase } from '../../base/composables/animations/phase_contracts'
 import { runPipelineCommand } from './run_pipeline_command'
 import { skipToAnswerCommand } from './skip_to_answer'
 import { replayFromPhaseCommand } from './replay_from_phase'
@@ -63,7 +63,10 @@ export function useLifecycle(deps: LifecycleDeps) {
   }
 
   function interruptCurrentAnimation(): void {
-    deps.callbacks.onDestroyAnswer()
+    // 中断只丢弃当前 in-flight 请求并重置状态，不销毁 orchestrator；
+    // 销毁会让 destroyed=true 永久禁用后续 startAnswer，使 dev replay/skip
+    // 路径的二次请求被吞掉、settlePipeline 永远读到 status='idle' 而无法切阶段。
+    deps.callbacks.onResetAnswer()
     deps.resumeAnimations()
     deps.orchestrator.clear()
     killAnimationTargets(deps.animState.getAllTargets())

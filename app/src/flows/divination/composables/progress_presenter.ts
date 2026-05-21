@@ -5,7 +5,7 @@
  * Data flow: progress state flows in; presentation data flows out.
  */
 
-import type { OverlayPhase } from '../../shared/composables/animations/phase_contracts'
+import type { OverlayPhase } from '../../base/composables/animations/phase_contracts'
 import { getPhaseSteps } from './phase_registry'
 import { DEFAULT_OVERLAY_TEXT, type OverlayText } from './overlay_text'
 

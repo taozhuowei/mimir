@@ -17,7 +17,6 @@ import {
   type ResponsiveSizes,
 } from './scale'
 import {
-  INITIAL_DRAWER_HEIGHT_RATIO,
   computeDrawer,
   computeEnvelope,
 } from './layout_solver_computers'
@@ -28,20 +27,19 @@ import type {
 } from './layout_solver_types'
 
 /**
- * Reading scene's bottom band reservation: the bottom drawer covers the
- * lower 40 % of the viewport on first reveal and the ActionArea (decision-
- * phase CTAs) sits below it in the same band. Sum them so the reading
- * stage rect shrinks by the correct amount and the result card auto-fits
- * the remaining visible area instead of landing under the drawer.
+ * Answer-scene bottom band reservation: the inline answer zone + the
+ * ActionArea sit below the result card as flex siblings in the terminal
+ * `answer` flow. Their CSS heights are locked to `--answer-zone-height`
+ * and `--action-area-height` so this reservation, the DOM-occupied space,
+ * and the GSAP-driven card size all agree by construction — the card no
+ * longer needs to "shrink down" after reveal because reveal already
+ * targets the stage rect that excludes this reservation.
  */
 export function answerStageReservation(
-  viewport: PhysicalViewport,
+  _viewport: PhysicalViewport,
   sizes: ResponsiveSizes,
 ): number {
-  return (
-    Math.round(viewport.height * INITIAL_DRAWER_HEIGHT_RATIO) +
-    sizes.actionAreaHeight
-  )
+  return sizes.answerZoneHeight + sizes.actionAreaHeight
 }
 
 /**
@@ -70,35 +68,21 @@ function fitResultCard(stage: StageRect): { width: number; height: number } {
 }
 
 /**
- * Solve the reading-stage layout — single result card centred in the
- * shrunk stage with the bottom drawer anchored to the card's bottom edge.
- *
- * Two card sizes are emitted:
- *   1. shrunk (`cardWidth` / `cardHeight`) — fitted to the drawer-reserved
- *      stage rect. This is what the user sees once the drawer mounts
- *      (drawer covers the lower band, card sits in the remaining space).
- *      Drawer geometry is anchored to *this* size's card bottom so the
- *      drawer hugs the card after the user-visible shrink animation.
- *   2. full (`cardWidthFull` / `cardHeightFull`) — fitted to the full
- *      safe-area stage rect (no drawer reservation). The reveal pipeline
- *      grows the card to this size first; the parent then animates it
- *      down to the shrunk size when the drawer mounts.
- *
- * On every supported phone canvas (375–440 px) both sizes hit the 240 px
- * width cap because the unclamped width (≈90 % of stage width) exceeds
- * 240 px in both rectangles. The visual difference is in the height: the
- * full rect's stage is taller, so the full card is taller too (and the
- * shrunk card sits above the drawer instead of being clipped by it).
+ * Solve the answer-stage layout — single result card centred in the
+ * stage rect that already excludes the answer-zone + action-area
+ * reservation. The card has a single target size (`cardWidth` /
+ * `cardHeight`); the reveal pipeline grows the card directly to this
+ * size, no separate "Full → shrunk" stage exists anymore because the
+ * answer zone is locked-height (`--answer-zone-height`) and mounts as a
+ * flex sibling in the terminal `answer` flow.
  */
 export function solveAnswerStageLayout(
   viewport: PhysicalViewport,
   sizes: ResponsiveSizes,
   stageShrunk: StageRect,
-  stageFull: StageRect,
   draw: { width: number; height: number },
 ): SceneLayout {
   const shrunk = fitResultCard(stageShrunk)
-  const full = fitResultCard(stageFull)
 
   const drawer = computeDrawer(viewport, stageShrunk, shrunk.height)
   const envelope = computeEnvelope(draw.width, draw.height, sizes.gap)
@@ -117,8 +101,6 @@ export function solveAnswerStageLayout(
     cards,
     cardWidth: shrunk.width,
     cardHeight: shrunk.height,
-    cardWidthFull: full.width,
-    cardHeightFull: full.height,
     drawCardWidth: draw.width,
     drawCardHeight: draw.height,
     stageShiftY: 0,

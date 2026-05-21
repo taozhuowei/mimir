@@ -9,7 +9,7 @@ import { computed } from 'vue'
 import type { Ref } from 'vue'
 import { calculatePhaseProgress } from './progress_model'
 import { presentProgressHeader, presentFooter } from './progress_presenter'
-import type { OverlayPhase } from '../../shared/composables/animations/phase_contracts'
+import type { OverlayPhase } from '../../base/composables/animations/phase_contracts'
 
 export interface UsePresentationOptions {
   phase: Ref<OverlayPhase>

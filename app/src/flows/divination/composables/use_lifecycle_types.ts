@@ -5,8 +5,8 @@
  */
 
 import type { Ref } from 'vue'
-import type { DrawCardState } from '../../shared/composables/animations/state_types'
-import type { OverlayPhase } from '../../shared/composables/animations/phase_contracts'
+import type { DrawCardState } from '../../base/composables/animations/state_types'
+import type { OverlayPhase } from '../../base/composables/animations/phase_contracts'
 import type { SceneKind, SceneLayout } from '../../../core/sizing/layout_solver'
 import type { ProgressModel } from './progress_model'
 import type { PipelineSharedDeps } from './pipeline_deps'

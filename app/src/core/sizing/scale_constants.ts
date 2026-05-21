@@ -41,6 +41,15 @@ export const BASELINE_GAP = 12
 export const BASELINE_DRAWER_MIN_HEIGHT = 120
 /** Bottom action area height at the baseline (px). */
 export const BASELINE_ACTION_AREA_HEIGHT = 96
+/**
+ * Inline answer zone height at the baseline (px). Locks the answer-zone
+ * box height so the stage reservation (answerStageReservation) matches
+ * the DOM-occupied space exactly. Picked from the 14PM success-state
+ * layout: quote 26px → rule margin → translation 16px → source 12px,
+ * totalling ≈ 220px once line-heights + paddings are applied; 240px
+ * keeps a tiny breathing band on tall phones without crowding the card.
+ */
+export const BASELINE_ANSWER_ZONE_HEIGHT = 240
 /** Hero / display font size at the baseline (px). */
 export const BASELINE_FONT_XXL = 32
 /** Large heading font size at the baseline (px). */

@@ -75,19 +75,19 @@ describe('homepage settings panel', () => {
   })
 
   describe('homepage idle state conditions', () => {
-    it('store isIdle is true only in idle phase', () => {
+    it('store isIdle is true only in idle flow', () => {
       const store = useTarotStore()
 
       expect(store.isIdle).toBe(true)
-      expect(store.phase).toBe('idle')
+      expect(store.flow).toBe('idle')
 
       store.startDivination('Test question')
       expect(store.isIdle).toBe(false)
-      expect(store.phase).toBe('divination')
+      expect(store.flow).toBe('divination')
 
       store.reset()
       expect(store.isIdle).toBe(true)
-      expect(store.phase).toBe('idle')
+      expect(store.flow).toBe('idle')
     })
 
   })

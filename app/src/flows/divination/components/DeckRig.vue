@@ -10,7 +10,7 @@
     styles, and bindings are byte-identical to the legacy block. Only
     the wrapper-level idle/click logic stays in the parent.
   -->
-  <view class="deck-rig">
+  <view class="divination-deck">
     <!-- ── Initial deck + shuffle halves ──────────────────────────── -->
     <view class="deck-layer stage-pointer" :style="animCtrl.deckCtnStyle.value">
       <image
@@ -167,10 +167,11 @@ defineProps<{
   transition: transform 0.55s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* 历史 .deck-rig--show-results 升起规则已废除：MainSurface 切换为 flex 三段
-   后，Stage 与答案区作为兄弟节点自然纵向分布，卡牌严格几何居中于 Stage，
-   不再需要升起让位。--result-card-lift-y 变量与 StageDeck 的 lift computed
-   一并废弃。详见 docs/research/layout_final_rem.md。 */
+/* 历史 .divination-deck--show-results 升起规则已废除：MainSurface 切换为
+   flex 三段后，Stage 与答案区作为兄弟节点自然纵向分布，卡牌严格几何
+   居中于 Stage，不再需要升起让位。--result-card-lift-y 变量与
+   StageDeck 的 lift computed 一并废弃。详见
+   docs/research/layout_final_rem.md。 */
 
 .cut-pile {
   width: var(--card-width);

@@ -19,9 +19,9 @@
 
 ## 容器层
 
-- `.main-page`：430×932，padding 0，overflow hidden
+- `.main-surface`：430×932，padding 0，overflow hidden
 - `.canvas`：430×932（盒子等于 viewport），max-width: 440px
-- `.play-view`：430×932，padding 18px 四边一致
+- `.main-surface__body`：430×932，padding 18px 四边一致
 - `<uni-app>` / `<uni-page>` / `uni-page-wrapper`：均铺满 430×932
 
 ## Header（idle 态）
@@ -50,13 +50,13 @@
 ## Stage / 卡牌堆（idle 态扇形）
 
 - `.stage.stage--idle`：bbox 18,142 394×772（占满 header 之下）
-- `.deck.idle-deck-content`：同 stage 满覆盖
+- `.deck.deck--idle`：同 stage 满覆盖
 - `.fan-stack`：bbox 159,438 113×180（扇形居中点）
-- 六张扇形缩略图 `.idle-deck-content__card`：
+- 六张扇形缩略图 `.fan-stack__card`：
   - W 范围 125–206 / H 范围 188–212
   - border-radius 5.7333px（= 10rpx）
   - 主要垂直区间 y 430–646
-- `.idle-deck-content__hint`：bbox 18,850 394×18，gap 13.76px
+- `.fan-stack__hint`：bbox 18,850 394×18，gap 13.76px
   - 装饰线 `.hint-line`：bbox 96,858 29×1
   - 文字偏移：见上方 TOUCH TO DIVINE
 
@@ -75,7 +75,7 @@
 
 | 元素 | 14PM 像素值 |
 | --- | --- |
-| play-view 内边距 | 18 |
+| .main-surface__body 内边距 | 18 |
 | header-area margin-top | 32 |
 | title-content padding-top | 24 |
 | title-content children gap | 4 |
