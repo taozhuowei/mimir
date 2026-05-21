@@ -2,7 +2,7 @@
  * 名称：devtool/composables/use_dev_panel_drag
  * 职责：DevToolsPanel 的拖拽/锚点 reactive 适配层——position anchor、isDragging
  *      标志、贴边感知的 containerStyle、pointer handler、拖尾 click 抑制。
- *      底层拖拽算法仍在 core/utils/dev/draggable_panel.ts（H5-only 隔离 window/document），
+ *      底层拖拽算法仍在 devtool/lib/draggable_panel.ts（H5-only 隔离 window/document），
  *      本文件只做 Vue 响应式包装，让 SFC 保持薄壳。
  * 数据流：pointer 事件入 → draggable_panel 改写 position → containerStyle 重算；
  *      consumeClick() 让 caller 识别"拖拽尾 click"是否要吞掉（避免误切换面板）。
@@ -11,7 +11,7 @@ import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import {
   createDraggablePanel,
   type Position,
-} from '../../core/utils/dev/draggable_panel'
+} from '../lib/draggable_panel'
 
 export function useDevPanelDrag() {
   /**

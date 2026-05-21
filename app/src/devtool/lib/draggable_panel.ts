@@ -1,5 +1,5 @@
 /**
- * Name: utils/dev/draggable_panel
+ * Name: devtool/lib/draggable_panel
  * Purpose: H5-only drag controller for the DevToolsPanel collapsed handle.
  *          Owns mouse/touch listeners, position state mutation through a
  *          caller-provided setter, and the click-vs-drag discrimination
@@ -9,7 +9,7 @@
  *          to host browser-only APIs (window, MouseEvent, TouchEvent),
  *          which would force eslint disables for `no-restricted-globals`
  *          throughout the script. The same trick is used by
- *          `utils/dev/container_borders.ts`: H5-only behaviour lives
+ *          `devtool/lib/container_borders.ts`: H5-only behaviour lives
  *          behind uni-app's H5 conditional-compile gate, so mp-weixin
  *          builds compile out the implementation entirely.
  *

@@ -1,5 +1,5 @@
 /**
- * Name: answer_orchestrator
+ * Name: flows/answer/lib/answer_orchestrator
  * Purpose: manage divination request lifecycle with retry and state tracking.
  * Reason: decouple divination orchestration from overlay animation and store.
  *         Backend now returns `{ drawn, reading }` together, so the
@@ -13,8 +13,8 @@
  */
 
 import type { Ref } from 'vue'
-import type { DrawnResult, AnswerResult } from '../../api/types'
-import type { Divination } from '../../api/divinations'
+import type { DrawnResult, AnswerResult } from '../../../core/api/types'
+import type { Divination } from '../../../core/api/divinations'
 import type { AnswerProvider, AnswerRequest } from './answer_provider'
 
 export type AnswerStatus = 'idle' | 'loading' | 'success' | 'error'

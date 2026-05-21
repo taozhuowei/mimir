@@ -1,11 +1,11 @@
 /**
- * Name: api/types
+ * Name: core/api/types
  * Purpose: single source of truth for protocol types shared between the H5
  *          client and the Express server.
- * Reason: previously these types were declared in `utils/tarot_answer_types_shim.ts`
- *         and duplicated server-side. Centralising them here eliminates the
- *         drift risk and lets both render code and API code import from
- *         one canonical module.
+ * Reason: types used to be duplicated on each side of the wire, causing
+ *         drift between client expectations and server payloads. Centralising
+ *         them here lets both render code and API code import from one
+ *         canonical module.
  * Data flow: server JSON shapes flow in (via `client.request<T>`); the rest
  *           of the app consumes these types as plain TS interfaces.
  */

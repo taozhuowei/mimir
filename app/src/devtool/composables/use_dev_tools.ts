@@ -9,7 +9,7 @@
 import { ref, type Ref } from 'vue'
 import type { OverlayPhase } from '../../flows/base/composables/animations/phase_contracts'
 // #ifdef H5
-import { toggleContainerBorders as toggleContainerBordersH5 } from '../../core/utils/dev/container_borders'
+import { toggleContainerBorders as toggleContainerBordersH5 } from '../lib/container_borders'
 // #endif
 
 /** Animation controller surface this composable touches. */

@@ -1,5 +1,5 @@
 /**
- * Name: utils/dev/container_borders
+ * Name: devtool/lib/container_borders
  * Purpose: H5-only debug helper that toggles the `dev-debug-borders` class on
  *          `document.documentElement`, enabling a CSS overlay that draws
  *          colored outlines around major layout containers. Used by the
@@ -10,7 +10,7 @@
  *         logic into a dedicated H5-only utility lets the eslint-disable be
  *         declared once at module scope with a justified `-- reason:` block,
  *         and keeps MainSurface free of platform-conditional plumbing.
- *         Mirrors the pattern used by `utils/accessibility.ts::prefersReducedMotion`.
+ *         Mirrors the pattern used by `core/utils/accessibility.ts::prefersReducedMotion`.
  *
  * Platform behavior:
  *   - H5: toggles the body-level CSS class so global selectors can apply
