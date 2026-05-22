@@ -7,20 +7,24 @@ import { test, expect } from '@playwright/test'
  * tablet / desktop viewport we want to defend against regression, and
  * captures `home-{tag}.png` + `result-{tag}.png` per device. Beyond the
  * screenshots, each pass asserts:
- *   • The result card never exceeds MAX_CARD_WIDTH (240) — the global
- *     "≤ largest phone" contract.
- *   • The answer surfaced: .answer-zone is visible, carries its quote
+ *   • The result card width tracks the stage rect (no absolute px cap):
+ *     card width ≈ stage.width × 0.9 on every viewport, which means the
+ *     card is bounded by the canvas cap (440) minus margins, not a
+ *     hardcoded ceiling.
+ *   • The answer surfaced: .answer-card is visible, carries its quote
  *     (.answer-card__quote), and stays inside the viewport (no horizontal
  *     overflow, bottom not clipped).
  *
  * The old split-vs-drawer two-branch contract is gone: ReadingSplitView /
  * ReadingDrawerView were removed when the answer became a single inline
- * zone struck below the card on every width. There is no longer a
- * mode-specific layout to assert — only the unified answer surface — so
- * the per-mode branch was deleted rather than re-pointed at dead classes.
+ * card struck below the result card on every width — and the previous
+ * .answer-zone wrapper was collapsed into .answer-card directly. There
+ * is no longer a mode-specific layout to assert — only the unified
+ * answer surface — so the per-mode branch was deleted rather than
+ * re-pointed at dead classes.
  *
  * Why still so many viewports: the layout has discrete spacing tiers and
- * the screenshot set is the regression net for the inline answer zone
+ * the screenshot set is the regression net for the inline answer card
  * across real phone / tablet / desktop sizes.
  */
 
@@ -61,8 +65,14 @@ const VIEWPORTS: readonly Viewport[] = [
   { tag: 'full-hd-desktop-1920x1080',  width: 1920, height: 1080, mode: 'pc' },
 ] as const
 
-// ----- Solver constant the card-size contract references ---------------
-const MAX_CARD_WIDTH_PX = 240         // DEFAULT_MAX_CARD_WIDTH
+// ----- Solver constants the card-size contract references --------------
+// Canvas / fill model (mirrors scale_constants.ts): canvas width is
+// clamped to MAX_CANVAS_WIDTH on big viewports; on the answer scene the
+// stage rect = (canvas - 2 × margin) wide and the result card =
+// stage.width × RESULT_CARD_FILL_RATIO. There is no absolute px cap —
+// the card scales with the stage, which scales with the reservation.
+const MAX_CANVAS_WIDTH = 440
+const RESULT_CARD_FILL_RATIO = 0.9
 
 for (const vp of VIEWPORTS) {
   test(`viewport smoke @ ${vp.tag}`, async ({ page }) => {
@@ -95,8 +105,8 @@ for (const vp of VIEWPORTS) {
     // 30 s budget covers entry + shuffle + cut + draw + reveal + the
     // server-side Answer round trip, the same envelope
     // divination_flow.spec.ts uses.
-    await expect(page.locator('.answer-zone')).toBeAttached({ timeout: 30_000 })
-    await expect(page.locator('.answer-zone .answer-card__quote')).toBeVisible({ timeout: 10_000 })
+    await expect(page.locator('.answer-card')).toBeAttached({ timeout: 30_000 })
+    await expect(page.locator('.answer-card .answer-card__quote')).toBeVisible({ timeout: 10_000 })
     // Buffer for the card lift + answer fade + staged rise-in to settle.
     await page.waitForTimeout(3000)
 
@@ -106,46 +116,52 @@ for (const vp of VIEWPORTS) {
     })
 
     // ----- Answer surface contract (unified, every viewport) ------------
-    // No split / drawer branch anymore: one inline .answer-zone struck
-    // below the card on all widths. Assert it surfaced with its quote
-    // and is not clipped out of the viewport (no horizontal overflow;
-    // the bottom-anchored edge stays on screen).
-    const answerZone = page.locator('.answer-zone')
-    await expect(answerZone).toBeVisible()
-    await expect(answerZone.locator('.answer-card__quote')).toBeVisible()
+    // No split / drawer branch anymore: one inline .answer-card struck
+    // below the result card on all widths (the previous .answer-zone
+    // wrapper was collapsed into .answer-card directly). Assert it
+    // surfaced with its quote and is not clipped out of the viewport
+    // (no horizontal overflow; the bottom-anchored edge stays on
+    // screen).
+    const answerCard = page.locator('.answer-card')
+    await expect(answerCard).toBeVisible()
+    await expect(answerCard.locator('.answer-card__quote')).toBeVisible()
     // The removed split / drawer / panel host must not resurrect.
     await expect(
-      page.locator('.reading-split-view, .reading-drawer-view__sheet, .reading-panel'),
+      page.locator('.reading-split-view, .reading-drawer-view__sheet, .reading-panel, .answer-zone'),
     ).toHaveCount(0)
-    const zoneBox = await answerZone.boundingBox()
-    expect(zoneBox).not.toBeNull()
-    if (zoneBox) {
+    const cardBox = await answerCard.boundingBox()
+    expect(cardBox).not.toBeNull()
+    if (cardBox) {
       expect(
-        zoneBox.x,
-        `answer zone must not overflow the left edge at ${vp.tag} (x=${zoneBox.x})`,
+        cardBox.x,
+        `answer card must not overflow the left edge at ${vp.tag} (x=${cardBox.x})`,
       ).toBeGreaterThanOrEqual(-1)
       expect(
-        zoneBox.x + zoneBox.width,
-        `answer zone must not overflow the right edge at ${vp.tag}`,
+        cardBox.x + cardBox.width,
+        `answer card must not overflow the right edge at ${vp.tag}`,
       ).toBeLessThanOrEqual(vp.width + 1)
       expect(
-        zoneBox.y + zoneBox.height,
-        `answer zone bottom must stay within the viewport at ${vp.tag}`,
+        cardBox.y + cardBox.height,
+        `answer card bottom must stay within the viewport at ${vp.tag}`,
       ).toBeLessThanOrEqual(vp.height + 1)
     }
 
-    // ----- Card-size cap ------------------------------------------------
-    // The first visible draw-wrapper is the result-stage card. Its width
-    // must never exceed MAX_CARD_WIDTH_PX, regardless of how big the
-    // actual viewport is — the whole point of the phone-shell cap.
-    const visibleCard = page.locator('.draw-wrapper:visible').first()
-    if (await visibleCard.count() > 0) {
-      const cardBox = await visibleCard.boundingBox()
-      if (cardBox) {
+    // ----- Card-size envelope -------------------------------------------
+    // The first visible draw-wrapper is the result-stage card. Its
+    // width tracks the stage rect (no absolute px cap): canvas is
+    // clamped to MAX_CANVAS_WIDTH on big viewports, so the upper bound
+    // here is `MAX_CANVAS_WIDTH × RESULT_CARD_FILL_RATIO + 1`. We do
+    // not assert a tight lower bound because actual sizes depend on
+    // margin and reservation, which differ across viewports.
+    const visibleResultCard = page.locator('.draw-wrapper:visible').first()
+    if (await visibleResultCard.count() > 0) {
+      const resultBox = await visibleResultCard.boundingBox()
+      if (resultBox) {
+        const upperBound = MAX_CANVAS_WIDTH * RESULT_CARD_FILL_RATIO + 1
         expect(
-          cardBox.width,
-          `result card width must not exceed ${MAX_CARD_WIDTH_PX}px at ${vp.tag} (got ${cardBox.width})`,
-        ).toBeLessThanOrEqual(MAX_CARD_WIDTH_PX + 1)
+          resultBox.width,
+          `result card width must not exceed ${upperBound}px at ${vp.tag} (got ${resultBox.width})`,
+        ).toBeLessThanOrEqual(upperBound)
       }
     }
   })

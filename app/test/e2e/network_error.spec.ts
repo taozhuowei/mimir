@@ -2,10 +2,10 @@ import { test, expect } from '@playwright/test'
 
 /**
  * Verifies the network-failure recovery path: when the divination API
- * returns a 5xx error, the inline answer zone renders an error state with
- * a retry affordance (instead of leaving the user stuck on the reveal
- * animation). The split / drawer overlay was removed — the error line
- * and the retry button now live in `.answer-zone`.
+ * returns a 5xx error, the inline answer card renders an error state
+ * with a retry affordance (instead of leaving the user stuck on the
+ * reveal animation). The split / drawer overlay was removed — the error
+ * line lives on `.answer-card` directly (no wrapper).
  *
  * Replaces the old shell script that mutated the backend source file in
  * place. page.route() is the right tool here: it intercepts the request

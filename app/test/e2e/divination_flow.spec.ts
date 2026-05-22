@@ -9,7 +9,7 @@ import { test, expect } from '@playwright/test'
  * animation pipeline plus the server-side Answer lookup.
  *
  * Note: we deliberately do NOT click "回到首页" here. The answer is struck
- * inline below the card (.answer-zone — no split / drawer overlay).
+ * inline below the card (.answer-card — no split / drawer / wrapper).
  * Verifying the answer surfaced with its quote and the back-home button
  * is in the DOM is enough to catch the regressions this test is designed
  * to prevent.
@@ -32,10 +32,10 @@ test('home → divination → answer surfaces', async ({ page }) => {
   await expect(page.locator('.progress-content__step-icon').first()).toBeVisible({ timeout: 5_000 })
   expect(await page.locator('.progress-content__step-icon').count()).toBeGreaterThanOrEqual(4)
 
-  await expect(page.locator('.answer-zone')).toBeAttached({ timeout: 30_000 })
-  await expect(page.locator('.answer-zone .answer-card__quote')).toBeVisible({ timeout: 10_000 })
+  await expect(page.locator('.answer-card')).toBeAttached({ timeout: 30_000 })
+  await expect(page.locator('.answer-card .answer-card__quote')).toBeVisible({ timeout: 10_000 })
 
-  // ActionArea mounts together with the answer zone in the terminal
+  // ActionArea mounts together with the answer card in the terminal
   // `answer` flow (no separate decision stage anymore).
   await expect(page.locator('.action-area')).toBeAttached()
   await expect(page.getByRole('button', { name: '回到首页' })).toBeAttached()
