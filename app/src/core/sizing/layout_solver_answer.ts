@@ -10,8 +10,6 @@
  */
 
 import {
-  CARD_ASPECT_RATIO,
-  MAX_CARD_WIDTH_PX,
   RESULT_CARD_FILL_RATIO,
   type PhysicalViewport,
   type ResponsiveSizes,
@@ -27,54 +25,43 @@ import type {
 } from './layout_solver_types'
 
 /**
- * Answer-scene bottom band reservation: the inline answer zone + the
+ * Answer-scene bottom band reservation: the inline answer card + the
  * ActionArea sit below the result card as flex siblings in the terminal
- * `answer` flow. Their CSS heights are locked to `--answer-zone-height`
- * and `--action-area-height` so this reservation, the DOM-occupied space,
- * and the GSAP-driven card size all agree by construction — the card no
- * longer needs to "shrink down" after reveal because reveal already
- * targets the stage rect that excludes this reservation.
+ * `answer` flow. The reservation tracks the answer card's min-height
+ * (`--answer-zone-min-height`) — the worst case that's actually
+ * compositable into the stage budget. If extraordinary content pushes
+ * the answer card past min-height, the flex layout shrinks the stage
+ * further at runtime; the solver's pre-reveal sizing stays conservative.
  */
 export function answerStageReservation(
   _viewport: PhysicalViewport,
   sizes: ResponsiveSizes,
 ): number {
-  return sizes.answerZoneHeight + sizes.actionAreaHeight
+  return sizes.answerZoneMinHeight + sizes.actionAreaHeight
 }
 
 /**
- * Result-card sizing primitive — given a stage rect, return the card
- * `(width, height)` that occupies `RESULT_CARD_FILL_RATIO` of the rect
- * on each axis with the width capped at `MAX_CARD_WIDTH_PX`. When the
- * cap engages, height is derived from the capped width via
- * `CARD_ASPECT_RATIO` so the 1:1.6 proportion is preserved on the
- * largest supported canvases.
- *
- * Used by both the "full" and "shrunk" reading-stage card derivations:
- *  - full  → stage rect computed without drawer reservation (safe area
- *            ≈ 80–90 % of viewport on a typical phone, so the resulting
- *            card width hits the 240 px cap on every supported viewport).
- *  - shrunk → stage rect with the drawer reservation already subtracted
- *             (the original sizing used while the bottom drawer is open).
+ * Result-card sizing primitive — card width / height both equal
+ * `RESULT_CARD_FILL_RATIO` of the stage rect on the matching axis.
+ * No absolute px cap: the card is fully driven by the stage, which
+ * itself already subtracts the answer-zone + action-area reservation,
+ * so shrinking either reservation grows the card and vice versa.
  */
 function fitResultCard(stage: StageRect): { width: number; height: number } {
-  const unclampedW = stage.width * RESULT_CARD_FILL_RATIO
-  const width = Math.min(unclampedW, MAX_CARD_WIDTH_PX)
-  const height =
-    width === unclampedW
-      ? stage.height * RESULT_CARD_FILL_RATIO
-      : width * CARD_ASPECT_RATIO
-  return { width, height }
+  return {
+    width: stage.width * RESULT_CARD_FILL_RATIO,
+    height: stage.height * RESULT_CARD_FILL_RATIO,
+  }
 }
 
 /**
  * Solve the answer-stage layout — single result card centred in the
- * stage rect that already excludes the answer-zone + action-area
+ * stage rect that already excludes the answer-card + action-area
  * reservation. The card has a single target size (`cardWidth` /
  * `cardHeight`); the reveal pipeline grows the card directly to this
  * size, no separate "Full → shrunk" stage exists anymore because the
- * answer zone is locked-height (`--answer-zone-height`) and mounts as a
- * flex sibling in the terminal `answer` flow.
+ * answer card has a CSS `min-height` (`--answer-zone-min-height`) and
+ * mounts as a flex sibling in the terminal `answer` flow.
  */
 export function solveAnswerStageLayout(
   viewport: PhysicalViewport,

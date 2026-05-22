@@ -198,7 +198,7 @@ html[data-too-small="1"] .main-surface__canvas {
   --header-height: 80px;
   --drawer-min-height: 120px;
   --action-area-height: 96px;
-  --answer-zone-height: 240px;
+  --answer-zone-min-height: 140px;
   --font-xxl: 32px;
   --font-xl: 24px;
   --font-l: 22px;

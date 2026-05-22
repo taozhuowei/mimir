@@ -30,6 +30,14 @@
 export const MIN_CANVAS_WIDTH = 375
 /** Largest logical canvas width the scale system uses (iPhone 17 Pro Max). */
 export const MAX_CANVAS_WIDTH = 440
+/**
+ * Reference design canvas width — iPhone 14 Pro Max (430 logical px).
+ * Design specs land at this canvas; constants pinned to a real-world target
+ * size on this device are back-scaled to the iPhone 8 baseline via
+ * `MIN_CANVAS_WIDTH / REF_DESIGN_CANVAS_WIDTH`, so the source value the
+ * designer wrote stays first-class in code.
+ */
+export const REF_DESIGN_CANVAS_WIDTH = 430
 
 /** Header total height at the iPhone 8 baseline (px). */
 export const BASELINE_HEADER_HEIGHT = 80
@@ -42,14 +50,21 @@ export const BASELINE_DRAWER_MIN_HEIGHT = 120
 /** Bottom action area height at the baseline (px). */
 export const BASELINE_ACTION_AREA_HEIGHT = 96
 /**
- * Inline answer zone height at the baseline (px). Locks the answer-zone
- * box height so the stage reservation (answerStageReservation) matches
- * the DOM-occupied space exactly. Picked from the 14PM success-state
- * layout: quote 26px → rule margin → translation 16px → source 12px,
- * totalling ≈ 220px once line-heights + paddings are applied; 240px
- * keeps a tiny breathing band on tall phones without crowding the card.
+ * Inline answer card minimum height at the iPhone 8 baseline (px),
+ * back-scaled from the 14PM design target (160px) via
+ * `MIN_CANVAS_WIDTH / REF_DESIGN_CANVAS_WIDTH` so the source value lives
+ * in design-canvas units (160px on the 430px reference). The runtime
+ * value `sizes.answerZoneMinHeight = round(this × k)` lands at 160 on
+ * the reference canvas, 140 on the 375 floor.
+ *
+ * Used as a `min-height` (CSS) + as the stage reservation worst-case
+ * (layout solver). The card-success content currently measures ≈ 137px
+ * at the baseline; the 160px design target covers content + small
+ * breathing band without inflating the empty space the previous fixed
+ * 240px value created.
  */
-export const BASELINE_ANSWER_ZONE_HEIGHT = 240
+export const ANSWER_ZONE_MIN_HEIGHT =
+  Math.round(160 * MIN_CANVAS_WIDTH / REF_DESIGN_CANVAS_WIDTH)
 /** Hero / display font size at the baseline (px). */
 export const BASELINE_FONT_XXL = 32
 /** Large heading font size at the baseline (px). */
@@ -68,31 +83,12 @@ export const CARD_ASPECT_RATIO = 1.6
 
 /**
  * Result card occupies this fraction of the stage rect (each axis).
- * Stage stays at the maximum 1:1.6 safe-area rect; the result card sits
- * centred inside, padded uniformly so it never feels "edge-pressed".
+ * The stage already excludes the answer-card + action-area reservation
+ * on the answer scene, so the card grows / shrinks with that
+ * reservation 1:1; no absolute px cap is applied. Shrinking the answer
+ * card's min-height grows the stage, which grows the result card.
  */
 export const RESULT_CARD_FILL_RATIO = 0.9
-
-/**
- * Hard upper bound for the result-stage card's rendered width (px) — the
- * "phone-shell envelope" cap referenced by docs/prd/animation.md（视图过渡动画） and asserted by the
- * viewport_smoke contract test (DEFAULT_MAX_CARD_WIDTH = 240).
- *
- * Why a flat px cap instead of letting RESULT_CARD_FILL_RATIO * stage.width
- * win on its own: the stage rect grows up to the canvas cap (440 px) minus
- * margins, which would put the result card around 350–367 px wide. That is
- * too large to read alongside the drawer/sidebar text on phones — every
- * tarot UI ships with a card that fits comfortably inside a thumb-reach
- * hero zone, not an oversized poster. 240 px keeps the card visually
- * proportional to a single column of body text on the largest supported
- * mobile canvas (iPhone 17 Pro Max @ 440 px logical) and keeps the drawer's
- * card-bottom anchor predictable.
- *
- * Height is derived from CARD_ASPECT_RATIO so the cap stays a single
- * dimension; the layout solver applies Math.min(card, MAX_CARD_WIDTH_PX)
- * before computing the height.
- */
-export const MAX_CARD_WIDTH_PX = 240
 
 // ---------------------------------------------------------------------------
 // Pure functions — no Vue, no uni, no DOM. Trivially testable.

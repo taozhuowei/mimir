@@ -89,8 +89,8 @@ const visible = computed(() => props.flow === 'answer')
   align-items: center;
   justify-content: center;
   padding: 12px 12px calc(env(safe-area-inset-bottom, 0px) + 12px);
-  /* 与 .answer-zone 同步：480ms cubic-bezier(0.16,1,0.3,1) 淡入 +
-     8px translateY，确保进入 `answer` flow 时答案与操作区在同一帧
+  /* 与 .answer-card 同步：480ms cubic-bezier(0.16,1,0.3,1) 淡入 +
+     8px translateY，确保进入 `answer` flow 时答案卡与操作区在同一帧
      视觉上同时显现（docs/prd/animation.md 动效规范）。 */
   animation: action-area-in 480ms cubic-bezier(0.16, 1, 0.3, 1) both;
 }

@@ -87,11 +87,11 @@ const cardBack = computed(() => themeStore.cardBackImage)
  *  gated by the animation controller's own state). */
 const isIdle = computed(() => flow.value === 'idle')
 
-/* MainSurface flex 纵向四段（HeaderArea + Stage + .answer-zone +
+/* MainSurface flex 纵向四段（HeaderArea + Stage + AnswerCard +
  * ActionArea 兄弟节点自然分布）：Stage 占剩余高度且卡牌严格 flex 居中，
- * answer-zone 紧贴下方。原 result-card-lift-y 升起让位机制由
- * .main-surface__body--with-answer Stage translateY 关键帧替代，
- * 详见 docs/research/layout_final_rem.md。 */
+ * AnswerCard 自身即 flex item（已无外包装），紧贴下方。原
+ * result-card-lift-y 升起让位机制由 .main-surface__body--with-answer
+ * Stage translateY 关键帧替代，详见 docs/research/layout_final_rem.md。 */
 const rootStyle = computed(() => animCtrl.overlayVarsStyle.value)
 
 function getCardImg(idx: number): string {

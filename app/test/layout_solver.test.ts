@@ -21,7 +21,6 @@ import {
   deriveSizes,
   pickCanvasWidth,
   CARD_ASPECT_RATIO,
-  MAX_CARD_WIDTH_PX,
   RESULT_CARD_FILL_RATIO,
   type PhysicalViewport,
 } from '../src/core/sizing/scale'
@@ -159,19 +158,14 @@ describe('layout_solver — proportional-sizes layout solver', () => {
         // -------------------------------------------------------------------
         expect(layout.drawer.rightAligned).toBe(false)
         expect(layout.drawer.width).toBeCloseTo(viewport.width, 5)
-        // Result-scene card height tracks the MAX_CARD_WIDTH_PX clamp:
-        // when the unclamped width (stage.width × fill ratio) is below
-        // the cap the card still fills RESULT_CARD_FILL_RATIO of the
-        // stage, but on canvases where the unclamped width would
-        // exceed the cap the height is derived from the clamped width
-        // via CARD_ASPECT_RATIO so the card preserves its 1:1.6
-        // proportion. The drawer's `initialTop` follows from whichever
-        // height the solver actually emitted.
-        const unclampedCardWidth = layout.stage.width * RESULT_CARD_FILL_RATIO
+        // Result-scene card height = stage.height × RESULT_CARD_FILL_RATIO
+        // (no px cap — the card scales directly with the stage rect,
+        // which has already excluded the answer-card + action-area
+        // reservation on the answer scene). On the draw scene the card
+        // fills the full stage height, so the drawer anchors to the
+        // stage bottom.
         const expectedCardHeight = scene === 'answer_stage'
-          ? unclampedCardWidth <= MAX_CARD_WIDTH_PX
-            ? layout.stage.height * RESULT_CARD_FILL_RATIO
-            : MAX_CARD_WIDTH_PX * CARD_ASPECT_RATIO
+          ? layout.stage.height * RESULT_CARD_FILL_RATIO
           : layout.stage.height
         const expectedDrawerTop =
           layout.stage.y + (layout.stage.height + expectedCardHeight) / 2
@@ -207,23 +201,26 @@ describe('layout_solver — proportional-sizes layout solver', () => {
         // (8) Scene-specific assertions.
         // -------------------------------------------------------------------
         if (scene === 'answer_stage') {
-          // Result card occupies RESULT_CARD_FILL_RATIO of the
-          // reservation-aware stage rect on each axis (90 %) — capped
-          // at MAX_CARD_WIDTH_PX (phone-shell envelope). When the cap
-          // engages, height derives from the clamped width via
-          // CARD_ASPECT_RATIO so the card stays 1:1.6. This is the
-          // single answer-stage size; the reveal pipeline grows the
-          // card directly to it (no Full → shrunk follow-up shrink).
-          const unclamped = layout.stage.width * RESULT_CARD_FILL_RATIO
-          const expectedW = Math.min(unclamped, MAX_CARD_WIDTH_PX)
-          const expectedH = unclamped <= MAX_CARD_WIDTH_PX
-            ? layout.stage.height * RESULT_CARD_FILL_RATIO
-            : MAX_CARD_WIDTH_PX * CARD_ASPECT_RATIO
+          // Result card = RESULT_CARD_FILL_RATIO of the
+          // reservation-aware stage rect on each axis (90 %). No
+          // absolute px cap: the card scales 1:1 with the stage,
+          // which itself has already subtracted the answer-card
+          // min-height + action-area band. Shrinking the
+          // reservation grows the card. This is the single
+          // answer-stage size; the reveal pipeline grows the card
+          // directly to it (no Full → shrunk follow-up shrink).
+          const expectedW = layout.stage.width * RESULT_CARD_FILL_RATIO
+          const expectedH = layout.stage.height * RESULT_CARD_FILL_RATIO
           expect(layout.cardWidth).toBeCloseTo(expectedW, 5)
           expect(layout.cardHeight).toBeCloseTo(expectedH, 5)
           expect(layout.cards[0]?.width).toBeCloseTo(expectedW, 5)
           expect(layout.cards[0]?.height).toBeCloseTo(expectedH, 5)
-          expect(layout.cardWidth).toBeLessThanOrEqual(MAX_CARD_WIDTH_PX)
+          // 1:1.6 proportion preserved (stage is 1:1.6, fill ratio
+          // applies equally to both axes).
+          expect(layout.cardHeight / layout.cardWidth).toBeCloseTo(
+            CARD_ASPECT_RATIO,
+            5,
+          )
         } else {
           // draw_stage: card size matches the 3-pile draw card.
           expect(layout.cardWidth).toBeCloseTo(layout.drawCardWidth, 5)
@@ -234,11 +231,12 @@ describe('layout_solver — proportional-sizes layout solver', () => {
   }
 
   it('answer_stage shrinks below draw_stage so the result card lifts to leave room for the inline answer zone', () => {
-    // The answer scene reserves the inline answer-zone + action-area
-    // band (sizes.answerZoneHeight + sizes.actionAreaHeight) at the
-    // bottom — the stage therefore shrinks vs. the draw scene, the
-    // card shrinks with it, and the visual centre lifts up into the
-    // remaining area, leaving room for the answer struck below it.
+    // The answer scene reserves the inline answer-card min-height +
+    // action-area band (sizes.answerZoneMinHeight +
+    // sizes.actionAreaHeight) at the bottom — the stage therefore
+    // shrinks vs. the draw scene, the card shrinks with it, and the
+    // visual centre lifts up into the remaining area, leaving room
+    // for the answer struck below it.
     for (const fixture of VIEWPORTS) {
       const viewport = makeViewport(
         fixture.actualWidth,

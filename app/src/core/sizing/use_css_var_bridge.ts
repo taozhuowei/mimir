@@ -33,7 +33,7 @@ export function useCssVarBridge(): ComputedRef<Record<string, string>> {
     '--header-height': `${sizes.value.headerHeight}px`,
     '--drawer-min-height': `${sizes.value.drawerMinHeight}px`,
     '--action-area-height': `${sizes.value.actionAreaHeight}px`,
-    '--answer-zone-height': `${sizes.value.answerZoneHeight}px`,
+    '--answer-zone-min-height': `${sizes.value.answerZoneMinHeight}px`,
     '--menu-clearance': `${menuClearancePx}px`,
     '--font-xxl': `${sizes.value.fontXXL}px`,
     '--font-xl': `${sizes.value.fontXL}px`,
