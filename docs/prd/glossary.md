@@ -23,10 +23,9 @@
 1. 标题区（title area）：承载主标题、副标题、引导文字；兜底视图的标题区写神秘提示文案。
 2. 流程进度区（progress area）：占卜视图顶部，展示流程阶段进度图标。
 3. 舞台（stage）：专门用来播放动画的容器，待机视图、占卜视图、兜底视图各自持有一个舞台实例。
-4. 答案区（answer zone）：占卜视图结果卡牌正下方的行内区域，高度由 `--answer-zone-height` 锁定、底部贴齐、内部可滚；自持加载 / 错误 / 成功三态，内含单一答案卡。
-5. 答案卡（AnswerCard）：答案区内唯一内容子容器，呈现一句名句的原文、翻译与来源。
-6. 操作区（action area）：仅在答案 flow 出现，与答案卡同帧挂载，承载再占一次 / 重试 / 回到首页等操作按钮。占卜 flow、待机 flow、兜底视图均无操作区。
-7. 通知（notification）：跨视图的全局浮层容器，应用运行时所有异常通过它在顶部显示，明显但不突兀，不阻塞操作。
+4. 答案卡（answer card / AnswerCard）：占卜视图结果卡牌正下方的行内区域，本身即唯一可见容器（无外包装），min-height 由 `--answer-zone-min-height` 兜底、底部贴齐、内部可滚；自持加载 / 错误 / 成功三态，承载一句名句的原文、翻译与来源；同时充当布局求解器的 stage 下方预留（`sizes.answerZoneMinHeight`）。
+5. 操作区（action area）：仅在答案 flow 出现，与答案卡同帧挂载，承载再占一次 / 重试 / 回到首页等操作按钮。占卜 flow、待机 flow、兜底视图均无操作区。
+6. 通知（notification）：跨视图的全局浮层容器，应用运行时所有异常通过它在顶部显示，明显但不突兀，不阻塞操作。
 
 ## 内容 — 动画（animation）
 
@@ -61,9 +60,8 @@ DDD 区分：
 5. 答案（answer）：一次占卜的产物，按抽到的卡牌及其正逆位返回的一句名句，含原文 quote、翻译 translation、来源 source 三个字段。
 6. 牌阵类型（spread kind）：本期仅支持单张（single card）。
 7. 物理视口（viewport）：屏幕物理像素信息——宽、高、安全区、状态栏。
-8. UI 预算（reservations）：各区域的像素预留——标题区、操作区、答案区、卡牌间距等。`answerZoneHeight` 是答案区的像素预算，layout solver 据此扣减 stage 可用高，使卡牌 reveal 终态尺寸不溢出 stage。
+8. UI 预算（reservations）：各区域的像素预留——标题区、操作区、答案卡、卡牌间距等。`answerZoneMinHeight` 是答案卡的像素预算（最坏情况），layout solver 据此扣减 stage 可用高，使卡牌 reveal 终态尺寸不溢出 stage；答案卡内容罕见地超出 min-height 时，flex 在运行时进一步压 stage，求解器仍保持保守。
 9. 布局求解（solve layout）：纯函数布局求解器，从视口与预算算出所有容器和卡牌的几何位置。
-10. 答案区域（answer zone）：答案区在屏幕上的物理空间。
 
 ## 塔罗领域术语
 
