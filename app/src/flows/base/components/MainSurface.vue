@@ -2,9 +2,10 @@
   <!--
     Main divination surface (docs/prd/glossary.md 路由 #1). Composes the
     divination surface — HeaderArea (TitleContent ↔ ProgressContent by
-    flow) + Stage (CardsLoadError | StageDeck) — with the inline answer
-    zone (AnswerCard + ActionArea) struck below the result card in the
-    terminal `answer` flow; no split / drawer / side panel.
+    flow) + Stage (CardsLoadError | StageDeck) — with the inline
+    AnswerCard + ActionArea struck below the result card in the
+    terminal `answer` flow; no split / drawer / side panel and no extra
+    wrapper around AnswerCard (the card is itself the flex item).
     NotificationHost sits on the surface root for cross-view alerts. The
     .main-surface__canvas wrapper caps the divination canvas at
     MAX_CANVAS_WIDTH (docs/prd/animation.md 视图过渡动画), centered. The
@@ -43,13 +44,12 @@
           <CardsLoadError v-if="isIdle && cardsLoadError" />
           <StageDeck v-else />
         </Stage>
-        <view v-if="showAnswer" class="answer-zone">
-          <AnswerCard
-            :state="answerPanelState"
-            :answer-result="answerResult"
-            :error-message="answerErrorMessage"
-          />
-        </view>
+        <AnswerCard
+          v-if="showAnswer"
+          :state="answerPanelState"
+          :answer-result="answerResult"
+          :error-message="answerErrorMessage"
+        />
         <ActionArea
           v-if="showAnswer"
           :flow="flow"
@@ -165,9 +165,10 @@ const { cardsLoadError } = useCardsLoadError()
 }
 
 /* .main-surface__body：HeaderArea 之下的弹性列容器，直接承载
-   HeaderArea / Stage / .answer-zone / ActionArea 四段。Stage 通过 flex:1
-   占满剩余高度并严格几何居中卡牌；.answer-zone 与 ActionArea 作为兄弟
-   flex item 紧贴下方。`--margin` 由 scale bridge 注入。 */
+   HeaderArea / Stage / AnswerCard / ActionArea 四段。Stage 通过 flex:1
+   占满剩余高度并严格几何居中卡牌；AnswerCard（其自身即 flex item，无
+   外包装）与 ActionArea 作为兄弟 flex item 紧贴下方。`--margin` 由
+   scale bridge 注入。 */
 .main-surface__body {
   flex: 1;
   display: flex;
@@ -182,34 +183,15 @@ const { cardsLoadError } = useCardsLoadError()
   box-sizing: border-box;
 }
 
-/* 答案区与操作区同步入场：opacity + 8px translateY，二者作为兄弟节点
-   在 flow='answer' 同帧挂载，视觉上同时出现。stage-rise 是它们出现导
-   致 Stage 高度收缩时的卡牌让位补位动画，时长 / 曲线对齐。 */
-.answer-zone {
-  /* 高度由 layout solver 的 answerStageReservation 锁定，与
-     `--answer-zone-height` CSS 变量同源；layout 求解器据此扣减 stage
-     可用高，使卡牌 reveal 终态正好落在 Stage flex 实际 DOM 高度内，
-     不再溢出到 header 区域。内部三态 (loading/error/success) 在固定
-     盒高内排版；超长答案文案走内部 overflow:auto。 */
-  flex: 0 0 auto;
-  height: var(--answer-zone-height);
-  max-height: 50%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  overflow: hidden;
-  animation: answer-zone-in 480ms cubic-bezier(0.16, 1, 0.3, 1) both;
-}
-
-@keyframes answer-zone-in {
-  from { opacity: 0; transform: translateY(8px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
+/* AnswerCard 与 ActionArea 同步入场：opacity + 8px translateY，二者作为
+   兄弟节点在 flow='answer' 同帧挂载，视觉上同时出现。AnswerCard 自身
+   持 animation（见 AnswerCard.vue），无需 wrapper。stage-rise 是它们
+   出现导致 Stage 高度收缩时的卡牌让位补位动画，时长 / 曲线对齐。 */
 
 /* Stage 高度由 flex 在答案区挂出瞬间即收缩；用 transform 从旧中心点
    位置（translateY ≈ answer 高度/2）滑到 0 来补位。60px 取 loading
-   状态下答案区高度 ~120px 的一半，配合 ease-out 让前段位移迅速、
-   后段平滑收尾。reduced-motion 下禁用。 */
+   状态下答案区 ~120px 的一半，配合 ease-out 让前段位移迅速、后段平
+   滑收尾。reduced-motion 下禁用。 */
 .main-surface__body--with-answer :deep(.stage) {
   animation: stage-rise 480ms cubic-bezier(0.16, 1, 0.3, 1) both;
 }
@@ -223,7 +205,6 @@ const { cardsLoadError } = useCardsLoadError()
   .main-surface__canvas {
     transition: none;
   }
-  .answer-zone,
   .main-surface__body--with-answer :deep(.stage) {
     animation: none;
   }

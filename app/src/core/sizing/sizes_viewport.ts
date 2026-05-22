@@ -17,8 +17,8 @@
  */
 
 import {
+  ANSWER_ZONE_MIN_HEIGHT,
   BASELINE_ACTION_AREA_HEIGHT,
-  BASELINE_ANSWER_ZONE_HEIGHT,
   BASELINE_DRAWER_MIN_HEIGHT,
   BASELINE_FONT_L,
   BASELINE_FONT_M,
@@ -56,8 +56,13 @@ export interface ResponsiveSizes {
   drawerMinHeight: number
   /** Bottom action area height in px (baseline 96 × k, rounded). */
   actionAreaHeight: number
-  /** Inline answer zone height in px (baseline 240 × k, rounded). */
-  answerZoneHeight: number
+  /**
+   * Inline answer card min-height in px. Reference: 160px on the
+   * 14PM design canvas (430px); baseline 140 × k, rounded. Used as
+   * the CSS min-height and as the layout solver's worst-case stage
+   * reservation.
+   */
+  answerZoneMinHeight: number
   /** Hero / display font size in px (baseline 32 × k, rounded). */
   fontXXL: number
   /** Large heading font size in px (baseline 24 × k, rounded). */
@@ -88,7 +93,7 @@ export function deriveSizes(canvasWidth: number): ResponsiveSizes {
     gap: Math.round(BASELINE_GAP * k),
     drawerMinHeight: Math.round(BASELINE_DRAWER_MIN_HEIGHT * k),
     actionAreaHeight: Math.round(BASELINE_ACTION_AREA_HEIGHT * k),
-    answerZoneHeight: Math.round(BASELINE_ANSWER_ZONE_HEIGHT * k),
+    answerZoneMinHeight: Math.round(ANSWER_ZONE_MIN_HEIGHT * k),
     fontXXL: Math.round(BASELINE_FONT_XXL * k),
     fontXL: Math.round(BASELINE_FONT_XL * k),
     fontL: Math.round(BASELINE_FONT_L * k),

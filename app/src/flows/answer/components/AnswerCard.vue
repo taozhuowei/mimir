@@ -3,6 +3,9 @@
     AnswerCard — the 答案卡 (PRD 容器 #5), struck into the page directly
     beneath the result card. The terminal `answer` flow mounts this card
     and ActionArea together; the staged rise-in is purely decorative.
+    Mounts as a direct flex item of .main-surface__body — there is no
+    .answer-zone wrapper. The min-height + entry animation live on this
+    root so layout solver `answerZoneMinHeight` and the DOM box agree.
   -->
   <view class="answer-card" role="region" aria-label="答案" aria-live="polite">
     <view v-if="state === 'loading'" key="loading" class="answer-card__loading">
@@ -56,17 +59,35 @@ const answer = computed(() => props.answerResult?.cardDetails[0]?.answer ?? null
    postcss-pxtorem 编译期转 rem，design_flexible 运行时按视口宽度 clamp
    到 [0.872, 1] × 43px 的 root font-size，实现等比缩放。
    max-width 使用 px 而非 em，避免大字号下二次膨胀溢出 canvas。
-   详见 docs/research/layout_final_rem.md。 */
+   详见 docs/research/layout_final_rem.md。
+   此组件本身即为 .main-surface__body 的 flex item（无外包装）：
+   `flex: 0 0 auto` 锁定不被弹性挤压，min-height 由 layout solver
+   的 sizes.answerZoneMinHeight 同源 CSS 变量提供；超长答案沿内部
+   overflow-y:auto 滚动；上限 50% 防止极端文案吃掉 stage。 */
 .answer-card {
+  flex: 0 0 auto;
+  min-height: var(--answer-zone-min-height);
+  max-height: 50%;
   display: flex;
   flex-direction: column;
   align-items: center;
   text-align: center;
   width: 100%;
-  height: 100%;
   box-sizing: border-box;
-  padding: 0 20px;
+  /* 底部 9px 缓冲吸收 rise-in 的 translateY(8px)（见 answer-card-rise）：
+     入场时最底部的 .answer-card__source 下移 8px，若无缓冲会越过滚动容器
+     content box 底沿、撑出 overflow-y 的可滚区，瞬间闪出滚动条；预留 9px
+     padding（8px 位移 + 1px 亚像素余量）让该位移落在 padding 区内（可见、
+     不裁切、不可滚），动画结束归位。超长答案仍由 max-height + overflow-y
+     正常滚动。 */
+  padding: 0 20px 9px;
   overflow-y: auto;
+  animation: answer-card-in 480ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes answer-card-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
 /* ---- success ------------------------------------------------------ */
@@ -163,6 +184,7 @@ const answer = computed(() => props.answerResult?.cardDetails[0]?.answer ?? null
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .answer-card,
   .answer-card__quote,
   .answer-card__rule,
   .answer-card__translation,
