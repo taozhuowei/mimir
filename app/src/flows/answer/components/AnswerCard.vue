@@ -101,7 +101,7 @@ const answer = computed(() => props.answerResult?.cardDetails[0]?.answer ?? null
 .answer-card__quote {
   max-width: 360px;
   color: var(--color-text-primary);
-  font-size: 26px;
+  font-size: 24px;
   font-weight: 600;
   line-height: 1.26;
   letter-spacing: 0.005em;
@@ -122,7 +122,7 @@ const answer = computed(() => props.answerResult?.cardDetails[0]?.answer ?? null
 .answer-card__translation {
   max-width: 320px;
   color: var(--color-text-secondary);
-  font-size: 16px;
+  font-size: 14px;
   line-height: 1.74;
   letter-spacing: 0.01em;
   animation: answer-card-rise 560ms cubic-bezier(0.16, 1, 0.3, 1) 300ms both;
@@ -132,7 +132,7 @@ const answer = computed(() => props.answerResult?.cardDetails[0]?.answer ?? null
 .answer-card__source {
   max-width: 280px;
   color: var(--color-text-muted);
-  font-size: 12px;
+  font-size: 10px;
   font-style: italic;
   line-height: 1.6;
   letter-spacing: 0.06em;
@@ -156,13 +156,13 @@ const answer = computed(() => props.answerResult?.cardDetails[0]?.answer ?? null
 
 .answer-card__loading-word {
   color: var(--color-text-muted);
-  font-size: 16px;
+  font-size: 14px;
   letter-spacing: 0.16em;
 }
 
 .answer-card__loading-ellipsis {
   color: var(--color-accent);
-  font-size: 16px;
+  font-size: 14px;
   letter-spacing: 0.12em;
   animation: answer-card-breathe 1.6s ease-in-out infinite;
 }
@@ -179,7 +179,7 @@ const answer = computed(() => props.answerResult?.cardDetails[0]?.answer ?? null
 
 .answer-card__error-text {
   color: var(--color-yes);
-  font-size: 14px;
+  font-size: 12px;
   line-height: 1.7;
 }
 
