@@ -11,20 +11,20 @@ Rules + links only. On conflict, the docs below win.
 
 ## Commands
 
-Expose only 3 npm scripts; never add more. New tooling → `scripts/` or git hooks.
+Expose only 3 yarn scripts; never add more. New tooling → `scripts/` or git hooks.
 
-- `npm install` — installs simple-git-hooks (pre-commit / commit-msg / pre-push).
-- `npm run dev` — `node scripts/build/index.js --dev --target h5,mp,server`: write `.env.development.local` → kill `:4123`/`:4124` → gate → watch `vite` h5 `:4123` + `vite-plugin-uni -p mp-weixin` + `tsx server` `:4124` (proxies `/api` `/static` → `:4124`).
-- `npm run prod` — same entry `--prod`: gate → vite h5 → uni mp → tsc server → `scripts/perf_baseline_gate.js` → SPA smoke.
+- `yarn install` — installs simple-git-hooks (pre-commit / commit-msg / pre-push).
+- `yarn dev` — `node scripts/build/index.js --dev --target h5,mp,server`: write `.env.development.local` → kill `:4123`/`:4124` → gate → watch `vite` h5 `:4123` + `vite-plugin-uni -p mp-weixin` + `tsx server` `:4124` (proxies `/api` `/static` → `:4124`).
+- `yarn prod` — same entry `--prod`: gate → vite h5 → uni mp → tsc server → `scripts/perf_baseline_gate.js` → SPA smoke.
 
-Invoke directly, not via npm:
+Invoke directly, not via yarn:
 
 - `node scripts/quality_gate.js full | staged` (CI `verify` runs `full`).
-- `npx vitest run --config app/vitest.config.ts --dir app/test [-t "<pat>"|<file>]`
-- `npx vitest run --config server/vitest.config.ts --dir server/test [-t "<pat>"|<file>]`
-- `npx vue-tsc --noEmit -p app/tsconfig.json` / `npx tsc --noEmit -p server/tsconfig.json`
-- `npx eslint app/src/ app/test/ server/src/ server/test/`
-- `npx playwright test --config=app/playwright.config.ts`
+- `yarn vitest run --config app/vitest.config.ts --dir app/test [-t "<pat>"|<file>]`
+- `yarn vitest run --config server/vitest.config.ts --dir server/test [-t "<pat>"|<file>]`
+- `yarn vue-tsc --noEmit -p app/tsconfig.json` / `yarn tsc --noEmit -p server/tsconfig.json`
+- `yarn eslint app/src/ app/test/ server/src/ server/test/`
+- `yarn playwright test --config=app/playwright.config.ts`
 - Skip gate while debugging: pass `--skip-quality` to the build orchestrator.
 
 ## Constraints

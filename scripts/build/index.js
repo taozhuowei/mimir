@@ -1,16 +1,16 @@
 /**
  * Build orchestrator entry — single source of truth for build/dev pipelines.
  *
- * Why: previously `npm run build` and `npm run dev` were 200+ char string
+ * Why: previously `yarn build` and `yarn dev` were 200+ char string
  * pipes in package.json — duplicated logic, no targeting, no skip-quality
  * for CI. This script centralises the topology so quality_gate.js stops
  * carrying build/smoke (those belong here).
  *
  * Public entrypoints:
- *   - `npm run prod`  -> --prod --target h5,mp,server  (full prod artifacts + smoke)
- *   - `npm run dev`   -> --dev  --target h5,mp,server  (watch mode, no smoke)
+ *   - `yarn prod`  -> --prod --target h5,mp,server  (full prod artifacts + smoke)
+ *   - `yarn dev`   -> --dev  --target h5,mp,server  (watch mode, no smoke)
  *
- * Internal flags (NOT exposed via npm scripts; CI wires them directly):
+ * Internal flags (NOT exposed via yarn scripts; CI wires them directly):
  *   --prod | --dev          required, mutually exclusive
  *   --target h5,mp,server,all   default: all (comma-separated subset OK)
  *   --skip-quality          skip the quality gate prefix (CI uses this

@@ -1,7 +1,7 @@
 /**
  * Port-occupier killer for the dev orchestrator.
  *
- * Why: `npm run dev` previously crashed when 4123 (vite) or 4124 (express)
+ * Why: `yarn dev` previously crashed when 4123 (vite) or 4124 (express)
  * were already bound by a stray watcher from a prior session. Per project
  * decision (see TODO §dev-fix), the dev pipeline now force-frees its ports
  * before starting watchers, instead of asking the user to clean up manually

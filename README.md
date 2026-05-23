@@ -12,13 +12,13 @@ Scales Tarot 是一个以 H5 为主要交付形态的单页塔罗体验项目。
 
 ## 目录架构
 
-npm workspaces 单体仓库，顶层只列一级；各目录职责与内部结构见其自身 README。
+yarn workspaces 单体仓库，顶层只列一级；各目录职责与内部结构见其自身 README。
 
 ```
 scales-tarot/
 ├── app/                  # uni-app + Vue 3 前端(h5 + mp-weixin 双产物)        → app/README.md
 ├── server/               # Express 4 + zod 后端(:4124)                       → server/README.md
-├── scripts/              # 构建编排 + 质量门禁(不暴露为 npm script)            → scripts/README.md
+├── scripts/              # 构建编排 + 质量门禁(不暴露为 yarn script)           → scripts/README.md
 ├── config/               # 根级工具配置                                       → config/README.md
 ├── docs/                 # 权威文档(索引见 docs/README.md)
 ├── .github/              # CI(verify + e2e) / dependabot / PR 模板
@@ -26,12 +26,12 @@ scales-tarot/
 ├── CLAUDE.md             # Claude Code 工程导航与硬约束
 ├── README.md             # 本文件
 ├── package.json          # workspaces 根(仅 prepare/dev/prod 3 个脚本)
-└── package-lock.json
+└── yarn.lock
 ```
 
 ## 技术栈
 
-- **单体仓库**：npm workspaces（`app` + `server`），Node 22。
+- **单体仓库**：yarn workspaces（`app` + `server`），Node 22。
 - **前端**：uni-app + Vue 3.4 + Pinia + GSAP，vite 构建，vitest / playwright 测试。
 - **后端**：Express 4 + zod，pino 日志，vitest + supertest 测试。
 - **工程**：单一构建入口 + 代码门禁（lint / 类型 / 测试 / 架构 / 死代码 / 重复），simple-git-hooks + CI 双重兜底。
@@ -41,8 +41,8 @@ scales-tarot/
 ## 快速开始
 
 ```bash
-npm install
-npm run dev
+yarn install
+yarn dev
 ```
 
 打开 [http://localhost:4123/](http://localhost:4123/) 看 H5 实时预览。完整命令与环境变量见 [docs/development.md](docs/development.md)。

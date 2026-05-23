@@ -17,7 +17,7 @@ app/
 ├── playwright.config.ts  e2e 配置：对 :4124 真实 server 跑 chromium-mobile（iPhone 13 视口）
 ├── tsconfig.json         前端 TypeScript 配置（strict，@/* → src/*）
 ├── shims-uni.d.ts        为 Vue 组件补充 uni-app 生命周期钩子类型
-├── package.json          占位（无脚本，npm 脚本在仓库根）
+├── package.json          占位（无脚本，yarn 脚本在仓库根）
 └── node_modules/         依赖
 ```
 

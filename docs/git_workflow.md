@@ -44,12 +44,12 @@ node scripts/quality_gate.js full
 
 ## Git 钩子
 
-`npm install` 经 `npm run prepare` 自动安装 `simple-git-hooks`：
+`yarn install` 经 `yarn prepare` 自动安装 `simple-git-hooks`：
 
 | 钩子 | 命令 | 速度 | 用途 |
 |---|---|---|---|
 | `pre-commit` | `node scripts/quality_gate.js staged` | < 5 s | 增量 lint 修复 + 静态扫描，自动写回暂存区 |
-| `commit-msg` | `npx commitlint --edit $1` | < 1 s | 强制 conventional commit 格式 |
+| `commit-msg` | `yarn commitlint --edit $1` | < 1 s | 强制 conventional commit 格式 |
 | `pre-push` | `node scripts/quality_gate.js full` | 1–3 min | 全量门禁兜底 |
 
 ## 紧急绕过

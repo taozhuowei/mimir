@@ -47,7 +47,7 @@ async function build_mp() {
 }
 
 async function build_server() {
-  return run('server: tsc compile', 'npx', ['tsc', '-p', 'server/tsconfig.json'])
+  return run('server: tsc compile', 'yarn', ['tsc', '-p', 'server/tsconfig.json'])
 }
 
 async function run_smoke() {
@@ -56,7 +56,7 @@ async function run_smoke() {
   // `server/public/static` being populated, hence the order above.
   return run(
     'smoke: Playwright SPA boot',
-    'npx',
+    'yarn',
     ['playwright', 'test', '--config=app/playwright.config.ts', 'app/test/e2e/spa_boot_smoke.spec.ts'],
   )
 }

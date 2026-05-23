@@ -21,7 +21,7 @@
  * app/vite.config.ts) — it watches for vue-tsc / tsc / eslint errors and
  * surfaces them in the browser overlay. Not run for mp/server.
  *
- * --skip-quality is honoured here too (mostly for `npm run dev`-on-CI
+ * --skip-quality is honoured here too (mostly for `yarn dev`-on-CI
  * style invocations, which we don't currently use; kept for symmetry).
  */
 
@@ -114,7 +114,7 @@ module.exports = async function devPipeline({ targets, skipQuality }) {
 
   // Step 4: long-running watchers under concurrently.
   const concurrentlyArgs = buildConcurrentlyArgs(targets)
-  await run('start watchers', 'npx', ['concurrently', ...concurrentlyArgs])
+  await run('start watchers', 'yarn', ['concurrently', ...concurrentlyArgs])
 
   return 0
 }

@@ -1,17 +1,17 @@
 # 本地开发与部署
 
-> 命令、环境变量与部署细节。公开命令面只有 3 个 npm script：`prepare`、`dev`、`prod`；其它工具由 `scripts/`、`.git/hooks/` 与 CI 直接调用。
+> 命令、环境变量与部署细节。公开命令面只有 3 个 yarn script：`prepare`、`dev`、`prod`；其它工具由 `scripts/`、`.git/hooks/` 与 CI 直接调用。
 
 ## 快速开始
 
 ```bash
-npm install   # 触发 prepare 安装 simple-git-hooks
-npm run dev
+yarn install   # 触发 prepare 安装 simple-git-hooks
+yarn dev
 ```
 
 打开 [http://localhost:4123/](http://localhost:4123/) 看到 H5 端实时预览，改代码经 vite HMR 立即热更。
 
-## `npm run dev`
+## `yarn dev`
 
 等价 `node scripts/build/index.js --dev --target h5,mp,server`，依次执行：
 
@@ -25,7 +25,7 @@ npm run dev
 
 vite 把 `/api` 与 `/static` 反代到 `:4124`，前端发请求等同生产同源。直接打开 `:4124/` 在 dev 下返回 404 —— 这是正确信号，express 在 dev 不 fallback 到陈旧 `dist/build/h5/index.html`，避免静默掩盖未热更代码。
 
-## `npm run prod`
+## `yarn prod`
 
 等价 `node scripts/build/index.js --prod --target h5,mp,server`，依次执行：
 
@@ -59,7 +59,7 @@ vite 把 `/api` 与 `/static` 反代到 `:4124`，前端发请求等同生产同
 
 ### dev 环境
 
-`.env.development.local` 由 `npm run dev` **自动生成**，无需手编。它探测局域网 IP 写入 `VITE_API_BASE_URL=http://<你的 IP>:4124`。手机连同一 WiFi 调小程序连不上时，检查该文件 IP 是否为电脑当前真实 IP（换 WiFi 会变，重跑 `npm run dev` 自动更新）。
+`.env.development.local` 由 `yarn dev` **自动生成**，无需手编。它探测局域网 IP 写入 `VITE_API_BASE_URL=http://<你的 IP>:4124`。手机连同一 WiFi 调小程序连不上时，检查该文件 IP 是否为电脑当前真实 IP（换 WiFi 会变，重跑 `yarn dev` 自动更新）。
 
 ### prod 环境
 

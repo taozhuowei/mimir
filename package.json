@@ -3,8 +3,8 @@
   "version": "1.0.0",
   "private": true,
   "engines": {
-    "node": "22.x",
-    "npm": ">=10.0.0"
+    "node": ">=22",
+    "yarn": ">=1.22.0"
   },
   "scripts": {
     "prepare": "simple-git-hooks",
@@ -13,7 +13,7 @@
   },
   "simple-git-hooks": {
     "pre-commit": "node scripts/quality_gate.js staged",
-    "commit-msg": "npx commitlint --config config/commitlint.config.cjs --edit $1",
+    "commit-msg": "yarn commitlint --config config/commitlint.config.cjs --edit $1",
     "pre-push": "node scripts/quality_gate.js full"
   },
   "workspaces": [
@@ -73,7 +73,7 @@
     "vue-eslint-parser": "^10.4.0",
     "vue-tsc": "^2.0.29"
   },
-  "overrides": {
+  "resolutions": {
     "@intlify/core-base": "9.14.5",
     "@intlify/message-compiler": "9.14.5",
     "@intlify/message-resolver": "9.14.5",
@@ -83,5 +83,6 @@
     "phin": "^3.7.1",
     "esbuild": "^0.25.0",
     "postcss": "^8.5.10"
-  }
+  },
+  "packageManager": "yarn@4.15.0"
 }

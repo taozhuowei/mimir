@@ -8,7 +8,7 @@ import { defineConfig, devices } from '@playwright/test'
  * - The webServer block boots `node server/dist/server.js` directly with
  *   NODE_ENV=production; locally it is reused if you already have one
  *   running, in CI it is always started fresh so the build under test is
- *   exercised. We invoke node directly (no `npm run start:prod`) to avoid
+ *   exercised. We invoke node directly (no `yarn start:prod`) to avoid
  *   an implicit dependency on package.json scripts during the test run.
  * - chromium-only by default — CI cost grows linearly per project, and
  *   the H5 target is rendered by Chromium-class engines (Edge, mini
