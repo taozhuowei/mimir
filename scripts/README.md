@@ -1,6 +1,6 @@
 # scripts
 
-构建编排与质量门禁的实现层。**不暴露为 npm script**——`scripts/build/index.js` 与 `scripts/quality_gate.js` 是单一真相源，新增工具进此目录或 git 钩子，不新增 npm script（否则门禁内容漂移）。`build/index.js` 是唯一构建入口，按 `--dev|--prod` × `--target h5,mp,server` × `--skip-quality` 分发到 `dev.js` / `prod.js`。
+构建编排与质量门禁的实现层。**不暴露为 yarn script**——`scripts/build/index.js` 与 `scripts/quality_gate.js` 是单一真相源，新增工具进此目录或 git 钩子，不新增 yarn script（否则门禁内容漂移）。`build/index.js` 是唯一构建入口，按 `--dev|--prod` × `--target h5,mp,server` × `--skip-quality` 分发到 `dev.js` / `prod.js`。
 
 ## 目录架构
 

@@ -243,11 +243,11 @@ if (config.isProd) {
   const buildH5Dist = path.join(__dirname, '../../dist/build/h5')
 
   // Loud failure if the build artefact is missing — this catches the case
-  // where someone runs `node server/dist/server.js` without `npm run prod`
+  // where someone runs `node server/dist/server.js` without `yarn prod`
   // first. Better to crash at boot than serve a 404 for every page request.
   if (!fs.existsSync(path.join(buildH5Dist, 'index.html'))) {
     throw new Error(
-      `[app] H5 build artefact missing at ${buildH5Dist}/index.html — run 'npm run prod' before starting the server`,
+      `[app] H5 build artefact missing at ${buildH5Dist}/index.html — run 'yarn prod' before starting the server`,
     )
   }
 

@@ -2,8 +2,8 @@ const { spawn, spawnSync } = require('child_process')
 
 const mode = process.argv[2] || 'full'
 
-// All step commands are inlined here (not delegated to `npm run …`) because
-// the public npm script surface was collapsed to 3 entries (prepare / dev /
+// All step commands are inlined here (not delegated to `yarn run …`) because
+// the public yarn script surface was collapsed to 3 entries (prepare / dev /
 // prod). The previous fan-out scripts (lint, quality:lint, quality:type-check,
 // quality:audit, arch:check, quality:lint:fix, build, build:dev, test,
 // quality, ship) were removed; their commands now live in this file (or
@@ -18,34 +18,34 @@ const stepsByMode = {
   // orchestrator with --skip-quality.
   full: [
     { label: 'quality-scan', command: 'node', args: ['scripts/quality_scan.js'] },
-    { label: 'lint', command: 'npx', args: ['eslint', '--config', 'config/eslint.config.mjs', 'app/src/', 'app/test/', 'server/src/', 'server/test/'] },
+    { label: 'lint', command: 'yarn', args: ['eslint', '--config', 'config/eslint.config.mjs', 'app/src/', 'app/test/', 'server/src/', 'server/test/'] },
     // type-check is two compilers: vue-tsc for the Vue app, tsc for the
     // server. Run sequentially as separate steps so failures point at the
     // right tsconfig.
-    { label: 'type-check:app', command: 'npx', args: ['vue-tsc', '--noEmit', '-p', 'app/tsconfig.json'] },
-    { label: 'type-check:server', command: 'npx', args: ['tsc', '--noEmit', '-p', 'server/tsconfig.json'] },
+    { label: 'type-check:app', command: 'yarn', args: ['vue-tsc', '--noEmit', '-p', 'app/tsconfig.json'] },
+    { label: 'type-check:server', command: 'yarn', args: ['tsc', '--noEmit', '-p', 'server/tsconfig.json'] },
     // Direct vitest invocation — Phase 10 split the single root `test/`
     // workspace into per-package `app/test/` + `server/test/`. The two
     // configs use `include: ['test/**/*.test.ts']` (cwd-relative), so we
     // pass `--dir <pkg>/test` to scope each run to its own tree. Two
     // separate steps make a failure point at the right workspace.
-    { label: 'test:app', command: 'npx', args: ['vitest', 'run', '--config', 'app/vitest.config.ts', '--dir', 'app/test'] },
-    { label: 'test:server', command: 'npx', args: ['vitest', 'run', '--config', 'server/vitest.config.ts', '--dir', 'server/test'] },
+    { label: 'test:app', command: 'yarn', args: ['vitest', 'run', '--config', 'app/vitest.config.ts', '--dir', 'app/test'] },
+    { label: 'test:server', command: 'yarn', args: ['vitest', 'run', '--config', 'server/vitest.config.ts', '--dir', 'server/test'] },
     // perf-baseline lives in the build pipeline (scripts/build/prod.js), not
     // here — it needs `dist/build/h5/` populated to produce a real measurement.
     // Running it from quality_gate / pre-push always saw 0 bytes because the
     // build had not yet executed at that point.
     {
       label: 'audit',
-      command: 'npm',
-      args: ['audit', '--omit=dev', '--audit-level=high'],
+      command: 'yarn',
+      args: ['npm', 'audit', '--severity', 'high', '--environment', 'production'],
       // Audit prints known moderate vulnerabilities even on success,
       // polluting CI logs. Swallow stdout on success; print everything on failure.
       quietOnSuccess: true,
     },
     {
       label: 'arch:check',
-      command: 'npx',
+      command: 'yarn',
       args: ['depcruise', 'app/src', 'app/test', 'server/src', 'server/test', '--config', 'config/dependency-cruiser.cjs'],
     },
     // Project-wide dead-code detection (knip): unused files, exports,
@@ -53,7 +53,7 @@ const stepsByMode = {
     // output is verbose; on failure (any new dead code) it prints fully.
     {
       label: 'dead-code',
-      command: 'npx',
+      command: 'yarn',
       args: ['knip', '--config', 'config/knip.json', '--no-progress'],
       quietOnSuccess: true,
     },
@@ -65,7 +65,7 @@ const stepsByMode = {
     // token-level scan would miss.
     {
       label: 'duplicate-code',
-      command: 'npx',
+      command: 'yarn',
       args: ['jscpd', 'app/src', 'server/src', 'scripts', '--config', 'config/jscpd.json', '--silent'],
       quietOnSuccess: true,
     },
@@ -93,7 +93,7 @@ const stepsByMode = {
     { label: 'quality-scan', command: 'node', args: ['scripts/quality_scan.js'] },
     {
       label: 'lint:fix',
-      command: 'npx',
+      command: 'yarn',
       args: ['eslint', '--fix', '--cache', '--cache-location', 'node_modules/.cache/eslint/', '--config', 'config/eslint.config.mjs', 'app/src/', 'app/test/', 'server/src/', 'server/test/'],
     },
     { label: 'git add', command: 'git', args: ['add', '-u'] },
@@ -108,7 +108,7 @@ if (!steps) {
 }
 
 function resolveExecutable(command) {
-  return process.platform === 'win32' && command === 'npm' ? 'npm.cmd' : command
+  return process.platform === 'win32' && command === 'yarn' ? 'yarn.cmd' : command
 }
 
 // `staged` (pre-commit) MUST stay sequential: gitleaks runs first by design
@@ -145,13 +145,13 @@ function runSequential() {
 // memory, not CPU: vue-tsc / tsc / vitest x2 / eslint / knip each peak at
 // 0.4-1GB and the WSL2 box has ~4GB free, so an unbounded fan-out OOMs.
 // Hence a bounded worker pool (default 4, override via
-// QUALITY_GATE_CONCURRENCY — an env var, not a new npm script, so the
+// QUALITY_GATE_CONCURRENCY — an env var, not a new yarn script, so the
 // 3-script surface is preserved).
 //
 // Failure semantics (per project decision): the first non-zero step kills
 // every still-running sibling and exits immediately — fastest feedback for
 // the dev loop. Each child is its own POSIX process group (detached) so the
-// kill reaches the npx -> node grandchild, not just the npx shim.
+// kill reaches the yarn -> node grandchild, not just the yarn shim.
 function runParallel() {
   const concurrency = Math.max(
     1,

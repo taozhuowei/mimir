@@ -21,13 +21,16 @@ jobs:
       - uses: actions/setup-node@v6
         with:
           node-version: '22'
-          cache: 'npm'
+          cache: 'yarn'
+
+      - name: Enable Corepack
+        run: corepack enable
 
       - name: Install dependencies
-        run: npm ci
+        run: yarn install --immutable
 
       - name: Quality Gate
-        # Direct invocation — `npm run quality` was removed when the public
+        # Direct invocation — `yarn quality` was removed when the public
         # script surface collapsed to dev/prod. CI calls the gate script
         # the same way pre-push does.
         run: node scripts/quality_gate.js full
@@ -44,9 +47,11 @@ jobs:
       - uses: actions/setup-node@v6
         with:
           node-version: '22'
-          cache: 'npm'
+          cache: 'yarn'
+      - name: Enable Corepack
+        run: corepack enable
       - name: Install dependencies
-        run: npm ci
+        run: yarn install --immutable
       - name: Commit lint
         uses: wagoid/commitlint-github-action@v6
         with:
@@ -67,10 +72,13 @@ jobs:
       - uses: actions/setup-node@v6
         with:
           node-version: '22'
-          cache: 'npm'
+          cache: 'yarn'
+
+      - name: Enable Corepack
+        run: corepack enable
 
       - name: Install dependencies
-        run: npm ci
+        run: yarn install --immutable
 
       - name: Install Playwright browser
         # Must run BEFORE build, because scripts/build/prod.js' final step is
@@ -80,7 +88,7 @@ jobs:
         # Mobile device emulation (iPhone 13 in app/playwright.config.ts)
         # uses chrome-headless-shell since Playwright 1.49+, which is a
         # separate binary from chromium. Install both explicitly.
-        run: npx playwright install --with-deps chromium chromium-headless-shell
+        run: yarn playwright install --with-deps chromium chromium-headless-shell
 
       - name: Build H5 + server
         # Skip the quality gate here — the `verify` job already ran it on
@@ -89,9 +97,9 @@ jobs:
         run: node scripts/build/index.js --prod --target h5,server --skip-quality
 
       - name: Run E2E tests
-        # Direct playwright invocation; we don't expose `npm run e2e` as
+        # Direct playwright invocation; we don't expose `yarn e2e` as
         # a public script anymore (the only legitimate caller is CI).
-        run: npx playwright test --config=app/playwright.config.ts
+        run: yarn playwright test --config=app/playwright.config.ts
 
       - name: Upload Playwright report
         if: ${{ !cancelled() }}
