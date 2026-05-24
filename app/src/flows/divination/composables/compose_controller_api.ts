@@ -15,7 +15,7 @@ import type { usePlayback } from '../../base/composables/animations/use_playback
 import type { usePhases } from './use_phase_state'
 import type { usePresentation } from './use_presentation'
 import type { useLifecycle } from './use_lifecycle'
-import type { UseAnimationControllerReturn } from './use_animation_controller'
+import type { UseAnimationControllerReturn } from './use_animation_controller_types'
 
 export interface ControllerParts {
   animState: ReturnType<typeof useAnimationState>
