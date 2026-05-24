@@ -4,33 +4,23 @@
     answer phase; the rate chips set the global playback rate (active
     state shows the currently-applied multiplier).
   -->
-  <view class="dev-tools-row">
-    <view
-      class="dev-tools-chip"
-      role="button"
-      tabindex="0"
-      aria-label="跳到解读"
-      @click="$emit('skip-to-answer')"
-      @keydown.enter="$emit('skip-to-answer')"
-      @keydown.space.prevent="$emit('skip-to-answer')"
+  <DevToolsRow>
+    <DevToolsChip
+      label="跳到解读"
+      @activate="$emit('skip-to-answer')"
     >
       直接解读
-    </view>
-    <view
+    </DevToolsChip>
+    <DevToolsChip
       v-for="speed in playbackRates"
       :key="`speed-${speed}`"
-      class="dev-tools-chip"
-      :class="{ active: playbackRate === speed }"
-      role="button"
-      tabindex="0"
-      :aria-label="`播放速度 ${speed}x`"
-      @click="$emit('playback-rate', speed)"
-      @keydown.enter="$emit('playback-rate', speed)"
-      @keydown.space.prevent="$emit('playback-rate', speed)"
+      :active="playbackRate === speed"
+      :label="`播放速度 ${speed}x`"
+      @activate="$emit('playback-rate', speed)"
     >
       {{ speed }}x
-    </view>
-  </view>
+    </DevToolsChip>
+  </DevToolsRow>
 </template>
 
 <script setup lang="ts">
@@ -41,10 +31,14 @@
  * Reason: extracted from DevToolsPanel.vue (P3 nit fix — file was 382
  *          lines, capped at 300). The list of supported rates lives here
  *          since it is private to this row's UI affordance — adding a new
- *          rate is a one-file change.
+ *          rate is a one-file change. Chip markup/styles live in
+ *          DevToolsChip / DevToolsRow.
  * Data flow: parent owns the current `playbackRate`; this row emits
  *          `playback-rate` and `skip-to-answer`.
  */
+import DevToolsRow from './DevToolsRow.vue'
+import DevToolsChip from './DevToolsChip.vue'
+
 defineProps<{
   playbackRate: number
 }>()
@@ -58,30 +52,3 @@ defineEmits<{
 // Keep aligned with the parent's outbound emit signature (number).
 const playbackRates = [0.25, 0.5, 1, 2] as const
 </script>
-
-<style scoped>
-.dev-tools-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10rpx;
-  align-items: center;
-}
-
-.dev-tools-chip {
-  min-width: 68rpx;
-  padding: 10rpx 18rpx;
-  border-radius: 999rpx;
-  background: var(--color-overlay-bg-fade);
-  border: 1rpx solid var(--color-border);
-  color: var(--color-text-primary);
-  font-size: 22rpx;
-  line-height: 1.2;
-  text-align: center;
-}
-
-.dev-tools-chip.active {
-  color: var(--color-accent);
-  border-color: var(--color-accent);
-  background: rgba(184, 148, 62, 0.1);
-}
-</style>
