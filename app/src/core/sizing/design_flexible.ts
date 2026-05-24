@@ -40,11 +40,6 @@ import { raf } from './raf_shim'
 
 /** iPhone 14 Pro Max CSS viewport 宽度，rem 基准的分母 */
 export const BASELINE_W = 430
-/**
- * iPhone 14 Pro Max CSS viewport 高度。
- * scale 公式不直接用（单轴宽度），但 isTooSmallView 用它做高度过小判定。
- */
-export const BASELINE_H = 932
 /** iPhone 8 CSS viewport 宽度，下限宽轴边界 */
 export const FLOOR_W = 375
 /** iPhone 8 CSS viewport 高度，过小屏判定的高度边界 */
