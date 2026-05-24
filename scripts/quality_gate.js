@@ -123,6 +123,10 @@ function runSequential() {
       stdio: step.quietOnSuccess ? 'pipe' : 'inherit',
       env: process.env,
       encoding: 'utf-8',
+      // Windows-only: the `yarn` shim is a .cmd batch file, which Node refuses
+      // to spawn directly since CVE-2024-27980 (throws EINVAL). Route it through
+      // cmd.exe. POSIX/CI keeps shell off, so its behaviour is unchanged.
+      shell: process.platform === 'win32',
     })
 
     if (result.error) {
@@ -191,6 +195,10 @@ function runParallel() {
       stdio: ['ignore', 'pipe', 'pipe'],
       env: process.env,
       detached: process.platform !== 'win32',
+      // Windows-only: spawn the .cmd yarn shim through cmd.exe — Node blocks
+      // direct .cmd spawns since CVE-2024-27980. POSIX/CI unchanged (no shell),
+      // preserving the detached process-group kill semantics below.
+      shell: process.platform === 'win32',
     })
 
     const chunks = { out: [], err: [] }
