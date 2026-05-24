@@ -1,100 +1,29 @@
 /**
  * Name: flows/divination/composables/use_lifecycle
- * Purpose: overlay animation lifecycle — entry settling, scene reset, animation interruption,
- *          and pipeline orchestration (start / skip / replay).
- * Reason: extracted from use_animation_controller to isolate lifecycle concerns. Owns the
- *          construction of PhaseSnapDeps (closure over deps) so replay/skip can share the
- *          same snap-to-entry-state contract from PHASE_MANIFEST.
+ * Purpose: overlay animation lifecycle orchestrator — composes the scene visual-state ops
+ *          (lifecycle_scene), the phase-snap deps assembly (build_phase_snap_deps) and the
+ *          pipeline commands (start / skip / replay) into the lifecycle surface.
+ * Reason: scene mutations and snap-deps assembly are extracted to sibling modules so this
+ *          file stays a thin orchestrator.
  * Data flow: receives all deps via DI; mutates shared refs for cardsLanded, entryAnimationComplete.
  */
 
 import { nextTick } from 'vue'
-import { killAnimationTargets } from '../../../core/gsap/tween'
-import type { PhaseSnapDeps } from './phase_entry_snap'
 import type { OverlayPhase } from '../../base/composables/animations/phase_contracts'
 import { runPipelineCommand } from './run_pipeline_command'
 import { skipToAnswerCommand } from './skip_to_answer'
 import { replayFromPhaseCommand } from './replay_from_phase'
+import { createLifecycleScene } from './lifecycle_scene'
+import { buildPhaseSnapDeps } from './build_phase_snap_deps'
 import type { LifecycleDeps } from './use_lifecycle_types'
 
 export type { LifecycleAnimState, LifecycleDeps } from './use_lifecycle_types'
 
 export function useLifecycle(deps: LifecycleDeps) {
-  function settleEntryAnimation(): void {
-    const { animState, entryAnimationComplete } = deps
-    animState.bg.opacity = 1
-    animState.refreshBg()
-    animState.initials.forEach((state, index) => {
-      Object.assign(state, { x: 0, y: -(index * 0.8), rotation: 0, scale: 1, scaleY: 1, opacity: 1 })
-    })
-    animState.refreshInitials()
-    animState.header.y = 0
-    animState.header.opacity = 1
-    animState.footer.y = 0
-    animState.footer.opacity = 1
-    animState.refreshHeader()
-    animState.refreshFooter()
-    entryAnimationComplete.value = true
-  }
+  const { settleEntryAnimation, resetOverlayScene, interruptCurrentAnimation } =
+    createLifecycleScene(deps)
 
-  function resetOverlayScene(): void {
-    deps.showResults.value = false
-    deps.cardsLanded.value = false
-    deps.callbacks.onResetAnswer()
-    const { animState } = deps
-    animState.bg.opacity = 1
-    animState.stage.y = 0
-    animState.header.y = 0
-    animState.header.opacity = 1
-    animState.footer.y = 0
-    animState.footer.opacity = 1
-    animState.deckCtn.x = 0
-    animState.refreshBg()
-    animState.refreshStage()
-    animState.refreshHeader()
-    animState.refreshFooter()
-    animState.refreshDeckCtn()
-    animState.resetInitialDeckState()
-    animState.resetShuffleVisualState()
-    animState.resetCutVisualState()
-    animState.resetDrawVisualState()
-    const drawLayout = deps.getSceneLayout('draw_stage')
-    animState.setDrawCardSizes(drawLayout)
-  }
-
-  function interruptCurrentAnimation(): void {
-    // 中断只丢弃当前 in-flight 请求并重置状态，不销毁 orchestrator；
-    // 销毁会让 destroyed=true 永久禁用后续 startAnswer，使 dev replay/skip
-    // 路径的二次请求被吞掉、settlePipeline 永远读到 status='idle' 而无法切阶段。
-    deps.callbacks.onResetAnswer()
-    deps.resumeAnimations()
-    deps.orchestrator.clear()
-    killAnimationTargets(deps.animState.getAllTargets())
-  }
-
-  /**
-   * Build the dependency bundle consumed by PHASE_MANIFEST.snapToEntryState
-   * helpers. Read fresh on each call so layout/metric changes (orientation,
-   * resize) are picked up — the snap helpers themselves are pure functions.
-   */
-  function getPhaseSnapDeps(): PhaseSnapDeps {
-    const drawLayout = deps.getSceneLayout('draw_stage')
-    const metrics = deps.getMotionMetrics('draw_stage')
-    const { centerX, centerY } = deps.getDeckCenter()
-    return {
-      cardElements: deps.cardElements,
-      visible: deps.visible,
-      draws: deps.animState.draws,
-      deckGeometry: { centerX, centerY },
-      drawLayout,
-      cardCount: deps.cardCount.value,
-      cutPileCount: deps.cutPileCount,
-      shuffleSpreadX: metrics.shuffleSpreadX,
-      cutPileSpacing: metrics.cutPileSpacing,
-      cutAxis: metrics.cutAxis,
-      setDrawCardSizes: (layout) => deps.animState.setDrawCardSizes(layout),
-    }
-  }
+  const getPhaseSnapDeps = () => buildPhaseSnapDeps(deps)
 
   function runPipeline(startIndex = 0): void {
     runPipelineCommand(startIndex, {
