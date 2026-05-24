@@ -68,10 +68,17 @@ function buildConcurrentlyArgs(targets) {
     throw new Error('[dev] No watchable targets selected (got empty target set)')
   }
 
+  // Each command is a multi-word string that concurrently must receive as a
+  // SINGLE argv entry. The pipeline spawns `yarn concurrently …` with
+  // `shell:true` (run_process.js), and on Windows shell:true concatenates argv
+  // without escaping (Node DEP0190) — so an unquoted multi-word command gets
+  // split on spaces and concurrently runs each word as its own command (and
+  // mis-parses inner flags like `-p mp-weixin` as its own). Wrapping each
+  // command in double quotes makes cmd.exe hand it over intact as one arg.
   return [
     '--kill-others-on-fail',
     '-n', names.join(','),
-    ...commands,
+    ...commands.map(cmd => `"${cmd}"`),
   ]
 }
 
