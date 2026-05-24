@@ -6,8 +6,7 @@
         "scripts/*.js",
         "scripts/build/*.js",
         "config/eslint.config.mjs",
-        "config/dependency-cruiser.cjs",
-        "config/commitlint.config.cjs"
+        "config/dependency-cruiser.cjs"
       ]
     },
     "app": {
@@ -15,9 +14,7 @@
         "src/App.vue",
         "src/pages/index.vue",
         "test/*.test.ts",
-        "test/e2e/*.spec.ts",
-        "vitest.config.ts",
-        "playwright.config.ts"
+        "test/e2e/*.spec.ts"
       ],
       "project": [
         "src/**/*.{ts,vue}",
@@ -29,8 +26,7 @@
       "entry": [
         "src/server.ts",
         "src/app.ts",
-        "test/*.test.ts",
-        "vitest.config.ts"
+        "test/*.test.ts"
       ],
       "project": [
         "src/**/*.ts",
