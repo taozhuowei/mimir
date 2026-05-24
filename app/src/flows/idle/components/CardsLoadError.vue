@@ -40,6 +40,9 @@ const { cardsLoadError, isCardsLoading, retry } = useCardsLoadError()
   flex-direction: column;
   align-items: center;
   gap: 24rpx;
+  /* Stage is pointer-events: none; this band owns its own interactivity so
+     the retry affordance stays tappable. */
+  pointer-events: auto;
 }
 
 .cards-load-error__text {
