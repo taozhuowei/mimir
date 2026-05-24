@@ -51,9 +51,10 @@ withDefaults(
   pointer-events: none;
 }
 
-.stage > :slotted(*) {
-  pointer-events: auto;
-}
+/* No blanket :slotted reset here. The stage is presentation-only
+   (pointer-events: none); each slot content owns its own interactivity —
+   StageDeck via .deck / .deck--idle, CardsLoadError on its root. A universal
+   :slotted(*) also fails WXSS compilation on mp-weixin (no `*` selector). */
 
 .stage__placeholder {
   font-size: 22rpx;
