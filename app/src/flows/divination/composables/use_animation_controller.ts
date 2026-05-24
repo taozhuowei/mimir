@@ -21,7 +21,8 @@ import { usePhases } from './use_phase_state'
 import { usePlayback } from '../../base/composables/animations/use_playback'
 import { usePresentation } from './use_presentation'
 import { useLifecycle } from './use_lifecycle'
-import { killAnimationTargets } from '../../../core/gsap/tween'
+import { buildLifecycleDeps } from './build_lifecycle_deps'
+import { composeControllerApi } from './compose_controller_api'
 import { calculatePhaseProgress } from './progress_model'
 import { presentProgressHeader, presentFooter } from './progress_presenter'
 import type { OverlayPhase } from '../../base/composables/animations/phase_contracts'
@@ -126,111 +127,58 @@ export function useAnimationController(deps: UseAnimationControllerDeps): UseAni
   const entryAnimationComplete = ref(false)
   const cardsLanded = ref(false)
 
-  // ── Hook: phases + progress model ────────────────────────────────────
-  const { phase, progressModel, transitionPhase } = usePhases()
-
-  // ── Hook: playback controls + timeline orchestrator ───────────────────
-  const {
-    isPaused, playbackRate, orchestrator,
-    setPlaybackRate, pauseAnimations, resumeAnimations,
-    stepForward, stepBackward, seek,
-    clearTimeline, killTimeline,
-  } = usePlayback()
-
-  // ── Hook: layout solver ───────────────────────────────────────────────
+  // ── Hooks: phases / playback / layout / animation-state / presentation ─
+  const phases = usePhases()
+  const playback = usePlayback()
   const layoutApi = useOverlayLayout({
     isWide: deps.isWide,
     spreadKind: 'single_card',
     cutPileCount: CUT_PILE_COUNT,
     deckCount: DECK_COUNT,
   })
-
-  // ── Hook: animation state + style reconciler ──────────────────────────
   const animState = useAnimationState({
     deckCount: DECK_COUNT,
     shuffleHalfCount: SHUFFLE_HALF_COUNT,
     maxCutPiles: MAX_CUT_PILES,
     maxCardCount: MAX_CARD_COUNT,
   })
-  const {
-    bg, stage, header, footer, deckCtn,
-    initials, lefts, rights, piles, draws, inners,
-    leftsVisible, rightsVisible, pilesVisible, drawsVisible,
-    layoutCardWidth, layoutCardHeight,
-    bgStyle, stageStyle, headerStyle, footerStyle, deckCtnStyle,
-    initialsStyle, leftsStyle, rightsStyle, pilesStyle,
-    drawsStyle, drawsSizeStyle, innersStyle,
-    overlayVarsStyle,
-    refreshBg, refreshStage, refreshHeader, refreshFooter, refreshDeckCtn,
-    refreshInitials, refreshDraws,
-    resetShuffleVisualState, resetCutVisualState, resetDrawVisualState, resetInitialDeckState,
-    setDrawCardSizes,
-    getAllTargets,
-  } = animState
-
-  // ── Hook: presentation computeds ─────────────────────────────────────
-  const { progressHeaderPresentation, footerPresentation, phaseSteps, activePhaseIndex } =
-    usePresentation({
-      phase,
-      showResults,
-      getUiAsset: (name) => deps.themeStore.getUiAsset(name),
-    })
-
-  const { getSceneLayout } = layoutApi
+  const presentation = usePresentation({
+    phase: phases.phase,
+    showResults,
+    getUiAsset: (name) => deps.themeStore.getUiAsset(name),
+  })
 
   // ── Hook: lifecycle (entry settle, reset, interrupt, pipeline) ────────
-  const lifecycle = useLifecycle({
-    orchestrator,
-    animState: {
-      bg, stage, header, footer, deckCtn, initials, draws,
-      refreshBg, refreshStage, refreshHeader, refreshFooter, refreshDeckCtn,
-      refreshInitials, refreshDraws,
-      resetInitialDeckState, resetShuffleVisualState, resetCutVisualState, resetDrawVisualState,
-      setDrawCardSizes,
-      getAllTargets,
-    },
+  const lifecycle = useLifecycle(buildLifecycleDeps({
+    orchestrator: playback.orchestrator,
+    animState,
+    layoutApi,
     showResults,
     cardsLanded,
     entryAnimationComplete,
-    phase,
-    progressModel,
+    phase: phases.phase,
+    progressModel: phases.progressModel,
     cardCount: deps.cardCount,
-    getDeckCenter: () => layoutApi.getDeckCenter(),
-    getOverlayLayouts: () => layoutApi.getOverlayLayouts(),
-    getMotionMetrics: (s) => layoutApi.getMotionMetrics(s),
-    getSceneLayout: (s) => layoutApi.getSceneLayout(s),
-    cardElements: {
-      initials, lefts, rights, piles,
-      draws, inners, stage, deckCtn,
-      bg, header, footer,
-    },
-    visible: { lefts: leftsVisible, rights: rightsVisible, piles: pilesVisible, draws: drawsVisible },
+    transitionPhase: phases.transitionPhase,
+    callbacks: deps.callbacks,
+    resumeAnimations: playback.resumeAnimations,
     deckCount: DECK_COUNT,
     cutPileCount: CUT_PILE_COUNT,
     autoRevealDelayMs: AUTO_REVEAL_DELAY_MS,
-    transitionPhase,
-    callbacks: {
-      onPhaseChange: deps.callbacks.onPhaseChange,
-      onPipelineComplete: deps.callbacks.onPipelineComplete,
-      onDrawingStart: deps.callbacks.onDrawingStart,
-      onResetAnswer: deps.callbacks.onResetAnswer,
-      onDestroyAnswer: deps.callbacks.onDestroyAnswer,
-    },
-    resumeAnimations,
-  })
+  }))
 
-  /* ── Layout helpers ───────────────────────────────────────────────── */
+  /* ── Local layout helpers ─────────────────────────────────────────── */
 
   function updateLayout() {
-    const layout = getSceneLayout('draw_stage')
-    setDrawCardSizes(layout)
-    gsap.killTweensOf(draws)
-    draws.forEach((draw, index) => {
+    const layout = layoutApi.getSceneLayout('draw_stage')
+    animState.setDrawCardSizes(layout)
+    gsap.killTweensOf(animState.draws)
+    animState.draws.forEach((draw, index) => {
       if (index >= layout.cards.length) return
       draw.x = layout.cards[index].x
       draw.y = layout.cards[index].y
     })
-    refreshDraws()
+    animState.refreshDraws()
   }
 
   function openAnswer() {
@@ -238,32 +186,23 @@ export function useAnimationController(deps: UseAnimationControllerDeps): UseAni
     showResults.value = true
   }
 
-  /* ── Return ───────────────────────────────────────────────────────── */
+  /* ── Compose public API ───────────────────────────────────────────── */
 
-  return {
-    phase, showResults, entryAnimationComplete,
-    isPaused, playbackRate, cardsLanded,
-    bgStyle, stageStyle, headerStyle, footerStyle, deckCtnStyle,
-    initialsStyle, leftsStyle, rightsStyle, pilesStyle,
-    drawsStyle, drawsSizeStyle, innersStyle,
-    leftsVisible, rightsVisible, pilesVisible, drawsVisible,
-    overlayVarsStyle, layoutCardWidth, layoutCardHeight,
-    progressHeaderPresentation, footerPresentation, phaseSteps, activePhaseIndex,
-    getSceneLayout,
-    deckCount: DECK_COUNT, shuffleHalfCount: SHUFFLE_HALF_COUNT,
-    cutPileCount: CUT_PILE_COUNT, cardsPerPile: CARDS_PER_PILE,
-    draws, refreshDraws,
-    setPlaybackRate, pauseAnimations, resumeAnimations,
-    stepForward, stepBackward, seek,
-    replayFromPhase: lifecycle.replayFromPhase,
-    skipToAnswer: lifecycle.skipToAnswer,
-    resetOverlayScene: lifecycle.resetOverlayScene,
-    start: lifecycle.start,
-    updateLayout, openAnswer,
-    setDrawCardSizes,
-    clearTimeline,
-    killTimeline,
-    killAnimationTargets: () => killAnimationTargets(getAllTargets()),
-    resetProgressModel: () => progressModel.reset(),
-  }
+  return composeControllerApi({
+    animState,
+    playback,
+    presentation,
+    phases,
+    lifecycle,
+    getSceneLayout: layoutApi.getSceneLayout,
+    refs: { showResults, entryAnimationComplete, cardsLanded },
+    constants: {
+      deckCount: DECK_COUNT,
+      shuffleHalfCount: SHUFFLE_HALF_COUNT,
+      cutPileCount: CUT_PILE_COUNT,
+      cardsPerPile: CARDS_PER_PILE,
+    },
+    updateLayout,
+    openAnswer,
+  })
 }
