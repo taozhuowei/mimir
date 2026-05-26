@@ -13,10 +13,10 @@
 const { spawn } = require('child_process')
 const path = require('path')
 
-// scripts/lib/ -> scripts/ -> repo root. Identical value to the previous
-// `path.resolve(__dirname, '..', '..')` in scripts/build/{dev,prod}.js
-// (scripts/build/ -> scripts/ -> repo root).
-const REPO_ROOT = path.resolve(__dirname, '..', '..')
+// config/scripts/lib/ -> config/scripts/ -> config/ -> repo root. Identical
+// value to the previous `path.resolve(__dirname, '..', '..')` in
+// config/scripts/build/{dev,prod}.js (build/ -> scripts/ -> config/ -> root).
+const REPO_ROOT = path.resolve(__dirname, '..', '..', '..')
 const VITE_BIN = 'node_modules/@dcloudio/vite-plugin-uni/bin/uni.js'
 
 /**

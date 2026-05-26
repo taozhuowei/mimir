@@ -33,7 +33,7 @@ jobs:
         # Direct invocation — `yarn quality` was removed when the public
         # script surface collapsed to dev/prod. CI calls the gate script
         # the same way pre-push does.
-        run: node scripts/quality_gate.js full
+        run: node config/scripts/quality_gate.js full
 
   lint:
     runs-on: ubuntu-latest
@@ -61,7 +61,7 @@ jobs:
         # hooks only scan staged content; CI catches anything that was
         # force-pushed, amended, or merged in from a fork. `gitleaks git`
         # is the v8.30+ replacement for the deprecated `detect` command.
-        run: node scripts/gitleaks_run.js git --no-banner --redact --verbose --config=config/gitleaks.toml
+        run: node config/scripts/gitleaks_run.js git --no-banner --redact --verbose --config=config/gitleaks.toml
 
   e2e:
     runs-on: ubuntu-latest
@@ -81,7 +81,7 @@ jobs:
         run: yarn install --immutable
 
       - name: Install Playwright browser
-        # Must run BEFORE build, because scripts/build/prod.js' final step is
+        # Must run BEFORE build, because config/scripts/build/prod.js' final step is
         # a Playwright smoke test against the freshly-built bundle. If the
         # browser binary is missing at that point, build crashes before the
         # explicit "Run E2E tests" step is even reached.
@@ -94,7 +94,7 @@ jobs:
         # Skip the quality gate here — the `verify` job already ran it on
         # the same commit. --target h5,server keeps the e2e job lean (no
         # mp-weixin bundle that we don't actually exercise).
-        run: node scripts/build/index.js --prod --target h5,server --skip-quality
+        run: node config/scripts/build/index.js --prod --target h5,server --skip-quality
 
       - name: Run E2E tests
         # Direct playwright invocation; we don't expose `yarn e2e` as

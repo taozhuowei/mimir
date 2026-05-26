@@ -1,6 +1,6 @@
 # config
 
-根级工具配置集中目录。所有 lint、架构、重复、死代码、提交规范与密钥扫描的配置在此，由 `scripts/quality_gate.js` 与 git 钩子按路径显式引用，避免散落各包根目录。
+根级工具配置集中目录。所有 lint、架构、重复、死代码、提交规范与密钥扫描的配置在此，由 `config/scripts/quality_gate.js` 与 git 钩子按路径显式引用，避免散落各包根目录。构建编排与质量门禁的实现脚本同处 `config/scripts/`（详见 `config/scripts/README.md`）。
 
 ## 目录架构
 
@@ -11,7 +11,8 @@ config/
 ├── jscpd.json               # 重复代码检测阈值(duplicate-code)
 ├── knip.json                # 死代码 / 未用依赖检测(dead-code)
 ├── commitlint.config.cjs    # Conventional Commits 规范(commit-msg 钩子)
-└── gitleaks.toml            # 密钥扫描规则
+├── gitleaks.toml            # 密钥扫描规则
+└── scripts/                 # 构建编排 + 质量门禁实现脚本           → config/scripts/README.md
 ```
 
 ## 技术栈

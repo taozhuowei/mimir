@@ -3,7 +3,7 @@
  *
  * Why a dedicated module:
  *   The repository's quality scanner forbids the global insecure RNG
- *   outside tests (see scripts/quality_scan.js, scanMathRandom). The
+ *   outside tests (see config/scripts/quality_scan.js, scanMathRandom). The
  *   shuffle and orientation steps inside the divination service need a
  *   real random source, so we wrap node:crypto here. Keeping the wrapper
  *   tiny means business code reads as `randomBelow(n)` / `randomBool()`

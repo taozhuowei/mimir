@@ -19,13 +19,13 @@
  *  15. Filename Case: snake_case for .ts/.js, PascalCase for .vue
  *  16. Pages Route Integrity: every path in pages.json must have a matching .vue file
  *
- * Baseline: scripts/quality_baseline.json records known issues.
+ * Baseline: config/scripts/quality_baseline.json records known issues.
  *   - fileSize entries are ratchet caps: file may stay at its recorded size,
  *     but never grow beyond it. New violators fail at the global threshold.
  *   - functionSize / complexity entries are flat exemptions keyed by
  *     `path::funcName` (line numbers excluded so refactors don't churn).
  *
- * Usage: node scripts/quality_scan.js
+ * Usage: node config/scripts/quality_scan.js
  * Exit code: 0 = clean, 1 = violations found
  */
 
@@ -35,7 +35,7 @@ const ts = require('typescript')
 
 // ─── Config ──────────────────────────────────────────────────────────────
 
-const ROOT = path.resolve(__dirname, '..')
+const ROOT = path.resolve(__dirname, '..', '..')
 const APP_SRC = path.join(ROOT, 'app/frontend/src')
 const STYLES_DIR = path.join(APP_SRC, 'core', 'styles')
 
@@ -55,7 +55,7 @@ function report(file, line, severity, scanner, message) {
 
 // ─── Baseline ────────────────────────────────────────────────────────────
 
-const BASELINE_PATH = path.join(ROOT, 'scripts', 'quality_baseline.json')
+const BASELINE_PATH = path.join(ROOT, 'config', 'scripts', 'quality_baseline.json')
 
 function loadBaseline() {
   try {

@@ -62,14 +62,14 @@ async function run_smoke() {
 }
 
 async function run_quality() {
-  return run('quality gate (full)', 'node', ['scripts/quality_gate.js', 'full'])
+  return run('quality gate (full)', 'node', ['config/scripts/quality_gate.js', 'full'])
 }
 
 async function run_perf_baseline() {
   // Bundle-size regression check. Compares dist/build/h5/ against the
   // committed perf_baseline.json. Lives here (not in quality_gate.js) because
   // it needs the freshly-built h5 artifacts on disk.
-  return run('perf: baseline (bundle size)', 'node', ['scripts/perf_baseline_gate.js'])
+  return run('perf: baseline (bundle size)', 'node', ['config/scripts/perf_baseline_gate.js'])
 }
 
 module.exports = async function prodPipeline({ targets, skipQuality }) {

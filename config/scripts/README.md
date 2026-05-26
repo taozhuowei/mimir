@@ -1,11 +1,11 @@
 # scripts
 
-构建编排与质量门禁的实现层。**不暴露为 yarn script**——`scripts/build/index.js` 与 `scripts/quality_gate.js` 是单一真相源，新增工具进此目录或 git 钩子，不新增 yarn script（否则门禁内容漂移）。`build/index.js` 是唯一构建入口，按 `--dev|--prod` × `--target h5,mp,server` × `--skip-quality` 分发到 `dev.js` / `prod.js`。
+构建编排与质量门禁的实现层。**不暴露为 yarn script**——`config/scripts/build/index.js` 与 `config/scripts/quality_gate.js` 是单一真相源，新增工具进此目录或 git 钩子，不新增 yarn script（否则门禁内容漂移）。`build/index.js` 是唯一构建入口，按 `--dev|--prod` × `--target h5,mp,server` × `--skip-quality` 分发到 `dev.js` / `prod.js`。
 
 ## 目录架构
 
 ```
-scripts/
+config/scripts/
 ├── build/
 │   ├── index.js          # 唯一构建入口(解析 flag 并分发)
 │   ├── dev.js            # dev 三 watcher 编排
@@ -21,11 +21,11 @@ scripts/
 └── dev_env.js            # 写 .env.development.local(注入 LAN IP)
 ```
 
-命令用法见 [CLAUDE.md](../CLAUDE.md) 的 “Commands”。
+命令用法见 [CLAUDE.md](../../CLAUDE.md) 的 “Commands”。
 
 ## 技术栈
 
-- **Node.js** 原生脚本（无构建步骤，`node scripts/<x>.js` 直跑）。
+- **Node.js** 原生脚本（无构建步骤，`node config/scripts/<x>.js` 直跑）。
 - **concurrently**：dev 下并行 h5 / mp / server 三 watcher。
 - `vite` / `vite-plugin-uni` / `tsc`：被编排的构建器（由 `build/` 调用，非本目录依赖）。
 - 基线文件（`*_baseline.json`）：质量与性能回归对照。

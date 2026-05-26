@@ -3,8 +3,8 @@
   "workspaces": {
     ".": {
       "entry": [
-        "scripts/*.js",
-        "scripts/build/*.js",
+        "config/scripts/*.js",
+        "config/scripts/build/*.js",
         "config/eslint.config.mjs",
         "config/dependency-cruiser.cjs"
       ]

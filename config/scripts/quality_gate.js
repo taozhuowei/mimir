@@ -7,17 +7,17 @@ const mode = process.argv[2] || 'full'
 // prod). The previous fan-out scripts (lint, quality:lint, quality:type-check,
 // quality:audit, arch:check, quality:lint:fix, build, build:dev, test,
 // quality, ship) were removed; their commands now live in this file (or
-// scripts/build/) as the single source of truth.
+// config/scripts/build/) as the single source of truth.
 const stepsByMode = {
   // The full gate is now pure code-checks (~30s):
   //   lint, type-check, unit tests, audit, arch + dead/duplicate code.
   // build (h5/mp/server) and the SPA-boot smoke run live in
-  // scripts/build/prod.js — they are part of the build pipeline, not
+  // config/scripts/build/prod.js — they are part of the build pipeline, not
   // the quality contract. CI runs both: `verify` job calls
-  // `node scripts/quality_gate.js full` and `e2e` job calls the build
+  // `node config/scripts/quality_gate.js full` and `e2e` job calls the build
   // orchestrator with --skip-quality.
   full: [
-    { label: 'quality-scan', command: 'node', args: ['scripts/quality_scan.js'] },
+    { label: 'quality-scan', command: 'node', args: ['config/scripts/quality_scan.js'] },
     { label: 'lint', command: 'yarn', args: ['eslint', '--config', 'config/eslint.config.mjs', 'app/frontend/src/', 'app/frontend/test/', 'app/server/src/', 'app/server/test/'] },
     // type-check is two compilers: vue-tsc for the Vue app, tsc for the
     // server. Run sequentially as separate steps so failures point at the
@@ -31,7 +31,7 @@ const stepsByMode = {
     // separate steps make a failure point at the right workspace.
     { label: 'test:app', command: 'yarn', args: ['vitest', 'run', '--config', 'app/frontend/vitest.config.ts', '--dir', 'app/frontend/test'] },
     { label: 'test:server', command: 'yarn', args: ['vitest', 'run', '--config', 'app/server/vitest.config.ts', '--dir', 'app/server/test'] },
-    // perf-baseline lives in the build pipeline (scripts/build/prod.js), not
+    // perf-baseline lives in the build pipeline (config/scripts/build/prod.js), not
     // here — it needs `dist/build/h5/` populated to produce a real measurement.
     // Running it from quality_gate / pre-push always saw 0 bytes because the
     // build had not yet executed at that point.
@@ -66,7 +66,7 @@ const stepsByMode = {
     {
       label: 'duplicate-code',
       command: 'yarn',
-      args: ['jscpd', 'app/frontend/src', 'app/server/src', 'scripts', '--config', 'config/jscpd.json', '--silent'],
+      args: ['jscpd', 'app/frontend/src', 'app/server/src', 'config/scripts', '--config', 'config/jscpd.json', '--silent'],
       quietOnSuccess: true,
     },
   ],
@@ -88,9 +88,9 @@ const stepsByMode = {
     {
       label: 'gitleaks',
       command: 'node',
-      args: ['scripts/gitleaks_run.js', 'git', '--staged', '--no-banner', '--redact', '--config=config/gitleaks.toml'],
+      args: ['config/scripts/gitleaks_run.js', 'git', '--staged', '--no-banner', '--redact', '--config=config/gitleaks.toml'],
     },
-    { label: 'quality-scan', command: 'node', args: ['scripts/quality_scan.js'] },
+    { label: 'quality-scan', command: 'node', args: ['config/scripts/quality_scan.js'] },
     {
       label: 'lint:fix',
       command: 'yarn',

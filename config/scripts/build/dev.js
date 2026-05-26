@@ -105,14 +105,14 @@ module.exports = async function devPipeline({ targets, skipQuality }) {
   // port occupiers, or spinning up watchers — there's no point doing any of
   // that work if the quality bar isn't met.
   if (!skipQuality) {
-    await run('quality gate (full)', 'node', ['scripts/quality_gate.js', 'full'])
+    await run('quality gate (full)', 'node', ['config/scripts/quality_gate.js', 'full'])
   } else {
     console.log('[dev] Skipping quality gate (--skip-quality set)')
   }
 
   // Step 2: env setup — generates .env.development.local with LAN IP for
   // mini-program real-device debugging. Cheap, always run.
-  await run('dev_env: write .env.development.local', 'node', ['scripts/dev_env.js'])
+  await run('dev_env: write .env.development.local', 'node', ['config/scripts/dev_env.js'])
 
   // Step 3: free vite (:4123) and express (:4124) right before binding,
   // so a hung watcher from a previous session can't survive into this one

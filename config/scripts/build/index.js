@@ -16,7 +16,7 @@
  *   --skip-quality          skip the quality gate prefix (CI uses this
  *                           because the verify job already ran quality)
  *
- * Run via: `node scripts/build/index.js --prod --target h5,server`
+ * Run via: `node config/scripts/build/index.js --prod --target h5,server`
  */
 
 'use strict'
@@ -66,7 +66,7 @@ function expandTargets(value) {
 
 function fail(msg) {
   console.error(`[build] ${msg}`)
-  console.error('[build] Usage: node scripts/build/index.js --prod|--dev [--target h5,mp,server,all] [--skip-quality]')
+  console.error('[build] Usage: node config/scripts/build/index.js --prod|--dev [--target h5,mp,server,all] [--skip-quality]')
   process.exit(2)
 }
 
