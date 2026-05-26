@@ -13,8 +13,7 @@
       "entry": [
         "src/App.vue",
         "src/pages/index.vue",
-        "test/*.test.ts",
-        "test/e2e/*.spec.ts"
+        "test/*.test.ts"
       ],
       "project": [
         "src/**/*.{ts,vue}",

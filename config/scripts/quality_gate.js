@@ -11,11 +11,10 @@ const mode = process.argv[2] || 'full'
 const stepsByMode = {
   // The full gate is now pure code-checks (~30s):
   //   lint, type-check, unit tests, audit, arch + dead/duplicate code.
-  // build (h5/mp/server) and the SPA-boot smoke run live in
+  // build (h5/mp/server) + perf baseline live in
   // config/scripts/build/prod.js — they are part of the build pipeline, not
-  // the quality contract. CI runs both: `verify` job calls
-  // `node config/scripts/quality_gate.js full` and `e2e` job calls the build
-  // orchestrator with --skip-quality.
+  // the quality contract. CI's `verify` job calls
+  // `node config/scripts/quality_gate.js full`.
   full: [
     { label: 'quality-scan', command: 'node', args: ['config/scripts/quality_scan.js'] },
     { label: 'lint', command: 'yarn', args: ['eslint', '--config', 'config/eslint.config.mjs', 'app/frontend/src/', 'app/frontend/test/', 'app/server/src/', 'app/server/test/'] },

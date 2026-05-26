@@ -35,7 +35,7 @@ scales-tarot/
 │   └── server/           # Express 4 + zod 后端(:4124)                       → app/server/README.md
 ├── config/               # 根级工具配置 + 构建编排/质量门禁脚本(scripts/)       → config/README.md
 ├── docs/                 # 产品需求模块文档(索引见本 README「产品需求」节)
-├── .github/              # CI(verify + e2e) / dependabot / PR 模板
+├── .github/              # CI(verify + lint) / dependabot / PR 模板
 ├── dist/                 # 构建产物(gitignored)
 ├── CLAUDE.md             # Claude Code 工程导航与硬约束
 ├── README.md             # 本文件
@@ -46,7 +46,7 @@ scales-tarot/
 ## 技术栈
 
 - **单体仓库**：yarn workspaces（`app/frontend` + `app/server`），Node 22。
-- **前端**：uni-app + Vue 3.4 + Pinia + GSAP，vite 构建，vitest / playwright 测试。
+- **前端**：uni-app + Vue 3.4 + Pinia + GSAP，vite 构建，vitest 测试。
 - **后端**：Express 4 + zod，pino 日志，vitest + supertest 测试。
 - **工程**：单一构建入口 + 代码门禁（lint / 类型 / 测试 / 架构 / 死代码 / 重复），simple-git-hooks + CI 双重兜底。
 
