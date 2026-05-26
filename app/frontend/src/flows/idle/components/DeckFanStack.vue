@@ -1,7 +1,7 @@
 <template>
   <!--
     DeckFanStack — idle sub-component of the unified Deck. Renders the
-    12-card fan-loop stack (docs/prd/animation.md（动画分帧）) and the bottom touch-hint band.
+    12-card fan-loop stack (docs/animation.md（动画分帧）) and the bottom touch-hint band.
     Both roots are gated on `visible` (driven by phase === 'idle' in the
     parent) so the divination rig under it can render cleanly during
     shuffle / cut / draw / reveal.
@@ -59,7 +59,7 @@
 defineProps<{
   /** Phase gate — fan + hint render only when true (idle phase). */
   visible: boolean
-  /** Number of cards in the fan stack (docs/prd/animation.md（动画分帧）, fixed at 12). */
+  /** Number of cards in the fan stack (docs/animation.md（动画分帧）, fixed at 12). */
   deckSize: number
   /** Card back image (theme-driven). */
   cardBack: string

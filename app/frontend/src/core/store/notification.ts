@@ -2,7 +2,7 @@
  * Name: notification store
  * Purpose: hold the queue of cross-view notifications and expose `push` /
  *          `dismiss` actions for the global notification host.
- * Reason: docs/prd/glossary.md（容器 #9） defines `notification` as a runtime cross-view overlay
+ * Reason: docs/glossary.md（容器 #9） defines `notification` as a runtime cross-view overlay
  *         container that surfaces all non-blocking errors at the top of the
  *         screen. The actual rendering lives in `NotificationHost.vue`; this
  *         store is the single source of truth for the queue so any caller —

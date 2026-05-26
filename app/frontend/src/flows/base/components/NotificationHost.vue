@@ -1,7 +1,7 @@
 <template>
   <!--
     NotificationHost — phase-2.1 placeholder.
-    Renders the cross-view notification stack defined in docs/prd/glossary.md（容器 #9）. Real
+    Renders the cross-view notification stack defined in docs/glossary.md（容器 #9）. Real
     styling, lifecycle, and dismiss behaviour land in 2.2; for now the host
     just enumerates the queue so the wiring is visible.
   -->
@@ -37,10 +37,10 @@
  * Name: NotificationHost
  * Purpose: subscribe to the notification store and render the queue at the
  *          surface root, above all main-surface views.
- * Reason: docs/prd/glossary.md（容器 #9） mandates a cross-view error overlay. Mounting this
+ * Reason: docs/glossary.md（容器 #9） mandates a cross-view error overlay. Mounting this
  *         host once inside MainSurface keeps notifications visible across
  *         every main-surface view; the fallback view has none by design
- *         (docs/prd/animation.md（动效规范 #4）).
+ *         (docs/animation.md（动效规范 #4）).
  * Data flow: producers call `useNotificationStore().push()`; this host
  *           reads `notifications` reactively and calls `dismiss(id)` from
  *           the placeholder close affordance.

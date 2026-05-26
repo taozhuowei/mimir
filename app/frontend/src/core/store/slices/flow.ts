@@ -1,7 +1,7 @@
 /**
  * Name: core/store/slices/flow
  * Purpose: state-slice factory managing application-level divination flow
- *          (see docs/prd/state.md 应用级流程). DDD-aligned: the value type
+ *          (see docs/state.md 应用级流程). DDD-aligned: the value type
  *          is `Flow` and represents the application's flow state; divination
  *          internal animation phases (shuffling / cutting / drawing /
  *          revealing) are a separate concept tracked by the overlay
@@ -42,7 +42,7 @@ export function createFlowState(answer: ReturnType<typeof createAnswerState>) {
    * Promote the application flow to `answer` once the reading payload has
    * settled. Answer is the terminal flow state — the inline answer zone
    * and the action area mount together; there is no separate decision
-   * stage anymore (see docs/prd/state.md).
+   * stage anymore (see docs/state.md).
    */
   function enterAnswer() {
     flow.value = 'answer'

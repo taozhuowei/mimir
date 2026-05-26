@@ -1,6 +1,6 @@
 <template>
   <!--
-    Boot shell — the app's single uni-app route (docs/prd/glossary.md（路由）).
+    Boot shell — the app's single uni-app route (docs/glossary.md（路由）).
     Bootstrap outcome (App.vue → boot store) decides which mutually-
     exclusive surface mounts: a critical-failure → the FallbackView; pending
     or success → the MainSurface. There is no second route + reLaunch — the

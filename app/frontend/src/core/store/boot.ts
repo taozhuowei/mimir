@@ -4,7 +4,7 @@
  *          (pending → ok | failed) so the route root can pick between the
  *          main divination surface and the fallback view without a second
  *          uni-app route + reLaunch round-trip.
- * Reason: per docs/prd/glossary.md（路由）, the fallback experience is
+ * Reason: per docs/glossary.md（路由）, the fallback experience is
  *         mutually exclusive with the main surface — that exclusion is a
  *         view-level switch, not a separate route. App.vue's bootstrap()
  *         writes the outcome here once both critical loads settle; the
