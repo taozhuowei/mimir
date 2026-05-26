@@ -73,9 +73,9 @@ async function bootstrap(): Promise<void> {
  * gets a chance to honor the H5 guard, which then fails resolving
  * `/static/themes/...` (the rewriter prefixes it to `@/static/...`).
  *
- * The actual WOFF2 files live at `server/public/static/themes/...`
+ * The actual WOFF2 files live at `app/server/public/static/themes/...`
  * and are served by the backend at the origin-relative path; vite's
- * `publicDir` (set to `../server/public` in app/vite.config.ts) makes
+ * `publicDir` (set to `../server/public` in app/frontend/vite.config.ts) makes
  * them addressable as `/static/...` on H5 regardless of host.
  *
  * Mini-program font injection is handled separately by the theme

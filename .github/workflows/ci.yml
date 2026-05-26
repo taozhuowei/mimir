@@ -85,7 +85,7 @@ jobs:
         # a Playwright smoke test against the freshly-built bundle. If the
         # browser binary is missing at that point, build crashes before the
         # explicit "Run E2E tests" step is even reached.
-        # Mobile device emulation (iPhone 13 in app/playwright.config.ts)
+        # Mobile device emulation (iPhone 13 in app/frontend/playwright.config.ts)
         # uses chrome-headless-shell since Playwright 1.49+, which is a
         # separate binary from chromium. Install both explicitly.
         run: yarn playwright install --with-deps chromium chromium-headless-shell
@@ -99,7 +99,7 @@ jobs:
       - name: Run E2E tests
         # Direct playwright invocation; we don't expose `yarn e2e` as
         # a public script anymore (the only legitimate caller is CI).
-        run: yarn playwright test --config=app/playwright.config.ts
+        run: yarn playwright test --config=app/frontend/playwright.config.ts
 
       - name: Upload Playwright report
         if: ${{ !cancelled() }}

@@ -17,7 +17,7 @@ module.exports = {
       name: 'workspace-internal-deps',
       severity: 'ignore',
       from: {
-        path: '^(app|server|test)'
+        path: '^(app/frontend|app/server|test)'
       },
       to: {
         dependencyTypes: [
@@ -55,7 +55,7 @@ module.exports = {
           '(^|/)tsconfig[.]json$',                                            // TypeScript config
           '(^|/)(?:babel|webpack)[.]config[.](?:js|cjs|mjs|ts|cts|mts|json)$', // other configs
           '(^|/)types[.]ts$',                                                  // type-only barrels
-          '(^|/)(?:app|server|test)/src/.+/types[.]ts$',                        // domain type files
+          '(^|/)(?:app/frontend|app/server|test)/src/.+/types[.]ts$',                        // domain type files
           '(^|/)viewport_metrics[.]ts$',                                        // legacy utility kept for future use
         ]
       },
@@ -194,7 +194,7 @@ module.exports = {
         'section of your package.json. If this module is development only - add it to the ' +
         'from.pathNot re of the not-to-dev-dep rule in the dependency-cruiser configuration',
       from: {
-        path: '^(app)',
+        path: '^(app/frontend)',
         pathNot: '[.](?:spec|test)[.](?:js|mjs|cjs|jsx|ts|mts|cts|tsx)$'
       },
       to: {
@@ -258,8 +258,8 @@ module.exports = {
         "out. (to-path covers the unified flows/ tree so core can never " +
         "reach back into UI or orchestration.)",
       severity: 'error',
-      from: { path: '^app/src/core/' },
-      to: { path: '^app/src/(flows|pages)/' },
+      from: { path: '^app/frontend/src/core/' },
+      to: { path: '^app/frontend/src/(flows|pages)/' },
     },
     {
       name: 'animation-not-to-answer',
@@ -270,8 +270,8 @@ module.exports = {
         "layered refactor: gsap lib + shared animation base + flow " +
         "orchestration ⊥ core/utils/answer).",
       severity: 'error',
-      from: { path: '^app/src/(core/gsap|flows/base/composables/animations|flows/(divination|idle|fallback)/composables)/' },
-      to: { path: '^app/src/core/utils/answer/' },
+      from: { path: '^app/frontend/src/(core/gsap|flows/base/composables/animations|flows/(divination|idle|fallback)/composables)/' },
+      to: { path: '^app/frontend/src/core/utils/answer/' },
     },
     {
       name: 'store-not-to-ui',
@@ -281,8 +281,8 @@ module.exports = {
         "flows/<domain>/components/ (the unified UI tree after the " +
         "components+composables→flows refactor).",
       severity: 'error',
-      from: { path: '^app/src/core/store/' },
-      to: { path: '^app/src/flows/[^/]+/components/' },
+      from: { path: '^app/frontend/src/core/store/' },
+      to: { path: '^app/frontend/src/flows/[^/]+/components/' },
     },
     {
       name: 'tools-is-dev-sink',
@@ -291,8 +291,8 @@ module.exports = {
         "it in (conditionally). Production layers (core/, state/, shared/) " +
         "must never depend on tools/.",
       severity: 'error',
-      from: { path: '^app/src/(core|state|shared)/' },
-      to: { path: '^app/src/tools/' },
+      from: { path: '^app/frontend/src/(core|state|shared)/' },
+      to: { path: '^app/frontend/src/tools/' },
     },
     {
       name: 'app-not-to-server',
@@ -300,8 +300,8 @@ module.exports = {
         "Frontend app/src/ must not import server-side modules directly. " +
         "Cross the boundary through the API layer (core/api/) only.",
       severity: 'error',
-      from: { path: '^app/src/' },
-      to: { path: '^server/src/' },
+      from: { path: '^app/frontend/src/' },
+      to: { path: '^app/server/src/' },
     }
   ],
   options: {

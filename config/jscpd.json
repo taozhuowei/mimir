@@ -11,8 +11,8 @@
     "**/*.spec.ts",
     "**/test/**",
     "**/static/**",
-    "app/src/**/*.json",
-    "app/src/**/*.d.ts"
+    "app/frontend/src/**/*.json",
+    "app/frontend/src/**/*.d.ts"
   ],
   "format": ["typescript", "vue", "javascript"],
   "absolute": false,

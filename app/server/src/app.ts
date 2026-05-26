@@ -228,7 +228,7 @@ app.use('/api', (_req, res) => {
 // 6. H5 SPA
 //
 // Prod: nginx serves dist/build/h5 directly in real deployments; this
-// express static + catch-all is the safety net so `node server/dist/server.js`
+// express static + catch-all is the safety net so `node app/server/dist/server.js`
 // still boots a fully-working SPA during smoke tests and ad-hoc prod runs.
 //
 // Dev: vite's dev server on :4123 owns the SPA (HMR, on-demand compile).
@@ -240,10 +240,10 @@ app.use('/api', (_req, res) => {
 // ---------------------------------------------------------------------------
 
 if (config.isProd) {
-  const buildH5Dist = path.join(__dirname, '../../dist/build/h5')
+  const buildH5Dist = path.join(__dirname, '../../../dist/build/h5')
 
   // Loud failure if the build artefact is missing — this catches the case
-  // where someone runs `node server/dist/server.js` without `yarn prod`
+  // where someone runs `node app/server/dist/server.js` without `yarn prod`
   // first. Better to crash at boot than serve a 404 for every page request.
   if (!fs.existsSync(path.join(buildH5Dist, 'index.html'))) {
     throw new Error(

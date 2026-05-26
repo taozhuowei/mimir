@@ -36,7 +36,7 @@ const ts = require('typescript')
 // ─── Config ──────────────────────────────────────────────────────────────
 
 const ROOT = path.resolve(__dirname, '..')
-const APP_SRC = path.join(ROOT, 'app/src')
+const APP_SRC = path.join(ROOT, 'app/frontend/src')
 const STYLES_DIR = path.join(APP_SRC, 'core', 'styles')
 
 const SEVERITY_ERROR = 2
@@ -484,7 +484,7 @@ function scanTodoFixme(file, content) {
 // ─── 11. File Size Scanner ───────────────────────────────────────────────
 
 function scanFileSize() {
-  const files = findFiles(APP_SRC, ['.ts', '.vue']).concat(findFiles(path.join(ROOT, 'server/src'), ['.ts']))
+  const files = findFiles(APP_SRC, ['.ts', '.vue']).concat(findFiles(path.join(ROOT, 'app/server/src'), ['.ts']))
   for (const file of files) {
     if (file.endsWith('.d.ts')) continue
     const lines = fs.readFileSync(file, 'utf-8').split('\n').length
@@ -706,7 +706,7 @@ function scanFilenameCase() {
   const PASCAL_VUE = /^[A-Z][A-Za-z0-9]*\.vue$/
 
   const targetFiles = findFiles(APP_SRC, ['.ts', '.vue', '.js'])
-    .concat(findFiles(path.join(ROOT, 'server/src'), ['.ts', '.js']))
+    .concat(findFiles(path.join(ROOT, 'app/server/src'), ['.ts', '.js']))
 
   for (const file of targetFiles) {
     const base = path.basename(file)
@@ -732,7 +732,7 @@ function scanFilenameCase() {
 
 /**
  * Reads pages.json and verifies that every route path has a matching .vue file
- * under app/src/. Catches the class of bug where a page component is deleted
+ * under app/frontend/src/. Catches the class of bug where a page component is deleted
  * but its route entry is left behind — Vite only reports this at runtime.
  */
 function scanPagesRouteIntegrity() {
@@ -763,7 +763,7 @@ function scanPagesRouteIntegrity() {
 
 console.log('[quality-scan] Starting static analysis...\n')
 
-const tsFiles = findFiles(APP_SRC, ['.ts']).concat(findFiles(path.join(ROOT, 'server/src'), ['.ts']))
+const tsFiles = findFiles(APP_SRC, ['.ts']).concat(findFiles(path.join(ROOT, 'app/server/src'), ['.ts']))
 const vueFiles = findFiles(APP_SRC, ['.vue'])
 
 for (const file of tsFiles) {

@@ -3,9 +3,9 @@ import { defineConfig, devices } from '@playwright/test'
 /**
  * Playwright config for end-to-end tests.
  *
- * - Tests live in app/test/e2e/*.spec.ts and run against the real server
+ * - Tests live in app/frontend/test/e2e/*.spec.ts and run against the real server
  *   (Express + bundled H5 SPA at http://localhost:4124).
- * - The webServer block boots `node server/dist/server.js` directly with
+ * - The webServer block boots `node app/server/dist/server.js` directly with
  *   NODE_ENV=production; locally it is reused if you already have one
  *   running, in CI it is always started fresh so the build under test is
  *   exercised. We invoke node directly (no `yarn start:prod`) to avoid
@@ -18,15 +18,15 @@ import { defineConfig, devices } from '@playwright/test'
 export default defineConfig({
   testDir: './test/e2e',
   // Artifacts live under dist/ (the unified build/artifact root). Paths are
-  // resolved relative to this config file (in app/), so '../dist/...' points
+  // resolved relative to this config file (in app/frontend/), so '../../dist/...' points
   // at the repo-root dist/. Phase 10b unified these from the prior
   // playwright-report/ + test-results/ scattered root layout.
-  outputDir: '../dist/test-results',
+  outputDir: '../../dist/test-results',
   fullyParallel: false, // sequential — the divination flow mutates server state
   workers: 1,
   retries: process.env.CI ? 1 : 0,
   reporter: process.env.CI
-    ? [['list'], ['html', { open: 'never', outputFolder: '../dist/playwright-report' }]]
+    ? [['list'], ['html', { open: 'never', outputFolder: '../../dist/playwright-report' }]]
     : 'list',
 
   use: {
@@ -56,11 +56,11 @@ export default defineConfig({
   ],
 
   webServer: {
-    command: 'node server/dist/server.js',
+    command: 'node app/server/dist/server.js',
     env: { NODE_ENV: 'production' },
     url: 'http://localhost:4124/api/healthz',
     reuseExistingServer: !process.env.CI,
     timeout: 60_000,
-    cwd: '..',
+    cwd: '../..',
   },
 })

@@ -1,5 +1,5 @@
 {
-  "name": "scales-tarot-app",
+  "name": "scales-tarot-frontend",
   "version": "0.0.0",
   "private": true,
   "devDependencies": {

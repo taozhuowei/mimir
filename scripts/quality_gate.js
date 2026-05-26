@@ -18,19 +18,19 @@ const stepsByMode = {
   // orchestrator with --skip-quality.
   full: [
     { label: 'quality-scan', command: 'node', args: ['scripts/quality_scan.js'] },
-    { label: 'lint', command: 'yarn', args: ['eslint', '--config', 'config/eslint.config.mjs', 'app/src/', 'app/test/', 'server/src/', 'server/test/'] },
+    { label: 'lint', command: 'yarn', args: ['eslint', '--config', 'config/eslint.config.mjs', 'app/frontend/src/', 'app/frontend/test/', 'app/server/src/', 'app/server/test/'] },
     // type-check is two compilers: vue-tsc for the Vue app, tsc for the
     // server. Run sequentially as separate steps so failures point at the
     // right tsconfig.
-    { label: 'type-check:app', command: 'yarn', args: ['vue-tsc', '--noEmit', '-p', 'app/tsconfig.json'] },
-    { label: 'type-check:server', command: 'yarn', args: ['tsc', '--noEmit', '-p', 'server/tsconfig.json'] },
+    { label: 'type-check:app', command: 'yarn', args: ['vue-tsc', '--noEmit', '-p', 'app/frontend/tsconfig.json'] },
+    { label: 'type-check:server', command: 'yarn', args: ['tsc', '--noEmit', '-p', 'app/server/tsconfig.json'] },
     // Direct vitest invocation — Phase 10 split the single root `test/`
-    // workspace into per-package `app/test/` + `server/test/`. The two
+    // workspace into per-package `app/frontend/test/` + `app/server/test/`. The two
     // configs use `include: ['test/**/*.test.ts']` (cwd-relative), so we
     // pass `--dir <pkg>/test` to scope each run to its own tree. Two
     // separate steps make a failure point at the right workspace.
-    { label: 'test:app', command: 'yarn', args: ['vitest', 'run', '--config', 'app/vitest.config.ts', '--dir', 'app/test'] },
-    { label: 'test:server', command: 'yarn', args: ['vitest', 'run', '--config', 'server/vitest.config.ts', '--dir', 'server/test'] },
+    { label: 'test:app', command: 'yarn', args: ['vitest', 'run', '--config', 'app/frontend/vitest.config.ts', '--dir', 'app/frontend/test'] },
+    { label: 'test:server', command: 'yarn', args: ['vitest', 'run', '--config', 'app/server/vitest.config.ts', '--dir', 'app/server/test'] },
     // perf-baseline lives in the build pipeline (scripts/build/prod.js), not
     // here — it needs `dist/build/h5/` populated to produce a real measurement.
     // Running it from quality_gate / pre-push always saw 0 bytes because the
@@ -46,7 +46,7 @@ const stepsByMode = {
     {
       label: 'arch:check',
       command: 'yarn',
-      args: ['depcruise', 'app/src', 'app/test', 'server/src', 'server/test', '--config', 'config/dependency-cruiser.cjs'],
+      args: ['depcruise', 'app/frontend/src', 'app/frontend/test', 'app/server/src', 'app/server/test', '--config', 'config/dependency-cruiser.cjs'],
     },
     // Project-wide dead-code detection (knip): unused files, exports,
     // dependencies, class members. Quiet-on-success because the warning
@@ -66,7 +66,7 @@ const stepsByMode = {
     {
       label: 'duplicate-code',
       command: 'yarn',
-      args: ['jscpd', 'app/src', 'server/src', 'scripts', '--config', 'config/jscpd.json', '--silent'],
+      args: ['jscpd', 'app/frontend/src', 'app/server/src', 'scripts', '--config', 'config/jscpd.json', '--silent'],
       quietOnSuccess: true,
     },
   ],
@@ -94,7 +94,7 @@ const stepsByMode = {
     {
       label: 'lint:fix',
       command: 'yarn',
-      args: ['eslint', '--fix', '--cache', '--cache-location', 'node_modules/.cache/eslint/', '--config', 'config/eslint.config.mjs', 'app/src/', 'app/test/', 'server/src/', 'server/test/'],
+      args: ['eslint', '--fix', '--cache', '--cache-location', 'node_modules/.cache/eslint/', '--config', 'config/eslint.config.mjs', 'app/frontend/src/', 'app/frontend/test/', 'app/server/src/', 'app/server/test/'],
     },
     { label: 'git add', command: 'git', args: ['add', '-u'] },
   ],
