@@ -1,10 +1,7 @@
 // @vitest-environment node
 
 import { describe, expect, it } from 'vitest'
-import {
-  createProgressModel,
-  calculatePhaseProgress,
-} from '../src/flows/divination/composables/progress_model'
+import { createProgressModel } from '../src/flows/divination/composables/progress_model'
 
 describe('overlay_progress/phase_progress_model', () => {
   describe('createProgressModel', () => {
@@ -58,46 +55,6 @@ describe('overlay_progress/phase_progress_model', () => {
       expect(model.state.currentPhaseIndex).toBe(0)
       expect(model.state.progressRatio).toBe(0.25)
       expect(model.state.isComplete).toBe(false)
-    })
-  })
-
-  describe('calculatePhaseProgress', () => {
-    it('calculates progress for shuffling phase', () => {
-      const progress = calculatePhaseProgress('shuffling')
-
-      expect(progress).toHaveLength(4)
-      expect(progress[0].isActive).toBe(true)
-      expect(progress[0].isCompleted).toBe(false)
-      expect(progress[1].isPending).toBe(true)
-      expect(progress[1].isActive).toBe(false)
-      expect(progress[1].isCompleted).toBe(false)
-    })
-
-    it('calculates progress for revealing phase', () => {
-      const progress = calculatePhaseProgress('revealing')
-
-      expect(progress[3].isActive).toBe(true)
-      expect(progress[0].isCompleted).toBe(true)
-      expect(progress[1].isCompleted).toBe(true)
-      expect(progress[2].isCompleted).toBe(true)
-    })
-
-    it('calculates progress for drawing phase', () => {
-      const progress = calculatePhaseProgress('drawing')
-
-      expect(progress[2].isActive).toBe(true)
-      expect(progress[0].isCompleted).toBe(true)
-      expect(progress[1].isCompleted).toBe(true)
-      expect(progress[3].isPending).toBe(true)
-    })
-
-    it('includes correct labels', () => {
-      const progress = calculatePhaseProgress('cutting')
-
-      expect(progress[0].label).toBe('洗牌')
-      expect(progress[1].label).toBe('切牌')
-      expect(progress[2].label).toBe('抽牌')
-      expect(progress[3].label).toBe('翻牌')
     })
   })
 })

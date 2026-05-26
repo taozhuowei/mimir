@@ -1,18 +1,16 @@
 /**
  * Name: flows/divination/composables/lifecycle_scene
- * Purpose: overlay scene visual-state operations — entry settle, full reset, and
- *          in-flight animation interruption. Extracted from use_lifecycle so that
- *          orchestrator stays focused on pipeline wiring.
+ * Purpose: overlay scene visual-state operations — entry settle and full reset.
+ *          Extracted from use_lifecycle so that orchestrator stays focused on
+ *          pipeline wiring.
  * Data flow: closes over LifecycleDeps; mutates shared animState refs in place.
  */
 
-import { killAnimationTargets } from '../../../core/gsap/tween'
 import type { LifecycleDeps } from './use_lifecycle_types'
 
 export interface LifecycleScene {
   settleEntryAnimation: () => void
   resetOverlayScene: () => void
-  interruptCurrentAnimation: () => void
 }
 
 export function createLifecycleScene(deps: LifecycleDeps): LifecycleScene {
@@ -58,15 +56,5 @@ export function createLifecycleScene(deps: LifecycleDeps): LifecycleScene {
     animState.setDrawCardSizes(drawLayout)
   }
 
-  function interruptCurrentAnimation(): void {
-    // 中断只丢弃当前 in-flight 请求并重置状态，不销毁 orchestrator；
-    // 销毁会让 destroyed=true 永久禁用后续 startAnswer，使 dev replay/skip
-    // 路径的二次请求被吞掉、settlePipeline 永远读到 status='idle' 而无法切阶段。
-    deps.callbacks.onResetAnswer()
-    deps.resumeAnimations()
-    deps.orchestrator.clear()
-    killAnimationTargets(deps.animState.getAllTargets())
-  }
-
-  return { settleEntryAnimation, resetOverlayScene, interruptCurrentAnimation }
+  return { settleEntryAnimation, resetOverlayScene }
 }

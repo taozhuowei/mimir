@@ -88,15 +88,12 @@ src/
     │   ├── composables/phases/reveal.ts        翻牌相位（先放大后翻面）
     │   ├── composables/run_pipeline_command.ts 运行四相位管道命令
     │   ├── composables/use_phase_state.ts           相位状态与推进
-    │   ├── composables/use_lifecycle.ts        遮罩动画生命周期（start/skip/replay）
+    │   ├── composables/use_lifecycle.ts        遮罩动画生命周期（start）
     │   ├── composables/use_lifecycle_types.ts  生命周期类型
     │   ├── composables/use_animation_controller.ts 占卜动画控制器（组合各 hook）
     │   ├── composables/use_presentation.ts     由相位派生展示数据
     │   ├── composables/progress_model.ts       进度纯状态模型
     │   ├── composables/progress_presenter.ts   进度转视图数据
-    │   ├── composables/phase_entry_snap.ts 各相位入场态快照
-    │   ├── composables/replay_from_phase.ts    从指定相位重放（开发用）
-    │   ├── composables/skip_to_answer.ts       跳过洗切抽直达翻牌
     │   ├── composables/rig_lifecycle.ts       演出台启停与窗口 resize 监听
     │   └── composables/overlay_text.ts         占卜遮罩文案常量
     ├── answer/                 答案揭示（卡下行内，无面板/分栏/抽屉）
@@ -106,20 +103,14 @@ src/
     │   ├── lib/answer_provider.ts               答案提供者接口类型
     │   ├── lib/rule_based_answer_provider.ts    规则答案提供者：转发后端
     │   └── lib/answer_orchestrator.ts           答案请求生命周期（超时/重试/写入）
-    ├── index/                  主界面装配与开发工具
+    ├── index/                  主界面装配
     │   ├── components/MainSurface.vue              主界面装配根
     │   ├── components/StageDeck.vue                 单例舞台牌堆（idle/占卜切换）
     │   ├── components/NotificationHost.vue         通知队列渲染（占位）
-    │   ├── components/DevToolsPanel.vue            可拖拽调试面板外壳（开发环境）
-    │   ├── components/DevToolsCollapsedIcon.vue    调试面板折叠态闪电图标
-    │   ├── components/DevToolsControlRow.vue       暂停/继续/单步控制行
-    │   ├── components/DevToolsPhaseRow.vue         按相位重播芯片行
-    │   ├── components/DevToolsPlaybackRow.vue      直接跳答案与速率芯片行
     │   ├── composables/use_main_stage.ts           主舞台编排聚合
     │   ├── composables/create_main_transition_handlers.ts        晋升答案与重启处理器
     │   ├── composables/use_header_presentation.ts  页眉 variant 与 ARIA 派生
-    │   ├── composables/use_play_deck_animation.ts  按相位驱动单例牌堆
-    │   └── composables/use_dev_tools.ts            调试面板开关与回调
+    │   └── composables/use_play_deck_animation.ts  按相位驱动单例牌堆
     ├── fallback/               启动失败兜底
     │   ├── components/FallbackView.vue   启动失败兜底视图
     │   ├── components/FallbackOrbits.vue 行星轨道动画内容

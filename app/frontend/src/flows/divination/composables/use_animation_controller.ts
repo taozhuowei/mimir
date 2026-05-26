@@ -18,8 +18,7 @@ import { usePresentation } from './use_presentation'
 import { useLifecycle } from './use_lifecycle'
 import { buildLifecycleDeps } from './build_lifecycle_deps'
 import { composeControllerApi } from './compose_controller_api'
-import { MAX_CARD_COUNT } from '../../base/composables/animations/animation_targets'
-import { MAX_CUT_PILES } from './phase_entry_snap'
+import { MAX_CARD_COUNT, MAX_CUT_PILES } from '../../base/composables/animations/animation_targets'
 import type { UseAnimationControllerDeps, UseAnimationControllerReturn } from './use_animation_controller_types'
 
 export type {
@@ -86,7 +85,6 @@ export function useAnimationController(deps: UseAnimationControllerDeps): UseAni
     cardCount: deps.cardCount,
     transitionPhase: phases.transitionPhase,
     callbacks: deps.callbacks,
-    resumeAnimations: playback.resumeAnimations,
     deckCount: DECK_COUNT,
     cutPileCount: CUT_PILE_COUNT,
     autoRevealDelayMs: AUTO_REVEAL_DELAY_MS,
