@@ -20,7 +20,7 @@ const FORBIDDEN_GLOBALS = [
 
 export default tseslint.config(
   // Global ignores
-  { ignores: ['node_modules/', 'dist/', 'app/frontend/dist/'] },
+  { ignores: ['node_modules/', 'app/dist/', 'app/frontend/dist/', 'app/server/dist/'] },
 
   // Base recommended rules
   js.configs.recommended,

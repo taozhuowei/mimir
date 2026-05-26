@@ -1,5 +1,5 @@
 # Build outputs
-/dist/
+/app/dist/
 /app/server/dist/
 
 # Dependencies

@@ -27,11 +27,18 @@
 
 'use strict'
 
+const path = require('path')
 const { killOccupierAndStart } = require('../lib/port_kill')
 const { REPO_ROOT, VITE_BIN, makeProcessRunner } = require('../lib/run_process')
 
 const VITE_PORT = 4123
 const SERVER_PORT = 4124
+
+// Pin uni-app output under app/dist (mirrors prod.js). Absolute + forward
+// slashes so the value survives both vite's path.resolve(config.root, outDir)
+// re-resolution and Windows cmd.exe inside the quoted concurrently command.
+const uniOutDir = (...segments) =>
+  path.join(REPO_ROOT, 'app', 'dist', 'dev', ...segments).replace(/\\/g, '/')
 
 const run = makeProcessRunner('dev')
 
@@ -48,14 +55,14 @@ function buildConcurrentlyArgs(targets) {
     // freshly-edited code. Vite's dev server owns :4123, proxies /api +
     // /static to express on :4124, and gives us module-level HMR.
     commands.push(
-      'cross-env NODE_ENV=development UNI_INPUT_DIR=app/frontend/src VITE_ROOT_DIR=app/frontend ' +
+      `cross-env NODE_ENV=development UNI_INPUT_DIR=app/frontend/src VITE_ROOT_DIR=app/frontend UNI_OUTPUT_DIR=${uniOutDir('h5')} ` +
         `node ${VITE_BIN} --mode development --config app/frontend/vite.config.ts`,
     )
   }
   if (targets.includes('mp')) {
     names.push('mp')
     commands.push(
-      'cross-env NODE_ENV=development UNI_INPUT_DIR=app/frontend/src VITE_ROOT_DIR=app/frontend ' +
+      `cross-env NODE_ENV=development UNI_INPUT_DIR=app/frontend/src VITE_ROOT_DIR=app/frontend UNI_OUTPUT_DIR=${uniOutDir('mp-weixin')} ` +
         `node ${VITE_BIN} build -p mp-weixin --watch --mode development --config app/frontend/vite.config.ts`,
     )
   }

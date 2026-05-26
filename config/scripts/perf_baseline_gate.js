@@ -1,7 +1,7 @@
 /**
  * Performance Baseline Gate — bundle-size regression check.
  *
- * Runs after the prod h5 build. Measures total `dist/build/h5/` size plus the
+ * Runs after the prod h5 build. Measures total `app/dist/build/h5/` size plus the
  * top 10 largest individual files, and compares each entry against the
  * committed baseline at `config/scripts/perf_baseline.json`. Single-file or total
  * size growth > thresholds.regressPercent (default 10%) fails the gate.
@@ -27,8 +27,8 @@ const { existsSync, readFileSync, writeFileSync, statSync, readdirSync } = requi
 const { join, relative } = require('path')
 
 const REPO_ROOT = join(__dirname, '..', '..')
-const BUILD_DIR = join(REPO_ROOT, 'dist', 'build', 'h5')
-const BUILD_DIR_REL = 'dist/build/h5'
+const BUILD_DIR = join(REPO_ROOT, 'app', 'dist', 'build', 'h5')
+const BUILD_DIR_REL = 'app/dist/build/h5'
 const BASELINE_PATH = join(__dirname, 'perf_baseline.json')
 const TOTAL_KEY = `${BUILD_DIR_REL}/total`
 const TOP_N = 10
@@ -83,8 +83,8 @@ function formatBytes(bytes) {
  * Returns { entries, totalBytes } where entries is a flat object keyed by
  * relative path:
  *   {
- *     "dist/build/h5/total":            { bytes },
- *     "dist/build/h5/static/js/x.js":   { bytes },
+ *     "app/dist/build/h5/total":            { bytes },
+ *     "app/dist/build/h5/static/js/x.js":   { bytes },
  *     ... up to TOP_N largest files
  *   }
  *
