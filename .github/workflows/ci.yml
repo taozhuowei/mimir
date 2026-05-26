@@ -62,3 +62,29 @@ jobs:
         # force-pushed, amended, or merged in from a fork. `gitleaks git`
         # is the v8.30+ replacement for the deprecated `detect` command.
         run: node config/scripts/gitleaks_run.js git --no-banner --redact --verbose --config=config/gitleaks.toml
+
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '22'
+          cache: 'yarn'
+
+      - name: Enable Corepack
+        run: corepack enable
+
+      - name: Install dependencies
+        run: yarn install --immutable
+
+      - name: Build H5 + server + perf gate
+        # Verifies the vite prod build (terser, dual artefacts) + tsc server
+        # compile actually succeed, and runs the bundle-size perf baseline
+        # gate — both live in the prod pipeline (config/scripts/build/prod.js),
+        # not the quality gate. --skip-quality: the `verify` job already ran
+        # the gate on this commit. --target h5,server matches what we ship +
+        # what the perf baseline measures (no mp-weixin bundle here).
+        run: node config/scripts/build/index.js --prod --target h5,server --skip-quality

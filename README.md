@@ -35,7 +35,7 @@ scales-tarot/
 │   └── server/           # Express 4 + zod 后端(:4124)                       → app/server/README.md
 ├── config/               # 根级工具配置 + 构建编排/质量门禁脚本(scripts/)       → config/README.md
 ├── docs/                 # 产品需求模块文档(索引见本 README「产品需求」节)
-├── .github/              # CI(verify + lint) / dependabot / PR 模板
+├── .github/              # CI(verify + lint + build) / dependabot / PR 模板
 ├── dist/                 # 构建产物(gitignored)
 ├── CLAUDE.md             # Claude Code 工程导航与硬约束
 ├── README.md             # 本文件

@@ -14,7 +14,8 @@ const stepsByMode = {
   // build (h5/mp/server) + perf baseline live in
   // config/scripts/build/prod.js — they are part of the build pipeline, not
   // the quality contract. CI's `verify` job calls
-  // `node config/scripts/quality_gate.js full`.
+  // `node config/scripts/quality_gate.js full`; a separate `build` job runs
+  // the prod pipeline (--skip-quality) to guard the build + perf baseline.
   full: [
     { label: 'quality-scan', command: 'node', args: ['config/scripts/quality_scan.js'] },
     { label: 'lint', command: 'yarn', args: ['eslint', '--config', 'config/eslint.config.mjs', 'app/frontend/src/', 'app/frontend/test/', 'app/server/src/', 'app/server/test/'] },
