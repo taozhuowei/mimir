@@ -23,7 +23,7 @@ server/
 └── package.json
 ```
 
-`:4124/` 在 dev 下返回 404 是有意为之（`app.ts` 的 `if (config.isProd)` 守卫），避免陈旧 `dist/build/h5/index.html` 静默掩盖 vite 当前编译产物。
+`:4124/` 在 dev 下返回 404 是有意为之（`app.ts` 的 `if (config.isProd)` 守卫），避免陈旧 `app/dist/build/h5/index.html` 静默掩盖 vite 当前编译产物。
 
 ## 技术栈
 

@@ -227,12 +227,12 @@ app.use('/api', (_req, res) => {
 // ---------------------------------------------------------------------------
 // 6. H5 SPA
 //
-// Prod: nginx serves dist/build/h5 directly in real deployments; this
+// Prod: nginx serves app/dist/build/h5 directly in real deployments; this
 // express static + catch-all is the safety net so `node app/server/dist/server.js`
 // still boots a fully-working SPA during ad-hoc prod runs.
 //
 // Dev: vite's dev server on :4123 owns the SPA (HMR, on-demand compile).
-// Express must NOT serve a stale dist/build/h5/index.html here — doing so
+// Express must NOT serve a stale app/dist/build/h5/index.html here — doing so
 // silently masks the developer's edits and (worse) lets people forget to
 // open :4123 at all. So in dev we skip both the static handler and the
 // catch-all entirely; /api and /static still work, anything else 404s,
@@ -240,7 +240,7 @@ app.use('/api', (_req, res) => {
 // ---------------------------------------------------------------------------
 
 if (config.isProd) {
-  const buildH5Dist = path.join(__dirname, '../../../dist/build/h5')
+  const buildH5Dist = path.join(__dirname, '../../dist/build/h5')
 
   // Loud failure if the build artefact is missing — this catches the case
   // where someone runs `node app/server/dist/server.js` without `yarn prod`

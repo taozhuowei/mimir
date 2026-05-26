@@ -2,8 +2,7 @@
   "threshold": 0.13,
   "minLines": 5,
   "minTokens": 50,
-  "reporters": ["console", "json"],
-  "output": "./dist/reports/jscpd",
+  "reporters": ["console"],
   "ignore": [
     "**/node_modules/**",
     "**/dist/**",

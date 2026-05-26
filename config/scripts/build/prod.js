@@ -15,9 +15,18 @@
 
 'use strict'
 
+const path = require('path')
 const { REPO_ROOT, VITE_BIN, makeProcessRunner } = require('../lib/run_process')
 
 const run = makeProcessRunner('build')
+
+// uni-app derives the output dir from cwd by default (-> <cwd>/dist/...). We
+// pin it explicitly under app/dist so every build artefact lives beside the
+// app/ workspaces. UNI_OUTPUT_DIR must be ABSOLUTE: vite re-resolves it via
+// path.resolve(config.root, outDir) where config.root is app/frontend, so a
+// relative value would land at app/frontend/app/dist. path.resolve ignores
+// config.root when the value is already absolute.
+const uniOutDir = (...segments) => path.join(REPO_ROOT, 'app', 'dist', ...segments)
 
 async function build_h5() {
   return run(
@@ -28,6 +37,7 @@ async function build_h5() {
       NODE_ENV: 'production',
       UNI_INPUT_DIR: 'app/frontend/src',
       VITE_ROOT_DIR: 'app/frontend',
+      UNI_OUTPUT_DIR: uniOutDir('build', 'h5'),
     },
   )
 }
@@ -41,6 +51,7 @@ async function build_mp() {
       NODE_ENV: 'production',
       UNI_INPUT_DIR: 'app/frontend/src',
       VITE_ROOT_DIR: 'app/frontend',
+      UNI_OUTPUT_DIR: uniOutDir('build', 'mp-weixin'),
     },
   )
 }
@@ -54,7 +65,7 @@ async function run_quality() {
 }
 
 async function run_perf_baseline() {
-  // Bundle-size regression check. Compares dist/build/h5/ against the
+  // Bundle-size regression check. Compares app/dist/build/h5/ against the
   // committed perf_baseline.json. Lives here (not in quality_gate.js) because
   // it needs the freshly-built h5 artifacts on disk.
   return run('perf: baseline (bundle size)', 'node', ['config/scripts/perf_baseline_gate.js'])

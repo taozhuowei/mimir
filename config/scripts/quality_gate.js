@@ -32,7 +32,7 @@ const stepsByMode = {
     { label: 'test:app', command: 'yarn', args: ['vitest', 'run', '--config', 'app/frontend/vitest.config.ts', '--dir', 'app/frontend/test'] },
     { label: 'test:server', command: 'yarn', args: ['vitest', 'run', '--config', 'app/server/vitest.config.ts', '--dir', 'app/server/test'] },
     // perf-baseline lives in the build pipeline (config/scripts/build/prod.js), not
-    // here — it needs `dist/build/h5/` populated to produce a real measurement.
+    // here — it needs `app/dist/build/h5/` populated to produce a real measurement.
     // Running it from quality_gate / pre-push always saw 0 bytes because the
     // build had not yet executed at that point.
     {
