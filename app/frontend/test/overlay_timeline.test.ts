@@ -40,35 +40,14 @@ describe('overlay_animation/timeline_orchestrator', () => {
     it('creates orchestrator with default state', () => {
       const orchestrator = createTimelineOrchestrator()
 
-      expect(orchestrator.isPaused).toBe(false)
       expect(orchestrator.playbackRate).toBe(1)
     })
 
-    it('creates paused orchestrator when specified', () => {
-      const orchestrator = createTimelineOrchestrator(true)
-
-      expect(orchestrator.isPaused).toBe(true)
-    })
-
-    it('tracks play state correctly', () => {
+    it('delegates resume to timeline', () => {
       const orchestrator = createTimelineOrchestrator()
-
-      orchestrator.play()
-      expect(orchestrator.isPaused).toBe(false)
-    })
-
-    it('tracks pause state correctly', () => {
-      const orchestrator = createTimelineOrchestrator()
-
-      orchestrator.pause()
-      expect(orchestrator.isPaused).toBe(true)
-    })
-
-    it('tracks resume state correctly', () => {
-      const orchestrator = createTimelineOrchestrator(true)
 
       orchestrator.resume()
-      expect(orchestrator.isPaused).toBe(false)
+      expect(orchestrator.timeline.resume).toHaveBeenCalled()
     })
 
     it('tracks playback rate changes', () => {

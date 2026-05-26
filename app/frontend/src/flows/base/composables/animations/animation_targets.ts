@@ -17,6 +17,9 @@ import type { CardState, CenterCardState, DrawCardState, InnerState } from './st
  *  refs / arrays aligned regardless of the active spread. */
 export const MAX_CARD_COUNT = 10
 
+/** Maximum number of cut piles the cut animation pre-allocates. */
+export const MAX_CUT_PILES = 8
+
 export interface AnimationStateOptions {
   deckCount: number
   shuffleHalfCount: number

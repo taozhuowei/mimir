@@ -27,7 +27,6 @@ export interface LifecycleDepsContext {
   cardCount: Ref<number>
   transitionPhase: LifecycleDeps['transitionPhase']
   callbacks: LifecycleDeps['callbacks']
-  resumeAnimations: () => void
   deckCount: number
   cutPileCount: number
   autoRevealDelayMs: number
@@ -57,7 +56,6 @@ export function buildLifecycleDeps(ctx: LifecycleDepsContext): LifecycleDeps {
       resetCutVisualState: animState.resetCutVisualState,
       resetDrawVisualState: animState.resetDrawVisualState,
       setDrawCardSizes: animState.setDrawCardSizes,
-      getAllTargets: animState.getAllTargets,
     },
     showResults: ctx.showResults,
     cardsLanded: ctx.cardsLanded,
@@ -93,6 +91,5 @@ export function buildLifecycleDeps(ctx: LifecycleDepsContext): LifecycleDeps {
     autoRevealDelayMs: ctx.autoRevealDelayMs,
     transitionPhase: ctx.transitionPhase,
     callbacks: ctx.callbacks,
-    resumeAnimations: ctx.resumeAnimations,
   }
 }

@@ -3,21 +3,12 @@
  * Purpose: single source of truth for phase ordering + metadata
  *          (PHASE_MANIFEST), its backward-compat progress-UI projection
  *          (PHASE_STEPS), and the derived lookup / sequence helpers.
- * Reason: split out of registry.ts so the manifest data + queries are one
- *          module; binds the replay snap helpers via
- *          PHASE_MANIFEST.snapToEntryState.
+ * Reason: split out of registry.ts so the manifest data + queries are one module.
  * Data flow: PHASE_MANIFEST is the single source of truth — PHASE_STEPS is a
- *          backward-compat projection for the progress UI; getPhaseSnap()
- *          looks up the entry-state setter for replay/skip dispatchers.
+ *          backward-compat projection for the progress UI.
  */
 
 import type { OverlayPhase } from '../../base/composables/animations/phase_contracts'
-import type { PhaseSnapDeps } from './phase_entry_snap'
-import {
-  snapToCuttingEntry,
-  snapToDrawingEntry,
-  snapToRevealingEntry,
-} from './phase_entry_snap'
 
 /**
  * Progress-bar metadata for one phase. Absorbed verbatim from the former
@@ -31,22 +22,21 @@ export interface PhaseStep {
 }
 
 /**
- * PhaseManifest — single source of truth for both the progress-bar metadata
- * and the per-phase entry-state setter. Ordering of this array defines the
- * pipeline order (consumed by buildPhaseRunners / getPhaseOrder). Absorbed
- * verbatim from the former phase_types during the flows refactor.
+ * PhaseManifest — single source of truth for the progress-bar metadata.
+ * Ordering of this array defines the pipeline order (consumed by
+ * buildPhaseRunners / getPhaseOrder). Absorbed verbatim from the former
+ * phase_types during the flows refactor.
  */
 export interface PhaseManifest {
   phase: OverlayPhase
   label: string
   activeIcon: string
   inactiveIcon: string
-  snapToEntryState(deps: PhaseSnapDeps): void
 }
 
 /**
  * Single source of truth for phase ordering and metadata. The pipeline
- * builder, progress UI, and replay/skip commands all derive from this.
+ * builder and progress UI all derive from this.
  */
 export const PHASE_MANIFEST: PhaseManifest[] = [
   {
@@ -54,30 +44,24 @@ export const PHASE_MANIFEST: PhaseManifest[] = [
     label: '洗牌',
     activeIcon: 'icon_wands',
     inactiveIcon: 'icon_wands_inactive',
-    // Shuffling is the first phase; resetOverlayScene already produces its
-    // entry state, so no additional snap is needed.
-    snapToEntryState: () => { /* no-op: reset already in place */ },
   },
   {
     phase: 'cutting',
     label: '切牌',
     activeIcon: 'icon_swords',
     inactiveIcon: 'icon_swords_inactive',
-    snapToEntryState: (deps) => snapToCuttingEntry(deps),
   },
   {
     phase: 'drawing',
     label: '抽牌',
     activeIcon: 'icon_cups',
     inactiveIcon: 'icon_cups_inactive',
-    snapToEntryState: (deps) => snapToDrawingEntry(deps),
   },
   {
     phase: 'revealing',
     label: '翻牌',
     activeIcon: 'icon_pentacles',
     inactiveIcon: 'icon_pentacles_inactive',
-    snapToEntryState: (deps) => snapToRevealingEntry(deps),
   },
 ]
 
@@ -120,14 +104,4 @@ export function getNextPhase(phase: OverlayPhase): OverlayPhase | null {
  */
 export function getPhaseOrder(): OverlayPhase[] {
   return PHASE_MANIFEST.map((m) => m.phase)
-}
-
-/**
- * Lookup helper for the snap-to-entry-state setter for a given phase.
- * Returns a no-op for phases that don't need explicit setup (shuffling),
- * so callers don't need to special-case the first phase.
- */
-export function getPhaseSnap(phase: OverlayPhase): (deps: PhaseSnapDeps) => void {
-  const entry = PHASE_MANIFEST.find((m) => m.phase === phase)
-  return entry ? entry.snapToEntryState : () => { /* unknown phase: no-op */ }
 }

@@ -58,25 +58,3 @@ export function createProgressModel(initialPhase: OverlayPhase = 'shuffling'): P
     },
   }
 }
-
-export interface PhaseProgressItem {
-  phase: OverlayPhase
-  label: string
-  isActive: boolean
-  isCompleted: boolean
-  isPending: boolean
-}
-
-export function calculatePhaseProgress(
-  currentPhase: OverlayPhase,
-): PhaseProgressItem[] {
-  const currentIndex = getPhaseIndex(currentPhase)
-
-  return getPhaseSteps().map((step, index) => ({
-    phase: step.phase,
-    label: step.label,
-    isActive: index === currentIndex,
-    isCompleted: index < currentIndex,
-    isPending: index > currentIndex,
-  }))
-}

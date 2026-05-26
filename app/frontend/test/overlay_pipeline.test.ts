@@ -10,10 +10,7 @@ function createMockOrchestrator(): TimelineOrchestrator {
   const timelines: unknown[] = []
   return {
     add: vi.fn((item) => { timelines.push(item); return item }),
-    pause: vi.fn(),
     resume: vi.fn(),
-    stepForward: vi.fn(),
-    stepBackward: vi.fn(),
     seek: vi.fn(),
     clear: vi.fn(),
     kill: vi.fn(),

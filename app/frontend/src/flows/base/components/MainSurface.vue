@@ -63,22 +63,6 @@
 
     <TooSmallBanner />
     <NotificationHost />
-    <DevToolsPanel
-      :phase-steps="animationController.phaseSteps.value"
-      :playback-rate="animationController.playbackRate.value"
-      :is-paused="animationController.isPaused.value"
-      :is-dev-expanded="devTools.isDevExpanded.value"
-      :show-container-borders="devTools.showContainerBorders.value"
-      @replay="devTools.handleDevReplay"
-      @skip-to-answer="devTools.handleDevSkipToAnswer"
-      @playback-rate="devTools.handleDevPlaybackRate"
-      @pause="animationController.pauseAnimations"
-      @resume="animationController.resumeAnimations"
-      @step-forward="animationController.stepForward"
-      @step-backward="animationController.stepBackward"
-      @toggle-dev-expanded="devTools.isDevExpanded.value = !devTools.isDevExpanded.value"
-      @toggle-container-borders="devTools.toggleContainerBorders"
-    />
   </view>
 </template>
 
@@ -90,8 +74,8 @@
  *          controllers to descendant components, derives header
  *          presentation + the idle card-load error, and composes the
  *          divination surface (HeaderArea + Stage(StageDeck)) with the
- *          inline answer zone (AnswerCard + ActionArea), notifications
- *          and dev tools.
+ *          inline answer zone (AnswerCard + ActionArea) and
+ *          notifications.
  * Reason: extracted out of pages/index.vue so that page is a pure
  *         boot shell — it mounts this surface only when bootstrap
  *         succeeded (or is pending), and the fallback view otherwise, so
@@ -108,13 +92,12 @@ import ProgressContent from '../../divination/components/ProgressContent.vue'
 import CardsLoadError from '../../idle/components/CardsLoadError.vue'
 import AnswerCard from '../../answer/components/AnswerCard.vue'
 import ActionArea from '../../action_area/components/ActionArea.vue'
-import DevToolsPanel from '../../../devtool/components/DevToolsPanel.vue'
 import { useMainStage } from '../composables/use_main_stage'
 import { useHeaderPresentation } from '../composables/use_header_presentation'
 import { useCardsLoadError } from '../composables/use_cards_load_error'
 
 const {
-  flow, isWide, cssVarStyle, animationController, answerController, devTools,
+  flow, isWide, cssVarStyle, animationController, answerController,
   showAnswer, answerPanelState, answerResult, answerErrorMessage,
   handleRestart, handleBackHome, handleRetry,
 } = useMainStage()

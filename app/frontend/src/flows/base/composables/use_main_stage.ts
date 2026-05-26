@@ -4,26 +4,24 @@
  *          stays a pure entry. Owns stores, application-level flow,
  *          responsive width + resize lifecycle, the CSS-var bridge, the
  *          animation + answer controllers (and their callback wiring),
- *          single-sized result-card sizing, answer passthrough, the main
- *          event handlers, and dev tools.
+ *          single-sized result-card sizing, answer passthrough, and the
+ *          main event handlers.
  * Data flow: constructs the controller graph and lifecycle → returns refs /
  *          computeds / handlers MainSurface binds; provide() stays in
  *          MainSurface so the inject contract is visible at the surface root.
  */
-import { computed, ref, nextTick, onMounted, onUnmounted, type ComputedRef, type Ref } from 'vue'
+import { computed, ref, onMounted, onUnmounted, type ComputedRef, type Ref } from 'vue'
 import { useFlow } from './use_flow'
 import { useTarotStore } from '../../../core/store/tarot'
 import { useThemeStore } from '../../../core/store/theme'
 import { useAnimationController } from '../../divination/composables/use_animation_controller'
 import { useAnswerController } from '../../answer/composables/use_answer_request_controller'
-import { useDevTools } from '../../../devtool/composables/use_dev_tools'
 import { useCssVarBridge } from '../../../core/sizing/use_css_var_bridge'
 import { useMainHandlers } from './create_main_transition_handlers'
 import { MAX_CANVAS_WIDTH } from '../../../core/sizing/scale'
 import type { OverlayPhase } from './animations/phase_contracts'
 import type { UseAnimationControllerReturn } from '../../divination/composables/use_animation_controller'
 import type { useAnswerController as UseAnswerControllerFn } from '../../answer/composables/use_answer_request_controller'
-import type { useDevTools as UseDevToolsFn } from '../../../devtool/composables/use_dev_tools'
 import type { Flow } from '../../../core/store/slices/flow'
 
 export interface MainStage {
@@ -32,7 +30,6 @@ export interface MainStage {
   cssVarStyle: ReturnType<typeof useCssVarBridge>
   animationController: UseAnimationControllerReturn
   answerController: ReturnType<typeof UseAnswerControllerFn>
-  devTools: ReturnType<typeof UseDevToolsFn>
   /** Gate for the below-card answer + action area (terminal `answer` flow). */
   showAnswer: ComputedRef<boolean>
   answerPanelState: ComputedRef<ReturnType<typeof UseAnswerControllerFn>['answerPanelState']['value']>
@@ -104,22 +101,6 @@ export function useMainStage(): MainStage {
     })
   }
 
-  /* Dev tools (compiled out of production) */
-  const devTools = useDevTools({
-    animationController,
-    answerController,
-    setAnswerPromise: (promise) => { currentAnswerPromise = promise },
-    ensureRigStarted: async () => {
-      if (flow.value !== 'idle') return
-      // 从 idle 直接 replay/skip 时，必须先让 watchPhaseStateMachine
-      // 监听到 idle→divination 才会通过 rig.start() 注册 resize 并触发
-      // animationController.start()；否则后续 replayFromPhase 无 rig 就绪，
-      // 双 pipeline 重叠会导致 flow 反复被切回 'divination'。
-      startDivination(tarotStore.currentQuestion ?? '')
-      await nextTick()
-    },
-  })
-
   /* Lifecycle */
   onMounted(() => {
     recomputeIsWide()
@@ -133,7 +114,6 @@ export function useMainStage(): MainStage {
     cssVarStyle,
     animationController,
     answerController,
-    devTools,
     showAnswer,
     answerPanelState,
     answerResult,

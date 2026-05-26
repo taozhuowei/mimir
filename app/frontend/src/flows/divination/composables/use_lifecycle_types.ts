@@ -31,7 +31,6 @@ export interface LifecycleAnimState {
   resetCutVisualState(): void
   resetDrawVisualState(): void
   setDrawCardSizes(layout: SceneLayout): void
-  getAllTargets(): unknown[]
 }
 
 export interface LifecycleDeps extends PipelineSharedDeps {
@@ -52,5 +51,4 @@ export interface LifecycleDeps extends PipelineSharedDeps {
     onResetAnswer: () => void
     onDestroyAnswer: () => void
   }
-  resumeAnimations: () => void
 }

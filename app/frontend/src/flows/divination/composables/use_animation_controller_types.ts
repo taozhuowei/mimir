@@ -14,7 +14,6 @@ import type { useThemeStore } from '../../../core/store/theme'
 import type { useAnimationState } from '../../base/composables/animations/use_animation_state'
 import type { useOverlayLayout } from '../../../core/sizing/overlay_layout/use_overlay_layout'
 import type { presentProgressHeader, presentFooter } from './progress_presenter'
-import type { calculatePhaseProgress } from './progress_model'
 import type { OverlayPhase } from '../../base/composables/animations/phase_contracts'
 
 export interface UseAnimationControllerCallbacks {
@@ -54,7 +53,6 @@ export interface UseAnimationControllerReturn extends ReconcilerPublic {
   phase: Ref<OverlayPhase>
   showResults: Ref<boolean>
   entryAnimationComplete: Ref<boolean>
-  isPaused: Ref<boolean>
   playbackRate: Ref<number>
   cardsLanded: Ref<boolean>
   leftsVisible: Ref<boolean>
@@ -63,8 +61,6 @@ export interface UseAnimationControllerReturn extends ReconcilerPublic {
   drawsVisible: Ref<boolean[]>
   progressHeaderPresentation: ComputedRef<ReturnType<typeof presentProgressHeader>>
   footerPresentation: ComputedRef<ReturnType<typeof presentFooter>>
-  phaseSteps: ComputedRef<ReturnType<typeof calculatePhaseProgress>>
-  activePhaseIndex: ComputedRef<number>
   getSceneLayout: ReturnType<typeof useOverlayLayout>['getSceneLayout']
   deckCount: number
   shuffleHalfCount: number
@@ -73,13 +69,8 @@ export interface UseAnimationControllerReturn extends ReconcilerPublic {
   draws: DrawCardState[]
   refreshDraws: () => void
   setPlaybackRate: (rate: number) => void
-  pauseAnimations: () => void
   resumeAnimations: () => void
-  stepForward: () => void
-  stepBackward: () => void
   seek: (position: number | string) => void
-  replayFromPhase: (targetPhase: OverlayPhase) => void
-  skipToAnswer: () => void
   resetOverlayScene: () => void
   start: () => void
   updateLayout: () => void
