@@ -30,8 +30,6 @@ paths = [
   '''(^|/)app/frontend/dist/''',
   '''(^|/)app/server/dist/''',
   '''(^|/)reports/''',
-  '''(^|/)playwright-report/''',
-  '''(^|/)test/playwright-report/''',
   '''(^|/)package-lock\.json$''',
   # Example env files only document variable names, never real values.
   '''(^|/)\.env\.example$''',

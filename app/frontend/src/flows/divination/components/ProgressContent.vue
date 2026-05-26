@@ -29,8 +29,7 @@
         had already started before the icon recolored.
 
         Both elements keep the `.progress-content__step-icon` class so
-        existing CSS rules (sizing, compensated modifier) and Playwright
-        e2e selectors continue to match.
+        existing CSS rules (sizing, compensated modifier) continue to match.
       -->
       <image
         class="progress-content__step-icon progress-content__step-icon--inactive-layer"

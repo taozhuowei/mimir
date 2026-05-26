@@ -4,11 +4,11 @@
  * Why: previously `yarn build` and `yarn dev` were 200+ char string
  * pipes in package.json — duplicated logic, no targeting, no skip-quality
  * for CI. This script centralises the topology so quality_gate.js stops
- * carrying build/smoke (those belong here).
+ * carrying the build steps (those belong here).
  *
  * Public entrypoints:
- *   - `yarn prod`  -> --prod --target h5,mp,server  (full prod artifacts + smoke)
- *   - `yarn dev`   -> --dev  --target h5,mp,server  (watch mode, no smoke)
+ *   - `yarn prod`  -> --prod --target h5,mp,server  (full prod artifacts + perf gate)
+ *   - `yarn dev`   -> --dev  --target h5,mp,server  (watch mode)
  *
  * Internal flags (NOT exposed via yarn scripts; CI wires them directly):
  *   --prod | --dev          required, mutually exclusive

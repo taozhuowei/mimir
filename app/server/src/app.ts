@@ -55,8 +55,8 @@ app.disable('x-powered-by')
 //     all sub-resource URLs from http:// to https://. We don't want the
 //     app layer to enforce that — production traffic terminates TLS at
 //     nginx and reverse-proxies plain HTTP to this process; the directive
-//     would either double-upgrade or, on local HTTP runs (Playwright,
-//     dev), break the SPA outright.
+//     would either double-upgrade or, on local HTTP runs (dev/test),
+//     break the SPA outright.
 //   - `Strict-Transport-Security` in non-prod: HSTS is sticky in browsers
 //     and pollutes localhost HTTP debugging across all of `localhost:*`.
 //     Production keeps the default HSTS so the reverse proxy + app are
@@ -229,7 +229,7 @@ app.use('/api', (_req, res) => {
 //
 // Prod: nginx serves dist/build/h5 directly in real deployments; this
 // express static + catch-all is the safety net so `node app/server/dist/server.js`
-// still boots a fully-working SPA during smoke tests and ad-hoc prod runs.
+// still boots a fully-working SPA during ad-hoc prod runs.
 //
 // Dev: vite's dev server on :4123 owns the SPA (HMR, on-demand compile).
 // Express must NOT serve a stale dist/build/h5/index.html here — doing so

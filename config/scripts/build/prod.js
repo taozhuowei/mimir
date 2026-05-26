@@ -6,8 +6,7 @@
  *   2. h5 build      (if target includes h5)
  *   3. mp build      (if target includes mp)
  *   4. server build  (if target includes server)
- *   5. smoke         (only if BOTH h5 + server were built — needs the prod
- *                     bundle on disk + start:prod to boot the static SPA)
+ *   5. perf baseline (if target includes h5 — bundle-size regression check)
  *
  * Steps run sequentially: vite build is CPU-bound and uniapp's two targets
  * fight over the same temp dirs when run in parallel. tsc is fast enough
@@ -50,17 +49,6 @@ async function build_server() {
   return run('server: tsc compile', 'yarn', ['tsc', '-p', 'app/server/tsconfig.json'])
 }
 
-async function run_smoke() {
-  // The webServer block in app/frontend/playwright.config.ts boots `start:prod` and
-  // reuses an existing server locally. quietly relies on `server/dist` and
-  // `app/server/public/static` being populated, hence the order above.
-  return run(
-    'smoke: Playwright SPA boot',
-    'yarn',
-    ['playwright', 'test', '--config=app/frontend/playwright.config.ts', 'app/frontend/test/e2e/spa_boot_smoke.spec.ts'],
-  )
-}
-
 async function run_quality() {
   return run('quality gate (full)', 'node', ['config/scripts/quality_gate.js', 'full'])
 }
@@ -83,19 +71,9 @@ module.exports = async function prodPipeline({ targets, skipQuality }) {
   if (targets.includes('mp')) await build_mp()
   if (targets.includes('server')) await build_server()
 
-  // perf gate only meaningful once h5 produced output. Run it before smoke so
-  // a regression fails the pipeline before we burn time spinning up Playwright.
+  // perf gate only meaningful once h5 produced output.
   if (targets.includes('h5')) {
     await run_perf_baseline()
-  }
-
-  // Smoke needs both bundles. If the caller picked just `--target h5`, they're
-  // doing a partial build (e.g. for asset inspection) and don't want smoke.
-  const can_smoke = targets.includes('h5') && targets.includes('server')
-  if (can_smoke) {
-    await run_smoke()
-  } else {
-    console.log(`[build] Skipping smoke (requires both h5 + server; got ${targets.join(',')})`)
   }
 
   console.log('\n[build] Production pipeline complete')

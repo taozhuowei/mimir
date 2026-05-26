@@ -5,8 +5,7 @@
  *
  * 验证范围：纯函数 `computeScale` / `computeRootFontSize` / `isTooSmallView`。
  * `useDesignFlexible` 是 Vue composable，依赖 window/rAF，跨越平台层，不
- * 纳入本套件（与 scale.test.ts 同策略：composable 由 e2e 与运行时实证
- * 覆盖）。
+ * 纳入本套件（与 scale.test.ts 同策略：composable 由运行时实证覆盖）。
  *
  * 单轴宽度公式锚点（高度仅参与 isTooSmallView，不参与 scale）：
  *   - iPhone 8        375 × 667  → scale 0.87209…（下限锚点）

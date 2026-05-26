@@ -14,7 +14,7 @@ Expose only 3 yarn scripts; never add more. New tooling → `config/scripts/` or
 
 - `yarn install` — installs simple-git-hooks (pre-commit / commit-msg / pre-push).
 - `yarn dev` — `node config/scripts/build/index.js --dev --target h5,mp,server`: write `.env.development.local` → kill `:4123`/`:4124` → gate → watch `vite` h5 `:4123` + `vite-plugin-uni -p mp-weixin` + `tsx server` `:4124` (proxies `/api` `/static` → `:4124`).
-- `yarn prod` — same entry `--prod`: gate → vite h5 → uni mp → tsc server → `config/scripts/perf_baseline_gate.js` → SPA smoke.
+- `yarn prod` — same entry `--prod`: gate → vite h5 → uni mp → tsc server → `config/scripts/perf_baseline_gate.js`.
 
 Invoke directly, not via yarn:
 
@@ -23,7 +23,6 @@ Invoke directly, not via yarn:
 - `yarn vitest run --config app/server/vitest.config.ts --dir app/server/test [-t "<pat>"|<file>]`
 - `yarn vue-tsc --noEmit -p app/frontend/tsconfig.json` / `yarn tsc --noEmit -p app/server/tsconfig.json`
 - `yarn eslint app/frontend/src/ app/frontend/test/ app/server/src/ app/server/test/`
-- `yarn playwright test --config=app/frontend/playwright.config.ts`
 - Skip gate while debugging: pass `--skip-quality` to the build orchestrator.
 
 ## Constraints

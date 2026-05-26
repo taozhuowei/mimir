@@ -9,7 +9,7 @@ config/scripts/
 ├── build/
 │   ├── index.js          # 唯一构建入口(解析 flag 并分发)
 │   ├── dev.js            # dev 三 watcher 编排
-│   └── prod.js           # prod 构建 + perf 门 + SPA smoke
+│   └── prod.js           # prod 构建 + perf 门
 ├── lib/
 │   └── port_kill.js      # 释放占用端口(SIGKILL)
 ├── quality_gate.js       # full | staged 代码门禁(无构建)
