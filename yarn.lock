@@ -9608,17 +9608,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"scales-tarot-app@workspace:app":
+"scales-tarot-frontend@workspace:app/frontend":
   version: 0.0.0-use.local
-  resolution: "scales-tarot-app@workspace:app"
+  resolution: "scales-tarot-frontend@workspace:app/frontend"
   dependencies:
     postcss-pxtorem: "npm:^6.1.0"
   languageName: unknown
   linkType: soft
 
-"scales-tarot-server@workspace:server":
+"scales-tarot-server@workspace:app/server":
   version: 0.0.0-use.local
-  resolution: "scales-tarot-server@workspace:server"
+  resolution: "scales-tarot-server@workspace:app/server"
   dependencies:
     zod: "npm:^4.4.3"
   languageName: unknown

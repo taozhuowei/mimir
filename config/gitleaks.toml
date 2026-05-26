@@ -27,8 +27,8 @@ description = "Project-wide allowlist for non-secret matches"
 paths = [
   '''(^|/)node_modules/''',
   '''(^|/)dist/''',
-  '''(^|/)app/dist/''',
-  '''(^|/)server/dist/''',
+  '''(^|/)app/frontend/dist/''',
+  '''(^|/)app/server/dist/''',
   '''(^|/)reports/''',
   '''(^|/)playwright-report/''',
   '''(^|/)test/playwright-report/''',

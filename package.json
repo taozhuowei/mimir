@@ -17,8 +17,8 @@
     "pre-push": "node scripts/quality_gate.js full"
   },
   "workspaces": [
-    "app",
-    "server"
+    "app/frontend",
+    "app/server"
   ],
   "dependencies": {
     "@dcloudio/uni-app": "^3.0.0-alpha-5000820260430001",

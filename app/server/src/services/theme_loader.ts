@@ -13,7 +13,7 @@ import * as path from 'path'
 // against VITE_API_BASE_URL — so no host ever ends up hard-coded in the
 // API payload.
 
-// Theme directory path (relative to server/src/services)
+// Theme directory path (relative to app/server/src/services)
 const THEMES_DIR = path.join(__dirname, '..', '..', 'public', 'static', 'themes')
 
 /**

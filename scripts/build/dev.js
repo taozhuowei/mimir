@@ -18,7 +18,7 @@
  *        - server : tsx (auto-reload TS) on :4124
  *
  * vite-plugin-checker is wired only to the H5 dev pipeline (see
- * app/vite.config.ts) — it watches for vue-tsc / tsc / eslint errors and
+ * app/frontend/vite.config.ts) — it watches for vue-tsc / tsc / eslint errors and
  * surfaces them in the browser overlay. Not run for mp/server.
  *
  * --skip-quality is honoured here too (mostly for `yarn dev`-on-CI
@@ -48,20 +48,20 @@ function buildConcurrentlyArgs(targets) {
     // freshly-edited code. Vite's dev server owns :4123, proxies /api +
     // /static to express on :4124, and gives us module-level HMR.
     commands.push(
-      'cross-env NODE_ENV=development UNI_INPUT_DIR=app/src VITE_ROOT_DIR=app ' +
-        `node ${VITE_BIN} --mode development --config app/vite.config.ts`,
+      'cross-env NODE_ENV=development UNI_INPUT_DIR=app/frontend/src VITE_ROOT_DIR=app/frontend ' +
+        `node ${VITE_BIN} --mode development --config app/frontend/vite.config.ts`,
     )
   }
   if (targets.includes('mp')) {
     names.push('mp')
     commands.push(
-      'cross-env NODE_ENV=development UNI_INPUT_DIR=app/src VITE_ROOT_DIR=app ' +
-        `node ${VITE_BIN} build -p mp-weixin --watch --mode development --config app/vite.config.ts`,
+      'cross-env NODE_ENV=development UNI_INPUT_DIR=app/frontend/src VITE_ROOT_DIR=app/frontend ' +
+        `node ${VITE_BIN} build -p mp-weixin --watch --mode development --config app/frontend/vite.config.ts`,
     )
   }
   if (targets.includes('server')) {
     names.push('server')
-    commands.push('cross-env NODE_ENV=development tsx server/src/server.ts')
+    commands.push('cross-env NODE_ENV=development tsx app/server/src/server.ts')
   }
 
   if (commands.length === 0) {

@@ -24,11 +24,11 @@ async function build_h5() {
   return run(
     'h5: vite build (production)',
     'node',
-    [VITE_BIN, 'build', '--mode', 'production', '--config', 'app/vite.config.ts'],
+    [VITE_BIN, 'build', '--mode', 'production', '--config', 'app/frontend/vite.config.ts'],
     {
       NODE_ENV: 'production',
-      UNI_INPUT_DIR: 'app/src',
-      VITE_ROOT_DIR: 'app',
+      UNI_INPUT_DIR: 'app/frontend/src',
+      VITE_ROOT_DIR: 'app/frontend',
     },
   )
 }
@@ -37,27 +37,27 @@ async function build_mp() {
   return run(
     'mp: vite build (production, mp-weixin)',
     'node',
-    [VITE_BIN, 'build', '-p', 'mp-weixin', '--mode', 'production', '--config', 'app/vite.config.ts'],
+    [VITE_BIN, 'build', '-p', 'mp-weixin', '--mode', 'production', '--config', 'app/frontend/vite.config.ts'],
     {
       NODE_ENV: 'production',
-      UNI_INPUT_DIR: 'app/src',
-      VITE_ROOT_DIR: 'app',
+      UNI_INPUT_DIR: 'app/frontend/src',
+      VITE_ROOT_DIR: 'app/frontend',
     },
   )
 }
 
 async function build_server() {
-  return run('server: tsc compile', 'yarn', ['tsc', '-p', 'server/tsconfig.json'])
+  return run('server: tsc compile', 'yarn', ['tsc', '-p', 'app/server/tsconfig.json'])
 }
 
 async function run_smoke() {
-  // The webServer block in app/playwright.config.ts boots `start:prod` and
+  // The webServer block in app/frontend/playwright.config.ts boots `start:prod` and
   // reuses an existing server locally. quietly relies on `server/dist` and
-  // `server/public/static` being populated, hence the order above.
+  // `app/server/public/static` being populated, hence the order above.
   return run(
     'smoke: Playwright SPA boot',
     'yarn',
-    ['playwright', 'test', '--config=app/playwright.config.ts', 'app/test/e2e/spa_boot_smoke.spec.ts'],
+    ['playwright', 'test', '--config=app/frontend/playwright.config.ts', 'app/frontend/test/e2e/spa_boot_smoke.spec.ts'],
   )
 }
 

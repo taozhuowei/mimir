@@ -20,19 +20,19 @@ Expose only 3 yarn scripts; never add more. New tooling → `scripts/` or git ho
 Invoke directly, not via yarn:
 
 - `node scripts/quality_gate.js full | staged` (CI `verify` runs `full`).
-- `yarn vitest run --config app/vitest.config.ts --dir app/test [-t "<pat>"|<file>]`
-- `yarn vitest run --config server/vitest.config.ts --dir server/test [-t "<pat>"|<file>]`
-- `yarn vue-tsc --noEmit -p app/tsconfig.json` / `yarn tsc --noEmit -p server/tsconfig.json`
-- `yarn eslint app/src/ app/test/ server/src/ server/test/`
-- `yarn playwright test --config=app/playwright.config.ts`
+- `yarn vitest run --config app/frontend/vitest.config.ts --dir app/frontend/test [-t "<pat>"|<file>]`
+- `yarn vitest run --config app/server/vitest.config.ts --dir app/server/test [-t "<pat>"|<file>]`
+- `yarn vue-tsc --noEmit -p app/frontend/tsconfig.json` / `yarn tsc --noEmit -p app/server/tsconfig.json`
+- `yarn eslint app/frontend/src/ app/frontend/test/ app/server/src/ app/server/test/`
+- `yarn playwright test --config=app/frontend/playwright.config.ts`
 - Skip gate while debugging: pass `--skip-quality` to the build orchestrator.
 
 ## Constraints
 
 - Type-check frontend with `vue-tsc`, never `tsc`.
-- Do not rely on `:4124/` in dev — returns 404 by design (guard `server/src/app.ts:243`).
+- Do not rely on `:4124/` in dev — returns 404 by design (guard `app/server/src/app.ts:243`).
 - Branch dev/prod per-object, not per-port.
-- Run unit tests with `--dir app/test` or `--dir server/test` (matching `--config`).
+- Run unit tests with `--dir app/frontend/test` or `--dir app/server/test` (matching `--config`).
 - `pre-push` runs the full gate; bypass only per the two README emergencies.
 - `.env.*.local` is gitignored; create `.env.production.local` by hand before deploy.
 - Only spread kind is `single_card`; ship no placeholder spread code.

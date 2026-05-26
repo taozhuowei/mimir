@@ -22,13 +22,41 @@ if (!process.env.UNI_INPUT_DIR) {
 // shuffles. See docs/research/layout_final_rem.md for the full rationale.
 const isH5Target = !process.env.UNI_PLATFORM || process.env.UNI_PLATFORM === 'h5'
 
+// mp-weixin counterpart of the H5 postcss-pxtorem step. The source is authored
+// against the 430 CSS px design canvas; rpx is defined as screenWidth/750, so a
+// value of N design-px must become N × 750/430 rpx to render at N × (w/430) px —
+// identical to the H5 rem chain (rootFontSize = clamp(0.872, w/430, 1) × 43)
+// across the 375–430 width range. Exclusions / minPixelValue / the :root +
+// .ignore-rem blacklist mirror the pxtorem options below so both platforms
+// convert the exact same source set. SPIKE: inlined here to validate that
+// vite-plugin-uni forwards css.postcss.plugins into the .wxss output.
+function postcssPxToRpx({ ratio = 750 / 430, unitPrecision = 5, minPixelValue = 2 } = {}) {
+  const excludeProp = /^(border|border-.+|box-shadow|outline|outline-.+)$/
+  const blacklist = [/(^|[^.\w-]):root\b/, /\.ignore-rem/]
+  const pxValue = /(-?\d*\.?\d+)px/g
+  return {
+    postcssPlugin: 'postcss-pxtorpx-local',
+    Declaration(decl: { prop: string; value: string; parent?: { selector?: string } }) {
+      if (!decl.value.includes('px') || excludeProp.test(decl.prop)) return
+      const selector = decl.parent && decl.parent.selector
+      if (selector && blacklist.some((re) => re.test(selector))) return
+      decl.value = decl.value.replace(pxValue, (match: string, num: string) => {
+        const n = parseFloat(num)
+        if (!Number.isFinite(n) || Math.abs(n) < minPixelValue) return match
+        return `${+(n * ratio).toFixed(unitPrecision)}rpx`
+      })
+    },
+  }
+}
+postcssPxToRpx.postcss = true
+
 export default defineConfig(({ mode }) => {
   const isProduction = mode === 'production'
 
   return {
     publicDir: path.resolve(__dirname, '../server/public'),
     plugins: [uni()],
-    envDir: path.resolve(__dirname, '..'),
+    envDir: path.resolve(__dirname, '../..'),
     css: isH5Target
       ? {
           postcss: {
@@ -45,11 +73,15 @@ export default defineConfig(({ mode }) => {
             ],
           },
         }
-      : undefined,
+      : {
+          postcss: {
+            plugins: [postcssPxToRpx({ ratio: 750 / 430, unitPrecision: 5, minPixelValue: 2 })],
+          },
+        },
     resolve: {
       alias: {
         // Use gsap-core (no CSSPlugin) to avoid DOM-only APIs in WeChat Mini Program.
-        gsap: path.resolve(__dirname, '../node_modules/gsap/gsap-core.js'),
+        gsap: path.resolve(__dirname, '../../node_modules/gsap/gsap-core.js'),
       },
     },
     build: {

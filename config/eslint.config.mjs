@@ -20,7 +20,7 @@ const FORBIDDEN_GLOBALS = [
 
 export default tseslint.config(
   // Global ignores
-  { ignores: ['node_modules/', 'dist/', 'app/dist/'] },
+  { ignores: ['node_modules/', 'dist/', 'app/frontend/dist/'] },
 
   // Base recommended rules
   js.configs.recommended,
@@ -45,7 +45,7 @@ export default tseslint.config(
   // rule severity if (2) is repeatedly insufficient — and document why in
   // TODO.md so it doesn't silently revert to 'warn' indefinitely.
   {
-    files: ['app/src/**/*.{ts,vue}', 'server/src/**/*.ts'],
+    files: ['app/frontend/src/**/*.{ts,vue}', 'app/server/src/**/*.ts'],
     plugins: { sonarjs: sonarjs },
     rules: {
       ...sonarjs.configs.recommended.rules,
@@ -85,7 +85,7 @@ export default tseslint.config(
 
   // uni-app globals and timer APIs available in all frontend code
   {
-    files: ['app/src/**/*.{ts,vue}'],
+    files: ['app/frontend/src/**/*.{ts,vue}'],
     languageOptions: {
       globals: {
         uni: 'readonly',
@@ -105,7 +105,7 @@ export default tseslint.config(
 
   // Node/server and test code should not inherit uni-app runtime restrictions.
   {
-    files: ['server/**/*.{ts,js}', 'app/test/**/*.{ts,tsx,js}', 'server/test/**/*.{ts,tsx,js}'],
+    files: ['app/server/**/*.{ts,js}', 'app/frontend/test/**/*.{ts,tsx,js}', 'app/server/test/**/*.{ts,tsx,js}'],
     languageOptions: {
       globals: {
         process: 'readonly',
@@ -127,7 +127,7 @@ export default tseslint.config(
 
   // Mini Program safety: forbid Web-only APIs in frontend code
   {
-    files: ['app/src/**/*.{ts,vue}'],
+    files: ['app/frontend/src/**/*.{ts,vue}'],
     rules: {
       'no-restricted-globals': ['error', ...FORBIDDEN_GLOBALS],
       'no-restricted-properties': ['error',
@@ -145,7 +145,7 @@ export default tseslint.config(
 
   // Discipline: prevent debug residue and type escape in production code
   {
-    files: ['app/src/**/*.{ts,vue}', 'server/src/**/*.{ts,js}'],
+    files: ['app/frontend/src/**/*.{ts,vue}', 'app/server/src/**/*.{ts,js}'],
     rules: {
       'no-console': ['error', { allow: ['error', 'warn'] }],
       'no-debugger': 'error',
@@ -155,7 +155,7 @@ export default tseslint.config(
 
   // Allow console in test code
   {
-    files: ['app/test/**/*.{ts,tsx,js}', 'server/test/**/*.{ts,tsx,js}', '**/*.test.{ts,tsx,js}'],
+    files: ['app/frontend/test/**/*.{ts,tsx,js}', 'app/server/test/**/*.{ts,tsx,js}', '**/*.test.{ts,tsx,js}'],
     rules: {
       'no-console': 'off',
       'no-warning-comments': 'off',
@@ -164,7 +164,7 @@ export default tseslint.config(
 
   // Relax rules that conflict with uni-app / project conventions
   {
-    files: ['app/src/**/*.{ts,vue}'],
+    files: ['app/frontend/src/**/*.{ts,vue}'],
     rules: {
       'vue/multi-word-component-names': 'off',
       '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],

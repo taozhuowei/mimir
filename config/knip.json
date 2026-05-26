@@ -9,7 +9,7 @@
         "config/dependency-cruiser.cjs"
       ]
     },
-    "app": {
+    "app/frontend": {
       "entry": [
         "src/App.vue",
         "src/pages/index.vue",
@@ -22,7 +22,7 @@
         "!src/**/*.d.ts"
       ]
     },
-    "server": {
+    "app/server": {
       "entry": [
         "src/server.ts",
         "src/app.ts",

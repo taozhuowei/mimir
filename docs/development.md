@@ -21,7 +21,7 @@ yarn dev
 4. `concurrently` 并行启动三个 watcher：
    - **h5**：vite dev server 监听 `:4123`，模块级 HMR + vite-plugin-checker overlay。
    - **mp**：`vite-plugin-uni build --watch -p mp-weixin`（小程序运行时只能消费磁盘产物）。
-   - **server**：`tsx server/src/server.ts` 监听 `:4124`，TS 改动自动重启。
+   - **server**：`tsx app/server/src/server.ts` 监听 `:4124`，TS 改动自动重启。
 
 vite 把 `/api` 与 `/static` 反代到 `:4124`，前端发请求等同生产同源。直接打开 `:4124/` 在 dev 下返回 404 —— 这是正确信号，express 在 dev 不 fallback 到陈旧 `dist/build/h5/index.html`，避免静默掩盖未热更代码。
 
@@ -32,10 +32,10 @@ vite 把 `/api` 与 `/static` 反代到 `:4124`，前端发请求等同生产同
 1. 全量 quality gate。
 2. h5 vite production build → `dist/build/h5/`。
 3. mp-weixin vite production build → `dist/build/mp-weixin/`。
-4. server `tsc` 输出 → `server/dist/`。
-5. 包大小回归（`scripts/perf_baseline_gate.js`）+ SPA boot smoke：`node server/dist/server.js` 真启动，curl `/`、`/api/healthz` 验证 200。
+4. server `tsc` 输出 → `app/server/dist/`。
+5. 包大小回归（`scripts/perf_baseline_gate.js`）+ SPA boot smoke：`node app/server/dist/server.js` 真启动，curl `/`、`/api/healthz` 验证 200。
 
-部署：`dist/build/h5/` 拷到前端服务器（或交 nginx serve）；`server/dist/` + `node_modules` 拷到 server 主机，`NODE_ENV=production node server/dist/server.js` 启动（默认 `127.0.0.1:4124`，由 nginx 反代）。
+部署：`dist/build/h5/` 拷到前端服务器（或交 nginx serve）；`app/server/dist/` + `node_modules` 拷到 server 主机，`NODE_ENV=production node app/server/dist/server.js` 启动（默认 `127.0.0.1:4124`，由 nginx 反代）。
 
 ## 环境变量
 
