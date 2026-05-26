@@ -25,8 +25,7 @@
    此占位让 N1 装配后构建产物在 lib-flexible 尚未注入前仍按 14PM 真值
    渲染（不响应视口变化）；N2 注入 inline 脚本后即按 viewport.w 动态调整。
    注：此选择器命中 vite.config.ts 的 selectorBlackList，本块内 px
-   不被 postcss-pxtorem 转换，font-size 字面量保持 43px。
-   方案档：../../../docs/research/layout_final_rem.md */
+   不被 postcss-pxtorem 转换，font-size 字面量保持 43px。 */
 :root {
   font-size: 43px;
 }
@@ -232,7 +231,7 @@ html[data-too-small="1"] .main-surface__canvas {
  * （design_flexible + postcss-pxtorem）冲突，会在大屏产生 vw 弹性 + rem
  * 缩放双重作用。改为静态 14PM 真值后，postcss-pxtorem 把 Npx 转成 Nrem，
  * html font-size 由 design_flexible 按视口宽度 clamp(0.872, w/430, 1) ×
- * 43，所有字号同步等比缩放。详见 docs/research/layout_final_rem.md。
+ * 43，所有字号同步等比缩放。
  */
 /* #ifdef H5 */
 :root {

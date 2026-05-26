@@ -170,8 +170,7 @@ defineProps<{
 /* 历史 .divination-deck--show-results 升起规则已废除：MainSurface 切换为
    flex 三段后，Stage 与答案区作为兄弟节点自然纵向分布，卡牌严格几何
    居中于 Stage，不再需要升起让位。--result-card-lift-y 变量与
-   StageDeck 的 lift computed 一并废弃。详见
-   docs/research/layout_final_rem.md。 */
+   StageDeck 的 lift computed 一并废弃。 */
 
 .cut-pile {
   width: var(--card-width);

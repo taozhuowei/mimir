@@ -19,8 +19,6 @@
  *
  * 跨端：H5 端走 uni.getWindowInfo().windowWidth；mp-weixin 同 API 可用，
  * 但 mp 端走 rpx 链不参与 rem 缩放，dpx 输出仍是设计真值（scale=1）。
- *
- * 方案档：docs/research/layout_final_rem.md
  */
 
 import { computeScale } from './design_flexible'

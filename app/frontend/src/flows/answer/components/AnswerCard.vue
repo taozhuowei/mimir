@@ -59,7 +59,6 @@ const answer = computed(() => props.answerResult?.cardDetails[0]?.answer ?? null
    postcss-pxtorem 编译期转 rem，design_flexible 运行时按视口宽度 clamp
    到 [0.872, 1] × 43px 的 root font-size，实现等比缩放。
    max-width 使用 px 而非 em，避免大字号下二次膨胀溢出 canvas。
-   详见 docs/research/layout_final_rem.md。
    此组件本身即为 .main-surface__body 的 flex item（无外包装）：
    `flex: 0 0 auto` 锁定不被弹性挤压，min-height 由 layout solver
    的 sizes.answerZoneMinHeight 同源 CSS 变量提供；超长答案沿内部

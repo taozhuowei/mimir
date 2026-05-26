@@ -62,7 +62,3 @@ DDD 区分：
 7. 物理视口（viewport）：屏幕物理像素信息——宽、高、安全区、状态栏。
 8. UI 预算（reservations）：各区域的像素预留——标题区、操作区、答案卡、卡牌间距等。`answerZoneMinHeight` 是答案卡的像素预算（最坏情况），layout solver 据此扣减 stage 可用高，使卡牌 reveal 终态尺寸不溢出 stage；答案卡内容罕见地超出 min-height 时，flex 在运行时进一步压 stage，求解器仍保持保守。
 9. 布局求解（solve layout）：纯函数布局求解器，从视口与预算算出所有容器和卡牌的几何位置。
-
-## 塔罗领域术语
-
-塔罗领域术语（卡牌名、正位 / 逆位含义、四元素象征、宫廷牌等）单独维护于 [../tarot_glossary.md](../tarot_glossary.md)，由本文件单向引用，词表不反向引用本项目术语。

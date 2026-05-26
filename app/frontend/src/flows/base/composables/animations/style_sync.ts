@@ -95,7 +95,7 @@ function createStyleRefs(state: AnimationState, opts: StyleReconcilerOptions) {
   const stageStyle = ref<Record<string, string>>({})
   // translateY(60px) 与卡堆 -i*0.8px 偏移均为 iPhone 14 Pro Max 设计稿
   // 真值。inline style 不经 postcss-pxtorem，需走 dpx 才能按视口等比缩放
-  // （否则小屏入场偏移看起来过大）。详见 docs/research/layout_final_rem.md。
+  // （否则小屏入场偏移看起来过大）。
   const headerStyle = ref<Record<string, string>>({
     transform: `translateY(${dpxStr(60)})`,
     opacity: '0',

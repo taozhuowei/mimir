@@ -3,7 +3,7 @@
     TooSmallBanner — viewport < iPhone 8 (375×667) fallback notice.
     rem 链下限锁定在 0.872（FLOOR_RATIO），低于该比例的屏幕等比锁底，
     多余尺寸交由 body overflow:auto 滚动兜底。本 banner 仅在 too-small
-    状态下显示，提示用户体验受影响。详见 docs/research/layout_final_rem.md
+    状态下显示，提示用户体验受影响。
   -->
   <view
     v-if="isTooSmall"

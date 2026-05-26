@@ -14,8 +14,6 @@ config/
 └── gitleaks.toml            # 密钥扫描规则
 ```
 
-各配置对应的门禁步骤见 [docs/git_workflow.md](../docs/git_workflow.md) “质量门禁”。
-
 ## 技术栈
 
 - **ESLint**（flat config，`.mjs`）：代码风格与正确性。

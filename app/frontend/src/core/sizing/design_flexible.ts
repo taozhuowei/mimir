@@ -32,8 +32,6 @@
  * mp-weixin 端：rem 链不参与（rpx 自带等比），inline 脚本无 DOM 可写；
  * 本模块仍可被 mp 端 import（uni.getWindowInfo 跨端可用），ref 提供
  * 与 H5 同源的 scale / isTooSmall 信号，给 Vue 渲染层使用（如 banner）。
- *
- * 方案档：docs/research/layout_final_rem.md ／ main_14pm_snapshot.md
  */
 import { getCurrentScope, onScopeDispose, ref, type Ref } from 'vue'
 import { raf } from './raf_shim'
