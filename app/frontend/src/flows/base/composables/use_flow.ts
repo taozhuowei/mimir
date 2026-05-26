@@ -1,7 +1,7 @@
 /**
  * Name: flows/base/composables/use_flow
  * Purpose: re-export the application-level flow ref from the tarot store and
- *          provide named transition helpers (see docs/prd/state.md 应用级流程).
+ *          provide named transition helpers (see docs/state.md 应用级流程).
  *          Three flow states: idle / divination / answer.
  * Reason: views/containers depend on `Flow` not the store implementation —
  *         this composable is the DDD seam so the store layer can evolve

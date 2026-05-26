@@ -31,7 +31,7 @@
  *   and removes any predictability concerns from v8's PRNG state.
  *
  * The response field is `answer` (renamed from the pre-Answer design's
- * `reading`); see docs/prd for the product term 答案.
+ * `reading`); see docs/glossary.md for the product term 答案.
  */
 
 import { getAllCards, getCardById, type TarotCard } from './card_loader'

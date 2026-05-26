@@ -1,9 +1,9 @@
 <template>
   <!--
     FallbackView — phase-2.1 skeleton.
-    Composition per docs/prd/view.md（5 个视图与所属容器 #5）: HeaderArea(TitleContent variant='fallback')
+    Composition per docs/view.md（5 个视图与所属容器 #5）: HeaderArea(TitleContent variant='fallback')
     + Stage(FallbackOrbits). The PRD-mandated copy "宇宙信号微弱，暂无法接通"
-    (docs/prd/view.md（容器与内容对应 #1）/ docs/prd/animation.md（动效规范 #4）) is owned by TitleContent's copy table; this
+    (docs/view.md（容器与内容对应 #1）/ docs/animation.md（动效规范 #4）) is owned by TitleContent's copy table; this
     view's job is just to wire the variant. The header is wrapped in the
     shared HeaderArea (task 8.3.1) so the fallback title sits at the same
     y as idle / divination headers.
@@ -24,11 +24,11 @@
 /**
  * Name: FallbackView
  * Purpose: the view the boot shell mounts on a critical bootstrap failure
- *          (docs/prd/glossary.md（视图 #5）), mutually exclusive with the
+ *          (docs/glossary.md（视图 #5）), mutually exclusive with the
  *          main surface. Conveys the "no signal" state through the title
  *          slot's mystery copy + the orbiting stage animation.
  * Reason: keeping the fallback view minimal — title + stage — matches
- *         docs/prd/animation.md（动效规范 #4）: no toasts, no notifications, the title line is the
+ *         docs/animation.md（动效规范 #4）: no toasts, no notifications, the title line is the
  *         entire user-facing message.
  * Data flow: optional `errorMessage` is for diagnostic visibility only;
  *           it never replaces the canonical PRD-mandated title copy.

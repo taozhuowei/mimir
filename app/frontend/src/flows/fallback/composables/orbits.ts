@@ -1,6 +1,6 @@
 /**
  * Name: flows/fallback/composables/orbits
- * Purpose: builds the fallback orbital animation (docs/prd/animation.md（动画分帧）).
+ * Purpose: builds the fallback orbital animation (docs/animation.md（动画分帧）).
  * Reason: extracted into a builder so FallbackOrbits.vue stays declarative.
  *         Uses parametric trig (x = rx·cos θ, y = ry·sin θ) instead of
  *         GSAP MotionPath — the plugin is not configured in this project.
@@ -36,7 +36,7 @@ export interface OrbitingPlanet {
   selfRotSpeed: number
 }
 
-/** Default planet configuration matching docs/prd/animation.md（动画分帧） four-body layout. */
+/** Default planet configuration matching docs/animation.md（动画分帧） four-body layout. */
 export function createDefaultPlanets(): OrbitingPlanet[] {
   return [
     // tetrahedron — innermost, fastest

@@ -17,7 +17,7 @@ import { ref } from 'vue'
 import type { Ref } from 'vue'
 import type { gsap } from 'gsap'
 
-/** Cards stacked in the idle fan deck (docs/prd/animation.md（动画分帧）). */
+/** Cards stacked in the idle fan deck (docs/animation.md（动画分帧）). */
 export const DECK_SIZE = 12
 
 /**

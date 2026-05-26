@@ -4,7 +4,7 @@ import { test, expect } from '@playwright/test'
  * Happy path: home page → divination overlay → inline answer.
  *
  * The flow auto-progresses through shuffle/cut/draw/reveal once the user
- * taps the idle deck (per docs/prd/state.md 占卜流程要求 "占卜流程应自动推进").
+ * taps the idle deck (per docs/state.md 占卜流程要求 "占卜流程应自动推进").
  * The 30-second timeout on the answer assertion covers the full
  * animation pipeline plus the server-side Answer lookup.
  *

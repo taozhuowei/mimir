@@ -1,6 +1,6 @@
 <template>
   <!--
-    Main divination surface (docs/prd/glossary.md 路由 #1). Composes the
+    Main divination surface (docs/glossary.md 路由 #1). Composes the
     divination surface — HeaderArea (TitleContent ↔ ProgressContent by
     flow) + Stage (CardsLoadError | StageDeck) — with the inline
     AnswerCard + ActionArea struck below the result card in the
@@ -8,7 +8,7 @@
     wrapper around AnswerCard (the card is itself the flex item).
     NotificationHost sits on the surface root for cross-view alerts. The
     .main-surface__canvas wrapper caps the divination canvas at
-    MAX_CANVAS_WIDTH (docs/prd/animation.md 视图过渡动画), centered. The
+    MAX_CANVAS_WIDTH (docs/animation.md 视图过渡动画), centered. The
     single StageDeck instance stays mounted across idle ↔ divination, so
     the swap is a header-content change only. Mounted by pages/index.vue
     only when bootstrap did not fail (the fallback view is its

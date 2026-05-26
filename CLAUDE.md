@@ -4,10 +4,9 @@ Rules + links only. On conflict, the docs below win.
 
 ## Docs (read first)
 
-- [docs/PRD.md](docs/PRD.md) — product; modules in [docs/prd/](docs/prd/): [product.md](docs/prd/product.md) [state.md](docs/prd/state.md) [view.md](docs/prd/view.md) [animation.md](docs/prd/animation.md) [glossary.md](docs/prd/glossary.md).
-- [docs/TODO.md](docs/TODO.md) — execution plan / stage tracking.
-- [README.md](README.md) — commands, env vars, deployment, git workflow.
-- [docs/tarot_glossary.md](docs/tarot_glossary.md) — tarot domain terms.
+- [README.md](README.md) — product (产品需求 节) + commands, env vars, deployment.
+- [docs/](docs/) — PRD modules: [product.md](docs/product.md) [state.md](docs/state.md) [view.md](docs/view.md) [animation.md](docs/animation.md) [glossary.md](docs/glossary.md).
+- [TODO.md](TODO.md) — execution plan / stage tracking.
 
 ## Commands
 

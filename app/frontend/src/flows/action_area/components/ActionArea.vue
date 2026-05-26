@@ -1,7 +1,7 @@
 <template>
   <!--
     ActionArea — terminal-flow action surface.
-    Per docs/prd/glossary.md 容器 #8 + docs/prd/animation.md 动效规范 #3,
+    Per docs/glossary.md 容器 #8 + docs/animation.md 动效规范 #3,
     the action area only renders in the `answer` flow. On success it
     surfaces 回到首页 / 再占一次; on a failed reading it swaps the primary
     CTA to 重试读取. The fade-in animation is synchronised with the
@@ -52,7 +52,7 @@
 /**
  * Name: ActionArea container
  * Purpose: hosts the restart / back-home / retry buttons; mounted only in
- *          the terminal `answer` flow (docs/prd/state.md 应用级流程).
+ *          the terminal `answer` flow (docs/state.md 应用级流程).
  * Reason: keeping the visibility rule colocated with the container removes
  *         one source of flow coupling from views and makes the rule
  *         auditable in a single file.
@@ -75,7 +75,7 @@ defineEmits<{
 }>()
 
 /**
- * Visibility rule (docs/prd/glossary.md 容器 #8): show only in the terminal
+ * Visibility rule (docs/glossary.md 容器 #8): show only in the terminal
  * `answer` flow. When the reading itself failed the buttons swap to a
  * retry CTA; in every other flow the area stays hidden.
  */
@@ -91,7 +91,7 @@ const visible = computed(() => props.flow === 'answer')
   padding: 12px 12px calc(env(safe-area-inset-bottom, 0px) + 12px);
   /* 与 .answer-card 同步：480ms cubic-bezier(0.16,1,0.3,1) 淡入 +
      8px translateY，确保进入 `answer` flow 时答案卡与操作区在同一帧
-     视觉上同时显现（docs/prd/animation.md 动效规范）。 */
+     视觉上同时显现（docs/animation.md 动效规范）。 */
   animation: action-area-in 480ms cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 

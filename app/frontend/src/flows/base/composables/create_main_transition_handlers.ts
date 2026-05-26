@@ -41,7 +41,7 @@ export interface MainHandlers {
    * inline answer zone + action area are gated by `flow === 'answer'`
    * in MainSurface, so without this branch a failed
    * /api/v1/divinations response leaves the user stuck on the reveal
-   * animation with no error UI mounted (docs/prd/state.md 异常与恢复;
+   * animation with no error UI mounted (docs/state.md 异常与恢复;
    * verified by network_error.spec.ts). On error AnswerCard renders
    * the error line + ActionArea swaps the primary CTA to "重试读取".
    */
