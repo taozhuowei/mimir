@@ -10,15 +10,15 @@ Rules + links only. On conflict, the docs below win.
 
 ## Commands
 
-Expose only 3 yarn scripts; never add more. New tooling → `scripts/` or git hooks.
+Expose only 3 yarn scripts; never add more. New tooling → `config/scripts/` or git hooks.
 
 - `yarn install` — installs simple-git-hooks (pre-commit / commit-msg / pre-push).
-- `yarn dev` — `node scripts/build/index.js --dev --target h5,mp,server`: write `.env.development.local` → kill `:4123`/`:4124` → gate → watch `vite` h5 `:4123` + `vite-plugin-uni -p mp-weixin` + `tsx server` `:4124` (proxies `/api` `/static` → `:4124`).
-- `yarn prod` — same entry `--prod`: gate → vite h5 → uni mp → tsc server → `scripts/perf_baseline_gate.js` → SPA smoke.
+- `yarn dev` — `node config/scripts/build/index.js --dev --target h5,mp,server`: write `.env.development.local` → kill `:4123`/`:4124` → gate → watch `vite` h5 `:4123` + `vite-plugin-uni -p mp-weixin` + `tsx server` `:4124` (proxies `/api` `/static` → `:4124`).
+- `yarn prod` — same entry `--prod`: gate → vite h5 → uni mp → tsc server → `config/scripts/perf_baseline_gate.js` → SPA smoke.
 
 Invoke directly, not via yarn:
 
-- `node scripts/quality_gate.js full | staged` (CI `verify` runs `full`).
+- `node config/scripts/quality_gate.js full | staged` (CI `verify` runs `full`).
 - `yarn vitest run --config app/frontend/vitest.config.ts --dir app/frontend/test [-t "<pat>"|<file>]`
 - `yarn vitest run --config app/server/vitest.config.ts --dir app/server/test [-t "<pat>"|<file>]`
 - `yarn vue-tsc --noEmit -p app/frontend/tsconfig.json` / `yarn tsc --noEmit -p app/server/tsconfig.json`

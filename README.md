@@ -33,8 +33,7 @@ scales-tarot/
 ├── app/                  # 应用容器(前端 + 后端两个 workspace)
 │   ├── frontend/         # uni-app + Vue 3 前端(h5 + mp-weixin 双产物)        → app/frontend/README.md
 │   └── server/           # Express 4 + zod 后端(:4124)                       → app/server/README.md
-├── scripts/              # 构建编排 + 质量门禁(不暴露为 yarn script)           → scripts/README.md
-├── config/               # 根级工具配置                                       → config/README.md
+├── config/               # 根级工具配置 + 构建编排/质量门禁脚本(scripts/)       → config/README.md
 ├── docs/                 # 产品需求模块文档(索引见本 README「产品需求」节)
 ├── .github/              # CI(verify + e2e) / dependabot / PR 模板
 ├── dist/                 # 构建产物(gitignored)

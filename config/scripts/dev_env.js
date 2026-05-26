@@ -1,7 +1,7 @@
 /**
  * Auto-generate .env.development.local with LAN IP for mini program real device debugging.
  * Vite reads .env.development.local automatically when no explicit --mode is set.
- * Run before dev build: `node scripts/dev_env.js`
+ * Run before dev build: `node config/scripts/dev_env.js`
  */
 
 const os = require('os')
@@ -23,7 +23,7 @@ const lan_ip = all_ipv4.find(i =>
 
 const ip = lan_ip ? lan_ip.address : (all_ipv4[0]?.address || 'localhost')
 const api_base = `http://${ip}:${port}`
-const env_path = path.join(__dirname, '..', '.env.development.local')
+const env_path = path.join(__dirname, '..', '..', '.env.development.local')
 
 fs.writeFileSync(env_path, `VITE_API_BASE_URL=${api_base}\n`, 'utf-8')
 console.log(`[dev] API base URL: ${api_base}`)

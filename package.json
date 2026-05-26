@@ -8,13 +8,13 @@
   },
   "scripts": {
     "prepare": "simple-git-hooks",
-    "dev": "node scripts/build/index.js --dev --target h5,mp,server",
-    "prod": "node scripts/build/index.js --prod --target h5,mp,server"
+    "dev": "node config/scripts/build/index.js --dev --target h5,mp,server",
+    "prod": "node config/scripts/build/index.js --prod --target h5,mp,server"
   },
   "simple-git-hooks": {
-    "pre-commit": "node scripts/quality_gate.js staged",
+    "pre-commit": "node config/scripts/quality_gate.js staged",
     "commit-msg": "yarn commitlint --config config/commitlint.config.cjs --edit $1",
-    "pre-push": "node scripts/quality_gate.js full"
+    "pre-push": "node config/scripts/quality_gate.js full"
   },
   "workspaces": [
     "app/frontend",

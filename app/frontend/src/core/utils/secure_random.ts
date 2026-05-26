@@ -3,7 +3,7 @@
  *
  * Why a dedicated module:
  *   The repository's quality scanner forbids the global insecure RNG
- *   outside tests (see scripts/quality_scan.js, scanMathRandom). The
+ *   outside tests (see config/scripts/quality_scan.js, scanMathRandom). The
  *   remaining frontend randomness is purely cosmetic — a few degrees of
  *   pre-flip rotation jitter on draw cards — but the rule applies
  *   blanket-style. Wrapping `crypto.getRandomValues` here keeps business

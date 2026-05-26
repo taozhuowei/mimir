@@ -14,8 +14,8 @@
  * re-download into a fresh cache).
  *
  * Usage:
- *   node scripts/gitleaks_run.js protect --staged --no-banner   # pre-commit
- *   node scripts/gitleaks_run.js detect --no-banner             # CI / full scan
+ *   node config/scripts/gitleaks_run.js protect --staged --no-banner   # pre-commit
+ *   node config/scripts/gitleaks_run.js detect --no-banner             # CI / full scan
  *
  * Exit code: forwarded from gitleaks (0 = no leaks, 1 = leaks found, >1 = err).
  */
@@ -30,7 +30,7 @@ const zlib = require('zlib')
 // Pinned release. Bump deliberately; do not float.
 const GITLEAKS_VERSION = '8.30.1'
 
-const ROOT = path.resolve(__dirname, '..')
+const ROOT = path.resolve(__dirname, '..', '..')
 const CACHE_DIR = path.join(ROOT, 'node_modules', '.cache', 'gitleaks')
 const BIN_DIR = path.join(CACHE_DIR, 'bin')
 
