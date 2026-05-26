@@ -21,7 +21,7 @@ scripts/
 └── dev_env.js            # 写 .env.development.local(注入 LAN IP)
 ```
 
-命令用法见 [docs/development.md](../docs/development.md)；门禁/钩子见 [docs/git_workflow.md](../docs/git_workflow.md)。
+命令用法见 [CLAUDE.md](../CLAUDE.md) 的 “Commands”。
 
 ## 技术栈
 

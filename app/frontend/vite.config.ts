@@ -19,7 +19,7 @@ if (!process.env.UNI_INPUT_DIR) {
 // hairlines stay physical 1px regardless of viewport. mp-weixin targets do not
 // go through vite's CSS pipeline (uni-cli has its own); we still gate the
 // plugin on UNI_PLATFORM to make intent explicit and survive future toolchain
-// shuffles. See docs/research/layout_final_rem.md for the full rationale.
+// shuffles.
 const isH5Target = !process.env.UNI_PLATFORM || process.env.UNI_PLATFORM === 'h5'
 
 // mp-weixin counterpart of the H5 postcss-pxtorem step. The source is authored
