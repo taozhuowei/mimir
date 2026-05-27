@@ -26,7 +26,6 @@
       :style="cardsStyle[i - 1]"
       role="img"
       aria-label="塔罗牌背面"
-      lazy-load
     />
   </view>
 

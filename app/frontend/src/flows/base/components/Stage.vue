@@ -30,7 +30,7 @@
  * Data flow: parent view passes `scene`; child content (a stage-content
  *           component) is provided via the default slot.
  */
-type StageScene = 'idle' | 'divination' | 'fallback'
+type StageScene = 'idle' | 'divination' | 'fallback' | 'loading'
 
 withDefaults(
   defineProps<{
