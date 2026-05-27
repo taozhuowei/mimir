@@ -83,7 +83,8 @@
     "phin": "^3.7.1",
     "esbuild": "^0.25.0",
     "postcss": "^8.5.10",
-    "get-intrinsic": "1.2.7"
+    "get-intrinsic": "1.2.7",
+    "oxc-parser@npm:^0.130.0": "patch:oxc-parser@npm%3A0.130.0#~/.yarn/patches/oxc-parser-npm-0.130.0-4e087dc04a.patch"
   },
   "packageManager": "yarn@4.15.0"
 }

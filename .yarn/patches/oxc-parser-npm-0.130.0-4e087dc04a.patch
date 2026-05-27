@@ -1,0 +1,36 @@
+diff --git a/src-js/raw-transfer/supported.js b/src-js/raw-transfer/supported.js
+index 33d5e2b05af2b881a2e1ddf543508ace709c251e..cf03b77689c40761318cccc3a3fec85c8b0068de 100644
+--- a/src-js/raw-transfer/supported.js
++++ b/src-js/raw-transfer/supported.js
+@@ -19,11 +19,30 @@ let rawTransferIsSupported = null;
+  */
+ export function rawTransferSupported() {
+   if (rawTransferIsSupported === null) {
+-    rawTransferIsSupported = rawTransferRuntimeSupported() && rawTransferSupportedBinding();
++    rawTransferIsSupported =
++      rawTransferRuntimeSupported() && rawTransferSupportedBinding() && rawTransferAllocatable();
+   }
+   return rawTransferIsSupported;
+ }
+ 
++// Patched: V8 builds with the sandbox enabled cap a single `ArrayBuffer` at
++// 4 GiB, but raw transfer pre-allocates ~6 GiB (see common.js). The runtime
++// check above only inspects the Node version, so on such builds it returns
++// `true` and oxc then throws `RangeError: Array buffer allocation failed`.
++// Probe the allocation once and fall back to the non-raw parse path when the
++// large buffer cannot be created. On capable builds this is a cheap virtual
++// reservation, so raw transfer stays enabled there.
++function rawTransferAllocatable() {
++  try {
++    // 8 GiB — comfortably above raw transfer's requirement, well past the
++    // 4 GiB sandbox cap, so this is a clean capable-vs-capped discriminator.
++    void new ArrayBuffer(2 ** 33);
++    return true;
++  } catch {
++    return false;
++  }
++}
++
+ // Checks copied from:
+ // https://github.com/unjs/std-env/blob/ab15595debec9e9115a9c1d31bc7597a8e71dbfd/src/runtimes.ts
+ // MIT license: https://github.com/unjs/std-env/blob/ab15595debec9e9115a9c1d31bc7597a8e71dbfd/LICENCE
