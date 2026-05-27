@@ -60,6 +60,13 @@ jobs:
         uses: wagoid/commitlint-github-action@v6
         with:
           configFile: config/commitlint.config.cjs
+          # Lint only the most recent commits, not the full PR range. When main
+          # lags far behind a long-lived branch, the default (every commit since
+          # base) re-litigates old history and trips on pre-existing messages
+          # that can't be cheaply rewritten. The commit-msg hook already gates
+          # each commit at authoring time; this CI pass is a backstop for the
+          # latest work.
+          commitDepth: 10
       - name: Gitleaks (full history)
         # Detects credentials anywhere in the repo's git history. Pre-commit
         # hooks only scan staged content; CI catches anything that was
