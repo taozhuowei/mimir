@@ -15,6 +15,9 @@
  *   --target h5,mp,server,all   default: all (comma-separated subset OK)
  *   --skip-quality          skip the quality gate prefix (CI uses this
  *                           because the verify job already ran quality)
+ *   --skip-perf             skip the post-h5 perf baseline gate (deploy
+ *                           builds use this — bundle-size regression is a
+ *                           CI/local concern, not a deploy-host concern)
  *
  * Run via: `node config/scripts/build/index.js --prod --target h5,server`
  */
@@ -28,6 +31,7 @@ function parseArgs(argv) {
     mode: null,         // 'prod' | 'dev'
     targets: ['h5', 'mp', 'server'],
     skipQuality: false,
+    skipPerf: false,
   }
 
   for (let i = 0; i < argv.length; i += 1) {
@@ -40,6 +44,8 @@ function parseArgs(argv) {
       args.mode = 'dev'
     } else if (a === '--skip-quality') {
       args.skipQuality = true
+    } else if (a === '--skip-perf') {
+      args.skipPerf = true
     } else if (a === '--target' || a.startsWith('--target=')) {
       const value = a.startsWith('--target=') ? a.slice('--target='.length) : argv[++i]
       if (!value) fail('--target requires a value (h5,mp,server,all)')
@@ -66,7 +72,7 @@ function expandTargets(value) {
 
 function fail(msg) {
   console.error(`[build] ${msg}`)
-  console.error('[build] Usage: node config/scripts/build/index.js --prod|--dev [--target h5,mp,server,all] [--skip-quality]')
+  console.error('[build] Usage: node config/scripts/build/index.js --prod|--dev [--target h5,mp,server,all] [--skip-quality] [--skip-perf]')
   process.exit(2)
 }
 
@@ -76,7 +82,7 @@ const runner = args.mode === 'prod'
   ? require(path.join(__dirname, 'prod.js'))
   : require(path.join(__dirname, 'dev.js'))
 
-runner({ targets: args.targets, skipQuality: args.skipQuality })
+runner({ targets: args.targets, skipQuality: args.skipQuality, skipPerf: args.skipPerf })
   .then(code => process.exit(code))
   .catch(err => {
     console.error('[build] Pipeline crashed:', err && err.stack ? err.stack : err)
