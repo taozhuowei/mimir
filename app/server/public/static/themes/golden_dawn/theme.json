@@ -14,8 +14,8 @@
     "body": {
       "family": "LXGW WenKai",
       "weights": {
-        "300": "fonts/lxgw-wenkai-light.woff2",
-        "400": "fonts/lxgw-wenkai-regular.woff2"
+        "300": "fonts/lxgw-wenkai-light.subset.woff2",
+        "400": "fonts/lxgw-wenkai-regular.subset.woff2"
       }
     }
   },
@@ -32,7 +32,7 @@
     "icon_settings": "ui/icon-settings.svg"
   },
   "images": {
-    "card_back": "tarot/card_back.jpeg"
+    "card_back": "tarot/card_back.webp"
   },
   "colors": {
     "bg_primary": "#F2E8D0",

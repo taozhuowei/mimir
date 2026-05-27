@@ -18,8 +18,13 @@ config/scripts/
 ├── perf_baseline_gate.js # 包大小回归门禁
 ├── perf_baseline.json    # 性能基线
 ├── gitleaks_run.js       # 密钥扫描
-└── dev_env.js            # 写 .env.development.local(注入 LAN IP)
+├── dev_env.js            # 写 .env.development.local(注入 LAN IP)
+└── subset_fonts.js       # 一次性：按显示文本子集化 LXGW WenKai 正文字体
 ```
+
+`subset_fonts.js` 不挂进构建——仅在正文文案变更后手动复跑。它扫描 `app/frontend/src` 与 `app/server/src/data/*.json` 的字符全集，调 `python -m fontTools.subset` 生成 `*.subset.woff2`（17.5MB → ~0.56MB）写入 `app/server/public/static/themes/golden_dawn/fonts/`。前置：`python -m pip install fonttools brotli`。
+
+源字体（上游全字集 woff2）与原始 `card_back.jpeg` 存放在 `app/server/assets-src/`（**publicDir 之外，不进构建、不下发**），仅作子集化与 WebP 转码的源。card_back 的 WebP 转换为一次性资源操作，未脚本化。
 
 命令用法见 [CLAUDE.md](../../CLAUDE.md) 的 “Commands”。
 

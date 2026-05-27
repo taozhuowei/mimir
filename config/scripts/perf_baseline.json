@@ -1,24 +1,15 @@
 {
   "version": 1,
-  "lastUpdated": "2026-05-04",
+  "lastUpdated": "2026-05-27",
   "thresholds": {
     "regressPercent": 10
   },
   "entries": {
     "app/dist/build/h5/total": {
-      "bytes": 100945302
-    },
-    "app/dist/build/h5/static/themes/golden_dawn/fonts/lxgw-wenkai-light.woff2": {
-      "bytes": 9827592
-    },
-    "app/dist/build/h5/static/themes/golden_dawn/fonts/lxgw-wenkai-regular.woff2": {
-      "bytes": 8475576
+      "bytes": 82318232
     },
     "app/dist/build/h5/static/themes/golden_dawn/tarot/major/major_arcana_00_the_fool.jpeg": {
       "bytes": 1218117
-    },
-    "app/dist/build/h5/static/themes/golden_dawn/tarot/card_back.jpeg": {
-      "bytes": 1139584
     },
     "app/dist/build/h5/static/themes/golden_dawn/tarot/minor/pentacles/minor_arcana_pentacles_09_nine_of_pentacles.jpeg": {
       "bytes": 1118094
@@ -37,6 +28,15 @@
     },
     "app/dist/build/h5/static/themes/golden_dawn/tarot/major/major_arcana_03_the_empress.jpeg": {
       "bytes": 1086325
+    },
+    "app/dist/build/h5/static/themes/golden_dawn/tarot/minor/pentacles/minor_arcana_pentacles_10_ten_of_pentacles.jpeg": {
+      "bytes": 1081902
+    },
+    "app/dist/build/h5/static/themes/golden_dawn/tarot/minor/wands/minor_arcana_wands_13_queen_of_wands.jpeg": {
+      "bytes": 1071259
+    },
+    "app/dist/build/h5/static/themes/golden_dawn/tarot/minor/cups/minor_arcana_cups_06_six_of_cups.jpeg": {
+      "bytes": 1070281
     }
   }
 }
