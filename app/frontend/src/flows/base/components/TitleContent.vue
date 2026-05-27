@@ -25,6 +25,9 @@
     <template v-else-if="variant === 'fallback'">
       <text class="title-content__fallback">{{ COPY.fallback.line }}</text>
     </template>
+    <template v-else-if="variant === 'loading'">
+      <text class="title-content__loading">{{ COPY.loading.line }}</text>
+    </template>
   </view>
 </template>
 
@@ -53,7 +56,7 @@ import { useTitleEntrance } from '../composables/use_title_entrance'
 
 const props = withDefaults(
   defineProps<{
-    variant?: 'idle' | 'fallback'
+    variant?: 'idle' | 'fallback' | 'loading'
     /**
      * Optional secondary line for the idle error state. Rendered below
      * `guidance` so the user sees the resource error reason inline.
@@ -72,6 +75,9 @@ const COPY = {
   },
   fallback: {
     line: '宇宙信号微弱，暂无法接通',
+  },
+  loading: {
+    line: '正在接通星辰',
   },
 } as const
 
@@ -141,9 +147,28 @@ const { titleStyle, subtitleStyle, guidanceStyle } = useTitleEntrance(
   line-height: 1.2;
 }
 
-.title-content__fallback {
+.title-content__fallback,
+.title-content__loading {
   font-size: var(--font-s);
   color: var(--color-text-secondary);
   letter-spacing: 0.18em;
+}
+
+/* Loading line gets a soft breathing pulse so the boot wait reads as
+   "working", not stalled. Reduced-motion users see the static line. */
+.title-content__loading {
+  animation: title-loading-pulse 1.8s ease-in-out infinite;
+}
+
+@keyframes title-loading-pulse {
+  0%, 100% { opacity: 0.45; }
+  50%      { opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .title-content__loading {
+    animation: none;
+    opacity: 1;
+  }
 }
 </style>

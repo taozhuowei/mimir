@@ -24,7 +24,7 @@ import { onMounted, onUnmounted, ref, watch, type Ref } from 'vue'
 import { gsap } from 'gsap'
 import { prefersReducedMotion } from '../../../core/utils/accessibility'
 
-export function useTitleEntrance(variant: Ref<'idle' | 'fallback'>) {
+export function useTitleEntrance(variant: Ref<'idle' | 'fallback' | 'loading'>) {
   /* ── DOM-free animation state (MP-WeChat compatible) ──────────────── */
 
   const titleStyle = ref<Record<string, string>>({})

@@ -16,14 +16,21 @@
  * Promise.allSettled lets us inspect each outcome independently: a reject
  * on either side, *or* a fulfilled call that leaves the corresponding
  * error ref populated (the stores write the error there on caught
- * failure), marks the boot failed. Until then `status` stays 'pending'
- * and the main surface renders idle (inert — no card/theme data is
- * consumed until the user starts a divination).
+ * failure), marks the boot failed.
+ *
+ * While `status` is 'pending' the route root shows the LoadingView (the
+ * fallback orbit animation), not the main surface. On H5, once metadata
+ * loads we warm the image cache in parallel — the idle deck's card-back is
+ * decoded before markOk() (so the surface reveals fully painted, no blank
+ * pop-in), while the suit icons + 78 card faces fetch in the background so
+ * the result flow is already cached. The card-back gate is timeout-bounded
+ * (see preload_assets) so a slow asset can never stall boot.
  */
 import { onLaunch } from '@dcloudio/uni-app'
 import { useTarotStore } from './core/store/tarot'
 import { useThemeStore } from './core/store/theme'
 import { useBootStatus } from './flows/base/composables/use_boot_status'
+import { preloadCritical, preloadInBackground } from './core/utils/preload_assets'
 
 const tarotStore = useTarotStore()
 const themeStore = useThemeStore()
@@ -48,6 +55,14 @@ async function bootstrap(): Promise<void> {
     markFailed()
     return
   }
+
+  // #ifdef H5
+  preloadInBackground([
+    ...Object.values(themeStore.uiAssets),
+    ...tarotStore.allCards.map(card => card.image),
+  ])
+  await preloadCritical([themeStore.cardBackImage])
+  // #endif
 
   markOk()
 }

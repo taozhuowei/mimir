@@ -73,6 +73,15 @@
       })()
     </script>
     <title>SCALES TAROT</title>
+    <!--
+      Preload the idle deck's hero image so the browser starts fetching it
+      during HTML parse, in parallel with the JS boot — by the time
+      App.vue.bootstrap() decodes it the bytes are already in flight. The
+      path is the single shipped theme (golden_dawn), consistent with the
+      hard-coded @font-face URLs in App.vue. Served origin-relative via the
+      backend / vite publicDir.
+    -->
+    <link rel="preload" as="image" type="image/webp" href="/static/themes/golden_dawn/tarot/card_back.webp" />
     <!--preload-links-->
     <!--app-context-->
   </head>
