@@ -18,13 +18,17 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
+      - name: Enable Corepack
+        # Must run BEFORE setup-node: its `cache: 'yarn'` step invokes yarn to
+        # locate the cache folder, and the Berry version (yarn@4, declared via
+        # the packageManager field) has to be active by then — otherwise yarn
+        # resolves to the runner's global 1.x and the cache step errors out.
+        run: corepack enable
+
       - uses: actions/setup-node@v6
         with:
           node-version: '22'
           cache: 'yarn'
-
-      - name: Enable Corepack
-        run: corepack enable
 
       - name: Install dependencies
         run: yarn install --immutable
@@ -44,12 +48,12 @@ jobs:
           # Full history is required for `gitleaks detect` to scan past
           # commits — shallow clones (default fetch-depth: 1) miss them.
           fetch-depth: 0
+      - name: Enable Corepack
+        run: corepack enable
       - uses: actions/setup-node@v6
         with:
           node-version: '22'
           cache: 'yarn'
-      - name: Enable Corepack
-        run: corepack enable
       - name: Install dependencies
         run: yarn install --immutable
       - name: Commit lint
@@ -69,13 +73,17 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
+      - name: Enable Corepack
+        # Must run BEFORE setup-node: its `cache: 'yarn'` step invokes yarn to
+        # locate the cache folder, and the Berry version (yarn@4, declared via
+        # the packageManager field) has to be active by then — otherwise yarn
+        # resolves to the runner's global 1.x and the cache step errors out.
+        run: corepack enable
+
       - uses: actions/setup-node@v6
         with:
           node-version: '22'
           cache: 'yarn'
-
-      - name: Enable Corepack
-        run: corepack enable
 
       - name: Install dependencies
         run: yarn install --immutable
