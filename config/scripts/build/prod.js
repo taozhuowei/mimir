@@ -71,7 +71,7 @@ async function run_perf_baseline() {
   return run('perf: baseline (bundle size)', 'node', ['config/scripts/perf_baseline_gate.js'])
 }
 
-module.exports = async function prodPipeline({ targets, skipQuality }) {
+module.exports = async function prodPipeline({ targets, skipQuality, skipPerf }) {
   if (!skipQuality) {
     await run_quality()
   } else {
@@ -82,8 +82,10 @@ module.exports = async function prodPipeline({ targets, skipQuality }) {
   if (targets.includes('mp')) await build_mp()
   if (targets.includes('server')) await build_server()
 
-  // perf gate only meaningful once h5 produced output.
-  if (targets.includes('h5')) {
+  // perf gate only meaningful once h5 produced output; deploy builds opt out
+  // via --skip-perf (bundle-size regression is a CI/local contract, not a
+  // deploy-host concern).
+  if (targets.includes('h5') && !skipPerf) {
     await run_perf_baseline()
   }
 

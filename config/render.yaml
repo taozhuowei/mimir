@@ -1,0 +1,36 @@
+# Render Blueprint (Infrastructure-as-Code) — single free Node web service that
+# serves the H5 SPA, the /api/* endpoints, and the /static tarot assets from one
+# long-running Express process (exactly the prod topology described in
+# README.md "部署"). No app code changes are needed: NODE_ENV=production makes
+# app.ts serve app/dist/build/h5 + the SPA fallback, and HOST=0.0.0.0 exposes the
+# port Render injects via $PORT.
+#
+# This file lives under config/ (not the repo root). When creating the Blueprint
+# in the Render dashboard, set the "Blueprint Path" field to: config/render.yaml
+#
+# Node version comes from .nvmrc (22). Free web services spin down after 15 min
+# of no inbound traffic and auto-wake on the next request (~1 min cold start);
+# no manual restart is needed.
+
+services:
+  - type: web
+    name: scales-tarot
+    runtime: node
+    plan: free
+    region: singapore # closest free region to CN users; change if preferred
+    # corepack pins yarn@4.15.0 (package.json packageManager); --immutable fails
+    # the build if yarn.lock is out of date. Build only h5 + server, skipping the
+    # quality gate and the perf-baseline gate — both are CI/local contracts, not
+    # deploy-host concerns. publicDir (vite.config.ts) copies /static into the h5
+    # output, so the SPA build already carries the 79MB assets.
+    buildCommand: corepack enable && yarn install --immutable && node config/scripts/build/index.js --prod --target h5,server --skip-quality --skip-perf
+    startCommand: node app/server/dist/server.js
+    healthCheckPath: /api/healthz
+    autoDeploy: true
+    envVars:
+      - key: NODE_ENV
+        value: production
+      # config.ts defaults HOST to 127.0.0.1 in prod (assumes an nginx front);
+      # Render needs the process bound to all interfaces on $PORT instead.
+      - key: HOST
+        value: 0.0.0.0
