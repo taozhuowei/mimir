@@ -106,14 +106,14 @@ async function bootstrap(): Promise<void> {
 }
 @font-face {
   font-family: 'LXGW WenKai';
-  src: url('/static/themes/golden_dawn/fonts/lxgw-wenkai-light.woff2') format('woff2');
+  src: url('/static/themes/golden_dawn/fonts/lxgw-wenkai-light.subset.woff2') format('woff2');
   font-weight: 300;
   font-style: normal;
   font-display: swap;
 }
 @font-face {
   font-family: 'LXGW WenKai';
-  src: url('/static/themes/golden_dawn/fonts/lxgw-wenkai-regular.woff2') format('woff2');
+  src: url('/static/themes/golden_dawn/fonts/lxgw-wenkai-regular.subset.woff2') format('woff2');
   font-weight: 400;
   font-style: normal;
   font-display: swap;

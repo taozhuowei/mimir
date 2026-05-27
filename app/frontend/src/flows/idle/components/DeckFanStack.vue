@@ -90,6 +90,10 @@ defineProps<{
   /* 物理 5 px 圆角，跨 .tarot-card / cut-pile.pile-card 统一，不随 rpx
      缩放，使牌堆从 idle 到揭示在所有屏宽下都呈现一致的实体圆角。 */
   border-radius: 5px;
+  /* uni-app <image> 在 H5 渲染为含内层方角位图节点的 uni-image，host 上的
+     border-radius 不裁剪内层位图，必须配 overflow: hidden 才裁——否则方角
+     位图溢出圆角边框，视觉上像"缺角"。与 DeckRig 的 .tarot-card 保持一致。 */
+  overflow: hidden;
   border: 1px solid var(--color-border);
   box-shadow: 0 2rpx 8rpx rgba(30, 15, 6, 0.3);
 }
