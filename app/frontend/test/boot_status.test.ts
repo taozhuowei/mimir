@@ -1,7 +1,7 @@
 /**
  * Boot status seam tests
  * Verifies the pending → ok | failed tri-state and the isFailed gate that
- * pages/index.vue uses to pick fallback vs main surface, including the
+ * pages/index.vue uses to pick LoadingView vs MainSurface, including the
  * reactive recovery path (failed → ok flips isFailed back to false).
  */
 

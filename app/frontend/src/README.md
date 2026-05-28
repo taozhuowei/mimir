@@ -14,7 +14,7 @@ src/
 ├── shime-uni.d.ts              为 Vue 组件补充 uni-app 生命周期钩子类型
 │
 ├── pages/
-│   └── index.vue               唯一路由根：按启动结果显示主界面或兜底页
+│   └── index.vue               唯一路由根：启动成功显示主界面，否则常驻加载视图（失败经顶部通知告知）
 │
 ├── core/                       底层与库领域核心
 │   ├── api/                    后端接口客户端
@@ -111,9 +111,9 @@ src/
     │   ├── composables/create_main_transition_handlers.ts        晋升答案与重启处理器
     │   ├── composables/use_header_presentation.ts  页眉 variant 与 ARIA 派生
     │   └── composables/use_play_deck_animation.ts  按相位驱动单例牌堆
-    ├── fallback/               启动失败兜底
-    │   ├── components/FallbackView.vue   启动失败兜底视图
-    │   ├── components/FallbackOrbits.vue 行星轨道动画内容
+    ├── loading/                启动加载视图（同时覆盖启动失败常驻态，失败经顶部通知告知）
+    │   ├── components/LoadingView.vue    启动加载/失败常驻视图
+    │   ├── components/LoadingOrbits.vue  行星轨道动画内容
     │   └── composables/orbits.ts         轨道动画构建
     └── shared/                 跨域复用组件与动画相位引擎
         ├── components/HeaderArea.vue      页眉布局外壳

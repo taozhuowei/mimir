@@ -2,7 +2,7 @@
  * Name: flows/base/composables/use_boot_status
  * Purpose: the seam between the boot store and its two consumers — App.vue
  *          (writer: marks the outcome after bootstrap settles) and
- *          pages/index.vue (reader: picks fallback vs main surface).
+ *          pages/index.vue (reader: picks LoadingView vs MainSurface).
  * Reason: mirrors use_flow — views/route roots consume a composable,
  *         not the store directly, so the source can be refactored without
  *         touching call sites.
@@ -21,7 +21,8 @@ export interface UseBootStatusReturn {
   isFailed: ReturnType<typeof computed<boolean>>
   /** Bootstrap settled successfully — render the main surface. */
   markOk: () => void
-  /** A critical bootstrap resource failed — render the fallback view. */
+  /** A critical bootstrap resource failed — the LoadingView stays on
+   *  screen and App.vue pushes a top-banner notification with the detail. */
   markFailed: () => void
 }
 

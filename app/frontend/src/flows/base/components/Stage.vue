@@ -22,15 +22,15 @@
 /**
  * Name: Stage container
  * Purpose: pure slot wrapper for the three stage scenes (idle / divination
- *          / fallback) per docs/glossary.md（容器 #3） and docs/view.md（5 个视图与所属容器）.
- * Reason: idle, divination, and fallback views all need a centred animation
+ *          / loading) per docs/glossary.md（容器 #3） and docs/view.md（4 个视图与所属容器）.
+ * Reason: idle, divination, and loading views all need a centred animation
  *         box. Centralising the geometry here keeps the per-view templates
  *         minimal. Animation logic is *not* hosted here — it lives in the
  *         existing controllers and is wired into the slot content.
  * Data flow: parent view passes `scene`; child content (a stage-content
  *           component) is provided via the default slot.
  */
-type StageScene = 'idle' | 'divination' | 'fallback' | 'loading'
+type StageScene = 'idle' | 'divination' | 'loading'
 
 withDefaults(
   defineProps<{

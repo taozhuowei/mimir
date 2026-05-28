@@ -1,19 +1,22 @@
 <template>
   <!--
-    LoadingView — the boot-loading surface, shown while App.vue.bootstrap()
-    loads metadata + decodes the critical card-back in parallel (pages/index.vue
-    renders it for boot status 'pending'). It reuses the fallback orbit motif
-    (FallbackOrbits) so the wait reads as the same "cosmic signal" language as
-    the failure view, with a loading title instead of the error line. Mutually
-    exclusive with MainSurface (revealed on 'ok') and FallbackView (on 'failed').
+    LoadingView — the boot surface, shown by pages/index.vue whenever the
+    boot status is non-ok (i.e. while App.vue.bootstrap() loads metadata +
+    decodes the critical card-back, AND on a sticky bootstrap failure).
+    The orbit motif keeps the wait reading as "cosmic signal"; on failure
+    the same surface persists, only an additional top-banner notification
+    is pushed (App.vue.bootstrap() → notification store), so the user is
+    informed without losing the loading affordance. Mutually exclusive
+    with MainSurface (revealed on 'ok').
   -->
   <view class="loading-view" role="region" aria-label="加载中">
     <HeaderArea role="banner">
       <TitleContent variant="loading" />
     </HeaderArea>
     <Stage scene="loading">
-      <FallbackOrbits />
+      <LoadingOrbits />
     </Stage>
+    <NotificationHost />
   </view>
 </template>
 
@@ -21,17 +24,21 @@
 /**
  * Name: flows/loading/components/LoadingView
  * Purpose: boot-loading view. Pure presentation — no business state; the
- *          orbit animation is self-driven (FallbackOrbits owns its GSAP
+ *          orbit animation is self-driven (LoadingOrbits owns its GSAP
  *          ticker) and the title copy comes from TitleContent's 'loading'
- *          variant.
- * Reason: gives the boot wait a branded animation (reusing the fallback
- *          orbits) instead of a blank idle surface, while bootstrap warms
- *          the image cache in parallel.
+ *          variant. NotificationHost is mounted locally so error toasts
+ *          pushed during the boot phase (the failed branch) are visible
+ *          without needing MainSurface to mount.
+ * Reason: gives the boot wait a branded animation instead of a blank
+ *         idle surface, while bootstrap warms the image cache in parallel;
+ *         on a critical failure the same surface stays put and the user
+ *         is informed via a non-blocking top notification.
  */
 import HeaderArea from '../../base/components/HeaderArea.vue'
 import TitleContent from '../../base/components/TitleContent.vue'
 import Stage from '../../base/components/Stage.vue'
-import FallbackOrbits from '../../fallback/components/FallbackOrbits.vue'
+import NotificationHost from '../../base/components/NotificationHost.vue'
+import LoadingOrbits from './LoadingOrbits.vue'
 </script>
 
 <style scoped>

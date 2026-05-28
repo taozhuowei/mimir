@@ -1,12 +1,15 @@
 <template>
   <!--
-    FallbackOrbits — phase-3 implementation (docs/animation.md（动画分帧）).
+    LoadingOrbits — boot-loading geometry animation (docs/animation.md（动画分帧）).
     Central glowing star + four 3D geometric planets (tetrahedron,
     parallelepiped, sphere, octahedron) orbiting on elliptical paths.
-    Motion is driven by a GSAP ticker via startFallbackAnimation(); CSS
+    Motion is driven by a GSAP ticker via startLoadingAnimation(); CSS
     3D transforms convey the z-depth effect without GSAP MotionPath.
+    Mounted on the boot-loading surface (LoadingView) — the same surface
+    covers both the bootstrap wait and the sticky-failed state, so this
+    is the user's first visual contact with the app.
   -->
-  <view class="fallback-orbits" role="img" aria-label="兜底动画">
+  <view class="loading-orbits" role="img" aria-label="加载动画">
     <view class="orbits-scene">
       <!-- Elliptical orbit track lines -->
       <view
@@ -33,19 +36,19 @@
 
 <script setup lang="ts">
 /**
- * Name: FallbackOrbits (stage content)
- * Purpose: stage-content for the fallback view; renders the looping 3D-orbit
+ * Name: LoadingOrbits (stage content)
+ * Purpose: stage-content for the boot-loading view; renders the looping 3D-orbit
  *          animation (docs/animation.md（动画分帧）).
  * Reason: encapsulating the orbit rig inside a dedicated stage-content
- *         component keeps FallbackView declarative. The component owns no
+ *         component keeps LoadingView declarative. The component owns no
  *         business state — pure motion.
- * Data flow: stateless; startFallbackAnimation drives planet state via a
+ * Data flow: stateless; startLoadingAnimation drives planet state via a
  *           GSAP ticker, onUpdate flushes reactive refs.
  */
 import { onMounted, onUnmounted, reactive } from 'vue'
 import {
   createDefaultPlanets,
-  startFallbackAnimation,
+  startLoadingAnimation,
   type OrbitingPlanet,
 } from '../composables/orbits'
 
@@ -83,7 +86,7 @@ onMounted(() => {
   // The builder's onUpdate hook is now a no-op — Vue reactivity replaces it.
   // Kept as a parameter so the builder's signature stays compatible with
   // any future caller that wants explicit batching control.
-  stopAnimation = startFallbackAnimation(planets, () => {})
+  stopAnimation = startLoadingAnimation(planets, () => {})
 })
 
 onUnmounted(() => {
@@ -93,7 +96,7 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
-.fallback-orbits {
+.loading-orbits {
   display: flex;
   align-items: center;
   justify-content: center;

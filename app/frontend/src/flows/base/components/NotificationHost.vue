@@ -36,10 +36,15 @@
 /**
  * Name: NotificationHost
  * Purpose: subscribe to the notification store and render the queue at the
- *          surface root, above all main-surface views.
- * Reason: docs/glossary.md（容器 #9） mandates a cross-view error overlay. Mounting this
- *         host once inside MainSurface keeps notifications visible across
- *         every main-surface view; the fallback view has none by design
+ *          surface root, above the hosting view.
+ * Reason: docs/glossary.md（容器 #9） mandates a cross-view error overlay. The
+ *         host is mounted once inside MainSurface (covers idle / divination
+ *         / answer flows) and once inside LoadingView (covers the boot
+ *         pending + boot-failed states, since MainSurface never mounts on
+ *         failure). The two instances are mutually exclusive — pages/index
+ *         renders exactly one host-bearing view at a time — so they never
+ *         stack. Failure detail toasts pushed by App.vue.bootstrap() appear
+ *         on the LoadingView via this same component
  *         (docs/animation.md（动效规范 #4）).
  * Data flow: producers call `useNotificationStore().push()`; this host
  *           reads `notifications` reactively and calls `dismiss(id)` from

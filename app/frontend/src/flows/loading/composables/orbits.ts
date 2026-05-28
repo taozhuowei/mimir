@@ -1,9 +1,13 @@
 /**
- * Name: flows/fallback/composables/orbits
- * Purpose: builds the fallback orbital animation (docs/animation.md（动画分帧）).
- * Reason: extracted into a builder so FallbackOrbits.vue stays declarative.
+ * Name: flows/loading/composables/orbits
+ * Purpose: builds the boot-loading orbital animation (docs/animation.md（动画分帧）).
+ * Reason: extracted into a builder so LoadingOrbits.vue stays declarative.
  *         Uses parametric trig (x = rx·cos θ, y = ry·sin θ) instead of
  *         GSAP MotionPath — the plugin is not configured in this project.
+ *         The same orbit motif covers both the boot-loading wait and the
+ *         boot-failure sticky state (the failure surface is the loading
+ *         view + a top-banner notification; there is no separate fallback
+ *         view).
  * Data flow: caller supplies mutable planet state objects and a flush
  *           callback. Returns a cleanup function that stops the GSAP ticker
  *           listener. In reduced-motion mode planets are positioned at their
@@ -59,13 +63,13 @@ function applyOrbitalMath(planet: OrbitingPlanet): void {
 }
 
 /**
- * Start the fallback orbital animation.
+ * Start the loading orbital animation.
  *
  * Planets are first positioned at their initial phase offsets, then the GSAP
  * ticker drives continuous orbital motion. Returns a cleanup function that
  * should be called on component unmount.
  */
-export function startFallbackAnimation(
+export function startLoadingAnimation(
   planets: OrbitingPlanet[],
   onUpdate: () => void,
 ): () => void {
