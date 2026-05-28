@@ -36,7 +36,7 @@ import { onLaunch } from '@dcloudio/uni-app'
 import { useTarotStore } from './core/store/tarot'
 import { useThemeStore } from './core/store/theme'
 import { useBootStatus } from './flows/base/composables/use_boot_status'
-import { preloadCritical, preloadInBackground } from './core/utils/preload_assets'
+import { preloadCritical } from './core/utils/preload_assets'
 
 const tarotStore = useTarotStore()
 const themeStore = useThemeStore()
@@ -67,10 +67,6 @@ async function bootstrap(): Promise<void> {
   // #endif
 
   markOk()
-
-  // #ifdef H5
-  preloadInBackground(tarotStore.allCards.map(card => card.image))
-  // #endif
 }
 </script>
 
