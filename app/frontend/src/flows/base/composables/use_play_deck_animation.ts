@@ -142,8 +142,9 @@ export function usePlayDeckAnimation(deps: PlayDeckAnimationDeps): PlayDeckAnima
     }
     gsap.killTweensOf(rt.hintState)
     // The Deck stays mounted for the whole route, so onUnmounted only
-    // fires on full app teardown (route swap / fallback). Tear the
-    // divination rig down too if it was running.
+    // fires on full app teardown (route swap, or status flipping to
+    // 'failed' and pages/index.vue swapping MainSurface → LoadingView).
+    // Tear the divination rig down too if it was running.
     if (flow.value !== 'idle') {
       rig.tearDown()
     }

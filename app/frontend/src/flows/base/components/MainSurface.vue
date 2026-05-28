@@ -11,9 +11,9 @@
     MAX_CANVAS_WIDTH (docs/animation.md 视图过渡动画), centered. The
     single StageDeck instance stays mounted across idle ↔ divination, so
     the swap is a header-content change only. Mounted by pages/index.vue
-    only when bootstrap did not fail (the fallback view is its
-    mutually-exclusive sibling) — so useMainStage is never constructed
-    in the failed state.
+    only when bootstrap is 'ok' (the LoadingView is its
+    mutually-exclusive sibling for pending + failed states) — so
+    useMainStage is never constructed in the failed state.
   -->
   <view
     class="main-surface"
@@ -77,9 +77,10 @@
  *          inline answer zone (AnswerCard + ActionArea) and
  *          notifications.
  * Reason: extracted out of pages/index.vue so that page is a pure
- *         boot shell — it mounts this surface only when bootstrap
- *         succeeded (or is pending), and the fallback view otherwise, so
- *         useMainStage is never constructed in the failed state.
+ *         boot shell — it mounts this surface only when bootstrap status
+ *         is 'ok', and the LoadingView otherwise (covering pending +
+ *         failed states), so useMainStage is never constructed in the
+ *         failed state.
  */
 import { provide } from 'vue'
 import HeaderArea from './HeaderArea.vue'

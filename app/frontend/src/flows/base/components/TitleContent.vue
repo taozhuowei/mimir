@@ -1,9 +1,12 @@
 <template>
   <!--
-    TitleContent — header slot payload for the idle / fallback views.
+    TitleContent — header slot payload for the idle / loading views.
     Renders the heading copy described in docs/view.md（容器与内容对应 #1）:
-      - 'idle'     → 主标题 / 副标题 / 引导文字 with GSAP staggered entrance
-      - 'fallback' → single neutral line "宇宙信号微弱，暂无法接通"
+      - 'idle'    → 主标题 / 副标题 / 引导文字 with GSAP staggered entrance
+      - 'loading' → single line "正在接通星辰", with a breathing pulse so the
+                    boot wait reads as "working". The same line covers the
+                    sticky-failed state — the failure detail is delivered via
+                    a top-banner notification, not the title (see App.vue).
 
     Layout responsibility split (task 8.3.1):
       - Outer geometry (margin-top, height, safe-area, z-index, horizontal
@@ -22,9 +25,6 @@
       <text class="title-content__guidance" :style="guidanceStyle">{{ COPY.idle.guidance }}</text>
       <text v-if="errorDetail" class="title-content__error">{{ errorDetail }}</text>
     </template>
-    <template v-else-if="variant === 'fallback'">
-      <text class="title-content__fallback">{{ COPY.fallback.line }}</text>
-    </template>
     <template v-else-if="variant === 'loading'">
       <text class="title-content__loading">{{ COPY.loading.line }}</text>
     </template>
@@ -34,10 +34,10 @@
 <script setup lang="ts">
 /**
  * Name: TitleContent component
- * Purpose: render the heading copy (idle main/sub/guidance, or fallback
+ * Purpose: render the heading copy (idle main/sub/guidance, or the loading
  *          single line) inside the shared HeaderArea shell. Delegates the
- *          idle staggered entrance to the `use_title_entrance` composable
- *          and switches copy tables for the fallback variant.
+ *          idle staggered entrance to the `use_title_entrance` composable;
+ *          the loading variant is a static single line with a CSS pulse.
  * Reason: split out from the legacy TitleArea (task 8.3.1) so the outer
  *         shell can be unified with ProgressContent. This component holds
  *         no outer-box geometry — only the text payload and an inner top
@@ -56,7 +56,7 @@ import { useTitleEntrance } from '../composables/use_title_entrance'
 
 const props = withDefaults(
   defineProps<{
-    variant?: 'idle' | 'fallback' | 'loading'
+    variant?: 'idle' | 'loading'
     /**
      * Optional secondary line for the idle error state. Rendered below
      * `guidance` so the user sees the resource error reason inline.
@@ -72,9 +72,6 @@ const COPY = {
     title: 'Mimir',
     subtitle: '命运之轨 · 星辰之语',
     guidance: '轻触牌堆，聆听高维指引',
-  },
-  fallback: {
-    line: '宇宙信号微弱，暂无法接通',
   },
   loading: {
     line: '正在接通星辰',
@@ -147,16 +144,14 @@ const { titleStyle, subtitleStyle, guidanceStyle } = useTitleEntrance(
   line-height: 1.2;
 }
 
-.title-content__fallback,
+/* Loading line: typographic style + a soft breathing pulse so the boot
+   wait reads as "working", not stalled. The same line covers the
+   sticky-failed state — the failure detail is delivered via the top-
+   banner notification. Reduced-motion users see the static line. */
 .title-content__loading {
   font-size: var(--font-s);
   color: var(--color-text-secondary);
   letter-spacing: 0.18em;
-}
-
-/* Loading line gets a soft breathing pulse so the boot wait reads as
-   "working", not stalled. Reduced-motion users see the static line. */
-.title-content__loading {
   animation: title-loading-pulse 1.8s ease-in-out infinite;
 }
 

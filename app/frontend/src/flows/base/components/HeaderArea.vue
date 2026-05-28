@@ -2,7 +2,7 @@
   <!--
     HeaderArea — shell container introduced in task 8.3.1.
     Purpose: physically guarantee that the top-of-page header slot occupies
-    the same box geometry across views (idle ↔ divination ↔ fallback) so
+    the same box geometry across views (idle ↔ divination ↔ loading) so
     swapping content does not cause y-position jumps.
 
     All sizing / positioning / safe-area / clearance properties live on this

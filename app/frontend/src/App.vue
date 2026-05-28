@@ -3,11 +3,12 @@
  * Application entry.
  *
  * onLaunch fires the two critical bootstrap loads and records the outcome
- * in the boot store; the route root (pages/index.vue) reads that
- * status to pick between the main surface and the fallback view. There is
- * no second uni-app route + reLaunch: the fallback is mutually exclusive
- * with the main surface (docs/glossary.md（路由）), and that exclusion
- * is a view-level switch.
+ * in the boot store; the route root (pages/index.vue) reads that status
+ * to pick between the main surface ('ok') and the LoadingView (anything
+ * else — pending OR failed). There is no separate fallback view: a
+ * critical failure pins the LoadingView and we additionally push a
+ * non-blocking top-banner notification so the user understands why the
+ * cosmic signal is weak (docs/animation.md（动效规范 #4）, docs/glossary.md（路由）).
  *
  * Critical resources:
  *   - tarotStore.loadCards() — fetches the 78-card metadata
@@ -19,8 +20,8 @@
  * failure), marks the boot failed.
  *
  * While `status` is 'pending' the route root shows the LoadingView (the
- * fallback orbit animation), not the main surface. On H5, once metadata
- * loads we warm the image cache in two tiers:
+ * orbit animation), not the main surface. On H5, once metadata loads we
+ * warm the image cache in two tiers:
  *   - Gated (decoded before markOk, so they're ready the instant the user
  *     can act): the idle deck's card-back AND the UI / progress icons (the
  *     suit icons the divination header shows from its first frame). These
@@ -35,11 +36,13 @@
 import { onLaunch } from '@dcloudio/uni-app'
 import { useTarotStore } from './core/store/tarot'
 import { useThemeStore } from './core/store/theme'
+import { useNotificationStore } from './core/store/notification'
 import { useBootStatus } from './flows/base/composables/use_boot_status'
 import { preloadCritical } from './core/utils/preload_assets'
 
 const tarotStore = useTarotStore()
 const themeStore = useThemeStore()
+const notificationStore = useNotificationStore()
 const { markOk, markFailed } = useBootStatus()
 
 onLaunch(() => {
@@ -58,6 +61,17 @@ async function bootstrap(): Promise<void> {
     || themeStore.loadError !== null
 
   if (cardsFailed || themeFailed) {
+    // Surface the failure via a non-blocking top-banner notification; the
+    // LoadingView stays on screen (no separate fallback view). The detail
+    // line collects whichever store errors are populated so the toast tells
+    // the user *what* failed, not just "something did".
+    const detail = [tarotStore.cardsLoadError, themeStore.loadError]
+      .filter((m): m is string => typeof m === 'string' && m.length > 0)
+      .join('；')
+    const message = detail
+      ? `宇宙信号微弱，暂无法接通：${detail}`
+      : '宇宙信号微弱，暂无法接通'
+    notificationStore.push(message, 'error')
     markFailed()
     return
   }

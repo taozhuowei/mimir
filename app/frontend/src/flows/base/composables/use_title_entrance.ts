@@ -17,14 +17,14 @@
  *          previous logic.
  * Data flow: caller passes the `variant` ref. The idle variant runs the
  *          timeline on mount and re-runs on a runtime variant flip
- *          (e.g. fallback → idle on retry); non-idle variants no-op.
- *          Returns the three style refs the template binds.
+ *          (e.g. loading → idle once boot status flips to 'ok'); non-idle
+ *          variants no-op. Returns the three style refs the template binds.
  */
 import { onMounted, onUnmounted, ref, watch, type Ref } from 'vue'
 import { gsap } from 'gsap'
 import { prefersReducedMotion } from '../../../core/utils/accessibility'
 
-export function useTitleEntrance(variant: Ref<'idle' | 'fallback' | 'loading'>) {
+export function useTitleEntrance(variant: Ref<'idle' | 'loading'>) {
   /* ── DOM-free animation state (MP-WeChat compatible) ──────────────── */
 
   const titleStyle = ref<Record<string, string>>({})
@@ -83,9 +83,9 @@ export function useTitleEntrance(variant: Ref<'idle' | 'fallback' | 'loading'>) 
     runEntranceAnimation()
   })
 
-  // If the parent flips variant at runtime (e.g. fallback → idle on retry),
-  // re-run the entrance so the user sees a fresh fade-in instead of the
-  // stale opacity-0 state from the previous variant.
+  // If the parent flips variant at runtime (e.g. loading → idle once boot
+  // status flips to 'ok'), re-run the entrance so the user sees a fresh
+  // fade-in instead of the stale opacity-0 state from the previous variant.
   watch(variant, () => { runEntranceAnimation() })
 
   onUnmounted(() => {
