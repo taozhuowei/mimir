@@ -76,39 +76,42 @@ export function buildCutPhaseRunner(config: CutPhaseConfig): PhaseRunner {
 
       timeline.add(() => initPilesAtRest(piles, pilesVisible, N))
 
+      // 分堆铺开：power3.out 给出干脆的减速终点。
       timeline.to(piles.slice(0, N), {
         x: (i: number) => restPositions[i].x,
         y: (i: number) => restPositions[i].y,
-        duration: 0.7,
+        duration: 0.8,
         ease: 'power3.out',
       })
 
       if (N >= 2) {
+        // 切牌（头尾互换）：expo.inOut 让两堆同时启动 / 同时落定。
         timeline.to(piles[0], {
           x: config.cutTrailingOffset.x,
           y: config.cutTrailingOffset.y,
           zIndex: 10 + N + 2,
-          duration: 0.7,
-          ease: 'power2.inOut',
+          duration: 0.9,
+          ease: 'expo.inOut',
         }, '+=0.15')
 
         timeline.to(piles[N - 1], {
           x: config.cutLeadingOffset.x,
           y: config.cutLeadingOffset.y,
           zIndex: 10 + N + 1,
-          duration: 0.7,
-          ease: 'power2.inOut',
+          duration: 0.9,
+          ease: 'expo.inOut',
         }, '<')
       }
 
+      // 合堆回中：back.out 轻微回弹，给出「拍在一起」的实感。
       timeline.to(piles.slice(0, N), {
         x: 0,
         y: 0,
         rotation: 0,
         scale: 1,
-        duration: 0.45,
-        ease: 'power2.out',
-      }, '+=0.2')
+        duration: 0.58,
+        ease: 'back.out(1.2)',
+      }, '+=0.18')
 
       timeline.add(() => {
         pilesVisible.value = piles.map(() => false)

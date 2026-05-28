@@ -34,9 +34,7 @@
     class="fan-stack__hint"
     :style="{ opacity: hintOpacity }"
   >
-    <view class="fan-stack__hint-line" />
-    <text class="fan-stack__hint-text font-display">TOUCH TO DIVINE</text>
-    <view class="fan-stack__hint-line" />
+    <text class="fan-stack__hint-text font-display">轻触牌堆，聆听高维指引</text>
   </view>
 </template>
 
@@ -94,35 +92,31 @@ defineProps<{
      位图溢出圆角边框，视觉上像"缺角"。与 DeckRig 的 .tarot-card 保持一致。 */
   overflow: hidden;
   border: 1px solid var(--color-border);
-  box-shadow: 0 2rpx 8rpx rgba(30, 15, 6, 0.3);
+  box-shadow: 0 1rpx 4rpx rgba(30, 15, 6, 0.14);
 }
 
-/* Deepest shadow on the bottom card — H5 only because mp-weixin
-   doesn't reliably support `:first-child` on `<image>` tags. */
+/* 底层卡阴影 — 仅 H5（mp-weixin 对 :first-child + image 支持不稳）。
+   原 alpha 0.4 + 30px blur 在浅米底色下被解读为过重的灰团，按用户反馈
+   弱化：alpha 减到 0.18、blur 14px、offset 6px，保留厚实感但不再"压"。 */
 /* #ifdef H5 */
 .fan-stack__card:first-child {
-  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.18);
 }
 /* #endif */
 
 /* ── Idle touch hint ─────────────────────────────────────────────── */
 
+/* 提示带：靠屏底显示「轻触牌堆…」单行文案（任务 8）；
+   bottom 进一步下沉到接近安全区，让引导更明确地落在屏幕下方。 */
 .fan-stack__hint {
   position: absolute;
-  bottom: calc(env(safe-area-inset-bottom, 0px) + 80rpx);
+  bottom: calc(env(safe-area-inset-bottom, 0px) + 40rpx);
   left: 0;
   right: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 24rpx;
   pointer-events: none;
-}
-
-.fan-stack__hint-line {
-  width: 50rpx;
-  height: 2rpx;
-  background: linear-gradient(90deg, transparent, var(--color-border-strong), transparent);
 }
 
 .fan-stack__hint-text {

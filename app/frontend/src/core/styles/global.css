@@ -279,6 +279,18 @@ navigator {
   padding: 0;
 }
 
+/* 隐藏 uni-app H5 异步路由占位 spinner（由 @dcloudio/uni-h5 的
+   `AsyncLoadingComponent` 在 page chunk 加载前注入：
+   `<div class="uni-async-loading"><i class="uni-loading" /></div>`，
+   渲染为灰色辐射 spinner）。本项目仅 pages/index 单页，Vue 挂载
+   到 LoadingView 接管之间这道 spinner 与品牌 LoadingView 重复，
+   被用户误读为「灰色 loading 动画」。直接 display:none 抑制，
+   不影响功能，加载期由 LoadingView 单独承担视觉。 */
+.uni-async-loading,
+.uni-loading {
+  display: none !important;
+}
+
 /* Global reset uses only selectors supported by both H5 and WeChat Mini Program. */
 page {
   min-height: 100vh;

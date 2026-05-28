@@ -42,7 +42,11 @@ const isOk = computed(() => status.value === 'ok')
 
 <style scoped>
 /* Full-viewport flex-column shell for the non-main boot route (loading);
-   the hosted view is itself flex:1. */
+   the hosted view is itself flex:1.
+   背景与 MainSurface 同色（任务 9）：boot status 'pending' → 'ok' 切换
+   瞬间 v-if/v-else 互换 LoadingView↔MainSurface，统一底色避免 page
+   默认 `--color-bg-primary` 与 MainSurface 的 `--color-bg-page` 之间
+   出现可见的"二次闪屏"，让用户不会误以为页面被重新加载。 */
 .boot-route {
   position: relative;
   width: 100%;
@@ -50,5 +54,6 @@ const isOk = computed(() => status.value === 'ok')
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  background: var(--color-bg-page);
 }
 </style>

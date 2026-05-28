@@ -30,7 +30,9 @@ function createDefaultConfig(): ShufflePhaseConfig {
  * the spread → settle motion stay in lock-step — if you want a softer or
  * sharper feel, change it once here instead of hunting four call sites.
  */
-const SHUFFLE_EASE = 'power2.out'
+// 业内常用的「展开-回收」对称曲线：去程 expo.out 加速感强、终点收得快；
+// 收程沿用同曲线保持节奏一致。
+const SHUFFLE_EASE = 'expo.out'
 
 export function buildShufflePhaseRunner(config?: Partial<ShufflePhaseConfig>): PhaseRunner {
   const cfg = { ...createDefaultConfig(), ...config }
@@ -89,32 +91,32 @@ export function buildShufflePhaseRunner(config?: Partial<ShufflePhaseConfig>): P
           x: -cfg.spreadX,
           y: (index: number) => -30 - index * 0.8,
           rotation: -16,
-          duration: 0.5,
+          duration: 0.58,
           ease: SHUFFLE_EASE,
         }, 0)
         .to(rights, {
           x: cfg.spreadX,
           y: (index: number) => 30 - index * 0.8,
           rotation: 16,
-          duration: 0.5,
+          duration: 0.58,
           ease: SHUFFLE_EASE,
         }, '<')
         .to(lefts, {
           x: 0,
           y: (index: number) => -(index * 1.6),
           rotation: -2,
-          duration: 0.4,
-          stagger: 0.06,
-          ease: SHUFFLE_EASE,
-        }, '+=0.2')
+          duration: 0.55,
+          stagger: 0.07,
+          ease: 'back.out(1.2)',
+        }, '+=0.18')
         .to(rights, {
           x: 0,
           y: (index: number) => -0.8 - index * 1.6,
           rotation: 2,
-          duration: 0.4,
-          stagger: 0.06,
-          ease: SHUFFLE_EASE,
-        }, '<0.03')
+          duration: 0.55,
+          stagger: 0.07,
+          ease: 'back.out(1.2)',
+        }, '<0.05')
         .add(() => {
           lefts.forEach((state) => { state.opacity = 0 })
           rights.forEach((state) => { state.opacity = 0 })
@@ -125,8 +127,8 @@ export function buildShufflePhaseRunner(config?: Partial<ShufflePhaseConfig>): P
         })
         .to(initials, {
           scaleY: 1,
-          duration: 0.2,
-          ease: 'power1.out',
+          duration: 0.33,
+          ease: 'expo.out',
         })
 
       return timeline 
