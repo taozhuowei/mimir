@@ -20,11 +20,17 @@
  *
  * While `status` is 'pending' the route root shows the LoadingView (the
  * fallback orbit animation), not the main surface. On H5, once metadata
- * loads we warm the image cache in parallel — the idle deck's card-back is
- * decoded before markOk() (so the surface reveals fully painted, no blank
- * pop-in), while the suit icons + 78 card faces fetch in the background so
- * the result flow is already cached. The card-back gate is timeout-bounded
- * (see preload_assets) so a slow asset can never stall boot.
+ * loads we warm the image cache in two tiers:
+ *   - Gated (decoded before markOk, so they're ready the instant the user
+ *     can act): the idle deck's card-back AND the UI / progress icons (the
+ *     suit icons the divination header shows from its first frame). These
+ *     download during the loading screen with no competition, so they are
+ *     never the "loads when first used" lag the progress bar used to show.
+ *   - Background (after markOk): the 78 card faces, which aren't needed
+ *     until the reveal phase — seconds into the flow — so they must not
+ *     delay the reveal or steal bandwidth from the gated icons.
+ * The gate is timeout-bounded (see preload_assets) so a slow or missing
+ * asset can never stall boot.
  */
 import { onLaunch } from '@dcloudio/uni-app'
 import { useTarotStore } from './core/store/tarot'
@@ -57,14 +63,14 @@ async function bootstrap(): Promise<void> {
   }
 
   // #ifdef H5
-  preloadInBackground([
-    ...Object.values(themeStore.uiAssets),
-    ...tarotStore.allCards.map(card => card.image),
-  ])
-  await preloadCritical([themeStore.cardBackImage])
+  await preloadCritical([themeStore.cardBackImage, ...Object.values(themeStore.uiAssets)])
   // #endif
 
   markOk()
+
+  // #ifdef H5
+  preloadInBackground(tarotStore.allCards.map(card => card.image))
+  // #endif
 }
 </script>
 
