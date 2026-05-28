@@ -242,7 +242,7 @@ module.exports = {
       }
     },
 
-    // ─── Architecture boundary rules (scales-tarot custom) ────────────────
+    // ─── Architecture boundary rules (mimir custom) ────────────────
 
     // Layer model (post-composables-dissolution, enforced on the current
     // intermediate architecture, not just the final one):

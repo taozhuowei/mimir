@@ -1,6 +1,6 @@
-# Scales Tarot
+# Mimir
 
-Scales Tarot 是一个以 H5 为主要交付形态的单页塔罗体验项目。它强调短路径、仪式感与稳定反馈，让用户在一个页面内完成抽牌、揭示与获取答案。
+Mimir 是一个「塔罗版答案之书」——以 H5 为主要交付形态的单页塔罗体验。它强调短路径、仪式感与稳定反馈，让用户在一个页面内完成抽牌、揭示与获取答案。名字取自北欧神话中掌管智慧的密米尔（Mimir）：向智慧之泉问询，便得到一句指引。
 
 仓库目标不只是维护一个可运行页面，还要建立一套清晰、可持续、不过度依赖特定 AI 工具的演进方式：任何新协作者只依赖仓库内文档即可理解项目、执行任务并验证结果。
 
@@ -29,7 +29,7 @@ Scales Tarot 是一个以 H5 为主要交付形态的单页塔罗体验项目。
 yarn workspaces 单体仓库，顶层只列一级；各目录职责与内部结构见其自身 README。
 
 ```
-scales-tarot/
+mimir/
 ├── app/                  # 应用容器(前端 + 后端两个 workspace) + 构建产物 dist/(gitignored)
 │   ├── frontend/         # uni-app + Vue 3 前端(h5 + mp-weixin 双产物)        → app/frontend/README.md
 │   └── server/           # Express 4 + zod 后端(:4124)                       → app/server/README.md
