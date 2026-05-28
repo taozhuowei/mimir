@@ -20,9 +20,10 @@
     :class="`title-content--${variant}`"
   >
     <template v-if="variant === 'idle'">
-      <text class="title-content__title font-display" :style="titleStyle">{{ COPY.idle.title }}</text>
-      <text class="title-content__subtitle" :style="subtitleStyle">{{ COPY.idle.subtitle }}</text>
-      <text class="title-content__guidance" :style="guidanceStyle">{{ COPY.idle.guidance }}</text>
+      <view class="title-content__title-row" :style="titleStyle">
+        <text class="title-content__title font-display">{{ COPY.idle.title }}</text>
+        <text class="title-content__title-zh font-display">{{ COPY.idle.titleZh }}</text>
+      </view>
       <text v-if="errorDetail" class="title-content__error">{{ errorDetail }}</text>
     </template>
     <template v-else-if="variant === 'loading'">
@@ -70,19 +71,17 @@ const props = withDefaults(
 const COPY = {
   idle: {
     title: 'Mimir',
-    subtitle: '命运之轨 · 星辰之语',
-    guidance: '轻触牌堆，聆听高维指引',
+    /** 中文标题与拉丁标题同行展示（任务 7）。 */
+    titleZh: '命运之轨',
   },
   loading: {
     line: '正在接通星辰',
   },
 } as const
 
-/* Idle staggered entrance lives in a composable; this component is a
-   thin per-variant copy renderer. */
-const { titleStyle, subtitleStyle, guidanceStyle } = useTitleEntrance(
-  toRef(props, 'variant'),
-)
+/* Idle 入场动画仅作用于整行 title-row；副标 / 引导文字已下沉到 fan-stack
+   底部提示带，对应 subtitleStyle / guidanceStyle 不再使用（任务 7-8）。 */
+const { titleStyle } = useTitleEntrance(toRef(props, 'variant'))
 </script>
 
 <style scoped>
@@ -110,6 +109,17 @@ const { titleStyle, subtitleStyle, guidanceStyle } = useTitleEntrance(
   box-sizing: border-box;
 }
 
+/* 整行包裹层：拉丁 + 中文标题强制同行展示，nowrap 不换行。 */
+.title-content__title-row {
+  display: inline-flex;
+  flex-direction: row;
+  align-items: baseline;
+  justify-content: center;
+  gap: 10px;
+  white-space: nowrap;
+  width: 100%;
+}
+
 .title-content__title {
   /* 标题字号选 --font-xl（14PM 真值 24），与 14PM 设计稿一致。
      letter-spacing 收敛到 --tracking-wider（0.14em）。 */
@@ -120,19 +130,12 @@ const { titleStyle, subtitleStyle, guidanceStyle } = useTitleEntrance(
   line-height: var(--leading-flat);
 }
 
-.title-content__subtitle {
-  font-size: var(--font-xs);
+/* 中文标题：跟拉丁同行，比拉丁略小一档以让 Mimir 保持主视觉重心。 */
+.title-content__title-zh {
+  font-size: var(--font-m);
   color: var(--color-text-secondary);
-  letter-spacing: var(--tracking-widest);
-  text-transform: uppercase;
-  line-height: var(--leading-tight);
-}
-
-.title-content__guidance {
-  font-size: var(--font-xs);
-  color: var(--color-text-tertiary);
   letter-spacing: var(--tracking-wide);
-  line-height: var(--leading-tight);
+  line-height: var(--leading-flat);
 }
 
 .title-content__error {

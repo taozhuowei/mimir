@@ -15,15 +15,6 @@
   >
     <template v-if="!isAnswerFailed">
       <view
-        class="btn btn-secondary"
-        role="button"
-        tabindex="0"
-        aria-label="回到首页"
-        @click="$emit('backHome')"
-        @keydown.enter="$emit('backHome')"
-        @keydown.space.prevent="$emit('backHome')"
-      >回到首页</view>
-      <view
         class="btn btn-primary"
         role="button"
         tabindex="0"

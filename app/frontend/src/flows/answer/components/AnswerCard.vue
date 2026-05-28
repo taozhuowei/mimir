@@ -19,7 +19,6 @@
 
     <view v-else-if="state === 'success' && answer" key="success" class="answer-card__body">
       <text class="answer-card__quote font-display">{{ answer.quote }}</text>
-      <view class="answer-card__rule" aria-hidden="true"></view>
       <text class="answer-card__translation font-body">{{ answer.translation }}</text>
       <text class="answer-card__source font-body">—— {{ answer.source }}</text>
     </view>
@@ -69,7 +68,7 @@ const answer = computed(() => props.answerResult?.cardDetails[0]?.answer ?? null
   max-height: 50%;
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: stretch;
   text-align: center;
   width: 100%;
   box-sizing: border-box;
@@ -90,44 +89,45 @@ const answer = computed(() => props.answerResult?.cardDetails[0]?.answer ?? null
 }
 
 /* ---- success ------------------------------------------------------ */
+/* 答案 / 翻译居中、来源单独右对齐：子项按 stretch 撑满主轴，再用
+   text-align / align-self 单点控制水平位置。 */
 .answer-card__body {
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: stretch;
+  width: 100%;
 }
 
-/* 原文：display face，整段视觉重心。 */
+/* 原文：display face，整段视觉重心，居中显示。 */
 .answer-card__quote {
   max-width: 360px;
+  margin-left: auto;
+  margin-right: auto;
   color: var(--color-text-primary);
   font-size: var(--font-xl);
   font-weight: 600;
   line-height: var(--leading-tight);
   letter-spacing: var(--tracking-tight);
   margin-top: 24px;
+  text-align: center;
   animation: answer-card-rise 560ms cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
-/* hairline rule — 短中线分隔，1px 不参与 rem 缩放（subpixel 失真防护）。 */
-.answer-card__rule {
-  width: 40px;
-  height: 1px;
-  margin: 16px 0 12px;
-  background: var(--color-border-accent);
-  animation: answer-card-rise 560ms cubic-bezier(0.16, 1, 0.3, 1) 220ms both;
-}
-
-/* 翻译。 */
+/* 翻译，居中。 */
 .answer-card__translation {
   max-width: 320px;
+  margin-left: auto;
+  margin-right: auto;
   color: var(--color-text-secondary);
   font-size: var(--font-s);
   line-height: var(--leading-loose);
   letter-spacing: var(--tracking-tight);
-  animation: answer-card-rise 560ms cubic-bezier(0.16, 1, 0.3, 1) 300ms both;
+  margin-top: 12px;
+  text-align: center;
+  animation: answer-card-rise 560ms cubic-bezier(0.16, 1, 0.3, 1) 240ms both;
 }
 
-/* 来源。 */
+/* 来源单独右对齐。 */
 .answer-card__source {
   max-width: 280px;
   color: var(--color-text-muted);
@@ -136,7 +136,9 @@ const answer = computed(() => props.answerResult?.cardDetails[0]?.answer ?? null
   line-height: var(--leading-normal);
   letter-spacing: var(--tracking-normal);
   margin-top: 16px;
-  animation: answer-card-rise 560ms cubic-bezier(0.16, 1, 0.3, 1) 460ms both;
+  align-self: flex-end;
+  text-align: right;
+  animation: answer-card-rise 560ms cubic-bezier(0.16, 1, 0.3, 1) 380ms both;
 }
 
 @keyframes answer-card-rise {

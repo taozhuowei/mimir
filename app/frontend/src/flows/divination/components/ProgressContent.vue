@@ -116,22 +116,49 @@ const animCtrl = inject<UseAnimationControllerReturn>('animationController')!
   left: 50%;
   width: 40px;
   height: 40px;
-  /* Default-hidden so only the variant currently flagged
-     `--visible` is shown; opacity transitions deliver the crossfade. */
-  opacity: 0;
   transform: translate(-50%, -50%);
-  transition: opacity 0.18s ease;
   /* Hidden layer must not capture pointer events or screen-reader focus. */
   pointer-events: none;
 }
 
-.progress-content__step-icon--visible {
+/* 灰底层：始终可见，作为「未点亮」基线。active 层揭示后会从上面盖住它。 */
+.progress-content__step-icon--inactive-layer {
   opacity: 1;
+}
+
+/* 彩色层：用 mask 沿 45° 对角线从左下→右上斜向填充揭示（任务 4）。
+   起始 mask-position: 100% 0% 把不透明半区推到元素右上外侧，整张图
+   完全被透明区遮住；--visible 时 mask-position 滑到 0% 100%，不透明
+   半区盖满整张图。260ms ease-out 给出「快速但有曲线」的填充手感。 */
+.progress-content__step-icon--active-layer {
+  opacity: 1;
+  -webkit-mask-image: linear-gradient(45deg, #000 50%, transparent 50%);
+          mask-image: linear-gradient(45deg, #000 50%, transparent 50%);
+  -webkit-mask-size: 220% 220%;
+          mask-size: 220% 220%;
+  -webkit-mask-repeat: no-repeat;
+          mask-repeat: no-repeat;
+  -webkit-mask-position: 100% 0%;
+          mask-position: 100% 0%;
+  -webkit-transition: -webkit-mask-position 260ms cubic-bezier(0.22, 1, 0.36, 1);
+          transition: mask-position 260ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.progress-content__step-icon--active-layer.progress-content__step-icon--visible {
+  -webkit-mask-position: 0% 100%;
+          mask-position: 0% 100%;
   pointer-events: auto;
 }
 
 .progress-content__step-icon--compensated {
   width: 44px;
   height: 44px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .progress-content__step-icon--active-layer {
+    -webkit-transition: none;
+            transition: none;
+  }
 }
 </style>

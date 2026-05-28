@@ -65,17 +65,18 @@ interface DrawTimings {
 function computeDrawTimings(config: DrawPhaseConfig): DrawTimings {
   const { cardCount, autoRevealDelayMs } = config
 
-  const drawStartTime = 0.88
-  const pullDuration = 0.18
-  const fallDuration = 0.78
-  const reboundDuration = 0.34
-  const settleDuration = 0.82
-  const stageFollowStart = drawStartTime + pullDuration - 0.02
-  const deckExitStart = stageFollowStart + 0.06
+  // 抽牌 phase 时间常量（单位：秒）。ease 曲线由各 tween 单点指定。
+  const drawStartTime = 1.1
+  const pullDuration = 0.25
+  const fallDuration = 0.85
+  const reboundDuration = 0.4
+  const settleDuration = 0.75
+  const stageFollowStart = drawStartTime + pullDuration - 0.04
+  const deckExitStart = stageFollowStart + 0.1
 
-  const dealOverlapBudget = 1.6
+  const dealOverlapBudget = 2.2
   const perCardDelay = cardCount > 1
-    ? Math.min(0.34, dealOverlapBudget / (cardCount - 1))
+    ? Math.min(0.48, dealOverlapBudget / (cardCount - 1))
     : 0
 
   const lastCardLandingTime = drawStartTime
@@ -85,7 +86,8 @@ function computeDrawTimings(config: DrawPhaseConfig): DrawTimings {
     + reboundDuration
     + settleDuration
 
-  const alignTime = lastCardLandingTime + 0.28
+  // 抽牌落定 → 对齐 → 进入 reveal 之间的过渡间隔。
+  const alignTime = lastCardLandingTime + 0.1
 
   // Flip is now owned by the reveal phase (see animation/atoms/flip).
   // Per requirement N2: the historical 1.0s "breath" between alignment
@@ -93,9 +95,12 @@ function computeDrawTimings(config: DrawPhaseConfig): DrawTimings {
   // tween + per-card settle, so it has been removed. `revealDelay`
   // (driven by AUTO_REVEAL_DELAY_MS) is also 0 by default — kept as a
   // dial for future tuning without touching this builder.
+  // 与下方 alignment tween 的 duration 同步；reveal 切换在对齐完成后
+  // 立即触发：revealingStart = alignTime + 对齐时长 + revealDelay。
+  const ALIGN_DURATION = 0.8
   const revealDelay = autoRevealDelayMs / 1000
-  const revealingStart = alignTime + revealDelay
-  const finishTime = revealingStart + 0.3
+  const revealingStart = alignTime + ALIGN_DURATION + revealDelay
+  const finishTime = revealingStart + 0.1
 
   const preRotations = Array.from({ length: cardCount }, () => jitterDeg(-7.5, 7.5))
 
@@ -279,15 +284,15 @@ export function buildAnimatedDrawTimeline(
       ease: 'power3.out',
     }, '>')
 
-  // Deck exit
+  // 牌堆向上消散
   timeline.to(initials, {
     opacity: 0,
     y: (index: number) => -cardHeight * 1.12 - index * 1.6,
     scale: 0.74,
     rotation: (index: number) => (index - 5.5) * 0.7,
-    duration: 1.08,
-    stagger: 0.018,
-    ease: 'power2.in',
+    duration: 1.25,
+    stagger: 0.025,
+    ease: 'expo.in',
   }, deckExitStart)
 
   // Per-card deal animations
@@ -316,14 +321,14 @@ export function buildAnimatedDrawTimeline(
     timeline.add(() => { onCardsLanded() }, lastCardLandingTime)
   }
 
-  // Alignment
+  // 对齐到结果位
   timeline.to(draws, {
     x: (index: number) => targetX[index],
     y: (index: number) => targetY[index],
     rotation: 0,
     duration: 0.8,
     ease: 'power3.inOut',
-  }, alignTime + 0.1)
+  }, alignTime)
 
   // Flip animation lives in the reveal phase now. See
   // ./reveal.ts for the grow + flip composition.

@@ -36,13 +36,18 @@ export interface RevealPhaseConfig {
  *
  * scale stays 1 — size is encoded in width/height so the grow atom can
  * tween it without compounding with a transform scale.
+ *
+ * 防御性清理（任务 1）：reveal 入口强制把 shuffle/cut 用过的
+ * initials / lefts / rights / piles 全部 opacity:0，并关闭对应 visibility
+ * 标志位 —— 防止 GSAP 在前序阶段被打断或 watch 更新失同步而残留半透明
+ * 牌堆轮廓出现在结果卡牌后方。
  */
 function resetDrawsToEntryState(
   context: PhaseContext,
   config: RevealPhaseConfig,
 ): void {
-  const { draws } = context.cardElements
-  const { draws: drawsVisible } = context.visible
+  const { draws, initials, lefts, rights, piles } = context.cardElements
+  const { draws: drawsVisible, lefts: leftsVisible, rights: rightsVisible, piles: pilesVisible } = context.visible
   const {
     cardCount,
     drawLayout,
@@ -51,6 +56,14 @@ function resetDrawsToEntryState(
   } = config
   const targetX = drawLayout.cards.map((c) => c.x)
   const targetY = drawLayout.cards.map((c) => c.y)
+
+  initials.forEach((s) => { s.opacity = 0 })
+  lefts.forEach((s) => { s.opacity = 0 })
+  rights.forEach((s) => { s.opacity = 0 })
+  piles.forEach((s) => { s.opacity = 0 })
+  leftsVisible.value = false
+  rightsVisible.value = false
+  pilesVisible.value = piles.map(() => false)
 
   const visible = [...drawsVisible.value]
   draws.forEach((state, index) => {
@@ -114,16 +127,16 @@ function composeRevealTimeline(
       fromHeight: drawCardHeight,
       toWidth: resultCardWidth,
       toHeight: resultCardHeight,
-      duration: 0.75,
-      ease: 'power2.out',
+      duration: 0.9,
+      ease: 'power3.out',
     },
-    '+=0.1',
+    '+=0',
   )
 
-  const flipPerCardDuration = 1
-  const flipOverlapBudget = 1.4
+  const flipPerCardDuration = 1.25
+  const flipOverlapBudget = 1.8
   const flipStagger = cardCount > 1
-    ? Math.min(0.4, flipOverlapBudget / (cardCount - 1))
+    ? Math.min(0.55, flipOverlapBudget / (cardCount - 1))
     : 0
   flipAtom(
     timeline,
@@ -133,7 +146,7 @@ function composeRevealTimeline(
       targetRotation: 180,
       duration: flipPerCardDuration,
       stagger: flipStagger,
-      ease: 'power3.out',
+      ease: 'expo.out',
     },
     '>',
   )
