@@ -148,15 +148,16 @@ const { cardsLoadError } = useCardsLoadError()
   overflow: hidden;
 }
 
-/* .main-surface__body：HeaderArea 之下的弹性列容器，直接承载
-   HeaderArea / Stage / AnswerCard / ActionArea 四段。Stage 通过 flex:1
-   占满剩余高度并严格几何居中卡牌；AnswerCard（其自身即 flex item，无
-   外包装）与 ActionArea 作为兄弟 flex item 紧贴下方。`--margin` 由
-   scale bridge 注入。 */
+/* .main-surface__body：HeaderArea 之下的弹性列容器，承载 HeaderArea /
+   Stage / AnswerCard / ActionArea 四段。子项之间用 `--container-gap`
+   作为唯一固定间距来源（与 layout solver 的 topInset / reservation
+   同源）；Stage 凭 flex:1 自动吸收剩余高度。`--margin` / `--container-gap`
+   由 scale bridge 注入，:root 静态兜底。 */
 .main-surface__body {
   flex: 1;
   display: flex;
   flex-direction: column;
+  gap: var(--container-gap);
   position: relative;
   width: 100%;
   min-height: 0;
@@ -167,21 +168,21 @@ const { cardsLoadError } = useCardsLoadError()
   box-sizing: border-box;
 }
 
-/* AnswerCard 与 ActionArea 同步入场：opacity + 8px translateY，二者作为
-   兄弟节点在 flow='answer' 同帧挂载，视觉上同时出现。AnswerCard 自身
-   持 animation（见 AnswerCard.vue），无需 wrapper。stage-rise 是它们
-   出现导致 Stage 高度收缩时的卡牌让位补位动画，时长 / 曲线对齐。 */
-
-/* Stage 高度由 flex 在答案区挂出瞬间即收缩；用 transform 从旧中心点
-   位置（translateY ≈ answer 高度/2）滑到 0 来补位。60px 取 loading
-   状态下答案区 ~120px 的一半，配合 ease-out 让前段位移迅速、后段平
-   滑收尾。reduced-motion 下禁用。 */
+/* 答案 flow 入场：AnswerCard 与 ActionArea 同帧挂载（各自持 480ms
+   ease-out 透明度 + 8px translateY 进场动画）。Stage 因这两段挂出而
+   被 flex 即时收缩，用 stage-rise 在视觉上把 stage 从下方滑回，避免
+   收缩瞬间卡牌"跳"位。位移量 = (answer-zone min-height + action-area
+   高度) / 2，与 layout solver 扣减口径同源。reduced-motion 下禁用。 */
 .main-surface__body--with-answer :deep(.stage) {
   animation: stage-rise 480ms cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
 @keyframes stage-rise {
-  from { transform: translateY(60px); }
+  from {
+    transform: translateY(
+      calc((var(--answer-zone-min-height) + var(--action-area-height)) / 2)
+    );
+  }
   to   { transform: translateY(0); }
 }
 

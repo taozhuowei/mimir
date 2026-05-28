@@ -15,9 +15,10 @@
  * - 下限 FLOOR_RATIO = 375/430 ≈ 0.8721（iPhone 8 宽边界）
  *
  * 高度不参与 scale —— 画布高度由 .main-surface/.main-surface__canvas height:100vh
- * 接管，内部 flex column（HeaderArea + Stage + ActionArea）按视口
- * 高度自适应，与 main 分支视觉等价。视口高 < 932 不触发缩放，仅内部
- * 组件挤压；视口高 < 667 时由 isTooSmallView 触发横幅 + 滚动。
+ * 接管，内部 flex column（HeaderArea + Stage + AnswerCard + ActionArea，
+ * 后两段仅在 answer flow 挂载）+ --container-gap 固定间距按视口高度
+ * 自适应；Stage flex:1 吸收剩余空间。视口高 < 932 不触发缩放，
+ * 仅内部组件挤压；视口高 < 667 时由 isTooSmallView 触发横幅 + 滚动。
  *
  * DOM 写入由 index.html 顶部 inline 脚本承担（FOUC 防护，必须在 first
  * paint 前完成）。本模块只暴露纯函数 + Vue 响应式 ref 供组件订阅；视口

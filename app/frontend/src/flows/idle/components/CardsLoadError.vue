@@ -46,7 +46,7 @@ const { cardsLoadError, isCardsLoading, retry } = useCardsLoadError()
 }
 
 .cards-load-error__text {
-  font-size: 24rpx;
+  font-size: var(--font-xs);
   color: var(--color-no);
   text-align: center;
   max-width: 80%;
@@ -56,7 +56,7 @@ const { cardsLoadError, isCardsLoading, retry } = useCardsLoadError()
 .cards-load-error__retry {
   padding: 18rpx 40rpx;
   border-radius: 40rpx;
-  font-size: 28rpx;
+  font-size: var(--font-s);
   background: linear-gradient(to bottom, var(--color-btn-primary-from), var(--color-btn-primary-to));
   color: var(--color-btn-primary-text);
 }

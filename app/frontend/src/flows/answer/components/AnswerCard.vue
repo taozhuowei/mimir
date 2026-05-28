@@ -55,14 +55,14 @@ const answer = computed(() => props.answerResult?.cardDetails[0]?.answer ?? null
 </script>
 
 <style scoped>
-/* 所有 px 数值按 iPhone 14 Pro Max 设计稿真值书写。
-   postcss-pxtorem 编译期转 rem，design_flexible 运行时按视口宽度 clamp
-   到 [0.872, 1] × 43px 的 root font-size，实现等比缩放。
-   max-width 使用 px 而非 em，避免大字号下二次膨胀溢出 canvas。
-   此组件本身即为 .main-surface__body 的 flex item（无外包装）：
-   `flex: 0 0 auto` 锁定不被弹性挤压，min-height 由 layout solver
-   的 sizes.answerZoneMinHeight 同源 CSS 变量提供；超长答案沿内部
-   overflow-y:auto 滚动；上限 50% 防止极端文案吃掉 stage。 */
+/* 字号 / 行高 / 字距统一走 CSS 变量（--font-* / --leading-* / --tracking-*），
+   由 sizes 桥按 `deriveFontScale(canvasWidth) = clamp(0.8721, w/430, 1)`
+   派生，与 design_flexible 同源；PostCSS pxtorem 链已黑名单这三类属性。
+   非字号 px（margin / padding / max-width）仍走 pxtorem，按视口等比缩。
+   本组件即为 .main-surface__body 的 flex item（无外包装），
+   `flex: 0 0 auto` 不被弹性挤压；min-height 用 layout solver 同源的
+   --answer-zone-min-height；超长答案沿 overflow-y:auto 内滚；
+   上限 50% 防止极端文案吃掉 stage。 */
 .answer-card {
   flex: 0 0 auto;
   min-height: var(--answer-zone-min-height);
@@ -100,10 +100,10 @@ const answer = computed(() => props.answerResult?.cardDetails[0]?.answer ?? null
 .answer-card__quote {
   max-width: 360px;
   color: var(--color-text-primary);
-  font-size: 24px;
+  font-size: var(--font-xl);
   font-weight: 600;
-  line-height: 1.26;
-  letter-spacing: 0.005em;
+  line-height: var(--leading-tight);
+  letter-spacing: var(--tracking-tight);
   margin-top: 24px;
   animation: answer-card-rise 560ms cubic-bezier(0.16, 1, 0.3, 1) both;
 }
@@ -121,9 +121,9 @@ const answer = computed(() => props.answerResult?.cardDetails[0]?.answer ?? null
 .answer-card__translation {
   max-width: 320px;
   color: var(--color-text-secondary);
-  font-size: 14px;
-  line-height: 1.74;
-  letter-spacing: 0.01em;
+  font-size: var(--font-s);
+  line-height: var(--leading-loose);
+  letter-spacing: var(--tracking-tight);
   animation: answer-card-rise 560ms cubic-bezier(0.16, 1, 0.3, 1) 300ms both;
 }
 
@@ -131,10 +131,10 @@ const answer = computed(() => props.answerResult?.cardDetails[0]?.answer ?? null
 .answer-card__source {
   max-width: 280px;
   color: var(--color-text-muted);
-  font-size: 10px;
+  font-size: var(--font-xxs);
   font-style: italic;
-  line-height: 1.6;
-  letter-spacing: 0.06em;
+  line-height: var(--leading-normal);
+  letter-spacing: var(--tracking-normal);
   margin-top: 16px;
   animation: answer-card-rise 560ms cubic-bezier(0.16, 1, 0.3, 1) 460ms both;
 }
@@ -155,14 +155,14 @@ const answer = computed(() => props.answerResult?.cardDetails[0]?.answer ?? null
 
 .answer-card__loading-word {
   color: var(--color-text-muted);
-  font-size: 14px;
-  letter-spacing: 0.16em;
+  font-size: var(--font-s);
+  letter-spacing: var(--tracking-wider);
 }
 
 .answer-card__loading-ellipsis {
   color: var(--color-accent);
-  font-size: 14px;
-  letter-spacing: 0.12em;
+  font-size: var(--font-s);
+  letter-spacing: var(--tracking-wide);
   animation: answer-card-breathe 1.6s ease-in-out infinite;
 }
 
@@ -178,8 +178,8 @@ const answer = computed(() => props.answerResult?.cardDetails[0]?.answer ?? null
 
 .answer-card__error-text {
   color: var(--color-yes);
-  font-size: 12px;
-  line-height: 1.7;
+  font-size: var(--font-xs);
+  line-height: var(--leading-loose);
 }
 
 @media (prefers-reduced-motion: reduce) {

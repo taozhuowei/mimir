@@ -1,29 +1,23 @@
 /**
  * Name: core/sizing/scale_constants
- * Purpose: holds the baseline pixel constants and the canvas-width clamp
- *          (`pickCanvasWidth`) plus the scale factor derivation
- *          (`deriveScale`) that drive the proportional sizing system.
- * Reason: the previous `scale.ts` mixed five concerns (constants, canvas
- *          clamp, sizes derivation, viewport adapter, Vue composable) into
- *          a single 473-line file. Splitting the constants + breakpoint
- *          helpers out gives the sizes module + composable a small, stable
- *          dependency it can re-export through the `scale.ts` facade so
- *          downstream importers stay unchanged.
- * Data flow: viewport width ──▶ pickCanvasWidth ──▶ deriveScale ──▶ k.
+ * Purpose: baseline 像素常量 + 视口 clamp（`pickCanvasWidth`）+ 两套缩放
+ *          因子函数：`deriveScale`（iP8 锚 + 上放，用于布局/间距类
+ *          token）与 `deriveFontScale`（14PM 锚 + 下缩，与
+ *          `design_flexible` 同源，用于字号 token）。
+ * Data flow: viewport width ──▶ pickCanvasWidth ──▶ deriveScale | deriveFontScale.
  *
- * Purity: every export here is a pure value or pure function. No Vue, no
- *         uni APIs, no DOM. Trivially testable.
+ * Purity: 所有导出均为纯值 / 纯函数。
  */
 
 // ---------------------------------------------------------------------------
-// Constants — iPhone 8 baseline (375 px) pixel values.
-//
-// All baselines are expressed for a 375 px logical canvas. When the device
-// has a wider viewport (up to iPhone 17 Pro Max at 440 px), the sizes grow
-// proportionally via `k = canvasWidth / 375`. Below 375 the canvas is
-// pinned at 375 — the layout will overflow; we do not try to fit smaller
-// devices because they fall below the supported envelope: a non-blocking
-// "screen too small" banner is shown, but the layout still tries to render.
+// 常量分两族：
+//   1. 布局类 baseline（header / margin / gap / answer-zone / action）：
+//      iP8 (375 px) 真值，运行时 × `deriveScale(canvasWidth) = w / 375`。
+//   2. 字号类 baseline（FONT_*）：iPhone 14 Pro Max (430 px) 设计稿真值，
+//      运行时 × `deriveFontScale(canvasWidth) = clamp(0.8721, w/430, 1)`，
+//      与 `design_flexible` 的 rem 缩放公式同源，避免与 PostCSS pxtorem
+//      转换链叠加。视口 < 375 时锁定 iP8 真宽，画布溢出由 too-small
+//      横幅 + body 滚动兜底。
 // ---------------------------------------------------------------------------
 
 /** Smallest logical canvas width the scale system uses (iPhone 8). */
@@ -39,44 +33,50 @@ export const MAX_CANVAS_WIDTH = 440
  */
 export const REF_DESIGN_CANVAS_WIDTH = 430
 
-/** Header total height at the iPhone 8 baseline (px). */
+/** 头部容器高度 iP8 baseline (px)。 */
 export const BASELINE_HEADER_HEIGHT = 80
-/** Page side / outer margin at the baseline (px). */
+/** 画布外边距 iP8 baseline (px)。 */
 export const BASELINE_MARGIN = 16
-/** Inter-card gap at the baseline (px). */
+/** 卡牌间 gap iP8 baseline (px)。 */
 export const BASELINE_GAP = 12
-/** Minimum drawer initial height at the baseline (px). */
+/** drawer 初始高 iP8 baseline (px)。 */
 export const BASELINE_DRAWER_MIN_HEIGHT = 120
-/** Bottom action area height at the baseline (px). */
+/** 底部操作区高度 iP8 baseline (px)。 */
 export const BASELINE_ACTION_AREA_HEIGHT = 96
 /**
- * Inline answer card minimum height at the iPhone 8 baseline (px),
- * back-scaled from the 14PM design target (160px) via
- * `MIN_CANVAS_WIDTH / REF_DESIGN_CANVAS_WIDTH` so the source value lives
- * in design-canvas units (160px on the 430px reference). The runtime
- * value `sizes.answerZoneMinHeight = round(this × k)` lands at 160 on
- * the reference canvas, 140 on the 375 floor.
- *
- * Used as a `min-height` (CSS) + as the stage reservation worst-case
- * (layout solver). The card-success content currently measures ≈ 137px
- * at the baseline; the 160px design target covers content + small
- * breathing band without inflating the empty space the previous fixed
- * 240px value created.
+ * 答案卡 min-height iP8 baseline (px)：14PM 设计真值 160 反推到 iP8。
+ * 同时作为布局求解器 stage 下方的预留预算（worst case）。
  */
 export const ANSWER_ZONE_MIN_HEIGHT =
   Math.round(160 * MIN_CANVAS_WIDTH / REF_DESIGN_CANVAS_WIDTH)
-/** Hero / display font size at the baseline (px). */
+/**
+ * 主面板四段容器间距（标题 / 舞台 / 答案卡 / 操作区之间），固定
+ * CSS 像素值，不随视口缩放。同时由 `:root --container-gap` 静态镜像
+ * 提供，组件统一引用变量。布局求解器答案场景下扣 2 段、非答案场景
+ * 下扣 1 段，使求解高度与渲染高度同源。
+ */
+export const CONTAINER_GAP = 10
+// ---------------------------------------------------------------------------
+// 字号 baseline = iPhone 14 Pro Max (430 px) 设计稿真值。
+// 运行时 × `deriveFontScale(canvasWidth) = clamp(0.8721, w/430, 1)`：
+//   14PM 输出 = baseline × 1（设计真值原样）
+//   iP8  输出 = baseline × 0.8721
+//   17 Air (~402px) 输出 ≈ baseline × 0.935
+// ---------------------------------------------------------------------------
+/** 大标题字号 14PM 真值 (px)。 */
 export const BASELINE_FONT_XXL = 32
-/** Large heading font size at the baseline (px). */
+/** 标题字号 14PM 真值 (px)。 */
 export const BASELINE_FONT_XL = 24
-/** Heading font size at the baseline (px). */
+/** 副标题字号 14PM 真值 (px)。 */
 export const BASELINE_FONT_L = 22
-/** Medium body font size at the baseline (px). */
+/** 正文字号 14PM 真值 (px)。 */
 export const BASELINE_FONT_M = 16
-/** Small body font size at the baseline (px). */
+/** 辅助字号 14PM 真值 (px)。 */
 export const BASELINE_FONT_S = 14
-/** Extra-small caption font size at the baseline (px). */
+/** 小注字号 14PM 真值 (px)。 */
 export const BASELINE_FONT_XS = 12
+/** 极小字号 14PM 真值 (px) —— 用于来源 / 角注。 */
+export const BASELINE_FONT_XXS = 10
 
 /** Card visual aspect ratio (height / width) — tarot cards are tall. */
 export const CARD_ASPECT_RATIO = 1.6
@@ -122,13 +122,23 @@ export function pickCanvasWidth(viewportWidth: number): number {
 }
 
 /**
- * Derive the global scale factor `k = canvasWidth / 375`.
- *
- * For canvas widths in the supported range the result is in
- * [1.0, 440 / 375 ≈ 1.1733]. Callers should pass canvas widths that
- * have already been clamped via `pickCanvasWidth`, but the function does
- * not enforce that — it is a pure ratio.
+ * 布局缩放因子 `k = canvasWidth / 375`（iP8 锚，向上放）。用于
+ * header / margin / answer-zone / action / drawer 等布局 token。
+ * 支持区间 [1.0, 440/375 ≈ 1.1733]。
  */
 export function deriveScale(canvasWidth: number): number {
   return canvasWidth / MIN_CANVAS_WIDTH
+}
+
+/**
+ * 字号缩放因子 `clamp(0.8721, w/430, 1)`（14PM 锚，向下缩）。与
+ * `design_flexible` 的 rem 链 / PostCSS pxtorem 同源，避免叠加。
+ * 字号 token 一律走这条公式。
+ */
+export function deriveFontScale(canvasWidth: number): number {
+  const ratio = canvasWidth / REF_DESIGN_CANVAS_WIDTH
+  if (ratio >= 1) return 1
+  const floor = MIN_CANVAS_WIDTH / REF_DESIGN_CANVAS_WIDTH
+  if (ratio <= floor) return floor
+  return ratio
 }

@@ -30,6 +30,7 @@ export function useCssVarBridge(): ComputedRef<Record<string, string>> {
   return computed(() => ({
     '--margin': `${sizes.value.margin}px`,
     '--gap': `${sizes.value.gap}px`,
+    '--container-gap': `${sizes.value.containerGap}px`,
     '--header-height': `${sizes.value.headerHeight}px`,
     '--drawer-min-height': `${sizes.value.drawerMinHeight}px`,
     '--action-area-height': `${sizes.value.actionAreaHeight}px`,
@@ -41,5 +42,18 @@ export function useCssVarBridge(): ComputedRef<Record<string, string>> {
     '--font-m': `${sizes.value.fontM}px`,
     '--font-s': `${sizes.value.fontS}px`,
     '--font-xs': `${sizes.value.fontXS}px`,
+    '--font-xxs': `${sizes.value.fontXXS}px`,
+    /* 行高 token：无单位，跟随 font-size 自动联动，不缩放。 */
+    '--leading-flat': '1',
+    '--leading-tight': '1.26',
+    '--leading-snug': '1.4',
+    '--leading-normal': '1.6',
+    '--leading-loose': '1.74',
+    /* 字距 token：em 单位，相对当前 font-size 自动联动。 */
+    '--tracking-tight': '0.01em',
+    '--tracking-normal': '0.06em',
+    '--tracking-wide': '0.1em',
+    '--tracking-wider': '0.14em',
+    '--tracking-widest': '0.25em',
   }))
 }

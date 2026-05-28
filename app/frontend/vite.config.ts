@@ -11,27 +11,21 @@ if (!process.env.UNI_INPUT_DIR) {
   process.env.UNI_INPUT_DIR = path.resolve(__dirname, 'src')
 }
 
-// H5 only: source code is authored against the iPhone 14 Pro Max design draft
-// (430x932 CSS px). postcss-pxtorem converts every px declaration to rem at
-// build time so the runtime lib-flexible (app/src/core/sizing/design_flexible.ts)
-// can drive the global scale by writing a single root font-size. rootValue=43
-// is `design_baseline.viewport.w / 10`; propList excludes border/box-shadow so
-// hairlines stay physical 1px regardless of viewport. mp-weixin targets do not
-// go through vite's CSS pipeline (uni-cli has its own); we still gate the
-// plugin on UNI_PLATFORM to make intent explicit and survive future toolchain
-// shuffles.
+// H5 端：源码按 iPhone 14 Pro Max (430×932 CSS px) 设计稿写 px，
+// postcss-pxtorem 编译期把每个 px 转 rem；运行时 lib-flexible
+// (app/src/core/sizing/design_flexible.ts) 按视口宽度写 root font-size
+// 驱动全局缩放。rootValue=43 = 430/10。propList 排除：
+//   - border / box-shadow / outline：保持物理 1 px 细线
+//   - font-size / line-height / letter-spacing：交由 sizes CSS 变量
+//     桥统一管理（避免与 PostCSS 链叠加产生 ±15% 偏差）
 const isH5Target = !process.env.UNI_PLATFORM || process.env.UNI_PLATFORM === 'h5'
 
-// mp-weixin counterpart of the H5 postcss-pxtorem step. The source is authored
-// against the 430 CSS px design canvas; rpx is defined as screenWidth/750, so a
-// value of N design-px must become N × 750/430 rpx to render at N × (w/430) px —
-// identical to the H5 rem chain (rootFontSize = clamp(0.872, w/430, 1) × 43)
-// across the 375–430 width range. Exclusions / minPixelValue / the :root +
-// .ignore-rem blacklist mirror the pxtorem options below so both platforms
-// convert the exact same source set. SPIKE: inlined here to validate that
-// vite-plugin-uni forwards css.postcss.plugins into the .wxss output.
+// mp-weixin 对端：源码同样按 430 设计画布写 px，rpx 定义为 screenWidth/750，
+// 故 N design-px = N × 750/430 rpx，渲染为 N × (w/430) px，与 H5 rem 链等价。
+// 排除项 / minPixelValue / 黑名单 (:root + .ignore-rem) 与 H5 完全镜像，
+// 字号 / 行高 / 字距同样跳过转换、交由 CSS 变量桥接管。
 function postcssPxToRpx({ ratio = 750 / 430, unitPrecision = 5, minPixelValue = 2 } = {}) {
-  const excludeProp = /^(border|border-.+|box-shadow|outline|outline-.+)$/
+  const excludeProp = /^(border|border-.+|box-shadow|outline|outline-.+|font-size|line-height|letter-spacing)$/
   const blacklist = [/(^|[^.\w-]):root\b/, /\.ignore-rem/]
   const pxValue = /(-?\d*\.?\d+)px/g
   return {
@@ -64,7 +58,17 @@ export default defineConfig(({ mode }) => {
               postcssPxtorem({
                 rootValue: 43,
                 unitPrecision: 5,
-                propList: ['*', '!border', '!border-*', '!box-shadow', '!outline', '!outline-*'],
+                propList: [
+                  '*',
+                  '!border',
+                  '!border-*',
+                  '!box-shadow',
+                  '!outline',
+                  '!outline-*',
+                  '!font-size',
+                  '!line-height',
+                  '!letter-spacing',
+                ],
                 selectorBlackList: [':root', /\.ignore-rem/],
                 replace: true,
                 mediaQuery: false,

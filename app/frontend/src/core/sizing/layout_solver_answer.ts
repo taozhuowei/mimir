@@ -25,19 +25,21 @@ import type {
 } from './layout_solver_types'
 
 /**
- * Answer-scene bottom band reservation: the inline answer card + the
- * ActionArea sit below the result card as flex siblings in the terminal
- * `answer` flow. The reservation tracks the answer card's min-height
- * (`--answer-zone-min-height`) — the worst case that's actually
- * compositable into the stage budget. If extraordinary content pushes
- * the answer card past min-height, the flex layout shrinks the stage
- * further at runtime; the solver's pre-reveal sizing stays conservative.
+ * 答案场景 stage 下方预留高度：答案卡 min-height + 操作区高 + 两段
+ * 容器间距（stage↔answer-card、answer-card↔action-area）。三者均在
+ * `main-surface__body` 的 flex 兄弟链上同帧挂载；reservation 与渲染
+ * 同源，保证 result card 90% × stage 不被 flex 再次挤压。
+ * 答案卡内容超过 min-height 时由 flex 运行时压缩 stage，求解器保持保守。
  */
 export function answerStageReservation(
   _viewport: PhysicalViewport,
   sizes: ResponsiveSizes,
 ): number {
-  return sizes.answerZoneMinHeight + sizes.actionAreaHeight
+  return (
+    sizes.answerZoneMinHeight +
+    sizes.actionAreaHeight +
+    2 * sizes.containerGap
+  )
 }
 
 /**

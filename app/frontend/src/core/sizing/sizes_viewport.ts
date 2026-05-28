@@ -26,9 +26,12 @@ import {
   BASELINE_FONT_XL,
   BASELINE_FONT_XS,
   BASELINE_FONT_XXL,
+  BASELINE_FONT_XXS,
   BASELINE_GAP,
   BASELINE_HEADER_HEIGHT,
   BASELINE_MARGIN,
+  CONTAINER_GAP,
+  deriveFontScale,
   deriveScale,
 } from './scale_constants'
 
@@ -37,69 +40,71 @@ import {
 // ---------------------------------------------------------------------------
 
 /**
- * Pixel-valued sizes, all derived from `canvasWidth` via `k`.
- * Every px field is rounded to the nearest integer so consumers never
- * see sub-pixel values that would force fractional layouts.
+ * 派生后的像素尺寸；每个 px 字段四舍五入为整数避免亚像素布局。
+ * 布局类字段（header / margin / gap / drawer / action / answerZone）走
+ * `k = deriveScale`（iP8 锚 × w/375）；字号类字段（font*）走
+ * `fontK = deriveFontScale`（14PM 锚 × clamp(0.8721, w/430, 1)），与
+ * `design_flexible` 同源。`containerGap` 是固定 CSS 像素，不缩放。
  */
 export interface ResponsiveSizes {
-  /** Logical canvas width (clamped to [375, 440]). */
+  /** 逻辑画布宽（clamp 到 [375, 440]）。 */
   canvasWidth: number
-  /** Scale factor relative to iPhone 8 baseline. */
+  /** 布局缩放因子（iP8 锚）。 */
   k: number
-  /** Header height in px (baseline 80 × k, rounded). */
+  /** 字号缩放因子（14PM 锚）。 */
+  fontK: number
+  /** 头部容器高（baseline 80 × k）。 */
   headerHeight: number
-  /** Outer / page margin in px (baseline 16 × k, rounded). */
+  /** 画布外边距（baseline 16 × k）。 */
   margin: number
-  /** Inter-card gap in px (baseline 12 × k, rounded). */
+  /** 卡牌间 gap（baseline 12 × k）。 */
   gap: number
-  /** Minimum drawer initial height in px (baseline 120 × k, rounded). */
+  /** 主面板容器间距，固定 CSS px，不缩放。 */
+  containerGap: number
+  /** drawer 初始高（baseline 120 × k）。 */
   drawerMinHeight: number
-  /** Bottom action area height in px (baseline 96 × k, rounded). */
+  /** 操作区高（baseline 96 × k）。 */
   actionAreaHeight: number
-  /**
-   * Inline answer card min-height in px. Reference: 160px on the
-   * 14PM design canvas (430px); baseline 140 × k, rounded. Used as
-   * the CSS min-height and as the layout solver's worst-case stage
-   * reservation.
-   */
+  /** 答案卡 min-height（14PM 真值 160 反推到 iP8）× k。 */
   answerZoneMinHeight: number
-  /** Hero / display font size in px (baseline 32 × k, rounded). */
+  /** 大标题字号（14PM 真值 32 × fontK）。 */
   fontXXL: number
-  /** Large heading font size in px (baseline 24 × k, rounded). */
+  /** 标题字号（14PM 真值 24 × fontK）。 */
   fontXL: number
-  /** Heading font size in px (baseline 22 × k, rounded). */
+  /** 副标题字号（14PM 真值 22 × fontK）。 */
   fontL: number
-  /** Medium body font size in px (baseline 16 × k, rounded). */
+  /** 正文字号（14PM 真值 16 × fontK）。 */
   fontM: number
-  /** Small body font size in px (baseline 14 × k, rounded). */
+  /** 辅助字号（14PM 真值 14 × fontK）。 */
   fontS: number
-  /** Extra-small caption font size in px (baseline 12 × k, rounded). */
+  /** 小注字号（14PM 真值 12 × fontK）。 */
   fontXS: number
+  /** 极小字号（14PM 真值 10 × fontK）。 */
+  fontXXS: number
 }
 
-/**
- * Pure derivation: given a canvas width, return all derived px sizes.
- * Each px field is rounded to the nearest integer.
- *
- * Pure function: same input always produces the same output.
- */
+/** 纯派生：从画布宽算出全部像素 token。 */
 export function deriveSizes(canvasWidth: number): ResponsiveSizes {
   const k = deriveScale(canvasWidth)
+  const fontK = deriveFontScale(canvasWidth)
   return {
     canvasWidth,
     k,
+    fontK,
     headerHeight: Math.round(BASELINE_HEADER_HEIGHT * k),
     margin: Math.round(BASELINE_MARGIN * k),
     gap: Math.round(BASELINE_GAP * k),
+    containerGap: CONTAINER_GAP,
     drawerMinHeight: Math.round(BASELINE_DRAWER_MIN_HEIGHT * k),
     actionAreaHeight: Math.round(BASELINE_ACTION_AREA_HEIGHT * k),
     answerZoneMinHeight: Math.round(ANSWER_ZONE_MIN_HEIGHT * k),
-    fontXXL: Math.round(BASELINE_FONT_XXL * k),
-    fontXL: Math.round(BASELINE_FONT_XL * k),
-    fontL: Math.round(BASELINE_FONT_L * k),
-    fontM: Math.round(BASELINE_FONT_M * k),
-    fontS: Math.round(BASELINE_FONT_S * k),
-    fontXS: Math.round(BASELINE_FONT_XS * k),
+    fontXXL: Math.round(BASELINE_FONT_XXL * fontK),
+    fontXL: Math.round(BASELINE_FONT_XL * fontK),
+    fontL: Math.round(BASELINE_FONT_L * fontK),
+    fontM: Math.round(BASELINE_FONT_M * fontK),
+    fontS: Math.round(BASELINE_FONT_S * fontK),
+    fontXS: Math.round(BASELINE_FONT_XS * fontK),
+    fontXXS: Math.round(BASELINE_FONT_XXS * fontK),
   }
 }
 
