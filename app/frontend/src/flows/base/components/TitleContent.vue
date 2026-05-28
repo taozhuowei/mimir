@@ -69,7 +69,7 @@ const props = withDefaults(
 /** Static copy table — single source of truth for both variants. */
 const COPY = {
   idle: {
-    title: 'Scales Tarot',
+    title: 'Mimir',
     subtitle: '命运之轨 · 星辰之语',
     guidance: '轻触牌堆，聆听高维指引',
   },

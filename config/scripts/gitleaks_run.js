@@ -58,7 +58,7 @@ function download(url, dest) {
   return new Promise((resolve, reject) => {
     const file = fs.createWriteStream(dest)
     const get = (u) => {
-      https.get(u, { headers: { 'User-Agent': 'scales-tarot-gitleaks-bootstrap' } }, (res) => {
+      https.get(u, { headers: { 'User-Agent': 'mimir-gitleaks-bootstrap' } }, (res) => {
         if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {
           res.resume()
           return get(res.headers.location)

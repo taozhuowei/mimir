@@ -14,7 +14,7 @@
 
 services:
   - type: web
-    name: scales-tarot
+    name: mimir
     runtime: node
     plan: free
     region: singapore # closest free region to CN users; change if preferred

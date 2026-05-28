@@ -10,7 +10,7 @@
 # over broad commit/file allows. Every entry must have a comment explaining
 # why the match is safe.
 
-title = "scales-tarot gitleaks config"
+title = "mimir gitleaks config"
 
 # Pull in every default rule shipped with the gitleaks binary (one-line
 # extension). Custom rules below add to this base; do not redefine the

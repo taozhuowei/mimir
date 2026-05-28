@@ -4,13 +4,13 @@
 			"path": "pages/index",
 			"style": {
 				"navigationStyle": "custom",
-				"navigationBarTitleText": "SCALES TAROT"
+				"navigationBarTitleText": "Mimir—每日塔罗答案"
 			}
 		}
 	],
 	"globalStyle": {
 		"navigationBarTextStyle": "black",
-		"navigationBarTitleText": "SCALES TAROT",
+		"navigationBarTitleText": "Mimir—每日塔罗答案",
 		"navigationBarBackgroundColor": "#F5E6C8",
 		"backgroundColor": "#F5E6C8",
 		"app-plus": {
