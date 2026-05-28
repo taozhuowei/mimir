@@ -34,22 +34,22 @@ import type { DrawerGeometry, LayoutEnvelope, StageRect } from './layout_solver_
 export const INITIAL_DRAWER_HEIGHT_RATIO = 0.4
 
 /**
- * Compute the largest 1:1.6 stage rect that fits inside the canvas after
- * subtracting the header and the page margins on every side. The stage is
- * the visual region cards live in — it doubles as the result card rect on
- * the answer scene because there's exactly one card and the card fills it.
+ * 计算可容下 1:1.6 的最大舞台矩形。从画布扣除 header / 安全区 /
+ * margin / topInset（header 与 stage 之间的容器间距）/ bottomReservation
+ * （stage 下方占用，如答案卡 + 操作区 + 其间容器间距），剩余空间居中布满。
  *
- * `bottomReservation` (px, default 0) reserves additional vertical space at
- * the bottom of the canvas. Used by the answer scene to subtract the
- * drawer's initial height so the result card auto-shrinks and lifts up
- * into the remaining stage area when the bottom drawer covers the lower
- * portion of the viewport. The draw scene passes 0 — the draw stage uses
- * the full available height because the drawer is closed during draw.
+ * - `topInset` (px, default 0)：stage 上方与 header 之间的容器间距，
+ *   答案场景和非答案场景都需要传 `containerGap` 保证求解高度与渲染
+ *   （main-surface__body 的 gap）严格一致。
+ * - `bottomReservation` (px, default 0)：答案场景下传
+ *   `answerStageReservation`（含答案卡 min-height + 操作区高 + 2 段
+ *   容器间距）；抽牌场景传 0（drawer 关闭，stage 用满下方空间）。
  */
 export function computeStage(
   viewport: PhysicalViewport,
   sizes: ResponsiveSizes,
   bottomReservation = 0,
+  topInset = 0,
 ): StageRect {
   const availableW = viewport.width - 2 * sizes.margin
   const availableH =
@@ -58,6 +58,7 @@ export function computeStage(
     viewport.safeAreaBottom -
     2 * sizes.margin -
     sizes.headerHeight -
+    Math.max(0, topInset) -
     Math.max(0, bottomReservation)
 
   // Largest 1:1.6 (height/width) rect that fits in (availableW × availableH).
@@ -69,10 +70,13 @@ export function computeStage(
   const stageW = Math.min(availableW, widthLimitedByH)
   const stageH = stageW * CARD_ASPECT_RATIO
 
-  // Centre the stage horizontally in the canvas; pin it below the header
-  // (which itself sits below the safe-area top + page margin).
+  // 水平居中；垂直锚定在 header 下方（再加 topInset 容器间距）。
   const stageX = (viewport.width - stageW) / 2
-  const stageY = viewport.safeAreaTop + sizes.margin + sizes.headerHeight
+  const stageY =
+    viewport.safeAreaTop +
+    sizes.margin +
+    sizes.headerHeight +
+    Math.max(0, topInset)
 
   return { x: stageX, y: stageY, width: stageW, height: stageH }
 }

@@ -111,9 +111,9 @@ const visible = computed(() => props.flow === 'answer')
 .action-area .btn {
   padding: 10px 22px;
   border-radius: 999px;
-  font-size: 13px;
-  line-height: 1.4;
-  letter-spacing: 0.06em;
+  font-size: var(--font-s);
+  line-height: var(--leading-snug);
+  letter-spacing: var(--tracking-normal);
 }
 
 @keyframes action-area-in {

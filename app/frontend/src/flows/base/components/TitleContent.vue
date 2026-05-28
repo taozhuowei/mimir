@@ -111,37 +111,37 @@ const { titleStyle, subtitleStyle, guidanceStyle } = useTitleEntrance(
 }
 
 .title-content__title {
-  /* xxl(32) → xl(24): 14PM 实测从 37px 收到 ~28px，去除 letter-spacing
-     放大造成的"挤压感"，留出 subtitle/guidance 喘息空间。 */
+  /* 标题字号选 --font-xl（14PM 真值 24），与 14PM 设计稿一致。
+     letter-spacing 收敛到 --tracking-wider（0.14em）。 */
   font-size: var(--font-xl);
   color: var(--color-text-primary);
-  letter-spacing: 0.14em;
+  letter-spacing: var(--tracking-wider);
   text-shadow: 0 4rpx 12rpx rgba(74, 37, 16, 0.1);
-  line-height: 1;
+  line-height: var(--leading-flat);
 }
 
 .title-content__subtitle {
   font-size: var(--font-xs);
   color: var(--color-text-secondary);
-  letter-spacing: 0.35em;
+  letter-spacing: var(--tracking-widest);
   text-transform: uppercase;
-  line-height: 1.2;
+  line-height: var(--leading-tight);
 }
 
 .title-content__guidance {
   font-size: var(--font-xs);
   color: var(--color-text-tertiary);
-  letter-spacing: 0.08em;
-  line-height: 1.2;
+  letter-spacing: var(--tracking-wide);
+  line-height: var(--leading-tight);
 }
 
 .title-content__error {
   font-size: var(--font-xs);
   color: var(--color-no);
-  letter-spacing: 0.04em;
+  letter-spacing: var(--tracking-tight);
   max-width: 80%;
   word-break: break-word;
-  line-height: 1.2;
+  line-height: var(--leading-tight);
 }
 
 /* Loading line: typographic style + a soft breathing pulse so the boot
@@ -151,7 +151,7 @@ const { titleStyle, subtitleStyle, guidanceStyle } = useTitleEntrance(
 .title-content__loading {
   font-size: var(--font-s);
   color: var(--color-text-secondary);
-  letter-spacing: 0.18em;
+  letter-spacing: var(--tracking-wider);
   animation: title-loading-pulse 1.8s ease-in-out infinite;
 }
 

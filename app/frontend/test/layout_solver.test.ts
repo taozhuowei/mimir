@@ -102,12 +102,13 @@ describe('layout_solver — proportional-sizes layout solver', () => {
         expect(Number.isFinite(layout.drawer.initialHeight)).toBe(true)
 
         // -------------------------------------------------------------------
-        // (1) Stage centered horizontally in the canvas; pinned below the
-        //     header (safeAreaTop + margin + headerHeight).
+        // (1) Stage 水平居中；垂直锚定在 header 下方再加 1 段
+        //     containerGap（header↔stage 容器间距，与
+        //     main-surface__body 的 gap 同源）。
         // -------------------------------------------------------------------
         expect(layout.stage.x).toBeCloseTo((viewport.width - layout.stage.width) / 2, 5)
         expect(layout.stage.y).toBeCloseTo(
-          viewport.safeAreaTop + sizes.margin + sizes.headerHeight,
+          viewport.safeAreaTop + sizes.margin + sizes.headerHeight + sizes.containerGap,
           5,
         )
 
@@ -231,12 +232,10 @@ describe('layout_solver — proportional-sizes layout solver', () => {
   }
 
   it('answer_stage shrinks below draw_stage so the result card lifts to leave room for the inline answer zone', () => {
-    // The answer scene reserves the inline answer-card min-height +
-    // action-area band (sizes.answerZoneMinHeight +
-    // sizes.actionAreaHeight) at the bottom — the stage therefore
-    // shrinks vs. the draw scene, the card shrinks with it, and the
-    // visual centre lifts up into the remaining area, leaving room
-    // for the answer struck below it.
+    // 答案场景下 stage 额外扣减 reservation =
+    //   answerZoneMinHeight + actionAreaHeight + 2 × containerGap，
+    // stage 因此严格小于 draw 场景；卡牌随之缩小并上移，让出下方
+    // 答案卡 + 操作区空间。
     for (const fixture of VIEWPORTS) {
       const viewport = makeViewport(
         fixture.actualWidth,

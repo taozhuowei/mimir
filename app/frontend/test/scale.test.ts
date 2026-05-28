@@ -19,17 +19,13 @@ import { beforeEach, describe, expect, it } from 'vitest'
 import {
   BASELINE_ACTION_AREA_HEIGHT,
   BASELINE_DRAWER_MIN_HEIGHT,
-  BASELINE_FONT_L,
-  BASELINE_FONT_M,
-  BASELINE_FONT_S,
-  BASELINE_FONT_XL,
-  BASELINE_FONT_XS,
-  BASELINE_FONT_XXL,
   BASELINE_GAP,
   BASELINE_HEADER_HEIGHT,
   BASELINE_MARGIN,
+  CONTAINER_GAP,
   MAX_CANVAS_WIDTH,
   MIN_CANVAS_WIDTH,
+  deriveFontScale,
   deriveScale,
   deriveSizes,
   pickCanvasWidth,
@@ -37,26 +33,38 @@ import {
 } from '../src/core/sizing/scale'
 
 /**
- * Hard-coded expected token values at canvas 440 (k = 440/375 ≈ 1.17333…).
- *
- * Reason these are literals, not `Math.round(BASELINE_X * k)`: the rounding
- * mode of the implementation is part of its contract. If a future change
- * swapped `Math.round` for `Math.floor` (or vice-versa) a formula-based
- * assertion would silently keep passing — both sides would shift together.
- * Pinning the exact integers means any rounding-mode regression fails loudly.
+ * 写死 canvas=440 时各 token 期望整数。布局类按 k=440/375≈1.17333 放大；
+ * 字号类按 fontScale=clamp(0.8721, 440/430, 1)=1 走 14PM 真值；containerGap
+ * 固定。硬编码而非用公式拼接，是为了让 Math.round → Math.floor 的回归
+ * 直接挂掉。
  */
 const EXPECTED_AT_440 = {
   headerHeight: 94,
   margin: 19,
   gap: 14,
+  containerGap: 10,
   drawerMinHeight: 141,
   actionAreaHeight: 113,
-  fontXXL: 38,
-  fontXL: 28,
-  fontL: 26,
-  fontM: 19,
-  fontS: 16,
-  fontXS: 14,
+  fontXXL: 32,
+  fontXL: 24,
+  fontL: 22,
+  fontM: 16,
+  fontS: 14,
+  fontXS: 12,
+  fontXXS: 10,
+} as const
+
+/**
+ * 字号在 iP8 (375) 上经 fontScale=375/430≈0.8721 缩放并 round 的期望值。
+ */
+const EXPECTED_FONT_AT_375 = {
+  fontXXL: 28,
+  fontXL: 21,
+  fontL: 19,
+  fontM: 14,
+  fontS: 12,
+  fontXS: 10,
+  fontXXS: 9,
 } as const
 
 describe('scale — pickCanvasWidth', () => {
@@ -109,45 +117,70 @@ describe('scale — deriveScale', () => {
   })
 })
 
+describe('scale — deriveFontScale (14PM-anchored, design_flexible-aligned)', () => {
+  it('returns exactly 1 at the reference canvas (430)', () => {
+    expect(deriveFontScale(430)).toBe(1)
+  })
+
+  it('clamps above the reference (canvas > 430 → 1)', () => {
+    expect(deriveFontScale(440)).toBe(1)
+  })
+
+  it('clamps below the floor (canvas < 375 → 375/430)', () => {
+    expect(deriveFontScale(375)).toBeCloseTo(375 / 430, 10)
+    expect(deriveFontScale(0)).toBeCloseTo(375 / 430, 10)
+  })
+
+  it('is linear between the floor and the reference', () => {
+    expect(deriveFontScale(402)).toBeCloseTo(402 / 430, 10)
+  })
+})
+
 describe('scale — deriveSizes at iPhone 8 baseline (375)', () => {
-  it('returns each token equal to its baseline value', () => {
+  it('layout tokens equal iP8 baseline (k=1); font tokens scaled by 14PM-anchored fontScale', () => {
     const t = deriveSizes(375)
     expect(t.canvasWidth).toBe(375)
     expect(t.k).toBe(1)
+    expect(t.fontK).toBeCloseTo(375 / 430, 10)
     expect(t.headerHeight).toBe(BASELINE_HEADER_HEIGHT)
     expect(t.margin).toBe(BASELINE_MARGIN)
     expect(t.gap).toBe(BASELINE_GAP)
+    expect(t.containerGap).toBe(CONTAINER_GAP)
     expect(t.drawerMinHeight).toBe(BASELINE_DRAWER_MIN_HEIGHT)
     expect(t.actionAreaHeight).toBe(BASELINE_ACTION_AREA_HEIGHT)
-    expect(t.fontXXL).toBe(BASELINE_FONT_XXL)
-    expect(t.fontXL).toBe(BASELINE_FONT_XL)
-    expect(t.fontL).toBe(BASELINE_FONT_L)
-    expect(t.fontM).toBe(BASELINE_FONT_M)
-    expect(t.fontS).toBe(BASELINE_FONT_S)
-    expect(t.fontXS).toBe(BASELINE_FONT_XS)
+    // 字号锚 14PM 真值 + fontScale=375/430，硬编码 round 结果防回归。
+    expect(t.fontXXL).toBe(EXPECTED_FONT_AT_375.fontXXL) // 28
+    expect(t.fontXL).toBe(EXPECTED_FONT_AT_375.fontXL) // 21
+    expect(t.fontL).toBe(EXPECTED_FONT_AT_375.fontL) // 19
+    expect(t.fontM).toBe(EXPECTED_FONT_AT_375.fontM) // 14
+    expect(t.fontS).toBe(EXPECTED_FONT_AT_375.fontS) // 12
+    expect(t.fontXS).toBe(EXPECTED_FONT_AT_375.fontXS) // 10
+    expect(t.fontXXS).toBe(EXPECTED_FONT_AT_375.fontXXS) // 9
   })
 })
 
 describe('scale — deriveSizes at iPhone 17 Pro Max (440)', () => {
-  it('scales each token by 440/375 and rounds to the spec literals', () => {
+  it('layout tokens scaled by k=440/375; font tokens equal 14PM真值 (fontScale=1); containerGap fixed', () => {
     const k = 440 / 375
     const t = deriveSizes(440)
     expect(t.canvasWidth).toBe(440)
     expect(t.k).toBeCloseTo(k, 10)
+    expect(t.fontK).toBe(1)
 
-    // All nine assertions use hard-coded integers — see EXPECTED_AT_440 for
-    // why (a `Math.round` → `Math.floor` regression would otherwise pass).
+    // 硬编码整数，防止 round → floor 类回归静默通过。
     expect(t.headerHeight).toBe(EXPECTED_AT_440.headerHeight) // 94
     expect(t.margin).toBe(EXPECTED_AT_440.margin) // 19
     expect(t.gap).toBe(EXPECTED_AT_440.gap) // 14
+    expect(t.containerGap).toBe(EXPECTED_AT_440.containerGap) // 10
     expect(t.drawerMinHeight).toBe(EXPECTED_AT_440.drawerMinHeight) // 141
     expect(t.actionAreaHeight).toBe(EXPECTED_AT_440.actionAreaHeight) // 113
-    expect(t.fontXXL).toBe(EXPECTED_AT_440.fontXXL) // 38
-    expect(t.fontXL).toBe(EXPECTED_AT_440.fontXL) // 28
-    expect(t.fontL).toBe(EXPECTED_AT_440.fontL) // 26
-    expect(t.fontM).toBe(EXPECTED_AT_440.fontM) // 19
-    expect(t.fontS).toBe(EXPECTED_AT_440.fontS) // 16
-    expect(t.fontXS).toBe(EXPECTED_AT_440.fontXS) // 14
+    expect(t.fontXXL).toBe(EXPECTED_AT_440.fontXXL) // 32
+    expect(t.fontXL).toBe(EXPECTED_AT_440.fontXL) // 24
+    expect(t.fontL).toBe(EXPECTED_AT_440.fontL) // 22
+    expect(t.fontM).toBe(EXPECTED_AT_440.fontM) // 16
+    expect(t.fontS).toBe(EXPECTED_AT_440.fontS) // 14
+    expect(t.fontXS).toBe(EXPECTED_AT_440.fontXS) // 12
+    expect(t.fontXXS).toBe(EXPECTED_AT_440.fontXXS) // 10
   })
 })
 
@@ -158,6 +191,7 @@ describe('scale — deriveSizes token integrity', () => {
       expect(Number.isInteger(t.headerHeight)).toBe(true)
       expect(Number.isInteger(t.margin)).toBe(true)
       expect(Number.isInteger(t.gap)).toBe(true)
+      expect(Number.isInteger(t.containerGap)).toBe(true)
       expect(Number.isInteger(t.drawerMinHeight)).toBe(true)
       expect(Number.isInteger(t.actionAreaHeight)).toBe(true)
       expect(Number.isInteger(t.fontXXL)).toBe(true)
@@ -166,12 +200,21 @@ describe('scale — deriveSizes token integrity', () => {
       expect(Number.isInteger(t.fontM)).toBe(true)
       expect(Number.isInteger(t.fontS)).toBe(true)
       expect(Number.isInteger(t.fontXS)).toBe(true)
+      expect(Number.isInteger(t.fontXXS)).toBe(true)
     }
   })
 
-  it('exposes a `k` field equal to deriveScale(canvasWidth) for several inputs', () => {
+  it('exposes `k` / `fontK` equal to derive(Font)Scale(canvasWidth)', () => {
     for (const canvas of [375, 390, 400, 414, 428, 440]) {
-      expect(deriveSizes(canvas).k).toBe(deriveScale(canvas))
+      const t = deriveSizes(canvas)
+      expect(t.k).toBe(deriveScale(canvas))
+      expect(t.fontK).toBe(deriveFontScale(canvas))
+    }
+  })
+
+  it('containerGap is a fixed CSS px value, unaffected by canvas width', () => {
+    for (const canvas of [375, 402, 430, 440]) {
+      expect(deriveSizes(canvas).containerGap).toBe(CONTAINER_GAP)
     }
   })
 })

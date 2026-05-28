@@ -79,12 +79,12 @@ const notificationStore = useNotificationStore()
   border-radius: 12rpx;
   background: var(--color-card-bg);
   border: 1px solid var(--color-border);
-  font-size: 24rpx;
+  font-size: var(--font-xs);
   color: var(--color-text-primary);
 }
 
 .notification-host__dismiss {
-  font-size: 28rpx;
+  font-size: var(--font-s);
   color: var(--color-text-tertiary);
   cursor: pointer;
 }

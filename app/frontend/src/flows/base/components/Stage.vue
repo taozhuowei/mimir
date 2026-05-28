@@ -57,9 +57,9 @@ withDefaults(
    :slotted(*) also fails WXSS compilation on mp-weixin (no `*` selector). */
 
 .stage__placeholder {
-  font-size: 22rpx;
+  font-size: var(--font-xs);
   color: var(--color-text-tertiary);
-  letter-spacing: 0.08em;
+  letter-spacing: var(--tracking-wide);
   pointer-events: auto;
 }
 </style>

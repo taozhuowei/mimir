@@ -194,16 +194,33 @@ html[data-too-small="1"] .main-surface__canvas {
      "locally" only at render time. */
   --margin: 16px;
   --gap: 12px;
+  /* 主面板四段容器间距，固定 CSS px，运行时与 sizes.containerGap 同源镜像。
+     :root 命中 PostCSS pxtorem / pxtorpx 黑名单，保持字面 10px 不被改写。 */
+  --container-gap: 10px;
   --header-height: 80px;
   --drawer-min-height: 120px;
   --action-area-height: 96px;
   --answer-zone-min-height: 140px;
-  --font-xxl: 32px;
-  --font-xl: 24px;
-  --font-l: 22px;
-  --font-m: 16px;
-  --font-s: 14px;
-  --font-xs: 12px;
+  /* 字号 token 静态兜底（iP8 baseline 真值，bridge 挂载后由 14PM 真值 ×
+     deriveFontScale 派生覆盖）。fontXXS 用于来源 / 角注。 */
+  --font-xxl: 28px;
+  --font-xl: 21px;
+  --font-l: 19px;
+  --font-m: 14px;
+  --font-s: 12px;
+  --font-xs: 10px;
+  --font-xxs: 9px;
+  /* 行高 / 字距 token：无单位 / em，跟随 font-size 联动，不参与缩放。 */
+  --leading-flat: 1;
+  --leading-tight: 1.26;
+  --leading-snug: 1.4;
+  --leading-normal: 1.6;
+  --leading-loose: 1.74;
+  --tracking-tight: 0.01em;
+  --tracking-normal: 0.06em;
+  --tracking-wide: 0.1em;
+  --tracking-wider: 0.14em;
+  --tracking-widest: 0.25em;
 
   /* MP-WeChat menu-button clearance (task 8.2.5). Bridge replaces with
      the live capsule bottom + 8px buffer on mp-weixin; H5 keeps 0. */
@@ -225,42 +242,19 @@ html[data-too-small="1"] .main-surface__canvas {
   --safe-area-inset-left: env(safe-area-inset-left, 0px);
 }
 
-/* H5 字号 token — iPhone 14 Pro Max 设计稿真值（静态 px）
- *
- * 历史 clamp(vw) 公式已废除：与新 rem 自适应链
- * （design_flexible + postcss-pxtorem）冲突，会在大屏产生 vw 弹性 + rem
- * 缩放双重作用。改为静态 14PM 真值后，postcss-pxtorem 把 Npx 转成 Nrem，
- * html font-size 由 design_flexible 按视口宽度 clamp(0.872, w/430, 1) ×
- * 43，所有字号同步等比缩放。
- */
+/* 字体族 token —— 字号 / 行高 / 字距统一由上方 --font-* / --leading-* /
+   --tracking-* 接管（运行时 bridge 派生），此处只保留 font-family。 */
 /* #ifdef H5 */
 :root {
   --font-display: 'Cinzel', 'LXGW WenKai', 'STKaiti', 'KaiTi', 'Kaiti SC', serif;
   --font-body: 'LXGW WenKai', 'STKaiti', 'KaiTi', 'Kaiti SC', 'STSong', serif;
-  --text-xs:   12px;
-  --text-sm:   14px;
-  --text-base: 16px;
-  --text-lg:   18px;
-  --text-xl:   22px;
-  --text-2xl:  28px;
-  --text-3xl:  36px;
-  --text-4xl:  48px;
 }
 /* #endif */
 
-/* 小程序专用：固定 rpx 字体大小 */
 /* #ifdef MP-WEIXIN */
 page {
   --font-display: 'STKaiti', 'KaiTi', 'Kaiti SC', serif;
   --font-body: 'STKaiti', 'KaiTi', 'Kaiti SC', 'STSong', serif;
-  --text-xs: 24rpx;
-  --text-sm: 28rpx;
-  --text-base: 32rpx;
-  --text-lg: 36rpx;
-  --text-xl: 44rpx;
-  --text-2xl: 56rpx;
-  --text-3xl: 72rpx;
-  --text-4xl: 96rpx;
 }
 /* #endif */
 
@@ -293,8 +287,8 @@ page {
   background-color: var(--color-bg-primary);
   color: var(--color-text-primary);
   font-family: var(--font-body);
-  font-size: var(--text-base);
-  line-height: 1.6;
+  font-size: var(--font-m);
+  line-height: var(--leading-normal);
 }
 
 /* ========================================
@@ -320,34 +314,18 @@ page {
 .font-display {
   font-family: var(--font-display);
   font-weight: 600;
-  letter-spacing: 0.08em;
+  letter-spacing: var(--tracking-wide);
 }
 
 .font-body {
   font-family: var(--font-body);
 }
 
-/* 字体大小 */
-.text-xs { font-size: var(--text-xs); }
-.text-sm { font-size: var(--text-sm); }
-.text-base { font-size: var(--text-base); }
-.text-lg { font-size: var(--text-lg); }
-.text-xl { font-size: var(--text-xl); }
-.text-2xl { font-size: var(--text-2xl); }
-.text-3xl { font-size: var(--text-3xl); }
-.text-4xl { font-size: var(--text-4xl); }
-
 /* 字重 */
 .font-normal { font-weight: 400; }
 .font-medium { font-weight: 500; }
 .font-semibold { font-weight: 600; }
 .font-bold { font-weight: 700; }
-
-/* 行高 */
-.leading-tight { line-height: 1.25; }
-.leading-snug { line-height: 1.375; }
-.leading-normal { line-height: 1.6; }
-.leading-relaxed { line-height: 1.75; }
 
 /* 文字颜色 */
 .text-primary { color: var(--color-text-primary); }
@@ -427,9 +405,9 @@ page {
   padding: var(--space-3) var(--space-6);
   border-radius: var(--radius-full);
   font-family: var(--font-display);
-  font-size: var(--text-sm);
+  font-size: var(--font-s);
   font-weight: 600;
-  letter-spacing: 0.1em;
+  letter-spacing: var(--tracking-wide);
   text-transform: uppercase;
   cursor: pointer;
   transition: all var(--transition-base);

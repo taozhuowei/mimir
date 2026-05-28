@@ -38,7 +38,7 @@ const { isTooSmall } = useDesignFlexible()
 }
 
 .too-small-banner__text {
-  font-size: 12px;
-  letter-spacing: 0.05em;
+  font-size: var(--font-xs);
+  letter-spacing: var(--tracking-normal);
 }
 </style>
