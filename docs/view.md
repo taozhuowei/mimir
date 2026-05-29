@@ -91,32 +91,26 @@
 
 ---
 
-## 首屏加载架构（App Shell 双层）
+## 首屏加载架构（critical CSS + entry chunk）
 
-H5 首屏走 Google App Shell 模型，把"出现可见画面"和"Vue 应用接管"拆成两层串行，避免 Vue 入口 JS 下载完之前 `<div id="app">` 为空白屏。两层视觉同源（同色、同几何、同 accent），用户感知不到接替点。
+H5 首屏只有一层 loading 视觉来源：`LoadingView`（Vue），由 `pages/index.vue` 在 `boot status === 'pending' | 'failed'` 时作为路由 fallback 渲染。之前曾在 `index.html` 内嵌一段 CSS-only 静态骨架（"Layer 1"）以填补 HTML 解析完到 Vue 挂载之间的空窗，但 Vue 挂载会清空 `#app` 子树并由 GSAP 从 phase 0 重启动画，与 CSS keyframes 的相位不同步，体感是"动画跳一下又重来"。已删除，换取动画相位连续与单一可维护源。
 
-### Layer 1 — HTML 静态骨架
+### 阻塞消除
 
-- 位置：`app/frontend/index.html` 的 `<head><style data-skeleton>` + `<body><div id="app">` 内嵌 `.boot-skeleton` DOM
-- 形态：纯 HTML + CSS keyframes，**零网络往返、零外部资源；仅含 rem 兜底 inline JS（`design_flexible`，跑在 `<head>` 内，无外链）**；HTML 解析完即可绘制
-- 几何：4 条椭圆轨道 (rx 80/120/165/210 × ry 28/42/58/74)、4 颗行星（四面体 / 平行六面体 / 球体 / 八面体）、中央恒星，与 `flows/loading/composables/orbits.ts` 同源
-- 颜色：背景 `#F7F0E0`、accent `#b8943e` 字面值内联（同 `core/styles/global.css :root` 的 `--color-bg-page` / `--color-accent`），先于外部样式表绘制
-- 文案：无（避免 Layer 2 的 `TitleContent` 上来时 FOUT）
-- 选择器：每条规则前缀 `.ignore-rem`，命中 `vite.config.ts` 的 postcss-pxtorem / pxtorpx selectorBlackList，保留字面 `px`
+- **critical CSS 内联**：`app/frontend/vite/plugins/critical-css-inline.ts` 在 `generateBundle` 阶段把入口引用的 `<link rel="stylesheet">` 全部转成 `<head><style data-critical>`，删原 link。HTML 一到就能绘制米黄背景（`--color-bg-page`），无 render-blocking CSS 网络等待
+- **入口 chunk 合并**：`vite.config.ts` 的 `build.rollupOptions.output.manualChunks`（仅 H5）把 `/src/pages/` `/src/flows/` `/src/core/` 同步依赖合入单个 `index.*.js`，uni-h5-vite 生成的 `defineAsyncComponent(() => import('./pages/index.vue'))` 命中已加载模块即时 resolve，消除二段下载
 
-### Layer 2 — Vue LoadingView
+### LoadingView 作为路由 fallback
 
 - 位置：`flows/loading/components/LoadingView.vue` + `LoadingOrbits.vue`（不变）
-- 接替时机：`createSSRApp(App).mount('#app')` 自然清空 `#app` 子树后，由 `pages/index.vue` 依据 boot status 在 `LoadingView` ↔ `MainSurface` 之间切换
+- 时机：`createSSRApp(App).mount('#app')` 替换空骨架后，`pages/index.vue` 依据 `useBootStatus()` 的 `'pending' | 'failed' | 'ok'`，在 `LoadingView` ↔ `MainSurface` 之间切换；`'pending'` / `'failed'` 都渲染 `LoadingView`
+- 文案 / 错误态 / 主题切换 / a11y 全部跟随 Vue 渲染链路
 
-### 交接点
+### 首屏时间线（实测 Render 冷启）
 
-- Layer 1 的 `.boot-skeleton` 元素被 Vue 挂载时整体替换，无显式 unmount 逻辑
-- 两层共用 `:root` CSS 变量（`--color-bg-page` / `--color-accent` / `--color-accent-raw`）；Layer 1 内联字面值确保 global.css 抵达前不出错，到达后 Layer 2 接住同名变量
-- 几何参数手动同步：Layer 1 的 px 与 `orbits.ts` 中 `createDefaultPlanets()` 一致；周期是 `2π / speed` 的整秒近似（12 / 17 / 23 / 35 s），Layer 2 接管前不会跑出可见偏移
+- 0 – 1.6 s：HTML TTFB（Render 冷启动主导）
+- ≈ 1.74 s：first-paint，米黄背景就位（critical CSS 已生效），`#app` 仍空
+- ≈ 3.5 s：FCP，Vue 挂载并渲染 `LoadingView`，轨道动画**一次性**开始
+- ≈ 4.5 s：`Promise.allSettled([loadCards, loadTheme])` + `preloadCritical` 完成，`markOk` 切 MainSurface
 
-### 为什么 Layer 1 脱离 Vue
-
-- Vue 入口 chunk + 路由 chunk 串行下载 ≈ 3.8 s（实测）；让首帧依赖它意味着 FCP ≥ 3.8 s
-- 入口 CSS 被 `critical-css-inline` 内联进 `<head>`，HTML 一到就能绘制；Layer 1 在 HTML 解析时即可可见，FCP 降至 ≈ 1.7 s
-- 同时入口 JS 通过 `manualChunks` 把 `/src/pages/` `/src/flows/` `/src/core/` 同步依赖合入单个 `index.*.js`，消除二段下载，Vue Layer 2 ≈ 3 s 上屏
+1.74 – 3.5 s 之间 `#app` 是纯背景无动画——换取相位连续与单一可维护视觉源
