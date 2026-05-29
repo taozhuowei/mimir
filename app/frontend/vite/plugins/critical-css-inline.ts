@@ -117,13 +117,16 @@ export default function criticalCssInline(): Plugin {
         if (collected.length === 0) continue
 
         const styleBlock = `<style data-critical>${collected.join('\n')}</style>`
-        // CSS cascade requires `<style data-skeleton>` to win over the entry
-        // CSS for identical-specificity selectors (body, #app, etc). Since
-        // the skeleton is declared after `data-critical` in `index.html`'s
-        // source order, we must inject `data-critical` *before* the first
-        // `<style data-skeleton>` so the skeleton's rules still come last
-        // in document order. Fallback to `</head>` if the skeleton tag was
-        // somehow removed upstream — defensive only.
+        // Inject right before `</head>` so the critical CSS lands inside the
+        // <head> (browsers ignore <style> in body for FOUC purposes anyway,
+        // but staying in head is the conventional contract).
+        //
+        // The skeleton path below is a historical fallback: an earlier
+        // revision shipped an inline `<style data-skeleton>` HTML App Shell
+        // and we had to land `data-critical` *before* it so cascade order
+        // kept the skeleton on top. The skeleton was removed (it produced
+        // a phase-reset double animation on Vue mount), but we keep the
+        // probe as a defensive cheap branch in case it ever returns.
         const skeletonOpen = /<style\b[^>]*\bdata-skeleton\b[^>]*>/i
         let rewritten: string
         if (skeletonOpen.test(stripped)) {
