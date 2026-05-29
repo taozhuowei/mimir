@@ -2,6 +2,7 @@ import { defineConfig } from 'vite'
 import uni from '@dcloudio/vite-plugin-uni'
 import postcssPxtorem from 'postcss-pxtorem'
 import path from 'path'
+import criticalCssInline from './vite/plugins/critical-css-inline'
 
 // Defensive: pin UNI_INPUT_DIR to this config's directory so tools that load
 // vite.config.ts from a different cwd (e.g. knip running from the repo root)
@@ -49,7 +50,18 @@ export default defineConfig(({ mode }) => {
 
   return {
     publicDir: path.resolve(__dirname, '../server/public'),
-    plugins: [uni()],
+    plugins: [
+      uni(),
+      // H5-only optimisation: inline entry CSS into <head> and strip the
+      // render-blocking <link rel="stylesheet"> tags. mp-weixin must not
+      // run this — its HTML pipeline is owned by uniapp and there is no
+      // browser-side first paint to optimise.
+      // Skip this plugin under vitest: although it declares `apply: 'build'`,
+      // vitest still merges it into the plugin pipeline and its presence
+      // breaks the test collector (`No test suite found in file` across
+      // every spec). `process.env.VITEST` is the documented vitest sentinel.
+      ...(isH5Target && !process.env.VITEST ? [criticalCssInline()] : []),
+    ],
     envDir: path.resolve(__dirname, '../..'),
     css: isH5Target
       ? {
@@ -108,6 +120,39 @@ export default defineConfig(({ mode }) => {
             },
             format: {
               comments: false,
+            },
+          }
+        : undefined,
+      // H5 first-paint optimisation: collapse synchronous imports from
+      // `/src/pages/`, `/src/flows/` and `/src/core/` into the entry
+      // chunk so the browser pulls one JS bundle, not a 2-3 round chain
+      // of `pages-*.js` → `flows-*.js` → `core-*.js`. The only runtime
+      // lazy load we keep is the 78 card-face images (`<image>` srcs),
+      // which are never JS chunks. mp-weixin is untouched — its bundler
+      // is uniapp-owned and chunk shape matters differently there.
+      rollupOptions: isH5Target
+        ? {
+            output: {
+              manualChunks(id) {
+                // CSS assets are routed by Vite's own asset pipeline; never
+                // collapse them into the JS entry chunk.
+                if (id.endsWith('.css')) return undefined
+                const normalised = id.replaceAll('\\', '/')
+                // Short-circuit on third-party deps first: some packages
+                // ship internal paths like `node_modules/foo/src/pages/...`
+                // which would otherwise match the substring tests below and
+                // get hauled into the entry chunk, bloating it. Vendor code
+                // stays in Vite's default vendor split.
+                if (normalised.includes('/node_modules/')) return undefined
+                if (
+                  normalised.includes('/src/pages/')
+                  || normalised.includes('/src/flows/')
+                  || normalised.includes('/src/core/')
+                ) {
+                  return 'index'
+                }
+                return undefined
+              },
             },
           }
         : undefined,

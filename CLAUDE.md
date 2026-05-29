@@ -35,3 +35,5 @@ Invoke directly, not via yarn:
 - `.env.*.local` is gitignored; create `.env.production.local` by hand before deploy.
 - Only spread kind is `single_card`; ship no placeholder spread code.
 - Never put a comment opener (`//` or `/*`) immediately before `#ifdef`/`#ifndef`/`#endif`/`#else` in `.ts`/`.vue` — anywhere, incl. JSDoc/backticks. To mention in prose: drop the `#`, or precede with a non-comment word/paren. `.md` is exempt.
+- H5 build must inline entry CSS into `<head><style data-critical>` via the `app/frontend/vite/plugins/critical-css-inline.ts` plugin; ship no render-blocking `<link rel="stylesheet">` in the H5 `index.html`.
+- H5 build must collapse synchronous imports from `/src/pages/`, `/src/flows/` and `/src/core/` into the entry chunk (`vite.config.ts` `manualChunks`); do not emit secondary `pages-*.js` / `flows-*.js` / `core-*.js` chunks. The only runtime lazy-load on H5 is the 78 card-face `<image>` srcs. mp-weixin is unaffected by both rules.

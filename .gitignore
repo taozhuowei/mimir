@@ -2,6 +2,10 @@
 /app/dist/
 /app/server/dist/
 
+# Playwright CLI local cache (browsers, traces) — set up by skill tooling,
+# never committed.
+/.playwright-cli/
+
 # Dependencies
 node_modules/
 
